@@ -1,0 +1,75 @@
+---
+title: Self-Hosting
+description: Deploy your own instance of FangDash.
+---
+
+FangDash is designed to run on Cloudflare's infrastructure. Here's how to deploy your own instance.
+
+## What You Need
+
+- A Cloudflare account (free tier works)
+- A Twitch Developer application
+- A PartyKit account (for multiplayer)
+
+## Deploy the API
+
+The API runs on Cloudflare Workers with a D1 database.
+
+1. Create a D1 database in the Cloudflare dashboard
+2. Update `apps/api/wrangler.toml` with your database ID
+3. Set your secrets:
+
+```bash
+cd apps/api
+npx wrangler secret put BETTER_AUTH_SECRET
+npx wrangler secret put TWITCH_CLIENT_ID
+npx wrangler secret put TWITCH_CLIENT_SECRET
+```
+
+4. Deploy:
+
+```bash
+pnpm ship:api
+```
+
+## Deploy the Web App
+
+The web app deploys to Cloudflare Workers using OpenNext.
+
+1. Update `apps/web/.env.local` with your API URL
+2. Deploy:
+
+```bash
+pnpm ship:web
+```
+
+## Deploy PartyKit
+
+PartyKit handles multiplayer WebSocket connections.
+
+1. Set your PartyKit token:
+
+```bash
+export PARTYKIT_TOKEN=your-token
+```
+
+2. Deploy:
+
+```bash
+pnpm ship:party
+```
+
+## Deploy Everything at Once
+
+```bash
+pnpm ship
+```
+
+This runs all three deploy commands in parallel.
+
+## Setting Up Twitch OAuth
+
+1. Go to the [Twitch Developer Console](https://dev.twitch.tv/console)
+2. Create a new application
+3. Set the OAuth Redirect URL to `https://your-api-domain/api/auth/callback/twitch`
+4. Copy the Client ID and Client Secret to your environment variables
