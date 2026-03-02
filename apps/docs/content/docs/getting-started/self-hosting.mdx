@@ -20,13 +20,12 @@ The API runs on Cloudflare Workers with a D1 database.
 3. Set your secrets:
 
 ```bash
-cd apps/api
-npx wrangler secret put BETTER_AUTH_SECRET
-npx wrangler secret put TWITCH_CLIENT_ID
-npx wrangler secret put TWITCH_CLIENT_SECRET
+npx wrangler secret put BETTER_AUTH_SECRET --config apps/api/wrangler.toml
+npx wrangler secret put TWITCH_CLIENT_ID --config apps/api/wrangler.toml
+npx wrangler secret put TWITCH_CLIENT_SECRET --config apps/api/wrangler.toml
 ```
 
-4. Deploy:
+4. Deploy (from the repo root):
 
 ```bash
 pnpm ship:api
