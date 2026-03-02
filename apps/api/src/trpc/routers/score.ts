@@ -3,6 +3,8 @@ import { eq, desc, sql } from "drizzle-orm";
 import { router, protectedProcedure, publicProcedure } from "../trpc";
 import { score, player, user } from "../../db/schema";
 import { ensurePlayer } from "../../lib/ensure-player";
+import { checkAchievements } from "../../lib/achievement-checker";
+import { checkSkinUnlocks } from "../../lib/skin-unlocker";
 
 const MAX_SCORE_PER_SECOND = 15;
 
@@ -53,7 +55,29 @@ export const scoreRouter = router({
         })
         .where(eq(player.id, playerRecord.id));
 
-      return { scoreId };
+      // Check achievements and skin unlocks after score submission
+      const achievementResult = await checkAchievements(
+        ctx.db,
+        playerRecord.id,
+        {
+          score: input.score,
+          distance: input.distance,
+          obstaclesCleared: input.obstaclesCleared,
+        }
+      );
+      const newSkinUnlocks = await checkSkinUnlocks(
+        ctx.db,
+        playerRecord.id
+      );
+
+      return {
+        scoreId,
+        newAchievements: achievementResult.newAchievements,
+        newSkins: [
+          ...achievementResult.newSkins,
+          ...newSkinUnlocks,
+        ],
+      };
     }),
 
   leaderboard: publicProcedure
