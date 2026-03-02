@@ -1,0 +1,31 @@
+---
+title: How Multiplayer Works
+description: Technical details about FangDash's multiplayer system.
+---
+
+FangDash uses WebSockets for real-time multiplayer communication, powered by PartyKit.
+
+## Architecture
+
+- **PartyKit Server** — Manages race rooms, player connections, and game state
+- **WebSocket Connections** — Each player maintains a persistent connection to the race room
+- **Seeded PRNG** — A shared seed ensures all players face identical obstacles
+
+## Race Flow
+
+1. **Lobby** — Players join a room and mark themselves as ready
+2. **Countdown** — Once all players are ready, a 3-second countdown begins
+3. **Racing** — Players run through the same obstacle course. Position updates are broadcast to all players
+4. **Results** — When all players finish (or die), final scores are compared and results are shown
+
+## Ghost Players
+
+Other players appear as semi-transparent "ghost" wolves on your screen. Their positions update in real-time via WebSocket messages. You can see them running, jumping, and hitting obstacles.
+
+## Deterministic Obstacles
+
+FangDash uses a mulberry32 seeded PRNG algorithm. When a race starts, the server generates a random seed and sends it to all players. This means:
+
+- Every player sees the exact same obstacle layout
+- The game is fair — no player gets easier or harder obstacles
+- Replays could be reconstructed from the seed alone
