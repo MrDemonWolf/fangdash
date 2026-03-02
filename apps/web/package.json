@@ -1,0 +1,45 @@
+{
+  "name": "@fangdash/web",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --turbopack",
+    "build": "next build",
+    "build:cf": "opennextjs-cloudflare build",
+    "deploy": "opennextjs-cloudflare build && wrangler deploy",
+    "start": "next start",
+    "lint": "next lint",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf .next .turbo"
+  },
+  "dependencies": {
+    "@fangdash/shared": "workspace:*",
+    "@fangdash/game": "workspace:*",
+    "better-auth": "^1.2.0",
+    "@trpc/client": "^11.0.0",
+    "@trpc/react-query": "^11.0.0",
+    "@trpc/tanstack-react-query": "^11.0.0",
+    "@trpc/server": "^11.0.0",
+    "@tanstack/react-query": "^5.67.0",
+    "next": "^15.2.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "partysocket": "^1.0.0",
+    "lucide-react": "^0.475.0",
+    "superjson": "^2.2.0",
+    "clsx": "^2.1.0",
+    "tailwind-merge": "^3.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "tailwindcss": "^4.0.0",
+    "@tailwindcss/postcss": "^4.0.0",
+    "postcss": "^8.5.0",
+    "@opennextjs/cloudflare": "^1.0.0",
+    "wrangler": "^4.65.0",
+    "@cloudflare/workers-types": "^4.20250224.0",
+    "typescript": "^5.7.0",
+    "@types/node": "^22.0.0"
+  }
+}
