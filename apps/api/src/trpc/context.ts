@@ -6,9 +6,14 @@ export async function createContext(c: Context) {
   const db = createDb(c.env.DB);
   const auth = createAuth(c.env);
 
-  const session = await auth.api.getSession({
-    headers: c.req.raw.headers,
-  });
+  let session: Awaited<ReturnType<typeof auth.api.getSession>> | null = null;
+  try {
+    session = await auth.api.getSession({
+      headers: c.req.raw.headers,
+    });
+  } catch {
+    // Auth failure — continue as unauthenticated for public procedures
+  }
 
   return {
     db,
