@@ -16,13 +16,14 @@ type Bindings = {
 
 const app = new Hono<{ Bindings: Bindings }>();
 
-app.use(
-  "*",
-  cors({
-    origin: ["http://localhost:3000", "https://fangdash.mrdemonwolf.workers.dev"],
-    credentials: true,
-  })
-);
+app.use("*", async (c, next) => {
+  const isDev = c.env.ENVIRONMENT !== "production";
+  const origins = isDev
+    ? ["http://localhost:3000", "https://fangdash.mrdemonwolf.workers.dev"]
+    : ["https://fangdash.mrdemonwolf.workers.dev"];
+
+  return cors({ origin: origins, credentials: true })(c, next);
+});
 
 // Better Auth handler
 app.on(["POST", "GET"], "/api/auth/**", (c) => {

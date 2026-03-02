@@ -1,4 +1,4 @@
-import { sqliteTable, text, integer, real, uniqueIndex } from "drizzle-orm/sqlite-core";
+import { sqliteTable, text, integer, real, uniqueIndex, index } from "drizzle-orm/sqlite-core";
 
 // ── Better Auth Core Tables ──
 
@@ -64,7 +64,7 @@ export const player = sqliteTable("player", {
     .references(() => user.id, { onDelete: "cascade" }),
   equippedSkinId: text("equipped_skin_id").notNull().default("gray-wolf"),
   totalScore: integer("total_score").notNull().default(0),
-  totalDistance: integer("total_distance").notNull().default(0),
+  totalDistance: real("total_distance").notNull().default(0),
   totalObstaclesCleared: integer("total_obstacles_cleared").notNull().default(0),
   gamesPlayed: integer("games_played").notNull().default(0),
   racesPlayed: integer("races_played").notNull().default(0),
@@ -73,17 +73,22 @@ export const player = sqliteTable("player", {
   updatedAt: integer("updated_at", { mode: "timestamp" }).notNull(),
 });
 
-export const score = sqliteTable("score", {
-  id: text("id").primaryKey(),
-  playerId: text("player_id")
-    .notNull()
-    .references(() => player.id, { onDelete: "cascade" }),
-  score: integer("score").notNull(),
-  distance: real("distance").notNull(),
-  obstaclesCleared: integer("obstacles_cleared").notNull(),
-  seed: text("seed").notNull(),
-  createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
-});
+export const score = sqliteTable(
+  "score",
+  {
+    id: text("id").primaryKey(),
+    playerId: text("player_id")
+      .notNull()
+      .references(() => player.id, { onDelete: "cascade" }),
+    score: integer("score").notNull(),
+    distance: real("distance").notNull(),
+    obstaclesCleared: integer("obstacles_cleared").notNull(),
+    duration: integer("duration").notNull(),
+    seed: text("seed").notNull(),
+    createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
+  },
+  (table) => [index("score_player_id_idx").on(table.playerId)]
+);
 
 export const playerSkin = sqliteTable(
   "player_skin",
@@ -115,15 +120,19 @@ export const playerAchievement = sqliteTable(
   ]
 );
 
-export const raceHistory = sqliteTable("race_history", {
-  id: text("id").primaryKey(),
-  raceId: text("race_id").notNull(),
-  playerId: text("player_id")
-    .notNull()
-    .references(() => player.id, { onDelete: "cascade" }),
-  placement: integer("placement").notNull(),
-  score: integer("score").notNull(),
-  distance: real("distance").notNull(),
-  seed: text("seed").notNull(),
-  createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
-});
+export const raceHistory = sqliteTable(
+  "race_history",
+  {
+    id: text("id").primaryKey(),
+    raceId: text("race_id").notNull(),
+    playerId: text("player_id")
+      .notNull()
+      .references(() => player.id, { onDelete: "cascade" }),
+    placement: integer("placement").notNull(),
+    score: integer("score").notNull(),
+    distance: real("distance").notNull(),
+    seed: text("seed").notNull(),
+    createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
+  },
+  (table) => [index("race_history_player_id_idx").on(table.playerId)]
+);
