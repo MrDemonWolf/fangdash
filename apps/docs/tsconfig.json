@@ -19,6 +19,7 @@
     "next-env.d.ts",
     "app/**/*.ts",
     "app/**/*.tsx",
+    "source.config.ts",
     "lib/**/*.ts",
     "lib/**/*.tsx",
     "mdx-components.tsx",
