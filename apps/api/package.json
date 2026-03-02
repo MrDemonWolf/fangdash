@@ -1,0 +1,31 @@
+{
+  "name": "@fangdash/api",
+  "version": "0.0.0",
+  "private": true,
+  "exports": {
+    "./trpc": "./src/trpc/router.ts"
+  },
+  "scripts": {
+    "dev": "wrangler dev",
+    "build": "wrangler deploy --dry-run",
+    "deploy": "wrangler deploy",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .wrangler"
+  },
+  "dependencies": {
+    "@fangdash/shared": "workspace:*",
+    "better-auth": "^1.2.0",
+    "@hono/trpc-server": "^0.3.0",
+    "@trpc/server": "^11.0.0",
+    "drizzle-orm": "^0.41.0",
+    "hono": "^4.7.0",
+    "superjson": "^2.2.0",
+    "zod": "^3.24.0"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20250224.0",
+    "drizzle-kit": "^0.31.4",
+    "typescript": "^5.7.0",
+    "wrangler": "^3.109.0"
+  }
+}

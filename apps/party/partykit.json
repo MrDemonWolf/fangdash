@@ -1,0 +1,5 @@
+{
+  "name": "fangdash",
+  "main": "src/race-server.ts",
+  "compatibilityDate": "2025-02-24"
+}

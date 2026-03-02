@@ -1,0 +1,9 @@
+@import "tailwindcss";
+
+:root {
+  --color-fang-orange: #ff6b2b;
+  --color-fang-dark: #1a1a2e;
+  --color-fang-darker: #0f0f1a;
+  --color-fang-purple: #6c3fa0;
+  --color-fang-gold: #ffd700;
+}
