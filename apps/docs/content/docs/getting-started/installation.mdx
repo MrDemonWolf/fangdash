@@ -1,0 +1,82 @@
+---
+title: Developer Setup
+description: Set up FangDash for local development.
+---
+
+This guide is for developers who want to run FangDash locally or contribute to the project.
+
+## Prerequisites
+
+- Node.js 20 or higher
+- pnpm 10.x (run `corepack enable` to install)
+- A Cloudflare account (for D1 database)
+- A Twitch Developer application (for OAuth)
+
+## Clone and Install
+
+```bash
+git clone https://github.com/MrDemonWolf/fangdash.git
+cd fangdash
+pnpm install
+```
+
+## Set Up the Database
+
+Create a Cloudflare D1 database:
+
+```bash
+cd apps/api
+npx wrangler d1 create fangdash-db
+```
+
+Copy the database ID from the output and update `apps/api/wrangler.toml`.
+
+Run migrations:
+
+```bash
+npx wrangler d1 migrations apply fangdash-db --local
+```
+
+## Configure Environment Variables
+
+Copy the example files:
+
+```bash
+cp apps/api/.dev.vars.example apps/api/.dev.vars
+cp apps/web/.env.local.example apps/web/.env.local
+```
+
+Fill in `apps/api/.dev.vars`:
+
+```
+BETTER_AUTH_SECRET=your-secret-here
+BETTER_AUTH_URL=http://localhost:8787
+TWITCH_CLIENT_ID=your-twitch-client-id
+TWITCH_CLIENT_SECRET=your-twitch-client-secret
+```
+
+Fill in `apps/web/.env.local`:
+
+```
+NEXT_PUBLIC_API_URL=http://localhost:8787
+```
+
+## Start Development
+
+```bash
+pnpm dev
+```
+
+The web app runs at `http://localhost:3000` and the API at `http://localhost:8787`.
+
+## Available Scripts
+
+| Command | Description |
+| --- | --- |
+| `pnpm dev` | Start all apps in development mode |
+| `pnpm build` | Build all packages and apps |
+| `pnpm test` | Run all tests with Vitest |
+| `pnpm test:coverage` | Run tests with coverage report |
+| `pnpm type-check` | Type-check all packages |
+| `pnpm lint` | Lint all packages |
+| `pnpm clean` | Remove all build artifacts |

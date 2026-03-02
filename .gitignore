@@ -30,3 +30,7 @@ Thumbs.db
 
 # PartyKit
 .partykit/
+
+# Fumadocs
+.source/
+out/
