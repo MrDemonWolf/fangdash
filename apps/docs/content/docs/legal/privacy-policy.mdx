@@ -18,8 +18,9 @@ When you sign in with Twitch OAuth, we receive and store:
 - Your Twitch username (display name)
 - Your Twitch user ID (unique identifier)
 - Your Twitch profile avatar URL
+- Your email address (provided by Twitch during authentication)
 
-We do **not** access your email address, follower list, subscription status, stream data, or any other Twitch data beyond basic profile information required for authentication.
+We do **not** access your follower list, subscription status, stream data, or any other Twitch data beyond basic profile information required for authentication.
 
 ### Game Data
 
@@ -87,7 +88,7 @@ FangDash integrates with the following third-party services:
 | --- | --- | --- | --- |
 | Twitch | Authentication (OAuth) | Username, user ID, avatar | [Twitch Privacy Notice](https://www.twitch.tv/p/en/legal/privacy-notice/) |
 | Cloudflare | Hosting, CDN, database (D1), DDoS protection | All request data (processed, not stored by us) | [Cloudflare Privacy Policy](https://www.cloudflare.com/privacypolicy/) |
-| Google Analytics | Usage analytics | Anonymized usage data, device info | [Google Privacy Policy](https://policies.google.com/privacy) |
+| Google Analytics | Usage analytics | Pseudonymized usage data, device info | [Google Privacy Policy](https://policies.google.com/privacy) |
 | PartyKit | Real-time multiplayer WebSockets | Player positions, game state during races | [PartyKit Privacy Policy](https://www.partykit.io/privacy) |
 | Better Auth | Authentication framework | Session tokens, user identity | Self-hosted (no external data sharing) |
 
@@ -117,7 +118,7 @@ We share data only in these limited circumstances:
 
 - **Twitch** — Authentication only (OAuth token exchange)
 - **Cloudflare** — Infrastructure provider (processes requests to serve the application)
-- **Google** — Anonymized analytics data via Google Analytics
+- **Google** — Pseudonymized analytics data via Google Analytics
 - **PartyKit** — Real-time game state during multiplayer races
 - **Legal compliance** — We may disclose information if required by law, legal process, or government request
 
@@ -128,7 +129,7 @@ You have the following rights regarding your data:
 - **Access** — View your profile, scores, achievements, and skins in-game at any time
 - **Correction** — Your Twitch username and avatar update automatically when you change them on Twitch
 - **Deletion** — Contact us via Discord to request complete account and data deletion. We will process deletion requests within 30 days
-- **Analytics opt-out** — Install the [Google Analytics Opt-out Browser Add-on](https://tools.google.com/dlpage/gaoptout) or use your browser's Do Not Track setting
+- **Analytics opt-out** — Install the [Google Analytics Opt-out Browser Add-on](https://tools.google.com/dlpage/gaoptout) to prevent Google Analytics from collecting your data
 - **Cookie control** — You can manage cookies through your browser settings. Note that disabling essential cookies will prevent you from signing in
 
 ### For EEA/UK Residents (GDPR)

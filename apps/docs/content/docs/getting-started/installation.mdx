@@ -25,7 +25,6 @@ pnpm install
 Create a Cloudflare D1 database:
 
 ```bash
-cd apps/api
 npx wrangler d1 create fangdash-db
 ```
 
@@ -39,7 +38,7 @@ npx wrangler d1 migrations apply fangdash-db --local
 
 ## Configure Environment Variables
 
-Copy the example files:
+Copy the example files (run from the repo root):
 
 ```bash
 cp apps/api/.dev.vars.example apps/api/.dev.vars
