@@ -1,0 +1,19 @@
+{
+  "name": "@fangdash/party",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "partykit dev",
+    "deploy": "partykit deploy",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@fangdash/shared": "workspace:*",
+    "partysocket": "^1.0.0"
+  },
+  "devDependencies": {
+    "partykit": "^0.0.111",
+    "typescript": "^5.7.0"
+  }
+}

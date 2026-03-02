@@ -1,0 +1,12 @@
+name = "fangdash-api"
+main = "src/index.ts"
+compatibility_date = "2025-02-24"
+compatibility_flags = ["nodejs_compat"]
+
+[[d1_databases]]
+binding = "DB"
+database_name = "fangdash-db"
+database_id = "055d576a-fd5a-4ba3-a0ac-3c5cb3fa1355"
+
+[vars]
+ENVIRONMENT = "development"

@@ -1,0 +1,30 @@
+{
+  "name": "fangdash",
+  "private": true,
+  "scripts": {
+    "dev": "turbo dev",
+    "build": "turbo build",
+    "lint": "turbo lint",
+    "type-check": "turbo type-check",
+    "clean": "turbo clean",
+    "ship": "pnpm ship:api && pnpm ship:web",
+    "ship:api": "pnpm --filter @fangdash/api run deploy",
+    "ship:web": "pnpm --filter @fangdash/web run deploy",
+    "ship:party": "pnpm --filter @fangdash/party run deploy"
+  },
+  "devDependencies": {
+    "turbo": "^2.4.0",
+    "typescript": "^5.7.0"
+  },
+  "packageManager": "pnpm@10.30.3",
+  "engines": {
+    "node": ">=20"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild",
+      "workerd",
+      "sharp"
+    ]
+  }
+}
