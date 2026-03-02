@@ -9,10 +9,31 @@ type AuthBindings = {
   BETTER_AUTH_URL: string;
   TWITCH_CLIENT_ID: string;
   TWITCH_CLIENT_SECRET: string;
+  ENVIRONMENT?: string;
 };
 
+const REQUIRED_AUTH_KEYS = [
+  "BETTER_AUTH_SECRET",
+  "BETTER_AUTH_URL",
+  "TWITCH_CLIENT_ID",
+  "TWITCH_CLIENT_SECRET",
+] as const;
+
 export function createAuth(env: AuthBindings) {
+  const missing = REQUIRED_AUTH_KEYS.filter((k) => !env[k]);
+  if (missing.length > 0) {
+    throw new Error(`Missing required auth env vars: ${missing.join(", ")}`);
+  }
+  if (!env.DB) {
+    throw new Error("Missing required D1 database binding: DB");
+  }
+
   const db = drizzle(env.DB, { schema });
+
+  const isDev = env.ENVIRONMENT !== "production";
+  const trustedOrigins = isDev
+    ? ["http://localhost:3000", "https://fangdash.mrdemonwolf.workers.dev"]
+    : ["https://fangdash.mrdemonwolf.workers.dev"];
 
   return betterAuth({
     database: drizzleAdapter(db, {
@@ -50,7 +71,7 @@ export function createAuth(env: AuthBindings) {
         maxAge: 5 * 60,
       },
     },
-    trustedOrigins: ["http://localhost:3000", "https://fangdash.mrdemonwolf.workers.dev"],
+    trustedOrigins,
   });
 }
 
