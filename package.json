@@ -6,6 +6,8 @@
     "build": "turbo build",
     "lint": "turbo lint",
     "type-check": "turbo type-check",
+    "test": "turbo test",
+    "test:coverage": "turbo test -- --coverage",
     "clean": "turbo clean",
     "ship": "pnpm ship:api && pnpm ship:web && pnpm ship:party",
     "ship:api": "pnpm --filter @fangdash/api run deploy",
@@ -13,8 +15,10 @@
     "ship:party": "pnpm --filter @fangdash/party run deploy"
   },
   "devDependencies": {
+    "@vitest/coverage-v8": "^4.0.18",
     "turbo": "^2.4.0",
-    "typescript": "^5.7.0"
+    "typescript": "^5.7.0",
+    "vitest": "^4.0.18"
   },
   "packageManager": "pnpm@10.30.3",
   "engines": {

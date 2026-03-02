@@ -10,6 +10,7 @@
     "build": "wrangler deploy --dry-run",
     "deploy": "wrangler deploy",
     "type-check": "tsc --noEmit",
+    "test": "vitest run",
     "clean": "rm -rf dist .wrangler"
   },
   "dependencies": {
