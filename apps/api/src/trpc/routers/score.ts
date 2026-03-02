@@ -1,0 +1,103 @@
+import { z } from "zod";
+import { eq, desc, sql } from "drizzle-orm";
+import { router, protectedProcedure, publicProcedure } from "../trpc";
+import { score, player, user } from "../../db/schema";
+import { ensurePlayer } from "../../lib/ensure-player";
+
+const MAX_SCORE_PER_SECOND = 15;
+
+export const scoreRouter = router({
+  submit: protectedProcedure
+    .input(
+      z.object({
+        score: z.number().int().min(0),
+        distance: z.number().min(0),
+        obstaclesCleared: z.number().int().min(0),
+        duration: z.number().int().min(0),
+        seed: z.string().min(1),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      // Anti-cheat: reject impossible scores
+      const maxAllowedScore = (input.duration / 1000) * MAX_SCORE_PER_SECOND;
+      if (input.score > maxAllowedScore) {
+        throw new Error("Score exceeds maximum allowed rate");
+      }
+
+      const playerRecord = await ensurePlayer(ctx.db, ctx.user.id);
+      if (!playerRecord) throw new Error("Failed to create player");
+
+      const now = new Date();
+      const scoreId = crypto.randomUUID();
+
+      await ctx.db.insert(score).values({
+        id: scoreId,
+        playerId: playerRecord.id,
+        score: input.score,
+        distance: input.distance,
+        obstaclesCleared: input.obstaclesCleared,
+        duration: input.duration,
+        seed: input.seed,
+        createdAt: now,
+      });
+
+      // Update player aggregate stats
+      await ctx.db
+        .update(player)
+        .set({
+          totalScore: sql`${player.totalScore} + ${input.score}`,
+          totalDistance: sql`${player.totalDistance} + ${input.distance}`,
+          totalObstaclesCleared: sql`${player.totalObstaclesCleared} + ${input.obstaclesCleared}`,
+          gamesPlayed: sql`${player.gamesPlayed} + 1`,
+          updatedAt: now,
+        })
+        .where(eq(player.id, playerRecord.id));
+
+      return { scoreId };
+    }),
+
+  leaderboard: publicProcedure
+    .input(
+      z
+        .object({
+          limit: z.number().int().min(1).max(100).default(50),
+        })
+        .optional()
+    )
+    .query(async ({ ctx, input }) => {
+      const limit = input?.limit ?? 50;
+
+      const rows = await ctx.db
+        .select({
+          scoreId: score.id,
+          score: score.score,
+          distance: score.distance,
+          playerId: player.id,
+          username: user.name,
+          skinId: player.equippedSkinId,
+          createdAt: score.createdAt,
+        })
+        .from(score)
+        .innerJoin(player, eq(score.playerId, player.id))
+        .innerJoin(user, eq(player.userId, user.id))
+        .orderBy(desc(score.score))
+        .limit(limit);
+
+      return rows.map((row, index) => ({
+        rank: index + 1,
+        ...row,
+      }));
+    }),
+
+  myScores: protectedProcedure.query(async ({ ctx }) => {
+    const playerRecord = await ensurePlayer(ctx.db, ctx.user.id);
+    if (!playerRecord) return [];
+
+    return ctx.db
+      .select()
+      .from(score)
+      .where(eq(score.playerId, playerRecord.id))
+      .orderBy(desc(score.score))
+      .limit(20);
+  }),
+});

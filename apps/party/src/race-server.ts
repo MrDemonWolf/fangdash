@@ -29,7 +29,12 @@ export default class RaceServer implements Party.Server {
   }
 
   onMessage(message: string, sender: Party.Connection) {
-    const msg: ClientMessage = JSON.parse(message);
+    let msg: ClientMessage;
+    try {
+      msg = JSON.parse(message);
+    } catch {
+      return;
+    }
 
     switch (msg.type) {
       case "join":
@@ -57,8 +62,9 @@ export default class RaceServer implements Party.Server {
   }
 
   private handleJoin(conn: Party.Connection, payload: { username: string; skinId: string }) {
-    if (this.room.players.length >= MAX_PLAYERS_PER_RACE) return;
+    if (this.room.players.some((p) => p.id === conn.id)) return;
     if (this.room.status !== "waiting") return;
+    if (this.room.players.length >= MAX_PLAYERS_PER_RACE) return;
 
     const player: RacePlayer = {
       id: conn.id,
@@ -95,6 +101,7 @@ export default class RaceServer implements Party.Server {
   }
 
   private handleUpdate(conn: Party.Connection, payload: { distance: number; score: number }) {
+    if (this.room.status !== "racing") return;
     const player = this.room.players.find((p) => p.id === conn.id);
     if (!player || !player.alive) return;
 
@@ -108,6 +115,7 @@ export default class RaceServer implements Party.Server {
   }
 
   private handleDied(conn: Party.Connection) {
+    if (this.room.status !== "racing") return;
     const player = this.room.players.find((p) => p.id === conn.id);
     if (!player) return;
 
