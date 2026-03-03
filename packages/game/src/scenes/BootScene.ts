@@ -49,6 +49,8 @@ export class BootScene extends Phaser.Scene {
   }
 
   create() {
-    this.scene.start("GameScene");
+    // Start whichever game scene is registered (RaceScene or GameScene)
+    const target = this.scene.get("RaceScene") ? "RaceScene" : "GameScene";
+    this.scene.start(target);
   }
 }

@@ -13,18 +13,18 @@ export type GameEventCallback = {
 };
 
 export class GameScene extends Phaser.Scene {
-  private player!: Player;
-  private spawner!: ObstacleSpawner;
-  private background!: ParallaxBackground;
-  private difficulty!: DifficultyScaler;
-  private scoreManager!: ScoreManager;
-  private ground!: Phaser.GameObjects.TileSprite;
-  private jumpKey!: Phaser.Input.Keyboard.Key;
-  private callbacks: GameEventCallback = {};
-  private running = false;
+  protected player!: Player;
+  protected spawner!: ObstacleSpawner;
+  protected background!: ParallaxBackground;
+  protected difficulty!: DifficultyScaler;
+  protected scoreManager!: ScoreManager;
+  protected ground!: Phaser.GameObjects.TileSprite;
+  protected jumpKey!: Phaser.Input.Keyboard.Key;
+  protected callbacks: GameEventCallback = {};
+  protected running = false;
 
-  constructor() {
-    super({ key: "GameScene" });
+  constructor(key = "GameScene") {
+    super({ key });
   }
 
   init(data: { callbacks?: GameEventCallback; skinKey?: string }) {
@@ -104,7 +104,7 @@ export class GameScene extends Phaser.Scene {
     this.callbacks.onStateUpdate?.(state);
   }
 
-  private startRun() {
+  protected startRun() {
     this.running = true;
     this.player.reset();
     this.spawner.reset();
@@ -113,7 +113,7 @@ export class GameScene extends Phaser.Scene {
     this.background.reset();
   }
 
-  private gameOver() {
+  protected gameOver() {
     this.running = false;
     this.player.die();
 
