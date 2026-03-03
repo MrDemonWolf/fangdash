@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import OnboardingOverlay from "@/components/game/OnboardingOverlay";
 import type { GameState } from "@fangdash/shared";
 import { useSession } from "@/lib/auth-client";
 import { useTRPC } from "@/lib/trpc";
@@ -175,6 +176,7 @@ export default function PlayPage() {
   const [gameOver, setGameOver] = useState(false);
   const [finalState, setFinalState] = useState<GameState | null>(null);
   const [finalElapsedTime, setFinalElapsedTime] = useState(0);
+  const [showOnboarding, setShowOnboarding] = useState<boolean | null>(null);
 
   const { data: session } = useSession();
   const isSignedIn = !!session?.user;
@@ -274,16 +276,31 @@ export default function PlayPage() {
     startTimer();
   }, [skinData?.skinId, handleGameOver, startTimer]);
 
-  // Start game on mount (wait for skin data if signed in)
+  // Check onboarding status on mount
+  useEffect(() => {
+    const done = localStorage.getItem("fangdash_onboarding_complete");
+    setShowOnboarding(done !== "true");
+  }, []);
+
+  const handleOnboardingComplete = useCallback(() => {
+    localStorage.setItem("fangdash_onboarding_complete", "true");
+    setShowOnboarding(false);
+  }, []);
+
+  // Start game on mount (wait for skin data if signed in, wait for onboarding)
   const hasInitialized = useRef(false);
   useEffect(() => {
     if (hasInitialized.current) return;
+    // Wait for onboarding check to complete
+    if (showOnboarding === null) return;
+    // Don't start if onboarding is showing
+    if (showOnboarding) return;
     // If signed in, wait for skin data before starting
     if (isSignedIn && !skinData) return;
 
     hasInitialized.current = true;
     startGame();
-  }, [isSignedIn, skinData, startGame]);
+  }, [isSignedIn, skinData, startGame, showOnboarding]);
 
   // Clean up on unmount
   useEffect(() => {
@@ -323,6 +340,11 @@ export default function PlayPage() {
           ref={containerRef}
           className="aspect-[4/3] w-full overflow-hidden rounded-xl border border-[#0FACED]/20"
         />
+
+        {/* Onboarding overlay */}
+        {showOnboarding && (
+          <OnboardingOverlay onComplete={handleOnboardingComplete} />
+        )}
 
         {/* Game Over modal */}
         {gameOver && finalState && (
