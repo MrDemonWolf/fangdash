@@ -16,12 +16,12 @@ describe("isSkinUnlocked", () => {
   });
 
   it("score-based skins unlock at threshold", () => {
-    const arcticWolf = SKINS.find((s) => s.id === "arctic-wolf")!;
+    const fireWolf = SKINS.find((s) => s.id === "fire-wolf")!;
     expect(
-      isSkinUnlocked(arcticWolf, { ...defaultStats, highestScore: 999 })
+      isSkinUnlocked(fireWolf, { ...defaultStats, highestScore: 4999 })
     ).toBe(false);
     expect(
-      isSkinUnlocked(arcticWolf, { ...defaultStats, highestScore: 1000 })
+      isSkinUnlocked(fireWolf, { ...defaultStats, highestScore: 5000 })
     ).toBe(true);
   });
 
@@ -35,31 +35,21 @@ describe("isSkinUnlocked", () => {
     ).toBe(true);
   });
 
-  it("games_played skins unlock at count", () => {
-    const timberWolf = SKINS.find((s) => s.id === "timber-wolf")!;
-    expect(
-      isSkinUnlocked(timberWolf, { ...defaultStats, gamesPlayed: 4 })
-    ).toBe(false);
-    expect(
-      isSkinUnlocked(timberWolf, { ...defaultStats, gamesPlayed: 5 })
-    ).toBe(true);
-  });
-
   it("achievement-based skins unlock when achievement is earned", () => {
-    const frostWolf = SKINS.find((s) => s.id === "frost-wolf")!;
-    expect(isSkinUnlocked(frostWolf, defaultStats)).toBe(false);
+    const stormWolf = SKINS.find((s) => s.id === "storm-wolf")!;
+    expect(isSkinUnlocked(stormWolf, defaultStats)).toBe(false);
     expect(
-      isSkinUnlocked(frostWolf, {
+      isSkinUnlocked(stormWolf, {
         ...defaultStats,
-        achievementIds: new Set(["marathon-runner"]),
+        achievementIds: new Set(["obstacle-master"]),
       })
     ).toBe(true);
   });
 
-  it("alpha-wolf unlocks with champion achievement", () => {
-    const alphaWolf = SKINS.find((s) => s.id === "alpha-wolf")!;
+  it("mrdemonwolf unlocks with champion achievement", () => {
+    const mrdemonwolf = SKINS.find((s) => s.id === "mrdemonwolf")!;
     expect(
-      isSkinUnlocked(alphaWolf, {
+      isSkinUnlocked(mrdemonwolf, {
         ...defaultStats,
         achievementIds: new Set(["champion"]),
       })
