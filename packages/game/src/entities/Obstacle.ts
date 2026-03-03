@@ -19,6 +19,8 @@ const OBSTACLE_CONFIGS: Record<ObstacleType, { width: number; height: number }> 
   spike: { width: 20, height: 40 },
 };
 
+const OBSTACLE_SCALE = 2;
+
 export class Obstacle {
   sprite: Phaser.GameObjects.Sprite;
   type: ObstacleType;
@@ -30,16 +32,31 @@ export class Obstacle {
     this.config = OBSTACLE_CONFIGS[type];
     this.sprite = scene.add.sprite(-100, 0, `obstacle-${type}`);
     this.sprite.setOrigin(0.5, 1);
+    this.sprite.setScale(OBSTACLE_SCALE);
+    this.applyNearestFilter();
     this.sprite.setVisible(false);
   }
 
   get bounds(): Phaser.Geom.Rectangle {
+    const scaledW = this.config.width * OBSTACLE_SCALE;
+    const scaledH = this.config.height * OBSTACLE_SCALE;
     return new Phaser.Geom.Rectangle(
-      this.sprite.x - this.config.width / 2 + 2,
-      this.sprite.y - this.config.height + 2,
-      this.config.width - 4,
-      this.config.height - 4
+      this.sprite.x - scaledW / 2 + 2,
+      this.sprite.y - scaledH + 2,
+      scaledW - 4,
+      scaledH - 4
     );
+  }
+
+  setType(type: ObstacleType) {
+    this.type = type;
+    this.config = OBSTACLE_CONFIGS[type];
+    this.sprite.setTexture(`obstacle-${type}`);
+    this.applyNearestFilter();
+  }
+
+  private applyNearestFilter() {
+    this.sprite.texture.setFilter(Phaser.Textures.FilterMode.NEAREST);
   }
 
   spawn(x?: number) {
@@ -109,8 +126,7 @@ export class ObstacleSpawner {
     if (!inactive) return;
 
     const type = OBSTACLE_TYPES[Phaser.Math.Between(0, OBSTACLE_TYPES.length - 1)];
-    inactive.type = type;
-    inactive.sprite.setTexture(`obstacle-${type}`);
+    inactive.setType(type);
     inactive.spawn();
   }
 

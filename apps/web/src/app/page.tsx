@@ -2,57 +2,80 @@ import Image from "next/image";
 import Link from "next/link";
 import { Gamepad2, Users, Paintbrush, Trophy } from "lucide-react";
 import { HeroCTA } from "./_components/hero-cta";
+import { HeroBackground } from "./_components/hero-background";
 
 const features = [
   {
     icon: Gamepad2,
     title: "Solo Play",
+    color: "bg-cyan-500/20",
     description:
-      "Endless runner action — dodge obstacles, collect power-ups, and beat your high score.",
+      "Endless runner action — dodge obstacles, rack up combos, and chase your personal best across infinite procedural terrain.",
   },
   {
     icon: Users,
     title: "Multiplayer Racing",
+    color: "bg-violet-500/20",
     description:
-      "Challenge friends in real-time races and climb the leaderboard.",
+      "Challenge friends in real-time ghost races and climb the global leaderboard to prove you're the fastest wolf.",
   },
   {
     icon: Paintbrush,
     title: "Wolf Skins",
+    color: "bg-orange-500/20",
     description:
-      "Unlock and equip unique wolf skins to stand out on the track.",
+      "Unlock 6 unique wolf skins by hitting milestones — from Arctic White to the legendary Demon Wolf.",
   },
   {
     icon: Trophy,
     title: "Achievements",
+    color: "bg-yellow-500/20",
     description:
-      "Track milestones, complete challenges, and earn rewards as you play.",
+      "Complete 12+ challenges, earn XP, and collect rewards that showcase your mastery on your profile.",
   },
 ] as const;
+
+const stats = [
+  { value: "6", label: "Wolf Skins" },
+  { value: "5", label: "Difficulty Levels" },
+  { value: "4", label: "Obstacle Types" },
+  { value: "\u221E", label: "Endless Runs" },
+];
 
 export default function Home() {
   return (
     <main className="flex min-h-screen flex-col">
       {/* Hero */}
-      <section className="flex flex-1 flex-col items-center justify-center gap-8 bg-[#091533] px-4 py-24 text-center sm:py-32">
-        <Image
-          src="/wolves/wolf-mrdemonwolf.png"
-          alt="FangDash wolf mascot"
-          width={180}
-          height={180}
-          priority
-          className="drop-shadow-[0_0_32px_rgba(15,172,237,0.35)]"
-        />
+      <section className="relative flex flex-1 flex-col items-center justify-center gap-8 bg-[#091533] px-4 py-24 text-center sm:py-32">
+        <HeroBackground />
 
-        <h1 className="text-5xl font-extrabold tracking-tight text-white sm:text-7xl">
-          Fang<span className="text-[var(--color-fang-orange)]">Dash</span>
-        </h1>
+        <div className="relative z-10 flex flex-col items-center gap-8">
+          {/* Badge */}
+          <span className="rounded-full border border-[#0FACED]/30 bg-[#0FACED]/10 px-4 py-1.5 text-sm font-medium text-[#0FACED]">
+            Free-to-play on any browser
+          </span>
 
-        <p className="max-w-md text-lg text-gray-300 sm:text-xl">
-          Race as wolves in this multiplayer endless runner!
-        </p>
+          <Image
+            src="/wolves/wolf-mrdemonwolf.png"
+            alt="FangDash wolf mascot"
+            width={256}
+            height={256}
+            priority
+            className="animate-float drop-shadow-[0_0_48px_rgba(15,172,237,0.4)]"
+            style={{ imageRendering: "pixelated" }}
+          />
 
-        <HeroCTA />
+          <h1 className="text-6xl font-extrabold tracking-tight text-white sm:text-8xl">
+            Fang<span className="text-[var(--color-fang-orange)]">Dash</span>
+          </h1>
+
+          <p className="max-w-lg text-lg text-gray-300 sm:text-xl">
+            Sprint, jump, and dash as pixel-art wolves in this multiplayer
+            endless runner. Play solo or race friends — no download required.
+          </p>
+
+          <HeroCTA />
+        </div>
       </section>
 
       {/* Features */}
@@ -63,12 +86,16 @@ export default function Home() {
           </h2>
 
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {features.map(({ icon: Icon, title, description }) => (
+            {features.map(({ icon: Icon, title, description, color }) => (
               <div
                 key={title}
-                className="rounded-xl border border-[#0FACED]/20 bg-[#091533] p-6 transition-colors hover:border-[#0FACED]/50"
+                className="group rounded-xl border border-[#0FACED]/20 bg-[#091533] p-6 transition-all hover:border-[#0FACED]/50 hover:shadow-[0_0_24px_rgba(15,172,237,0.15)]"
               >
-                <Icon className="mb-4 h-10 w-10 text-[#0FACED]" />
+                <div
+                  className={`mb-4 flex h-14 w-14 items-center justify-center rounded-full ${color}`}
+                >
+                  <Icon className="h-7 w-7 text-[#0FACED]" />
+                </div>
                 <h3 className="mb-2 text-lg font-semibold text-white">
                   {title}
                 </h3>
@@ -78,6 +105,20 @@ export default function Home() {
               </div>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* Stats */}
+      <section className="bg-[#091533] px-4 py-16 sm:py-20">
+        <div className="mx-auto grid max-w-4xl grid-cols-2 gap-8 sm:grid-cols-4">
+          {stats.map(({ value, label }) => (
+            <div key={label} className="text-center">
+              <p className="text-4xl font-extrabold text-[#0FACED] sm:text-5xl">
+                {value}
+              </p>
+              <p className="mt-2 text-sm text-gray-400">{label}</p>
+            </div>
+          ))}
         </div>
       </section>
 
