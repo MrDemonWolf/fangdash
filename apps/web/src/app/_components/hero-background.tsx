@@ -1,6 +1,6 @@
 export function HeroBackground() {
   return (
-    <div className="absolute inset-0 overflow-hidden" aria-hidden="true">
+    <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
       {/* Sky layer — slowest */}
       <div
         className="absolute inset-0 animate-scroll-slow bg-repeat-x"

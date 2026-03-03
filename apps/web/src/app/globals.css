@@ -60,3 +60,16 @@
 @utility animate-float {
   animation: float 3s ease-in-out infinite;
 }
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-scroll-slow,
+  .animate-scroll-medium,
+  .animate-scroll-fast {
+    animation: none;
+  }
+
+  .animate-float {
+    animation: none;
+    transform: none;
+  }
+}

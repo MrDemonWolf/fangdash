@@ -37,11 +37,13 @@ export class Player {
   }
 
   get bounds(): Phaser.Geom.Rectangle {
+    const insetX = 4 * this.sprite.scaleX;
+    const insetY = 4 * this.sprite.scaleY;
     return new Phaser.Geom.Rectangle(
-      this.sprite.x - this.sprite.displayWidth / 2 + 4,
-      this.sprite.y - this.sprite.displayHeight + 4,
-      this.sprite.displayWidth - 8,
-      this.sprite.displayHeight - 8
+      this.sprite.x - this.sprite.displayWidth / 2 + insetX,
+      this.sprite.y - this.sprite.displayHeight + insetY,
+      this.sprite.displayWidth - insetX * 2,
+      this.sprite.displayHeight - insetY * 2
     );
   }
 
@@ -94,5 +96,6 @@ export class Player {
 
   setSkin(key: string) {
     this.sprite.setTexture(key);
+    this.sprite.texture.setFilter(Phaser.Textures.FilterMode.NEAREST);
   }
 }

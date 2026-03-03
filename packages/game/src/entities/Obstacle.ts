@@ -33,7 +33,7 @@ export class Obstacle {
     this.sprite = scene.add.sprite(-100, 0, `obstacle-${type}`);
     this.sprite.setOrigin(0.5, 1);
     this.sprite.setScale(OBSTACLE_SCALE);
-    this.sprite.texture.setFilter(Phaser.Textures.FilterMode.NEAREST);
+    this.applyNearestFilter();
     this.sprite.setVisible(false);
   }
 
@@ -52,6 +52,10 @@ export class Obstacle {
     this.type = type;
     this.config = OBSTACLE_CONFIGS[type];
     this.sprite.setTexture(`obstacle-${type}`);
+    this.applyNearestFilter();
+  }
+
+  private applyNearestFilter() {
     this.sprite.texture.setFilter(Phaser.Textures.FilterMode.NEAREST);
   }
 
