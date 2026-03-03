@@ -6,36 +6,37 @@ import "./globals.css";
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
+  viewportFit: "cover",
   themeColor: "#091533",
 };
 
 export const metadata: Metadata = {
-  title: "FangDash — Multiplayer Wolf Runner",
-  description: "Race as wolves in this multiplayer endless runner!",
+  title: "FangDash",
+  description:
+    "A multiplayer endless runner where players race as wolves on Twitch.",
   manifest: "/manifest.json",
+  themeColor: "#091533",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
     title: "FangDash",
   },
   openGraph: {
-    title: "FangDash — Multiplayer Wolf Runner",
-    description: "Race as wolves in this multiplayer endless runner!",
-    url: "/",
-    siteName: "FangDash",
-    images: [
-      {
-        url: "/og-image.png",
-        width: 1200,
-        height: 630,
-        alt: "FangDash — Multiplayer Wolf Runner",
-      },
-    ],
+    title: "FangDash",
+    description:
+      "A multiplayer endless runner where players race as wolves on Twitch.",
     type: "website",
+    siteName: "FangDash",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "FangDash",
+    description:
+      "A multiplayer endless runner where players race as wolves on Twitch.",
   },
   icons: {
     icon: "/favicon.ico",
-    apple: "/icon-192.png",
+    apple: "/icons/icon-192.png",
   },
 };
 
