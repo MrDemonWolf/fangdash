@@ -20,6 +20,8 @@ export class Player {
     this.scene = scene;
     this.sprite = scene.add.sprite(PLAYER_START_X, GROUND_Y - 20, skinKey);
     this.sprite.setOrigin(0.5, 1);
+    this.sprite.setScale(3);
+    this.sprite.texture.setFilter(Phaser.Textures.FilterMode.NEAREST);
   }
 
   get alive() {
@@ -36,10 +38,10 @@ export class Player {
 
   get bounds(): Phaser.Geom.Rectangle {
     return new Phaser.Geom.Rectangle(
-      this.sprite.x - this.sprite.width / 2 + 4,
-      this.sprite.y - this.sprite.height + 4,
-      this.sprite.width - 8,
-      this.sprite.height - 8
+      this.sprite.x - this.sprite.displayWidth / 2 + 4,
+      this.sprite.y - this.sprite.displayHeight + 4,
+      this.sprite.displayWidth - 8,
+      this.sprite.displayHeight - 8
     );
   }
 

@@ -324,8 +324,8 @@ export default function PlayPage() {
   }, [startGame]);
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center bg-[#091533]">
-      <div className="relative w-full max-w-[800px]">
+    <main className="flex flex-col bg-[#091533]">
+      <div className="relative w-full h-[calc(100vh-64px)]">
         {/* HUD overlay */}
         {!gameOver && (
           <GameHUD
@@ -338,7 +338,7 @@ export default function PlayPage() {
         {/* Game canvas container */}
         <div
           ref={containerRef}
-          className="aspect-[4/3] w-full overflow-hidden rounded-xl border border-[#0FACED]/20"
+          className="w-full h-full overflow-hidden"
         />
 
         {/* Onboarding overlay */}
