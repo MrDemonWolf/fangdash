@@ -1,62 +1,107 @@
 import Link from "next/link";
+import { Gamepad2, Swords, Trophy, Tv } from "lucide-react";
+
+function Copyright() {
+  return <>{new Date().getFullYear()}</>;
+}
 
 export default function HomePage() {
   return (
-    <main className="flex flex-1 flex-col items-center justify-center px-4 py-16 text-center">
-      <h1 className="mb-4 text-5xl font-bold tracking-tight">FangDash</h1>
-      <p className="mb-2 max-w-xl text-lg text-fd-muted-foreground">
-        A fast-paced multiplayer endless runner where players race as wolves,
-        dodging obstacles and competing for the highest score.
-      </p>
-      <p className="mb-8 text-sm text-fd-muted-foreground">
-        Built for Twitch streamers and their communities.
-      </p>
+    <main className="flex flex-1 flex-col">
+      {/* Hero */}
+      <section className="flex flex-col items-center justify-center px-4 py-24 text-center">
+        <h1 className="mb-4 text-5xl font-extrabold tracking-tight sm:text-6xl">
+          Dash. Race. <span className="text-[#0FACED]">Dominate.</span>
+        </h1>
+        <p className="mb-8 max-w-xl text-lg text-fd-muted-foreground">
+          A fast-paced multiplayer endless runner where players race as wolves,
+          dodging obstacles and competing for the highest score. Built for Twitch
+          streamers and their communities.
+        </p>
 
-      <div className="flex gap-4">
-        <Link
-          href="/docs"
-          className="rounded-lg bg-fd-primary px-6 py-3 font-medium text-fd-primary-foreground transition-colors hover:bg-fd-primary/90"
-        >
-          Read the Docs
-        </Link>
-        <Link
-          href="https://fangdash.mrdemonwolf.workers.dev"
-          className="rounded-lg border border-fd-border px-6 py-3 font-medium transition-colors hover:bg-fd-accent"
-        >
-          Play Now
-        </Link>
-      </div>
+        <div className="flex flex-wrap justify-center gap-4">
+          <Link
+            href="/docs"
+            className="rounded-lg bg-[#0FACED] px-6 py-3 font-semibold text-[#091533] transition-colors hover:bg-[#0FACED]/80"
+          >
+            Get Started
+          </Link>
+          <Link
+            href="/docs"
+            className="rounded-lg border border-fd-border px-6 py-3 font-semibold transition-colors hover:bg-fd-accent"
+          >
+            Documentation
+          </Link>
+          <Link
+            href="https://github.com/MrDemonWolf/fangdash"
+            className="inline-flex items-center gap-2 rounded-lg border border-fd-border px-6 py-3 font-semibold transition-colors hover:bg-fd-accent"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              className="h-5 w-5 fill-current"
+              aria-hidden="true"
+            >
+              <path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12" />
+            </svg>
+            GitHub
+          </Link>
+        </div>
+      </section>
 
-      <div className="mt-16 grid max-w-3xl gap-6 sm:grid-cols-3">
-        <div className="rounded-lg border border-fd-border p-6 text-left">
+      {/* Divider */}
+      <div className="mx-auto w-full max-w-4xl border-t border-fd-border" />
+
+      {/* Features */}
+      <section className="mx-auto grid w-full max-w-5xl gap-8 px-6 py-16 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="text-left">
+          <Gamepad2 className="mb-3 h-8 w-8 text-[#0FACED]" />
           <h3 className="mb-2 font-semibold">Endless Running</h3>
           <p className="text-sm text-fd-muted-foreground">
-            Jump, dodge, and dash through procedurally generated obstacle
-            courses as a wolf.
+            Jump, dodge, and dash through procedurally generated obstacle courses
+            as a wolf.
           </p>
         </div>
-        <div className="rounded-lg border border-fd-border p-6 text-left">
+        <div className="text-left">
+          <Swords className="mb-3 h-8 w-8 text-[#0FACED]" />
           <h3 className="mb-2 font-semibold">Multiplayer Racing</h3>
           <p className="text-sm text-fd-muted-foreground">
             Race up to 4 players in real-time using WebSocket-powered rooms.
           </p>
         </div>
-        <div className="rounded-lg border border-fd-border p-6 text-left">
+        <div className="text-left">
+          <Trophy className="mb-3 h-8 w-8 text-[#0FACED]" />
+          <h3 className="mb-2 font-semibold">Skins & Achievements</h3>
+          <p className="text-sm text-fd-muted-foreground">
+            Unlock 6 unique wolf skins and earn achievements through gameplay.
+          </p>
+        </div>
+        <div className="text-left">
+          <Tv className="mb-3 h-8 w-8 text-[#0FACED]" />
           <h3 className="mb-2 font-semibold">Twitch Integration</h3>
           <p className="text-sm text-fd-muted-foreground">
             Sign in with Twitch, race your chat, and show off your skins on
             stream.
           </p>
         </div>
-      </div>
+      </section>
 
-      <footer className="mt-16 text-xs text-fd-muted-foreground">
-        <p>Copyright FangWolf by MrDemonWolf, Inc.</p>
-        <div className="mt-2 flex gap-4 justify-center">
-          <Link href="/docs/legal/privacy-policy" className="hover:underline">
+      {/* Footer */}
+      <footer className="mt-auto border-t border-fd-border px-4 py-8 text-center text-sm text-fd-muted-foreground">
+        <p>
+          &copy; <Copyright /> DireWork by MrDemonWolf, Inc.
+        </p>
+        <div className="mt-2 flex items-center justify-center gap-1">
+          <Link
+            href="/docs/legal/privacy-policy"
+            className="hover:text-fd-foreground hover:underline"
+          >
             Privacy Policy
           </Link>
-          <Link href="/docs/legal/terms-of-service" className="hover:underline">
+          <span>&middot;</span>
+          <Link
+            href="/docs/legal/terms-of-service"
+            className="hover:text-fd-foreground hover:underline"
+          >
             Terms of Service
           </Link>
         </div>
