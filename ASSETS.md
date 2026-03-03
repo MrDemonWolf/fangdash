@@ -76,3 +76,54 @@ apps/web/public/assets/
 - `ground.png` should tile seamlessly when repeated horizontally
 - Wolf sprites will eventually support animation (sprite sheets), but single frames work for MVP
 - Placeholder graphics are fine until the polish phase (Day 6)
+
+---
+
+## Logo & Icon Design Brief
+
+### Concept
+
+A stylized wolf fang/tooth combined with a speed/dash element. The wolf theme should be prominent but not childish — modern, slightly playful, and game-appropriate for a 13+ audience.
+
+### Color Palette
+
+| Color        | Hex       | Usage                        |
+| ------------ | --------- | ---------------------------- |
+| Deep Navy    | `#091533` | Primary background           |
+| Cyan         | `#0FACED` | Accents, highlights          |
+| Fang Orange  | `#FF6B2B` | Wolf fang, CTA elements      |
+| Gold         | `#FFD700` | Achievements, premium feel   |
+
+### Required Icon Assets
+
+#### Favicon
+
+- `favicon.ico` — multi-resolution (16x16, 32x32, 48x48)
+
+#### PWA Icons
+
+- `apps/web/public/icon-192.png` — 192x192 PNG
+- `apps/web/public/icon-512.png` — 512x512 PNG
+
+#### Open Graph Image
+
+- `apps/web/public/og-image.png` — 1200x630 PNG
+- Should include the FangDash logo, tagline ("Multiplayer Wolf Runner"), and brand colors
+
+### Style Direction
+
+- **Modern and clean** with sharp edges evoking speed and wolf fangs
+- **Slightly playful** but not cartoonish — think competitive gaming, not children's game
+- The fang shape can double as a forward-pointing arrow or speed streak
+- Negative space tricks are welcome (e.g., wolf silhouette formed by fang shapes)
+- Should be recognizable at small sizes (favicon) and large sizes (OG image)
+- Consider how the icon looks on both dark and light OS backgrounds
+
+### Placeholder Status
+
+The following files are currently **placeholders** and need real artwork:
+
+- `apps/web/public/favicon.ico`
+- `apps/web/public/icon-192.png`
+- `apps/web/public/icon-512.png`
+- `apps/web/public/og-image.png`
