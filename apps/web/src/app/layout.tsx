@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Providers } from "./providers";
+import { Navbar } from "@/components/ui/Navbar";
 import "./globals.css";
 
 export const viewport: Viewport = {
@@ -46,7 +47,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="bg-[var(--color-fang-darker)] text-white min-h-screen">
-        <Providers>{children}</Providers>
+        <Providers>
+          <Navbar />
+          {children}
+        </Providers>
       </body>
     </html>
   );
