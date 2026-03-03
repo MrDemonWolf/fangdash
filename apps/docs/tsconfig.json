@@ -11,19 +11,41 @@
     "declarationMap": false,
     "skipLibCheck": true,
     "paths": {
-      "@/*": ["./*"],
-      "@/.source": ["./.source"]
-    }
+      "@/*": [
+        "./*"
+      ],
+      "@/.source": [
+        "./.source"
+      ]
+    },
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
+    "allowJs": true,
+    "incremental": true,
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ]
   },
   "include": [
-    "next-env.d.ts",
+    "**/*.mjs",
     "app/**/*.ts",
     "app/**/*.tsx",
-    "source.config.ts",
     "lib/**/*.ts",
     "lib/**/*.tsx",
     "mdx-components.tsx",
-    "**/*.mjs"
+    "next-env.d.ts",
+    "source.config.ts",
+    ".next/types/**/*.ts"
   ],
-  "exclude": ["node_modules", ".next", "out", ".source"]
+  "exclude": [
+    "node_modules",
+    ".next",
+    "out",
+    ".source"
+  ]
 }

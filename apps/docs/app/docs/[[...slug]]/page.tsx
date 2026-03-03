@@ -18,10 +18,14 @@ export default async function Page({ params }: Props) {
   const page = source.getPage(slug);
   if (!page) notFound();
 
-  const MDX = page.data.body;
+  // fumadocs-mdx adds body/toc/full at runtime but the type is lost
+  // due to the files-function compatibility shim in lib/source.ts
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const data = page.data as any;
+  const MDX = data.body;
 
   return (
-    <DocsPage toc={page.data.toc} full={page.data.full}>
+    <DocsPage toc={data.toc} full={data.full}>
       <DocsTitle>{page.data.title}</DocsTitle>
       <DocsDescription>{page.data.description}</DocsDescription>
       <DocsBody>
