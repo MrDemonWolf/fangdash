@@ -6,30 +6,16 @@ import {
   type ObstacleType,
 } from "@fangdash/shared";
 
-export interface ObstacleConfig {
-  type: ObstacleType;
-  width: number;
-  height: number;
-}
-
-const OBSTACLE_CONFIGS: Record<ObstacleType, { width: number; height: number }> = {
-  rock: { width: 30, height: 30 },
-  log: { width: 50, height: 25 },
-  bush: { width: 35, height: 28 },
-  spike: { width: 20, height: 40 },
-};
-
 const OBSTACLE_SCALE = 2;
+const HITBOX_INSET = 4;
 
 export class Obstacle {
   sprite: Phaser.GameObjects.Sprite;
   type: ObstacleType;
   active = false;
-  private config: { width: number; height: number };
 
   constructor(scene: Phaser.Scene, type: ObstacleType) {
     this.type = type;
-    this.config = OBSTACLE_CONFIGS[type];
     this.sprite = scene.add.sprite(-100, 0, `obstacle-${type}`);
     this.sprite.setOrigin(0.5, 1);
     this.sprite.setScale(OBSTACLE_SCALE);
@@ -38,19 +24,18 @@ export class Obstacle {
   }
 
   get bounds(): Phaser.Geom.Rectangle {
-    const scaledW = this.config.width * OBSTACLE_SCALE;
-    const scaledH = this.config.height * OBSTACLE_SCALE;
+    const w = this.sprite.displayWidth;
+    const h = this.sprite.displayHeight;
     return new Phaser.Geom.Rectangle(
-      this.sprite.x - scaledW / 2 + 2,
-      this.sprite.y - scaledH + 2,
-      scaledW - 4,
-      scaledH - 4
+      this.sprite.x - w / 2 + HITBOX_INSET,
+      this.sprite.y - h + HITBOX_INSET,
+      w - HITBOX_INSET * 2,
+      h - HITBOX_INSET * 2
     );
   }
 
   setType(type: ObstacleType) {
     this.type = type;
-    this.config = OBSTACLE_CONFIGS[type];
     this.sprite.setTexture(`obstacle-${type}`);
     this.applyNearestFilter();
   }
