@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { createGame, destroyGame } from "@fangdash/game";
 import type { GameState } from "@fangdash/shared";
 import { useSession } from "@/lib/auth-client";
 import { useTRPC } from "@/lib/trpc";
@@ -160,7 +159,8 @@ function GameOverModal({
 // ---------------------------------------------------------------------------
 export default function PlayPage() {
   const containerRef = useRef<HTMLDivElement>(null);
-  const gameRef = useRef<Phaser.Game | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const gameRef = useRef<any>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const startTimeRef = useRef<number>(0);
 
@@ -237,8 +237,11 @@ export default function PlayPage() {
     [isSignedIn, stopTimer, submitScore]
   );
 
-  const startGame = useCallback(() => {
+  const startGame = useCallback(async () => {
     if (!containerRef.current) return;
+
+    // Dynamically import Phaser game (not available during SSR)
+    const { createGame, destroyGame } = await import("@fangdash/game");
 
     // Clean up previous game
     if (gameRef.current) {
@@ -287,8 +290,12 @@ export default function PlayPage() {
     return () => {
       stopTimer();
       if (gameRef.current) {
-        destroyGame(gameRef.current);
-        gameRef.current = null;
+        import("@fangdash/game").then(({ destroyGame }) => {
+          if (gameRef.current) {
+            destroyGame(gameRef.current);
+            gameRef.current = null;
+          }
+        });
       }
     };
   }, [stopTimer]);
