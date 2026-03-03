@@ -1,4 +1,5 @@
 import { betterAuth } from "better-auth";
+import { admin } from "better-auth/plugins";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { drizzle } from "drizzle-orm/d1";
 import * as schema from "../db/schema";
@@ -72,6 +73,11 @@ export function createAuth(env: AuthBindings) {
       },
     },
     trustedOrigins,
+    plugins: [
+      admin({
+        defaultRole: "user",
+      }),
+    ],
   });
 }
 

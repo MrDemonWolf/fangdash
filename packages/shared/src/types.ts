@@ -1,3 +1,6 @@
+// ── Roles ──
+export type UserRole = "user" | "admin" | "dev";
+
 // ── Player ──
 export interface Player {
   id: string;
