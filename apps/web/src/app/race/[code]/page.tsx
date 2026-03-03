@@ -3,13 +3,15 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import type { GameState, RacePlayer, RaceResult } from "@fangdash/shared";
+import type { GameState, RacePlayer, RaceResult, DebugState, DebugCommand } from "@fangdash/shared";
+import type { DebugChannel } from "@fangdash/game";
 import { useSession } from "@/lib/auth-client";
 import { useTRPC } from "@/lib/trpc";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { RaceConnection } from "@/lib/party";
 import { RaceResultModal } from "@/components/game/RaceResultModal";
 import { CountdownOverlay } from "@/components/game/CountdownOverlay";
+import DebugPanel from "@/components/game/DebugPanel";
 
 // ---------------------------------------------------------------------------
 // Inline GameHUD (matches the play page)
@@ -100,6 +102,10 @@ export default function RaceRoomPage() {
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const startTimeRef = useRef<number>(0);
 
+  // Debug
+  const [debugState, setDebugState] = useState<DebugState | null>(null);
+  const debugRef = useRef<DebugChannel | null>(null);
+
   // Refs
   const containerRef = useRef<HTMLDivElement>(null);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -160,7 +166,7 @@ export default function RaceRoomPage() {
 
       const connection = connectionRef.current;
 
-      const game = createRaceGame({
+      const { game, debug } = createRaceGame({
         parent: containerRef.current,
         skinKey: equippedSkin,
         seed,
@@ -175,9 +181,13 @@ export default function RaceRoomPage() {
         onPlayerDied: () => {
           connection?.sendDied();
         },
+        onDebugUpdate: (state) => {
+          setDebugState(state);
+        },
       });
 
       gameRef.current = game;
+      debugRef.current = debug;
       startTimer();
     },
     [equippedSkin, players, myId, handleGameOver, startTimer]
@@ -312,6 +322,11 @@ export default function RaceRoomPage() {
       }
     };
   }, [stopTimer]);
+
+  // ── Debug command handler ──
+  const handleDebugCommand = useCallback((command: DebugCommand) => {
+    debugRef.current?.sendCommand(command);
+  }, []);
 
   // ── Handlers ──
   const handleReady = () => {
@@ -463,6 +478,9 @@ export default function RaceRoomPage() {
             onRematch={handleRematch}
           />
         )}
+
+        {/* Debug Panel (dev/admin only, Ctrl+Shift+D) */}
+        <DebugPanel debugState={debugState} onSendCommand={handleDebugCommand} />
       </div>
     </main>
   );

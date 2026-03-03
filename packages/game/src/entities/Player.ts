@@ -32,6 +32,14 @@ export class Player {
     return this._grounded;
   }
 
+  get currentVelocityY() {
+    return this.velocityY;
+  }
+
+  get currentJumpsRemaining() {
+    return this.jumpsRemaining;
+  }
+
   get y() {
     return this.sprite.y;
   }

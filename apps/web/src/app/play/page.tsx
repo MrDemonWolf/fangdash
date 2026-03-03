@@ -2,7 +2,9 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import OnboardingOverlay from "@/components/game/OnboardingOverlay";
-import type { GameState } from "@fangdash/shared";
+import DebugPanel from "@/components/game/DebugPanel";
+import type { GameState, DebugState, DebugCommand } from "@fangdash/shared";
+import type { DebugChannel } from "@fangdash/game";
 import { useSession } from "@/lib/auth-client";
 import { useTRPC } from "@/lib/trpc";
 import { useMutation, useQuery } from "@tanstack/react-query";
@@ -162,6 +164,7 @@ export default function PlayPage() {
   const containerRef = useRef<HTMLDivElement>(null);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const gameRef = useRef<any>(null);
+  const debugRef = useRef<DebugChannel | null>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const startTimeRef = useRef<number>(0);
 
@@ -177,6 +180,7 @@ export default function PlayPage() {
   const [finalState, setFinalState] = useState<GameState | null>(null);
   const [finalElapsedTime, setFinalElapsedTime] = useState(0);
   const [showOnboarding, setShowOnboarding] = useState<boolean | null>(null);
+  const [debugState, setDebugState] = useState<DebugState | null>(null);
 
   const { data: session } = useSession();
   const isSignedIn = !!session?.user;
@@ -263,16 +267,20 @@ export default function PlayPage() {
       speed: 0,
     });
 
-    const game = createGame({
+    const { game, debug } = createGame({
       parent: containerRef.current,
       skinKey: skinData?.skinId,
       onStateUpdate: (state) => {
         setGameState(state);
       },
       onGameOver: handleGameOver,
+      onDebugUpdate: (state) => {
+        setDebugState(state);
+      },
     });
 
     gameRef.current = game;
+    debugRef.current = debug;
     startTimer();
   }, [skinData?.skinId, handleGameOver, startTimer]);
 
@@ -280,6 +288,10 @@ export default function PlayPage() {
   useEffect(() => {
     const done = localStorage.getItem("fangdash_onboarding_complete");
     setShowOnboarding(done !== "true");
+  }, []);
+
+  const handleDebugCommand = useCallback((command: DebugCommand) => {
+    debugRef.current?.sendCommand(command);
   }, []);
 
   const handleOnboardingComplete = useCallback(() => {
@@ -357,6 +369,9 @@ export default function PlayPage() {
             isSignedIn={isSignedIn}
           />
         )}
+
+        {/* Debug Panel (dev/admin only, Ctrl+Shift+D) */}
+        <DebugPanel debugState={debugState} onSendCommand={handleDebugCommand} />
       </div>
     </main>
   );
