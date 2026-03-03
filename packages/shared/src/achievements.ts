@@ -51,7 +51,7 @@ export const ACHIEVEMENTS: AchievementDefinition[] = [
     category: "distance",
     icon: "🏃",
     condition: { type: "distance_single", threshold: 5000 },
-    rewardSkinId: "frost-wolf",
+    rewardSkinId: "fire-wolf",
   },
   {
     id: "world-traveler",
@@ -131,7 +131,7 @@ export const ACHIEVEMENTS: AchievementDefinition[] = [
     category: "social",
     icon: "🏆",
     condition: { type: "races_won", count: 10 },
-    rewardSkinId: "alpha-wolf",
+    rewardSkinId: "mrdemonwolf",
   },
   {
     id: "veteran-racer",
