@@ -1,3 +1,31 @@
 @import "tailwindcss";
 @import "fumadocs-ui/css/neutral.css";
 @import "fumadocs-ui/css/preset.css";
+
+:root {
+  --fd-background: #091533;
+  --fd-foreground: #e2e8f0;
+  --fd-muted: #0f1f4a;
+  --fd-muted-foreground: #94a3b8;
+  --fd-border: #1e3a5f;
+  --fd-accent: #0f2440;
+  --fd-accent-foreground: #e2e8f0;
+  --fd-primary: #0faced;
+  --fd-primary-foreground: #091533;
+  --fd-card: #0c1d3d;
+  --fd-card-foreground: #e2e8f0;
+  --fd-ring: #0faced;
+  --fd-sidebar-background: #070f28;
+  --fd-sidebar-foreground: #cbd5e1;
+  --fd-sidebar-border: #1e3a5f;
+  --fd-sidebar-accent: #0f2440;
+  --fd-sidebar-accent-foreground: #e2e8f0;
+  --fd-sidebar-primary: #0faced;
+  --fd-sidebar-primary-foreground: #091533;
+  --fd-sidebar-ring: #0faced;
+}
+
+.dark,
+html {
+  color-scheme: dark;
+}
