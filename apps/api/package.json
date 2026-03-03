@@ -3,7 +3,8 @@
   "version": "0.0.0",
   "private": true,
   "exports": {
-    "./trpc": "./src/trpc/router.ts"
+    "./trpc": "./src/trpc/router.ts",
+    "./db/schema": "./src/db/schema.ts"
   },
   "scripts": {
     "dev": "wrangler dev",

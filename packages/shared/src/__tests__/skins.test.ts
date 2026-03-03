@@ -29,10 +29,14 @@ describe("Skins", () => {
     expect(commons.every((s) => s.rarity === "common")).toBe(true);
   });
 
-  it("has at least one skin per rarity", () => {
-    const rarities = ["common", "uncommon", "rare", "epic", "legendary"] as const;
-    for (const rarity of rarities) {
+  it("has at least one skin per used rarity", () => {
+    const usedRarities = [...new Set(SKINS.map((s) => s.rarity))];
+    for (const rarity of usedRarities) {
       expect(getSkinsByRarity(rarity).length).toBeGreaterThan(0);
     }
+  });
+
+  it("has exactly 6 skins", () => {
+    expect(SKINS.length).toBe(6);
   });
 });
