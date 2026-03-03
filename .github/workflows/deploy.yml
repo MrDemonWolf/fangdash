@@ -85,4 +85,5 @@ jobs:
       - name: Deploy PartyKit
         run: pnpm --filter @fangdash/party run deploy
         env:
+          PARTYKIT_LOGIN: ${{ secrets.PARTYKIT_LOGIN }}
           PARTYKIT_TOKEN: ${{ secrets.PARTYKIT_TOKEN }}
