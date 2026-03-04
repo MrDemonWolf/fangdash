@@ -66,6 +66,8 @@ export default function RaceRoomPage() {
   // Auth
   const { data: session } = useSession();
   const isSignedIn = !!session?.user;
+  const userRole = (session?.user as Record<string, unknown> | undefined)?.role as string | undefined;
+  const isDevOrAdmin = userRole === "dev" || userRole === "admin";
 
   // tRPC
   const trpc = useTRPC();
@@ -181,9 +183,11 @@ export default function RaceRoomPage() {
         onPlayerDied: () => {
           connection?.sendDied();
         },
-        onDebugUpdate: (state) => {
-          setDebugState(state);
-        },
+        ...(isDevOrAdmin && {
+          onDebugUpdate: (state: DebugState) => {
+            setDebugState(state);
+          },
+        }),
       });
 
       gameRef.current = game;
@@ -480,7 +484,9 @@ export default function RaceRoomPage() {
         )}
 
         {/* Debug Panel (dev/admin only, Ctrl+Shift+D) */}
-        <DebugPanel debugState={debugState} onSendCommand={handleDebugCommand} />
+        {isDevOrAdmin && (
+          <DebugPanel debugState={debugState} onSendCommand={handleDebugCommand} />
+        )}
       </div>
     </main>
   );

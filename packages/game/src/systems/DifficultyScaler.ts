@@ -13,6 +13,16 @@ export class DifficultyScaler {
   currentSpeed = BASE_SPEED;
   private forcedLevelIndex: number | null = null;
 
+  // Runtime-overridable constants (for debug menu)
+  overrides: {
+    baseSpeed?: number;
+    maxSpeed?: number;
+    speedIncrement?: number;
+    speedIntervalMs?: number;
+    minGapMs?: number;
+    maxGapMs?: number;
+  } = {};
+
   get currentLevel() {
     if (this.forcedLevelIndex !== null) {
       return DIFFICULTY_LEVELS[this.forcedLevelIndex];
@@ -35,11 +45,11 @@ export class DifficultyScaler {
   }
 
   get minGap(): number {
-    return Math.max(400, MIN_OBSTACLE_GAP_MS / this.currentLevel.spawnRateMultiplier);
+    return Math.max(400, (this.overrides.minGapMs ?? MIN_OBSTACLE_GAP_MS) / this.currentLevel.spawnRateMultiplier);
   }
 
   get maxGap(): number {
-    return Math.max(800, MAX_OBSTACLE_GAP_MS / this.currentLevel.spawnRateMultiplier);
+    return Math.max(800, (this.overrides.maxGapMs ?? MAX_OBSTACLE_GAP_MS) / this.currentLevel.spawnRateMultiplier);
   }
 
   get levelName(): string {
@@ -57,22 +67,26 @@ export class DifficultyScaler {
   update(delta: number) {
     this.timeSinceIncrease += delta;
 
-    if (this.timeSinceIncrease >= SPEED_INCREASE_INTERVAL_MS) {
+    const intervalMs = this.overrides.speedIntervalMs ?? SPEED_INCREASE_INTERVAL_MS;
+    if (this.timeSinceIncrease >= intervalMs) {
       this.timeSinceIncrease = 0;
+      const maxSpeed = this.overrides.maxSpeed ?? MAX_SPEED;
+      const increment = this.overrides.speedIncrement ?? SPEED_INCREMENT;
       this.currentSpeed = Math.min(
-        MAX_SPEED,
-        this.currentSpeed + SPEED_INCREMENT * this.currentLevel.speedMultiplier
+        maxSpeed,
+        this.currentSpeed + increment * this.currentLevel.speedMultiplier
       );
     }
   }
 
   reset() {
-    this.currentSpeed = BASE_SPEED;
+    this.currentSpeed = this.overrides.baseSpeed ?? BASE_SPEED;
     this.timeSinceIncrease = 0;
   }
 
   private distanceFromSpeed(): number {
-    // Rough approximation of distance based on how fast we've ramped
-    return ((this.currentSpeed - BASE_SPEED) / SPEED_INCREMENT) * 10;
+    const baseSpeed = this.overrides.baseSpeed ?? BASE_SPEED;
+    const increment = this.overrides.speedIncrement ?? SPEED_INCREMENT;
+    return ((this.currentSpeed - baseSpeed) / increment) * 10;
   }
 }

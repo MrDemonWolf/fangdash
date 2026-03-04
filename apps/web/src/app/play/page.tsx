@@ -184,6 +184,8 @@ export default function PlayPage() {
 
   const { data: session } = useSession();
   const isSignedIn = !!session?.user;
+  const userRole = (session?.user as Record<string, unknown> | undefined)?.role as string | undefined;
+  const isDevOrAdmin = userRole === "dev" || userRole === "admin";
 
   // Fetch equipped skin (only when signed in)
   const trpc = useTRPC();
@@ -274,15 +276,17 @@ export default function PlayPage() {
         setGameState(state);
       },
       onGameOver: handleGameOver,
-      onDebugUpdate: (state) => {
-        setDebugState(state);
-      },
+      ...(isDevOrAdmin && {
+        onDebugUpdate: (state: DebugState) => {
+          setDebugState(state);
+        },
+      }),
     });
 
     gameRef.current = game;
     debugRef.current = debug;
     startTimer();
-  }, [skinData?.skinId, handleGameOver, startTimer]);
+  }, [skinData?.skinId, handleGameOver, startTimer, isDevOrAdmin]);
 
   // Check onboarding status on mount
   useEffect(() => {
@@ -371,7 +375,9 @@ export default function PlayPage() {
         )}
 
         {/* Debug Panel (dev/admin only, Ctrl+Shift+D) */}
-        <DebugPanel debugState={debugState} onSendCommand={handleDebugCommand} />
+        {isDevOrAdmin && (
+          <DebugPanel debugState={debugState} onSendCommand={handleDebugCommand} />
+        )}
       </div>
     </main>
   );

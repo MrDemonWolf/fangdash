@@ -226,6 +226,12 @@ export class GameScene extends Phaser.Scene {
 
   sendDebugCommand(command: DebugCommand) {
     switch (command.type) {
+      case "set-constant": {
+        const { key, value } = command.payload as { key: string; value: number };
+        this.applyConstantOverride(key, value);
+        break;
+      }
+
       case "toggle-hitboxes":
         this.debugHitboxes = !this.debugHitboxes;
         if (!this.debugHitboxes) {
@@ -260,8 +266,34 @@ export class GameScene extends Phaser.Scene {
         this.debugHitboxes = false;
         this.debugSpeedMultiplier = 1.0;
         this.difficulty.forceDifficulty(null);
+        this.difficulty.overrides = {};
+        this.player.overrides = {};
+        this.scoreManager.overrides = {};
         this.clearDebugHitboxes();
         break;
+    }
+  }
+
+  private applyConstantOverride(key: string, value: number) {
+    switch (key) {
+      // Physics → Player
+      case "GRAVITY": this.player.overrides.gravity = value; break;
+      case "JUMP_VELOCITY": this.player.overrides.jumpVelocity = value; break;
+      case "DOUBLE_JUMP_VELOCITY": this.player.overrides.doubleJumpVelocity = value; break;
+      case "MAX_JUMPS": this.player.overrides.maxJumps = value; break;
+      case "GROUND_Y": this.player.overrides.groundY = value; break;
+      // Speed → DifficultyScaler
+      case "BASE_SPEED": this.difficulty.overrides.baseSpeed = value; break;
+      case "MAX_SPEED": this.difficulty.overrides.maxSpeed = value; break;
+      case "SPEED_INCREMENT": this.difficulty.overrides.speedIncrement = value; break;
+      case "SPEED_INCREASE_INTERVAL_MS": this.difficulty.overrides.speedIntervalMs = value; break;
+      // Scoring → ScoreManager
+      case "SCORE_PER_SECOND": this.scoreManager.overrides.scorePerSecond = value; break;
+      case "SCORE_PER_OBSTACLE": this.scoreManager.overrides.scorePerObstacle = value; break;
+      case "DISTANCE_MULTIPLIER": this.scoreManager.overrides.distanceMultiplier = value; break;
+      // Obstacles → DifficultyScaler
+      case "MIN_OBSTACLE_GAP_MS": this.difficulty.overrides.minGapMs = value; break;
+      case "MAX_OBSTACLE_GAP_MS": this.difficulty.overrides.maxGapMs = value; break;
     }
   }
 }

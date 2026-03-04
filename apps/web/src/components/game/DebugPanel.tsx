@@ -307,11 +307,11 @@ function StatsTab({ state }: { state: DebugState | null }) {
 
   return (
     <div className="space-y-1 p-2">
-      <div className="debug-section-header">// PERFORMANCE</div>
+      <div className="debug-section-header">{"// PERFORMANCE"}</div>
       <StatRow label="FPS" value={state.fps} warn={state.fps < 30} danger={state.fps < 15} />
       <StatRow label="DELTA" value={`${state.frameDelta}ms`} />
 
-      <div className="debug-section-header">// PLAYER</div>
+      <div className="debug-section-header">{"// PLAYER"}</div>
       <StatRow label="POS" value={`${state.player.x}, ${state.player.y}`} />
       <StatRow label="VEL-Y" value={state.player.velocityY} />
       <StatRow label="JUMPS" value={`${state.player.jumpsRemaining}`} />
@@ -319,20 +319,20 @@ function StatsTab({ state }: { state: DebugState | null }) {
       <StatRow label="ALIVE" value={state.player.alive ? "YES" : "NO"} danger={!state.player.alive} />
       <StatRow label="BOUNDS" value={`${state.player.bounds.width}x${state.player.bounds.height}`} />
 
-      <div className="debug-section-header">// SCORING</div>
+      <div className="debug-section-header">{"// SCORING"}</div>
       <StatRow label="SCORE" value={state.scoring.score} />
       <StatRow label="DIST" value={`${state.scoring.distance}m`} />
       <StatRow label="CLEARED" value={state.scoring.obstaclesCleared} />
       <StatRow label="SPEED" value={state.scoring.currentSpeed} />
       <StatRow label="TIME" value={`${Math.floor(state.scoring.elapsedMs / 1000)}s`} />
 
-      <div className="debug-section-header">// DIFFICULTY</div>
+      <div className="debug-section-header">{"// DIFFICULTY"}</div>
       <StatRow label="LEVEL" value={state.difficulty.levelName.toUpperCase()} />
       <StatRow label="SPD-X" value={`${state.difficulty.speedMultiplier}x`} />
       <StatRow label="SPN-X" value={`${state.difficulty.spawnRateMultiplier}x`} />
       <StatRow label="GAP" value={`${state.difficulty.minGap}-${state.difficulty.maxGap}ms`} />
 
-      <div className="debug-section-header">// SPAWNER</div>
+      <div className="debug-section-header">{"// SPAWNER"}</div>
       <StatRow label="SINCE" value={`${state.spawner.timeSinceLastSpawn}ms`} />
       <StatRow label="NEXT" value={`${state.spawner.nextSpawnTime}ms`} />
       <StatRow label="ACTIVE" value={state.spawner.activeObstacleCount} />
@@ -419,7 +419,7 @@ function ConstantsTab({ onSendCommand }: { onSendCommand: (cmd: DebugCommand) =>
     <div className="space-y-1 p-2">
       {CONSTANT_GROUPS.map((group) => (
         <div key={group.name}>
-          <div className="debug-section-header">// {group.name}</div>
+          <div className="debug-section-header">{`// ${group.name}`}</div>
           {group.constants.map((c) => (
             <div key={c.key} className="mb-2">
               <div className="flex justify-between items-baseline mb-1">
@@ -487,7 +487,7 @@ function CheatsTab({ onSendCommand }: { onSendCommand: (cmd: DebugCommand) => vo
 
   return (
     <div className="space-y-3 p-2">
-      <div className="debug-section-header">// TOGGLES</div>
+      <div className="debug-section-header">{"// TOGGLES"}</div>
 
       <label className="debug-toggle" onClick={toggleHitboxes}>
         <span className={`debug-toggle-box ${hitboxes ? "debug-toggle-box-on" : ""}`}>
@@ -503,7 +503,7 @@ function CheatsTab({ onSendCommand }: { onSendCommand: (cmd: DebugCommand) => vo
         <span className="debug-label">INVINCIBILITY</span>
       </label>
 
-      <div className="debug-section-header">// DIFFICULTY</div>
+      <div className="debug-section-header">{"// DIFFICULTY"}</div>
       <div>
         <select
           className="debug-select w-full"
@@ -518,7 +518,7 @@ function CheatsTab({ onSendCommand }: { onSendCommand: (cmd: DebugCommand) => vo
         </select>
       </div>
 
-      <div className="debug-section-header">// SPEED MULTIPLIER</div>
+      <div className="debug-section-header">{"// SPEED MULTIPLIER"}</div>
       <div>
         <div className="flex justify-between items-baseline mb-1">
           <span className="debug-label">TIME SCALE</span>
@@ -535,7 +535,7 @@ function CheatsTab({ onSendCommand }: { onSendCommand: (cmd: DebugCommand) => vo
         />
       </div>
 
-      <div className="debug-section-header">// ACTIONS</div>
+      <div className="debug-section-header">{"// ACTIONS"}</div>
       <button className="debug-btn-danger debug-btn w-full" onClick={handleForceGameOver}>
         FORCE GAME OVER
       </button>

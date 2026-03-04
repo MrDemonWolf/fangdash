@@ -11,17 +11,24 @@ export class ScoreManager {
   obstaclesCleared = 0;
   private lastObstacleCount = 0;
 
+  // Runtime-overridable constants (for debug menu)
+  overrides: {
+    scorePerSecond?: number;
+    scorePerObstacle?: number;
+    distanceMultiplier?: number;
+  } = {};
+
   update(delta: number, speed: number, currentObstaclesCleared: number) {
     const dt = delta / 1000;
 
     // Distance-based score
-    this.distance += speed * dt * DISTANCE_MULTIPLIER;
-    this.score += SCORE_PER_SECOND * dt;
+    this.distance += speed * dt * (this.overrides.distanceMultiplier ?? DISTANCE_MULTIPLIER);
+    this.score += (this.overrides.scorePerSecond ?? SCORE_PER_SECOND) * dt;
 
     // Obstacle clear bonus
     const newClears = currentObstaclesCleared - this.lastObstacleCount;
     if (newClears > 0) {
-      this.score += newClears * SCORE_PER_OBSTACLE;
+      this.score += newClears * (this.overrides.scorePerObstacle ?? SCORE_PER_OBSTACLE);
       this.obstaclesCleared += newClears;
       this.lastObstacleCount = currentObstaclesCleared;
     }
