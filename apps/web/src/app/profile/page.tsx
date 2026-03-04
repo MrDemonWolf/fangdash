@@ -89,6 +89,11 @@ export default function ProfilePage() {
     isPending: achievementsLoading,
   } = useQuery(trpc.achievement.getMine.queryOptions(undefined, { enabled: isSignedIn }));
 
+  const {
+    data: raceStats,
+    isPending: raceStatsLoading,
+  } = useQuery(trpc.race.getStats.queryOptions(undefined, { enabled: isSignedIn }));
+
   /* ---- Redirect unauthenticated users ---- */
   useEffect(() => {
     if (!sessionLoading && !session?.user) {
@@ -141,7 +146,7 @@ export default function ProfilePage() {
   }
 
   const user = session.user;
-  const isDataLoading = scoresLoading || skinLoading || achievementsLoading;
+  const isDataLoading = scoresLoading || skinLoading || achievementsLoading || raceStatsLoading;
 
   /* ---------------------------------------------------------------- */
   return (
@@ -210,12 +215,12 @@ export default function ProfilePage() {
             <StatCard
               icon={<Swords size={16} />}
               label="Total Races"
-              value={0}
+              value={raceStats?.racesPlayed ?? 0}
             />
             <StatCard
               icon={<Target size={16} />}
               label="Total Wins"
-              value={0}
+              value={raceStats?.racesWon ?? 0}
             />
           </div>
         )}
