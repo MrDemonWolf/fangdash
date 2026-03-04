@@ -48,10 +48,10 @@ export class BootScene extends Phaser.Scene {
     this.load.image("bg-trees", "/backgrounds/bg-trees.png");
     this.load.image("ground", "/backgrounds/ground.png");
 
-    // Load audio files (silently ignore missing files)
-    this.load.on("loaderror", (_file: Phaser.Loader.File) => {
-      // Silently ignore load errors for audio files so the game
-      // works perfectly fine without any audio assets present.
+    // Silently ignore missing audio files so the game works without audio assets
+    this.load.on("loaderror", (file: Phaser.Loader.File) => {
+      if (file.type === "audio") return;
+      console.error(`Failed to load asset: ${file.key} (${file.url})`);
     });
 
     for (const key of Object.values(AUDIO_KEYS)) {

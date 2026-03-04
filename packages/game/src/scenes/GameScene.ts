@@ -61,6 +61,11 @@ export class GameScene extends Phaser.Scene {
     this.scoreManager = new ScoreManager();
     this.audioManager = new AudioManager(this);
 
+    // Clean up BGM on scene shutdown
+    this.events.on("shutdown", () => {
+      this.audioManager.stopBGM();
+    });
+
     // Input
     if (this.input.keyboard) {
       this.jumpKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);

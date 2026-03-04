@@ -116,7 +116,13 @@ export function createGame(options: GameCanvasOptions): GameCanvasResult {
     },
     getVolume: () => {
       const gameScene = game.scene.getScene("GameScene") as GameScene;
-      return gameScene?.audioManager?.volume ?? 0.5;
+      if (gameScene?.audioManager) return gameScene.audioManager.volume;
+      // Fallback: read from localStorage before scene is ready
+      try {
+        const stored = localStorage.getItem("fangdash_volume");
+        if (stored !== null) { const v = parseFloat(stored); if (!isNaN(v)) return v; }
+      } catch { /* ignore */ }
+      return 0.5;
     },
     setMuted: (m: boolean) => {
       const gameScene = game.scene.getScene("GameScene") as GameScene;
@@ -124,7 +130,9 @@ export function createGame(options: GameCanvasOptions): GameCanvasResult {
     },
     getMuted: () => {
       const gameScene = game.scene.getScene("GameScene") as GameScene;
-      return gameScene?.audioManager?.muted ?? false;
+      if (gameScene?.audioManager) return gameScene.audioManager.muted;
+      // Fallback: read from localStorage before scene is ready
+      try { return localStorage.getItem("fangdash_muted") === "true"; } catch { return false; }
     },
   };
 
@@ -173,7 +181,12 @@ export function createRaceGame(options: RaceCanvasOptions): RaceCanvasResult {
     },
     getVolume: () => {
       const raceScene = game.scene.getScene("RaceScene") as GameScene;
-      return raceScene?.audioManager?.volume ?? 0.5;
+      if (raceScene?.audioManager) return raceScene.audioManager.volume;
+      try {
+        const stored = localStorage.getItem("fangdash_volume");
+        if (stored !== null) { const v = parseFloat(stored); if (!isNaN(v)) return v; }
+      } catch { /* ignore */ }
+      return 0.5;
     },
     setMuted: (m: boolean) => {
       const raceScene = game.scene.getScene("RaceScene") as GameScene;
@@ -181,7 +194,8 @@ export function createRaceGame(options: RaceCanvasOptions): RaceCanvasResult {
     },
     getMuted: () => {
       const raceScene = game.scene.getScene("RaceScene") as GameScene;
-      return raceScene?.audioManager?.muted ?? false;
+      if (raceScene?.audioManager) return raceScene.audioManager.muted;
+      try { return localStorage.getItem("fangdash_muted") === "true"; } catch { return false; }
     },
   };
 

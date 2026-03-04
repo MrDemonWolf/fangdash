@@ -37,10 +37,7 @@ export class AudioManager {
     // Stop current BGM if playing
     this.stopBGM();
 
-    this.currentBGM = this.scene.sound.add(key, {
-      loop: true,
-      volume: this._volume,
-    });
+    this.currentBGM = this.scene.sound.add(key, { loop: true });
     if (!this._muted) {
       this.currentBGM.play();
     }
@@ -59,7 +56,7 @@ export class AudioManager {
   playSFX(key: string): void {
     if (!this.scene.cache.audio.exists(key)) return;
 
-    this.scene.sound.play(key, { volume: this._volume });
+    this.scene.sound.play(key);
   }
 
   // ── Volume / Mute ──
@@ -73,6 +70,10 @@ export class AudioManager {
   setMuted(value: boolean): void {
     this._muted = value;
     this.scene.sound.mute = this._muted;
+    // Resume BGM if unmuting and BGM was created but never played
+    if (!value && this.currentBGM && !this.currentBGM.isPlaying) {
+      this.currentBGM.play();
+    }
     this.saveMuted();
   }
 
