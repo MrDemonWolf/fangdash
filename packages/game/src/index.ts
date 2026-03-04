@@ -7,6 +7,7 @@ export {
   type RaceCanvasOptions,
   type RaceCanvasResult,
   type DebugChannel,
+  type AudioChannel,
 } from "./GameCanvas";
 export { BootScene } from "./scenes/BootScene";
 export { GameScene, type GameEventCallback } from "./scenes/GameScene";
@@ -22,3 +23,4 @@ export { Obstacle, ObstacleSpawner } from "./entities/Obstacle";
 export { ParallaxBackground } from "./systems/ParallaxBackground";
 export { DifficultyScaler } from "./systems/DifficultyScaler";
 export { ScoreManager } from "./systems/ScoreManager";
+export { AudioManager } from "./systems/AudioManager";

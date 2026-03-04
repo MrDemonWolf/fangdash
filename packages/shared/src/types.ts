@@ -142,9 +142,6 @@ export interface GameState {
   speed: number;
 }
 
-// ── User Roles (FD-58 RBAC) ──
-export type UserRole = "user" | "admin" | "dev";
-
 // ── Debug ──
 export interface DebugState {
   fps: number;

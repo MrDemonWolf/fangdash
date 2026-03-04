@@ -40,3 +40,19 @@ export const DIFFICULTY_LEVELS = [
   { name: "insane", startDistance: 3000, speedMultiplier: 2.0, spawnRateMultiplier: 1.8 },
   { name: "nightmare", startDistance: 5000, speedMultiplier: 2.5, spawnRateMultiplier: 2.2 },
 ] as const;
+
+// ── Audio ──
+export const AUDIO_KEYS = {
+  BGM_MENU: "bgm-menu",
+  BGM_GAME: "bgm-game",
+  BGM_RACE: "bgm-race",
+  SFX_JUMP: "sfx-jump",
+  SFX_DOUBLE_JUMP: "sfx-double-jump",
+  SFX_HIT: "sfx-hit",
+  SFX_GAME_OVER: "sfx-game-over",
+  SFX_MILESTONE: "sfx-milestone",
+  SFX_COUNTDOWN: "sfx-countdown",
+  SFX_ACHIEVEMENT: "sfx-achievement",
+  SFX_SKIN_EQUIP: "sfx-skin-equip",
+  SFX_VICTORY: "sfx-victory",
+} as const;
