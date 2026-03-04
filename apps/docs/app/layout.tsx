@@ -20,7 +20,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
             enabled: false,
           }}
           theme={{
-            enabled: false,
+            defaultTheme: "dark",
           }}
         >
           {children}

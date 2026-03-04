@@ -1,4 +1,4 @@
 {
   "title": "Gameplay",
-  "pages": ["index", "controls", "scoring", "difficulty"]
+  "pages": ["index", "controls", "scoring", "difficulty", "audio", "debug"]
 }
