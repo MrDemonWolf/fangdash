@@ -1,4 +1,4 @@
-import Phaser from "phaser";
+import * as Phaser from "phaser";
 import { GAME_WIDTH, GROUND_Y, AUDIO_KEYS } from "@fangdash/shared";
 import type { GameState, DebugState, DebugCommand } from "@fangdash/shared";
 import { Player } from "../entities/Player";
@@ -23,6 +23,8 @@ export class GameScene extends Phaser.Scene {
   protected ground!: Phaser.GameObjects.TileSprite;
   protected jumpKey!: Phaser.Input.Keyboard.Key;
   protected callbacks: GameEventCallback = {};
+  protected skinKey = "wolf-gray";
+  protected seed?: string;
   protected running = false;
   audioManager!: AudioManager;
 
@@ -37,8 +39,10 @@ export class GameScene extends Phaser.Scene {
     super({ key });
   }
 
-  init(data: { callbacks?: GameEventCallback; skinKey?: string }) {
+  init(data: { callbacks?: GameEventCallback; skinKey?: string; seed?: string }) {
     this.callbacks = data.callbacks ?? {};
+    this.skinKey = data.skinKey ?? "wolf-gray";
+    this.seed = data.seed;
   }
 
   create() {
@@ -51,10 +55,10 @@ export class GameScene extends Phaser.Scene {
     this.ground.setDepth(0);
 
     // Player
-    this.player = new Player(this);
+    this.player = new Player(this, this.skinKey);
 
     // Obstacles
-    this.spawner = new ObstacleSpawner(this);
+    this.spawner = new ObstacleSpawner(this, 10, this.seed);
 
     // Systems
     this.difficulty = new DifficultyScaler();

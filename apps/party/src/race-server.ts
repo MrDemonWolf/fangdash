@@ -19,7 +19,7 @@ export default class RaceServer implements Party.Server {
     this.room = {
       id: party.id,
       status: "waiting",
-      seed: Math.random().toString(36).substring(2, 10),
+      seed: crypto.randomUUID(),
       players: [],
     };
   }
@@ -96,7 +96,7 @@ export default class RaceServer implements Party.Server {
 
     this.room.status = "racing";
     this.room.startedAt = new Date().toISOString();
-    this.room.seed = Math.random().toString(36).substring(2, 10);
+    this.room.seed = crypto.randomUUID();
     this.broadcast({ type: "race_start", payload: { seed: this.room.seed } });
   }
 

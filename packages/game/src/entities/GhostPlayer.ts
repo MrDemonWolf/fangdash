@@ -1,4 +1,4 @@
-import Phaser from "phaser";
+import * as Phaser from "phaser";
 import { GROUND_Y, PLAYER_START_X } from "@fangdash/shared";
 
 export class GhostPlayer {

@@ -90,6 +90,11 @@ export default function ProfilePage() {
   } = useQuery(trpc.achievement.getMine.queryOptions(undefined, { enabled: isSignedIn }));
 
   const {
+    data: playerStats,
+    isPending: playerStatsLoading,
+  } = useQuery(trpc.score.getPlayerStats.queryOptions(undefined, { enabled: isSignedIn }));
+
+  const {
     data: raceStats,
     isPending: raceStatsLoading,
   } = useQuery(trpc.race.getStats.queryOptions(undefined, { enabled: isSignedIn }));
@@ -107,7 +112,7 @@ export default function ProfilePage() {
       ? Math.max(...scores.map((s) => s.score))
       : 0;
 
-  const gamesPlayed = scores?.length ?? 0;
+  const gamesPlayed = playerStats?.gamesPlayed ?? 0;
 
   const recentScores = scores?.slice(0, 10) ?? [];
 
@@ -146,7 +151,7 @@ export default function ProfilePage() {
   }
 
   const user = session.user;
-  const isDataLoading = scoresLoading || skinLoading || achievementsLoading || raceStatsLoading;
+  const isDataLoading = scoresLoading || skinLoading || achievementsLoading || raceStatsLoading || playerStatsLoading;
 
   /* ---------------------------------------------------------------- */
   return (

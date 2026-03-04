@@ -23,7 +23,7 @@ export function Navbar() {
   const isActive = (href: string) => pathname === href;
 
   const handleSignIn = () => {
-    signIn.social({ provider: "twitch" });
+    signIn.social({ provider: "twitch", callbackURL: window.location.origin });
   };
 
   const handleSignOut = () => {
@@ -51,6 +51,7 @@ export function Navbar() {
               <Link
                 key={href}
                 href={href}
+                aria-current={isActive(href) ? "page" : undefined}
                 className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                   isActive(href)
                     ? "text-[#0FACED] bg-[#0FACED]/10"
@@ -120,6 +121,7 @@ export function Navbar() {
                 key={href}
                 href={href}
                 onClick={() => setMobileOpen(false)}
+                aria-current={isActive(href) ? "page" : undefined}
                 className={`block rounded-md px-3 py-2 text-base font-medium transition-colors ${
                   isActive(href)
                     ? "text-[#0FACED] bg-[#0FACED]/10"

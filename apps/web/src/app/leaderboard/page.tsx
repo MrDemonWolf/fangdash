@@ -122,6 +122,7 @@ export default function LeaderboardPage() {
             <button
               key={tab.key}
               onClick={() => setActiveTab(tab.key)}
+              aria-pressed={activeTab === tab.key}
               className={`flex-1 rounded-md px-4 py-2 text-sm font-medium transition-colors ${
                 activeTab === tab.key
                   ? "bg-[#0FACED]/20 text-[#0FACED]"
@@ -132,6 +133,13 @@ export default function LeaderboardPage() {
             </button>
           ))}
         </div>
+
+        {/* Error state */}
+        {leaderboardQuery.isError && (
+          <div className="mt-6 rounded-lg border border-red-500/20 bg-red-500/10 p-4 text-center text-red-400">
+            Something went wrong. Please try again later.
+          </div>
+        )}
 
         {/* Desktop Table */}
         <div className="mt-6 hidden sm:block overflow-x-auto rounded-lg border border-white/10 bg-white/[0.03]">

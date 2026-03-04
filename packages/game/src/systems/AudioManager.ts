@@ -1,4 +1,4 @@
-import Phaser from "phaser";
+import * as Phaser from "phaser";
 
 const STORAGE_KEY_VOLUME = "fangdash_volume";
 const STORAGE_KEY_MUTED = "fangdash_muted";

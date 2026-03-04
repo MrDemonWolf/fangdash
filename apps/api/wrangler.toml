@@ -7,6 +7,10 @@ compatibility_flags = ["nodejs_compat"]
 binding = "DB"
 database_name = "fangdash-db"
 database_id = "055d576a-fd5a-4ba3-a0ac-3c5cb3fa1355"
+migrations_dir = "drizzle"
 
 [vars]
 ENVIRONMENT = "development"
+
+[env.production.vars]
+ENVIRONMENT = "production"

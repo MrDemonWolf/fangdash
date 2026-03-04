@@ -111,7 +111,18 @@ export const scoreRouter = router({
         .from(score)
         .innerJoin(player, eq(score.playerId, player.id))
         .innerJoin(user, eq(player.userId, user.id))
-        .where(cutoff ? gte(score.createdAt, cutoff) : undefined)
+        .where(
+          cutoff
+            ? sql`${score.createdAt} >= ${cutoff} AND ${score.score} = (
+                SELECT MAX(s2.score) FROM score s2
+                WHERE s2.player_id = ${score.playerId}
+                AND s2.created_at >= ${cutoff}
+              )`
+            : sql`${score.score} = (
+                SELECT MAX(s2.score) FROM score s2
+                WHERE s2.player_id = ${score.playerId}
+              )`
+        )
         .orderBy(desc(score.score))
         .limit(limit);
 
@@ -120,6 +131,18 @@ export const scoreRouter = router({
         ...row,
       }));
     }),
+
+  getPlayerStats: protectedProcedure.query(async ({ ctx }) => {
+    const playerRecord = await ensurePlayer(ctx.db, ctx.user.id);
+    if (!playerRecord) return null;
+
+    return {
+      gamesPlayed: playerRecord.gamesPlayed,
+      totalScore: playerRecord.totalScore,
+      totalDistance: playerRecord.totalDistance,
+      totalObstaclesCleared: playerRecord.totalObstaclesCleared,
+    };
+  }),
 
   myScores: protectedProcedure.query(async ({ ctx }) => {
     const playerRecord = await ensurePlayer(ctx.db, ctx.user.id);

@@ -6,49 +6,15 @@ import Link from "next/link";
 import type { GameState, RacePlayer, RaceResult, DebugState, DebugCommand } from "@fangdash/shared";
 import type { DebugChannel } from "@fangdash/game";
 import { useSession } from "@/lib/auth-client";
+import { useIsDevOrAdmin } from "@/lib/use-role";
 import { useTRPC } from "@/lib/trpc";
+import { getSkinById } from "@fangdash/shared/skins";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { RaceConnection } from "@/lib/party";
 import { RaceResultModal } from "@/components/game/RaceResultModal";
 import { CountdownOverlay } from "@/components/game/CountdownOverlay";
 import DebugPanel from "@/components/game/DebugPanel";
-
-// ---------------------------------------------------------------------------
-// Inline GameHUD (matches the play page)
-// ---------------------------------------------------------------------------
-function GameHUD({
-  score,
-  distance,
-  elapsedTime,
-}: {
-  score: number;
-  distance: number;
-  elapsedTime: number;
-}) {
-  const formatTime = (ms: number) => {
-    const totalSec = Math.floor(ms / 1000);
-    const min = Math.floor(totalSec / 60);
-    const sec = totalSec % 60;
-    return `${min}:${sec.toString().padStart(2, "0")}`;
-  };
-
-  return (
-    <div className="pointer-events-none absolute inset-x-0 top-0 z-10 flex items-center justify-between px-6 py-4 text-white">
-      <div className="flex items-center gap-6 text-lg font-semibold">
-        <span>
-          Score: <span className="text-[#0FACED]">{score}</span>
-        </span>
-        <span>
-          Distance:{" "}
-          <span className="text-[#0FACED]">{Math.floor(distance)}m</span>
-        </span>
-      </div>
-      <div className="text-lg font-semibold">
-        Time: <span className="text-[#0FACED]">{formatTime(elapsedTime)}</span>
-      </div>
-    </div>
-  );
-}
+import { GameHUD } from "@/components/game/GameHUD";
 
 // ---------------------------------------------------------------------------
 // Phase type
@@ -66,8 +32,7 @@ export default function RaceRoomPage() {
   // Auth
   const { data: session } = useSession();
   const isSignedIn = !!session?.user;
-  const userRole = (session?.user as Record<string, unknown> | undefined)?.role as string | undefined;
-  const isDevOrAdmin = userRole === "dev" || userRole === "admin";
+  const isDevOrAdmin = useIsDevOrAdmin();
 
   // tRPC
   const trpc = useTRPC();
@@ -85,6 +50,7 @@ export default function RaceRoomPage() {
   );
 
   // State
+  const [readySent, setReadySent] = useState(false);
   const [phase, setPhase] = useState<Phase>("waiting");
   const [players, setPlayers] = useState<RacePlayer[]>([]);
   const [myId, setMyId] = useState<string>("");
@@ -114,7 +80,7 @@ export default function RaceRoomPage() {
   const gameRef = useRef<any>(null);
   const connectionRef = useRef<RaceConnection | null>(null);
 
-  const equippedSkin = skinData?.skinId ?? "default";
+  const equippedSkin = skinData?.skinId ? getSkinById(skinData.skinId)?.spriteKey ?? "wolf-gray" : "wolf-gray";
 
   // ── Timer helpers ──
   const stopTimer = useCallback(() => {
@@ -193,6 +159,15 @@ export default function RaceRoomPage() {
       gameRef.current = game;
       debugRef.current = debug;
       startTimer();
+
+      // Wait for the scene to initialize, then start the race
+      // The Phaser scene needs a frame to be fully ready
+      setTimeout(() => {
+        const raceScene = game.scene.getScene("RaceScene");
+        if (raceScene && "beginRace" in raceScene) {
+          (raceScene as { beginRace: () => void }).beginRace();
+        }
+      }, 100);
     },
     [equippedSkin, players, myId, handleGameOver, startTimer]
   );
@@ -304,7 +279,6 @@ export default function RaceRoomPage() {
     if (myResult && isSignedIn) {
       submitResult({
         raceId: myResult.raceId,
-        placement: myResult.placement,
         score: myResult.score,
         distance: myResult.distance,
         seed: raceSeed,
@@ -335,9 +309,11 @@ export default function RaceRoomPage() {
   // ── Handlers ──
   const handleReady = () => {
     connectionRef.current?.sendReady();
+    setReadySent(true);
   };
 
   const handleRematch = () => {
+    setReadySent(false);
     setPhase("waiting");
     setRaceResults([]);
     setRaceSeed("");
@@ -424,9 +400,14 @@ export default function RaceRoomPage() {
           <button
             type="button"
             onClick={handleReady}
-            className="w-full cursor-pointer rounded-lg bg-[#0FACED] px-6 py-4 text-sm font-bold uppercase tracking-wider text-[#091533] transition-colors hover:bg-[#0FACED]/80"
+            disabled={readySent}
+            className={`w-full cursor-pointer rounded-lg px-6 py-4 text-sm font-bold uppercase tracking-wider transition-colors ${
+              readySent
+                ? "bg-[#0FACED]/40 text-[#091533]/60 cursor-not-allowed"
+                : "bg-[#0FACED] text-[#091533] hover:bg-[#0FACED]/80"
+            }`}
           >
-            Ready
+            {readySent ? "Waiting..." : "Ready"}
           </button>
 
           {/* Back to lobby */}

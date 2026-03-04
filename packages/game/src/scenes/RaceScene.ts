@@ -1,4 +1,3 @@
-import { GAME_WIDTH, GAME_HEIGHT } from "@fangdash/shared";
 import { GameScene, type GameEventCallback } from "./GameScene";
 import { GhostPlayer } from "../entities/GhostPlayer";
 import { getSkinById } from "@fangdash/shared/skins";
@@ -36,7 +35,7 @@ export class RaceScene extends GameScene {
 
   init(data: RaceInitData) {
     // Forward base callbacks to parent
-    super.init({ callbacks: data.callbacks, skinKey: data.skinKey });
+    super.init({ callbacks: data.callbacks, skinKey: data.skinKey, seed: data.seed });
 
     this.raceCallbacks = data.callbacks ?? {};
     this.raceSeed = data.seed ?? "";
@@ -65,45 +64,12 @@ export class RaceScene extends GameScene {
       this.ghosts.set(opp.id, ghost);
     }
     this.pendingOpponents = [];
-
-    // Show countdown overlay, then start the race
-    this.showCountdown();
   }
 
-  private showCountdown() {
-    const countdownText = this.add.text(
-      GAME_WIDTH / 2,
-      GAME_HEIGHT / 2,
-      "3",
-      {
-        fontSize: "72px",
-        fontStyle: "bold",
-        color: "#ffffff",
-        stroke: "#000000",
-        strokeThickness: 4,
-        align: "center",
-      }
-    );
-    countdownText.setOrigin(0.5, 0.5);
-    countdownText.setDepth(100);
-
-    this.time.delayedCall(1000, () => {
-      countdownText.setText("2");
-    });
-
-    this.time.delayedCall(2000, () => {
-      countdownText.setText("1");
-    });
-
-    this.time.delayedCall(3000, () => {
-      countdownText.setText("GO!");
-    });
-
-    this.time.delayedCall(3500, () => {
-      countdownText.destroy();
-      this.raceStarted = true;
-      this.startRun();
-    });
+  /** Called by React layer after countdown completes */
+  beginRace() {
+    this.raceStarted = true;
+    this.startRun();
   }
 
   update(time: number, delta: number) {

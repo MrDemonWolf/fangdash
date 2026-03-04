@@ -1,4 +1,4 @@
-import Phaser from "phaser";
+import * as Phaser from "phaser";
 import {
   GRAVITY,
   JUMP_VELOCITY,
@@ -15,6 +15,7 @@ export class Player {
   private jumpsRemaining = MAX_JUMPS;
   private _alive = true;
   private _grounded = true;
+  private _boundsRect = new Phaser.Geom.Rectangle(0, 0, 0, 0);
 
   // Runtime-overridable constants (for debug menu)
   overrides: {
@@ -56,12 +57,13 @@ export class Player {
   get bounds(): Phaser.Geom.Rectangle {
     const insetX = 4 * this.sprite.scaleX;
     const insetY = 4 * this.sprite.scaleY;
-    return new Phaser.Geom.Rectangle(
+    this._boundsRect.setTo(
       this.sprite.x - this.sprite.displayWidth / 2 + insetX,
       this.sprite.y - this.sprite.displayHeight + insetY,
       this.sprite.displayWidth - insetX * 2,
       this.sprite.displayHeight - insetY * 2
     );
+    return this._boundsRect;
   }
 
   jump() {

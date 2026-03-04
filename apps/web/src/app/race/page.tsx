@@ -22,14 +22,17 @@ function RoomCodeInput({
   onChange: (value: string) => void;
 }) {
   return (
-    <div className="flex justify-center gap-2">
-      {Array.from({ length: 6 }).map((_, i) => (
-        <input
-          key={i}
-          type="text"
-          maxLength={1}
-          value={value[i] ?? ""}
-          className="h-14 w-12 rounded-lg border border-[#0FACED]/20 bg-white/5 text-center text-xl font-bold uppercase text-white outline-none transition-colors focus:border-[#0FACED] focus:bg-[#0FACED]/10"
+    <fieldset className="border-0 p-0 m-0">
+      <legend className="sr-only">Enter 6-character room code</legend>
+      <div className="flex justify-center gap-2">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <input
+            key={i}
+            type="text"
+            maxLength={1}
+            value={value[i] ?? ""}
+            aria-label={`Room code digit ${i + 1} of 6`}
+            className="h-14 w-12 rounded-lg border border-[#0FACED]/20 bg-white/5 text-center text-xl font-bold uppercase text-white outline-none transition-colors focus:border-[#0FACED] focus:bg-[#0FACED]/10"
           onChange={(e) => {
             const char = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "");
             if (!char) {
@@ -66,8 +69,9 @@ function RoomCodeInput({
             target?.focus();
           }}
         />
-      ))}
-    </div>
+        ))}
+      </div>
+    </fieldset>
   );
 }
 
