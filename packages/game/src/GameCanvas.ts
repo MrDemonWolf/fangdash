@@ -21,9 +21,17 @@ export interface GameCanvasOptions {
   onDebugUpdate?: (state: DebugState) => void;
 }
 
+export interface AudioChannel {
+  setVolume: (v: number) => void;
+  getVolume: () => number;
+  setMuted: (m: boolean) => void;
+  getMuted: () => boolean;
+}
+
 export interface GameCanvasResult {
   game: Phaser.Game;
   debug: DebugChannel;
+  audio: AudioChannel;
 }
 
 export interface RaceCanvasOptions {
@@ -41,6 +49,7 @@ export interface RaceCanvasOptions {
 export interface RaceCanvasResult {
   game: Phaser.Game;
   debug: DebugChannel;
+  audio: AudioChannel;
 }
 
 function createPhaserConfig(
@@ -100,7 +109,34 @@ export function createGame(options: GameCanvasOptions): GameCanvasResult {
     },
   };
 
-  return { game, debug };
+  const audio: AudioChannel = {
+    setVolume: (v: number) => {
+      const gameScene = game.scene.getScene("GameScene") as GameScene;
+      gameScene?.audioManager?.setVolume(v);
+    },
+    getVolume: () => {
+      const gameScene = game.scene.getScene("GameScene") as GameScene;
+      if (gameScene?.audioManager) return gameScene.audioManager.volume;
+      // Fallback: read from localStorage before scene is ready
+      try {
+        const stored = localStorage.getItem("fangdash_volume");
+        if (stored !== null) { const v = parseFloat(stored); if (!isNaN(v)) return v; }
+      } catch { /* ignore */ }
+      return 0.5;
+    },
+    setMuted: (m: boolean) => {
+      const gameScene = game.scene.getScene("GameScene") as GameScene;
+      gameScene?.audioManager?.setMuted(m);
+    },
+    getMuted: () => {
+      const gameScene = game.scene.getScene("GameScene") as GameScene;
+      if (gameScene?.audioManager) return gameScene.audioManager.muted;
+      // Fallback: read from localStorage before scene is ready
+      try { return localStorage.getItem("fangdash_muted") === "true"; } catch { return false; }
+    },
+  };
+
+  return { game, debug, audio };
 }
 
 export function createRaceGame(options: RaceCanvasOptions): RaceCanvasResult {
@@ -138,7 +174,32 @@ export function createRaceGame(options: RaceCanvasOptions): RaceCanvasResult {
     },
   };
 
-  return { game, debug };
+  const audio: AudioChannel = {
+    setVolume: (v: number) => {
+      const raceScene = game.scene.getScene("RaceScene") as GameScene;
+      raceScene?.audioManager?.setVolume(v);
+    },
+    getVolume: () => {
+      const raceScene = game.scene.getScene("RaceScene") as GameScene;
+      if (raceScene?.audioManager) return raceScene.audioManager.volume;
+      try {
+        const stored = localStorage.getItem("fangdash_volume");
+        if (stored !== null) { const v = parseFloat(stored); if (!isNaN(v)) return v; }
+      } catch { /* ignore */ }
+      return 0.5;
+    },
+    setMuted: (m: boolean) => {
+      const raceScene = game.scene.getScene("RaceScene") as GameScene;
+      raceScene?.audioManager?.setMuted(m);
+    },
+    getMuted: () => {
+      const raceScene = game.scene.getScene("RaceScene") as GameScene;
+      if (raceScene?.audioManager) return raceScene.audioManager.muted;
+      try { return localStorage.getItem("fangdash_muted") === "true"; } catch { return false; }
+    },
+  };
+
+  return { game, debug, audio };
 }
 
 export function destroyGame(game: Phaser.Game) {

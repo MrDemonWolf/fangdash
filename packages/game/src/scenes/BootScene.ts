@@ -3,6 +3,7 @@ import {
   GAME_WIDTH,
   GAME_HEIGHT,
   OBSTACLE_TYPES,
+  AUDIO_KEYS,
 } from "@fangdash/shared";
 import { SKINS } from "@fangdash/shared/skins";
 
@@ -46,6 +47,16 @@ export class BootScene extends Phaser.Scene {
     this.load.image("bg-hills", "/backgrounds/bg-hills.png");
     this.load.image("bg-trees", "/backgrounds/bg-trees.png");
     this.load.image("ground", "/backgrounds/ground.png");
+
+    // Silently ignore missing audio files so the game works without audio assets
+    this.load.on("loaderror", (file: Phaser.Loader.File) => {
+      if (file.type === "audio") return;
+      console.error(`Failed to load asset: ${file.key} (${file.url})`);
+    });
+
+    for (const key of Object.values(AUDIO_KEYS)) {
+      this.load.audio(key, `/audio/${key}.mp3`);
+    }
   }
 
   create() {

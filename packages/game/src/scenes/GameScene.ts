@@ -1,11 +1,12 @@
 import Phaser from "phaser";
-import { GAME_WIDTH, GROUND_Y } from "@fangdash/shared";
+import { GAME_WIDTH, GROUND_Y, AUDIO_KEYS } from "@fangdash/shared";
 import type { GameState, DebugState, DebugCommand } from "@fangdash/shared";
 import { Player } from "../entities/Player";
 import { ObstacleSpawner } from "../entities/Obstacle";
 import { ParallaxBackground } from "../systems/ParallaxBackground";
 import { DifficultyScaler } from "../systems/DifficultyScaler";
 import { ScoreManager } from "../systems/ScoreManager";
+import { AudioManager } from "../systems/AudioManager";
 
 export type GameEventCallback = {
   onStateUpdate?: (state: GameState) => void;
@@ -23,6 +24,7 @@ export class GameScene extends Phaser.Scene {
   protected jumpKey!: Phaser.Input.Keyboard.Key;
   protected callbacks: GameEventCallback = {};
   protected running = false;
+  audioManager!: AudioManager;
 
   // Debug state
   private debugInvincible = false;
@@ -57,6 +59,12 @@ export class GameScene extends Phaser.Scene {
     // Systems
     this.difficulty = new DifficultyScaler();
     this.scoreManager = new ScoreManager();
+    this.audioManager = new AudioManager(this);
+
+    // Clean up BGM on scene shutdown
+    this.events.on("shutdown", () => {
+      this.audioManager.stopBGM();
+    });
 
     // Input
     if (this.input.keyboard) {
@@ -67,6 +75,7 @@ export class GameScene extends Phaser.Scene {
           this.startRun();
         } else {
           this.player.jump();
+          this.audioManager.playSFX(AUDIO_KEYS.SFX_JUMP);
         }
       });
     }
@@ -77,6 +86,7 @@ export class GameScene extends Phaser.Scene {
         this.startRun();
       } else {
         this.player.jump();
+        this.audioManager.playSFX(AUDIO_KEYS.SFX_JUMP);
       }
     });
 
@@ -138,11 +148,15 @@ export class GameScene extends Phaser.Scene {
     this.difficulty.reset();
     this.scoreManager.reset();
     this.background.reset();
+    this.audioManager.playBGM(AUDIO_KEYS.BGM_GAME);
   }
 
   protected gameOver() {
     this.running = false;
     this.player.die();
+    this.audioManager.stopBGM();
+    this.audioManager.playSFX(AUDIO_KEYS.SFX_HIT);
+    this.audioManager.playSFX(AUDIO_KEYS.SFX_GAME_OVER);
 
     const finalState = this.scoreManager.getState(false, this.difficulty.currentSpeed);
     this.callbacks.onGameOver?.(finalState);

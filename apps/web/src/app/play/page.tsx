@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import OnboardingOverlay from "@/components/game/OnboardingOverlay";
 import DebugPanel from "@/components/game/DebugPanel";
 import type { GameState, DebugState, DebugCommand } from "@fangdash/shared";
-import type { DebugChannel } from "@fangdash/game";
+import type { DebugChannel, AudioChannel } from "@fangdash/game";
 import { useSession } from "@/lib/auth-client";
 import { useTRPC } from "@/lib/trpc";
 import { useMutation, useQuery } from "@tanstack/react-query";
@@ -12,14 +12,41 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 // ---------------------------------------------------------------------------
 // Inline GameHUD (local version until the shared component lands)
 // ---------------------------------------------------------------------------
+function SpeakerIcon({ muted }: { muted: boolean }) {
+  if (muted) {
+    return (
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+        <line x1="23" y1="9" x2="17" y2="15" />
+        <line x1="17" y1="9" x2="23" y2="15" />
+      </svg>
+    );
+  }
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+      <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
+      <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
+    </svg>
+  );
+}
+
 function GameHUD({
   score,
   distance,
   elapsedTime,
+  muted = false,
+  volume = 0.5,
+  onToggleMute,
+  onVolumeChange,
 }: {
   score: number;
   distance: number;
   elapsedTime: number;
+  muted?: boolean;
+  volume?: number;
+  onToggleMute?: () => void;
+  onVolumeChange?: (v: number) => void;
 }) {
   const formatTime = (ms: number) => {
     const totalSec = Math.floor(ms / 1000);
@@ -39,8 +66,33 @@ function GameHUD({
           <span className="text-[#0FACED]">{Math.floor(distance)}m</span>
         </span>
       </div>
-      <div className="text-lg font-semibold">
-        Time: <span className="text-[#0FACED]">{formatTime(elapsedTime)}</span>
+      <div className="flex items-center gap-4">
+        <div className="text-lg font-semibold">
+          Time: <span className="text-[#0FACED]">{formatTime(elapsedTime)}</span>
+        </div>
+        {onToggleMute && (
+          <div className="pointer-events-auto flex items-center gap-2 px-3 py-1.5 rounded-lg bg-black/50 backdrop-blur-sm">
+            <button
+              onClick={onToggleMute}
+              className="text-white/80 hover:text-white transition-colors"
+              aria-label={muted ? "Unmute" : "Mute"}
+            >
+              <SpeakerIcon muted={muted} />
+            </button>
+            {onVolumeChange && (
+              <input
+                type="range"
+                min="0"
+                max="1"
+                step="0.05"
+                value={muted ? 0 : volume}
+                onChange={(e) => onVolumeChange(parseFloat(e.target.value))}
+                className="w-16 h-1 accent-[#0FACED] cursor-pointer"
+                aria-label="Volume"
+              />
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
@@ -165,6 +217,7 @@ export default function PlayPage() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const gameRef = useRef<any>(null);
   const debugRef = useRef<DebugChannel | null>(null);
+  const audioRef = useRef<AudioChannel | null>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const startTimeRef = useRef<number>(0);
 
@@ -181,6 +234,8 @@ export default function PlayPage() {
   const [finalElapsedTime, setFinalElapsedTime] = useState(0);
   const [showOnboarding, setShowOnboarding] = useState<boolean | null>(null);
   const [debugState, setDebugState] = useState<DebugState | null>(null);
+  const [audioMuted, setAudioMuted] = useState(false);
+  const [audioVolume, setAudioVolume] = useState(0.5);
 
   const { data: session } = useSession();
   const isSignedIn = !!session?.user;
@@ -269,7 +324,7 @@ export default function PlayPage() {
       speed: 0,
     });
 
-    const { game, debug } = createGame({
+    const { game, debug, audio } = createGame({
       parent: containerRef.current,
       skinKey: skinData?.skinId,
       onStateUpdate: (state) => {
@@ -285,6 +340,9 @@ export default function PlayPage() {
 
     gameRef.current = game;
     debugRef.current = debug;
+    audioRef.current = audio;
+    setAudioMuted(audio.getMuted());
+    setAudioVolume(audio.getVolume());
     startTimer();
   }, [skinData?.skinId, handleGameOver, startTimer, isDevOrAdmin]);
 
@@ -292,6 +350,25 @@ export default function PlayPage() {
   useEffect(() => {
     const done = localStorage.getItem("fangdash_onboarding_complete");
     setShowOnboarding(done !== "true");
+  }, []);
+
+  const handleToggleMute = useCallback(() => {
+    const a = audioRef.current;
+    if (!a) return;
+    const newMuted = !a.getMuted();
+    a.setMuted(newMuted);
+    setAudioMuted(newMuted);
+  }, []);
+
+  const handleVolumeChange = useCallback((v: number) => {
+    const a = audioRef.current;
+    if (!a) return;
+    a.setVolume(v);
+    setAudioVolume(v);
+    if (v > 0 && a.getMuted()) {
+      a.setMuted(false);
+      setAudioMuted(false);
+    }
   }, []);
 
   const handleDebugCommand = useCallback((command: DebugCommand) => {
@@ -348,6 +425,10 @@ export default function PlayPage() {
             score={gameState.score}
             distance={gameState.distance}
             elapsedTime={elapsedTime}
+            muted={audioMuted}
+            volume={audioVolume}
+            onToggleMute={handleToggleMute}
+            onVolumeChange={handleVolumeChange}
           />
         )}
 
