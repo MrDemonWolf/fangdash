@@ -1,6 +1,6 @@
 import Phaser from "phaser";
 import { GAME_WIDTH, GAME_HEIGHT } from "@fangdash/shared";
-import type { GameState } from "@fangdash/shared";
+import type { GameState, DebugState, DebugCommand } from "@fangdash/shared";
 import { BootScene } from "./scenes/BootScene";
 import { GameScene, type GameEventCallback } from "./scenes/GameScene";
 import {
@@ -9,11 +9,21 @@ import {
   type RaceOpponent,
 } from "./scenes/RaceScene";
 
+export interface DebugChannel {
+  sendCommand: (command: DebugCommand) => void;
+}
+
 export interface GameCanvasOptions {
   parent: HTMLElement;
   skinKey?: string;
   onStateUpdate?: (state: GameState) => void;
   onGameOver?: (state: GameState) => void;
+  onDebugUpdate?: (state: DebugState) => void;
+}
+
+export interface GameCanvasResult {
+  game: Phaser.Game;
+  debug: DebugChannel;
 }
 
 export interface RaceCanvasOptions {
@@ -25,6 +35,12 @@ export interface RaceCanvasOptions {
   onGameOver?: (state: GameState) => void;
   onPositionUpdate?: (distance: number, score: number) => void;
   onPlayerDied?: () => void;
+  onDebugUpdate?: (state: DebugState) => void;
+}
+
+export interface RaceCanvasResult {
+  game: Phaser.Game;
+  debug: DebugChannel;
 }
 
 function createPhaserConfig(
@@ -56,10 +72,11 @@ function createPhaserConfig(
   };
 }
 
-export function createGame(options: GameCanvasOptions): Phaser.Game {
+export function createGame(options: GameCanvasOptions): GameCanvasResult {
   const callbacks: GameEventCallback = {
     onStateUpdate: options.onStateUpdate,
     onGameOver: options.onGameOver,
+    onDebugUpdate: options.onDebugUpdate,
   };
 
   const game = new Phaser.Game(
@@ -74,15 +91,25 @@ export function createGame(options: GameCanvasOptions): Phaser.Game {
     }
   });
 
-  return game;
+  const debug: DebugChannel = {
+    sendCommand: (command: DebugCommand) => {
+      const gameScene = game.scene.getScene("GameScene") as GameScene;
+      if (gameScene) {
+        gameScene.sendDebugCommand(command);
+      }
+    },
+  };
+
+  return { game, debug };
 }
 
-export function createRaceGame(options: RaceCanvasOptions): Phaser.Game {
+export function createRaceGame(options: RaceCanvasOptions): RaceCanvasResult {
   const callbacks: RaceCallbacks = {
     onStateUpdate: options.onStateUpdate,
     onGameOver: options.onGameOver,
     onPositionUpdate: options.onPositionUpdate,
     onPlayerDied: options.onPlayerDied,
+    onDebugUpdate: options.onDebugUpdate,
   };
 
   const game = new Phaser.Game(
@@ -102,7 +129,16 @@ export function createRaceGame(options: RaceCanvasOptions): Phaser.Game {
     }
   });
 
-  return game;
+  const debug: DebugChannel = {
+    sendCommand: (command: DebugCommand) => {
+      const raceScene = game.scene.getScene("RaceScene") as GameScene;
+      if (raceScene) {
+        raceScene.sendDebugCommand(command);
+      }
+    },
+  };
+
+  return { game, debug };
 }
 
 export function destroyGame(game: Phaser.Game) {

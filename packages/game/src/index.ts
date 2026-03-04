@@ -3,7 +3,10 @@ export {
   createRaceGame,
   destroyGame,
   type GameCanvasOptions,
+  type GameCanvasResult,
   type RaceCanvasOptions,
+  type RaceCanvasResult,
+  type DebugChannel,
 } from "./GameCanvas";
 export { BootScene } from "./scenes/BootScene";
 export { GameScene, type GameEventCallback } from "./scenes/GameScene";

@@ -16,6 +16,15 @@ export class Player {
   private _alive = true;
   private _grounded = true;
 
+  // Runtime-overridable constants (for debug menu)
+  overrides: {
+    gravity?: number;
+    jumpVelocity?: number;
+    doubleJumpVelocity?: number;
+    maxJumps?: number;
+    groundY?: number;
+  } = {};
+
   constructor(scene: Phaser.Scene, skinKey = "wolf-gray") {
     this.scene = scene;
     this.sprite = scene.add.sprite(PLAYER_START_X, GROUND_Y - 20, skinKey);
@@ -30,6 +39,14 @@ export class Player {
 
   get grounded() {
     return this._grounded;
+  }
+
+  get currentVelocityY() {
+    return this.velocityY;
+  }
+
+  get currentJumpsRemaining() {
+    return this.jumpsRemaining;
   }
 
   get y() {
@@ -48,12 +65,13 @@ export class Player {
   }
 
   jump() {
+    const maxJumps = this.overrides.maxJumps ?? MAX_JUMPS;
     if (!this._alive || this.jumpsRemaining <= 0) return;
 
     this.jumpsRemaining--;
-    this.velocityY = this.jumpsRemaining === MAX_JUMPS - 1
-      ? JUMP_VELOCITY
-      : DOUBLE_JUMP_VELOCITY;
+    this.velocityY = this.jumpsRemaining === maxJumps - 1
+      ? (this.overrides.jumpVelocity ?? JUMP_VELOCITY)
+      : (this.overrides.doubleJumpVelocity ?? DOUBLE_JUMP_VELOCITY);
     this._grounded = false;
   }
 
@@ -61,15 +79,18 @@ export class Player {
     if (!this._alive) return;
 
     const dt = delta / 1000;
+    const gravity = this.overrides.gravity ?? GRAVITY;
+    const groundY = this.overrides.groundY ?? GROUND_Y;
+    const maxJumps = this.overrides.maxJumps ?? MAX_JUMPS;
 
-    this.velocityY += GRAVITY * dt;
+    this.velocityY += gravity * dt;
     this.sprite.y += this.velocityY * dt;
 
     // Ground check
-    if (this.sprite.y >= GROUND_Y) {
-      this.sprite.y = GROUND_Y;
+    if (this.sprite.y >= groundY) {
+      this.sprite.y = groundY;
       this.velocityY = 0;
-      this.jumpsRemaining = MAX_JUMPS;
+      this.jumpsRemaining = maxJumps;
       this._grounded = true;
     } else {
       this._grounded = false;
@@ -77,7 +98,7 @@ export class Player {
 
     // Slight bob when grounded
     if (this._grounded) {
-      this.sprite.y = GROUND_Y + Math.sin(Date.now() / 200) * 1;
+      this.sprite.y = groundY + Math.sin(Date.now() / 200) * 1;
     }
   }
 
@@ -89,8 +110,8 @@ export class Player {
   reset() {
     this._alive = true;
     this.velocityY = 0;
-    this.jumpsRemaining = MAX_JUMPS;
-    this.sprite.y = GROUND_Y;
+    this.jumpsRemaining = this.overrides.maxJumps ?? MAX_JUMPS;
+    this.sprite.y = this.overrides.groundY ?? GROUND_Y;
     this.sprite.clearTint();
   }
 

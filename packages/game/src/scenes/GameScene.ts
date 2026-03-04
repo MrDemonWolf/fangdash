@@ -1,6 +1,6 @@
 import Phaser from "phaser";
 import { GAME_WIDTH, GROUND_Y } from "@fangdash/shared";
-import type { GameState } from "@fangdash/shared";
+import type { GameState, DebugState, DebugCommand } from "@fangdash/shared";
 import { Player } from "../entities/Player";
 import { ObstacleSpawner } from "../entities/Obstacle";
 import { ParallaxBackground } from "../systems/ParallaxBackground";
@@ -10,6 +10,7 @@ import { ScoreManager } from "../systems/ScoreManager";
 export type GameEventCallback = {
   onStateUpdate?: (state: GameState) => void;
   onGameOver?: (state: GameState) => void;
+  onDebugUpdate?: (state: DebugState) => void;
 };
 
 export class GameScene extends Phaser.Scene {
@@ -22,6 +23,13 @@ export class GameScene extends Phaser.Scene {
   protected jumpKey!: Phaser.Input.Keyboard.Key;
   protected callbacks: GameEventCallback = {};
   protected running = false;
+
+  // Debug state
+  private debugInvincible = false;
+  private debugHitboxes = false;
+  private debugGraphics: Phaser.GameObjects.Graphics | null = null;
+  private debugElapsedMs = 0;
+  private debugSpeedMultiplier = 1.0;
 
   constructor(key = "GameScene") {
     super({ key });
@@ -78,34 +86,53 @@ export class GameScene extends Phaser.Scene {
   update(_time: number, delta: number) {
     if (!this.running || !this.player.alive) return;
 
+    // Apply speed multiplier for debug slow-mo / fast-forward
+    const adjustedDelta = delta * this.debugSpeedMultiplier;
+
     const speed = this.difficulty.currentSpeed;
 
+    // Track elapsed time for debug
+    this.debugElapsedMs += adjustedDelta;
+
     // Update systems
-    this.difficulty.update(delta);
-    this.player.update(delta);
-    this.spawner.update(speed, delta, this.difficulty.minGap, this.difficulty.maxGap);
-    this.background.update(speed, delta);
-    this.scoreManager.update(delta, speed, this.spawner.obstaclesCleared);
+    this.difficulty.update(adjustedDelta);
+    this.player.update(adjustedDelta);
+    this.spawner.update(speed, adjustedDelta, this.difficulty.minGap, this.difficulty.maxGap);
+    this.background.update(speed, adjustedDelta);
+    this.scoreManager.update(adjustedDelta, speed, this.spawner.obstaclesCleared);
 
     // Scroll ground
-    this.ground.tilePositionX += speed * (delta / 1000);
+    this.ground.tilePositionX += speed * (adjustedDelta / 1000);
 
-    // Collision detection
-    const playerBounds = this.player.bounds;
-    for (const obstacle of this.spawner.getActiveObstacles()) {
-      if (Phaser.Geom.Rectangle.Overlaps(playerBounds, obstacle.bounds)) {
-        this.gameOver();
-        return;
+    // Collision detection (skip if invincible)
+    if (!this.debugInvincible) {
+      const playerBounds = this.player.bounds;
+      for (const obstacle of this.spawner.getActiveObstacles()) {
+        if (Phaser.Geom.Rectangle.Overlaps(playerBounds, obstacle.bounds)) {
+          this.gameOver();
+          return;
+        }
       }
+    }
+
+    // Draw hitbox visualizations
+    if (this.debugHitboxes) {
+      this.drawDebugHitboxes();
     }
 
     // Emit state
     const state = this.scoreManager.getState(true, speed);
     this.callbacks.onStateUpdate?.(state);
+
+    // Emit debug state (only when callback is set)
+    if (this.callbacks.onDebugUpdate) {
+      this.callbacks.onDebugUpdate(this.collectDebugState(delta));
+    }
   }
 
   protected startRun() {
     this.running = true;
+    this.debugElapsedMs = 0;
     this.player.reset();
     this.spawner.reset();
     this.difficulty.reset();
@@ -123,5 +150,150 @@ export class GameScene extends Phaser.Scene {
 
   restart() {
     this.startRun();
+  }
+
+  // ── Debug Methods ──
+
+  private collectDebugState(rawDelta: number): DebugState {
+    const bounds = this.player.bounds;
+    return {
+      fps: Math.round(this.game.loop.actualFps),
+      frameDelta: Math.round(rawDelta * 100) / 100,
+      player: {
+        x: Math.round(this.player.sprite.x),
+        y: Math.round(this.player.y),
+        velocityY: Math.round(this.player.currentVelocityY),
+        jumpsRemaining: this.player.currentJumpsRemaining,
+        grounded: this.player.grounded,
+        alive: this.player.alive,
+        bounds: {
+          x: Math.round(bounds.x),
+          y: Math.round(bounds.y),
+          width: Math.round(bounds.width),
+          height: Math.round(bounds.height),
+        },
+      },
+      scoring: {
+        score: Math.floor(this.scoreManager.score),
+        distance: Math.floor(this.scoreManager.distance),
+        obstaclesCleared: this.scoreManager.obstaclesCleared,
+        currentSpeed: Math.round(this.difficulty.currentSpeed),
+        elapsedMs: Math.round(this.debugElapsedMs),
+      },
+      difficulty: {
+        levelName: this.difficulty.levelName,
+        speedMultiplier: this.difficulty.speedMultiplier,
+        spawnRateMultiplier: this.difficulty.spawnRateMultiplier,
+        minGap: Math.round(this.difficulty.minGap),
+        maxGap: Math.round(this.difficulty.maxGap),
+      },
+      spawner: {
+        timeSinceLastSpawn: Math.round(this.spawner.currentTimeSinceLastSpawn),
+        nextSpawnTime: Math.round(this.spawner.currentNextSpawnTime),
+        activeObstacleCount: this.spawner.activeObstacleCount,
+      },
+    };
+  }
+
+  private drawDebugHitboxes() {
+    if (!this.debugGraphics) {
+      this.debugGraphics = this.add.graphics();
+      this.debugGraphics.setDepth(1000);
+    }
+
+    this.debugGraphics.clear();
+
+    // Player hitbox — green
+    const pb = this.player.bounds;
+    this.debugGraphics.lineStyle(2, 0x00ff00, 0.8);
+    this.debugGraphics.strokeRect(pb.x, pb.y, pb.width, pb.height);
+
+    // Obstacle hitboxes — red
+    this.debugGraphics.lineStyle(2, 0xff0000, 0.8);
+    for (const obstacle of this.spawner.getActiveObstacles()) {
+      const ob = obstacle.bounds;
+      this.debugGraphics.strokeRect(ob.x, ob.y, ob.width, ob.height);
+    }
+  }
+
+  private clearDebugHitboxes() {
+    if (this.debugGraphics) {
+      this.debugGraphics.clear();
+      this.debugGraphics.destroy();
+      this.debugGraphics = null;
+    }
+  }
+
+  sendDebugCommand(command: DebugCommand) {
+    switch (command.type) {
+      case "set-constant": {
+        const { key, value } = command.payload as { key: string; value: number };
+        this.applyConstantOverride(key, value);
+        break;
+      }
+
+      case "toggle-hitboxes":
+        this.debugHitboxes = !this.debugHitboxes;
+        if (!this.debugHitboxes) {
+          this.clearDebugHitboxes();
+        }
+        break;
+
+      case "toggle-invincibility":
+        this.debugInvincible = !this.debugInvincible;
+        break;
+
+      case "set-difficulty": {
+        const levelIndex = command.payload as number;
+        this.difficulty.forceDifficulty(levelIndex);
+        break;
+      }
+
+      case "force-game-over":
+        if (this.running && this.player.alive) {
+          this.gameOver();
+        }
+        break;
+
+      case "set-speed-multiplier": {
+        const multiplier = command.payload as number;
+        this.debugSpeedMultiplier = Math.max(0.1, Math.min(3.0, multiplier));
+        break;
+      }
+
+      case "reset-constants":
+        this.debugInvincible = false;
+        this.debugHitboxes = false;
+        this.debugSpeedMultiplier = 1.0;
+        this.difficulty.forceDifficulty(null);
+        this.difficulty.overrides = {};
+        this.player.overrides = {};
+        this.scoreManager.overrides = {};
+        this.clearDebugHitboxes();
+        break;
+    }
+  }
+
+  private applyConstantOverride(key: string, value: number) {
+    switch (key) {
+      // Physics → Player
+      case "GRAVITY": this.player.overrides.gravity = value; break;
+      case "JUMP_VELOCITY": this.player.overrides.jumpVelocity = value; break;
+      case "DOUBLE_JUMP_VELOCITY": this.player.overrides.doubleJumpVelocity = value; break;
+      case "MAX_JUMPS": this.player.overrides.maxJumps = value; break;
+      case "GROUND_Y": this.player.overrides.groundY = value; break;
+      // Speed → DifficultyScaler
+      case "BASE_SPEED": this.difficulty.overrides.baseSpeed = value; break;
+      case "MAX_SPEED": this.difficulty.overrides.maxSpeed = value; break;
+      case "SPEED_INCREMENT": this.difficulty.overrides.speedIncrement = value; break;
+      case "SPEED_INCREASE_INTERVAL_MS": this.difficulty.overrides.speedIntervalMs = value; break;
+      // Scoring → ScoreManager
+      case "SCORE_PER_SECOND": this.scoreManager.overrides.scorePerSecond = value; break;
+      case "SCORE_PER_OBSTACLE": this.scoreManager.overrides.scorePerObstacle = value; break;
+      case "DISTANCE_MULTIPLIER": this.scoreManager.overrides.distanceMultiplier = value; break;
+      // Obstacles → DifficultyScaler
+      case "MIN_OBSTACLE_GAP_MS": this.difficulty.overrides.minGapMs = value; break;
+      case "MAX_OBSTACLE_GAP_MS": this.difficulty.overrides.maxGapMs = value; break;
+    }
   }
 }

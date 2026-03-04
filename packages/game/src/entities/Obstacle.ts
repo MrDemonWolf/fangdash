@@ -106,6 +106,18 @@ export class ObstacleSpawner {
     return this.pool.filter((o) => o.active);
   }
 
+  get currentTimeSinceLastSpawn(): number {
+    return this.timeSinceLastSpawn;
+  }
+
+  get currentNextSpawnTime(): number {
+    return this.nextSpawnTime;
+  }
+
+  get activeObstacleCount(): number {
+    return this.pool.filter((o) => o.active).length;
+  }
+
   private spawn() {
     const inactive = this.pool.find((o) => !o.active);
     if (!inactive) return;
