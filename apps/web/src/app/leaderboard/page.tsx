@@ -97,8 +97,10 @@ export default function LeaderboardPage() {
   const trpc = useTRPC();
   const { data: session } = useSession();
 
+  const period = activeTab === "all-time" ? "all" as const : activeTab;
+
   const leaderboardQuery = useQuery(
-    trpc.score.leaderboard.queryOptions({ limit: 50 })
+    trpc.score.leaderboard.queryOptions({ limit: 50, period })
   );
 
   const entries = leaderboardQuery.data ?? [];
