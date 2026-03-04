@@ -141,3 +141,52 @@ export interface GameState {
   alive: boolean;
   speed: number;
 }
+
+// ── User Roles (FD-58 RBAC) ──
+export type UserRole = "user" | "admin" | "dev";
+
+// ── Debug ──
+export interface DebugState {
+  fps: number;
+  frameDelta: number;
+  player: {
+    x: number;
+    y: number;
+    velocityY: number;
+    jumpsRemaining: number;
+    grounded: boolean;
+    alive: boolean;
+    bounds: { x: number; y: number; width: number; height: number };
+  };
+  scoring: {
+    score: number;
+    distance: number;
+    obstaclesCleared: number;
+    currentSpeed: number;
+    elapsedMs: number;
+  };
+  difficulty: {
+    levelName: string;
+    speedMultiplier: number;
+    spawnRateMultiplier: number;
+    minGap: number;
+    maxGap: number;
+  };
+  spawner: {
+    timeSinceLastSpawn: number;
+    nextSpawnTime: number;
+    activeObstacleCount: number;
+  };
+}
+
+export interface DebugCommand {
+  type:
+    | "set-constant"
+    | "toggle-hitboxes"
+    | "toggle-invincibility"
+    | "set-difficulty"
+    | "force-game-over"
+    | "set-speed-multiplier"
+    | "reset-constants";
+  payload?: unknown;
+}
