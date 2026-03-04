@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { eq, desc } from "drizzle-orm";
 import type { DrizzleD1Database } from "drizzle-orm/d1";
 import { player, playerAchievement, playerSkin, score } from "../db/schema";
 import type * as schema from "../db/schema";
@@ -52,7 +52,7 @@ export async function checkAchievements(
     .select({ value: score.score })
     .from(score)
     .where(eq(score.playerId, playerId))
-    .orderBy(score.score)
+    .orderBy(desc(score.score))
     .limit(1)
     .get();
 
@@ -60,7 +60,7 @@ export async function checkAchievements(
     .select({ value: score.distance })
     .from(score)
     .where(eq(score.playerId, playerId))
-    .orderBy(score.distance)
+    .orderBy(desc(score.distance))
     .limit(1)
     .get();
 

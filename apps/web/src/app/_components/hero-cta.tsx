@@ -1,10 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { useSession } from "@/lib/auth-client";
+import { useSession, signIn } from "@/lib/auth-client";
 
 export function HeroCTA() {
   const { data: session } = useSession();
+
+  const handleSignIn = () => {
+    signIn.social({ provider: "twitch", callbackURL: window.location.origin });
+  };
 
   return (
     <div className="flex flex-col items-center gap-4 sm:flex-row">
@@ -15,12 +19,12 @@ export function HeroCTA() {
         Play Now
       </Link>
       {!session && (
-        <Link
-          href="/sign-in"
-          className="inline-flex items-center justify-center rounded-lg border border-[#0FACED]/40 px-6 py-3 text-sm font-medium text-[#0FACED] transition-colors hover:bg-[#0FACED]/10"
+        <button
+          onClick={handleSignIn}
+          className="inline-flex items-center justify-center rounded-lg border border-[#0FACED]/40 px-6 py-3 text-sm font-medium text-[#0FACED] transition-colors hover:bg-[#0FACED]/10 cursor-pointer"
         >
           Sign In to Save Progress
-        </Link>
+        </button>
       )}
     </div>
   );

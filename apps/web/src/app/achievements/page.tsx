@@ -160,18 +160,19 @@ export default function AchievementsPage() {
   const getAllOptions = trpc.achievement.getAll.queryOptions();
   const listOptions = trpc.achievement.list.queryOptions();
 
-  const { data: authenticatedAchievements, isLoading: isLoadingAuth } =
+  const { data: authenticatedAchievements, isLoading: isLoadingAuth, isError: isErrorAuth } =
     useQuery({
       ...getAllOptions,
       enabled: isSignedIn,
     });
 
-  const { data: publicAchievements, isLoading: isLoadingPublic } = useQuery({
+  const { data: publicAchievements, isLoading: isLoadingPublic, isError: isErrorPublic } = useQuery({
     ...listOptions,
     enabled: !isSignedIn,
   });
 
   const isLoading = isSignedIn ? isLoadingAuth : isLoadingPublic;
+  const isError = isSignedIn ? isErrorAuth : isErrorPublic;
 
   const achievements = isSignedIn
     ? (authenticatedAchievements ?? [])
@@ -225,6 +226,13 @@ export default function AchievementsPage() {
             </button>
           ))}
         </div>
+
+        {/* Error state */}
+        {isError && (
+          <div className="rounded-lg border border-red-500/20 bg-red-500/10 p-4 text-center text-red-400">
+            Something went wrong. Please try again later.
+          </div>
+        )}
 
         {/* Loading state */}
         {isLoading ? (

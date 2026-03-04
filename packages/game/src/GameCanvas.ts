@@ -1,4 +1,4 @@
-import Phaser from "phaser";
+import * as Phaser from "phaser";
 import { GAME_WIDTH, GAME_HEIGHT } from "@fangdash/shared";
 import type { GameState, DebugState, DebugCommand } from "@fangdash/shared";
 import { BootScene } from "./scenes/BootScene";

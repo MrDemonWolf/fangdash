@@ -11,7 +11,6 @@ export const raceRouter = router({
     .input(
       z.object({
         raceId: z.string().min(1),
-        placement: z.number().int().min(1),
         score: z.number().int().min(0),
         distance: z.number().min(0),
         seed: z.string().min(1),
@@ -21,6 +20,13 @@ export const raceRouter = router({
       const playerRecord = await ensurePlayer(ctx.db, ctx.user.id);
       if (!playerRecord) throw new Error("Failed to create player");
 
+      // Compute placement server-side
+      const existingResults = await ctx.db
+        .select({ id: raceHistory.id })
+        .from(raceHistory)
+        .where(eq(raceHistory.raceId, input.raceId));
+      const placement = existingResults.length + 1;
+
       const now = new Date();
       const raceHistoryId = crypto.randomUUID();
 
@@ -28,7 +34,7 @@ export const raceRouter = router({
         id: raceHistoryId,
         raceId: input.raceId,
         playerId: playerRecord.id,
-        placement: input.placement,
+        placement,
         score: input.score,
         distance: input.distance,
         seed: input.seed,
@@ -41,7 +47,7 @@ export const raceRouter = router({
         updatedAt: now,
       };
 
-      if (input.placement === 1) {
+      if (placement === 1) {
         updateSet.racesWon = sql`${player.racesWon} + 1`;
       }
 

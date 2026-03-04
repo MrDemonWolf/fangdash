@@ -1,8 +1,9 @@
-import Phaser from "phaser";
+import * as Phaser from "phaser";
 import {
   GAME_WIDTH,
   GROUND_Y,
   OBSTACLE_TYPES,
+  SeededRandom,
   type ObstacleType,
 } from "@fangdash/shared";
 
@@ -13,6 +14,7 @@ export class Obstacle {
   sprite: Phaser.GameObjects.Sprite;
   type: ObstacleType;
   active = false;
+  private _boundsRect = new Phaser.Geom.Rectangle(0, 0, 0, 0);
 
   constructor(scene: Phaser.Scene, type: ObstacleType) {
     this.type = type;
@@ -26,12 +28,13 @@ export class Obstacle {
   get bounds(): Phaser.Geom.Rectangle {
     const w = this.sprite.displayWidth;
     const h = this.sprite.displayHeight;
-    return new Phaser.Geom.Rectangle(
+    this._boundsRect.setTo(
       this.sprite.x - w / 2 + HITBOX_INSET,
       this.sprite.y - h + HITBOX_INSET,
       w - HITBOX_INSET * 2,
       h - HITBOX_INSET * 2
     );
+    return this._boundsRect;
   }
 
   setType(type: ObstacleType) {
@@ -72,12 +75,16 @@ export class Obstacle {
 export class ObstacleSpawner {
   private pool: Obstacle[] = [];
   private scene: Phaser.Scene;
+  private rng: SeededRandom | null = null;
   private timeSinceLastSpawn = 0;
   private nextSpawnTime = 1500;
   obstaclesCleared = 0;
 
-  constructor(scene: Phaser.Scene, poolSize = 10) {
+  constructor(scene: Phaser.Scene, poolSize = 10, seed?: string) {
     this.scene = scene;
+    if (seed) {
+      this.rng = new SeededRandom(seed);
+    }
     for (let i = 0; i < poolSize; i++) {
       const type = OBSTACLE_TYPES[i % OBSTACLE_TYPES.length];
       this.pool.push(new Obstacle(scene, type));
@@ -90,7 +97,9 @@ export class ObstacleSpawner {
     if (this.timeSinceLastSpawn >= this.nextSpawnTime) {
       this.spawn();
       this.timeSinceLastSpawn = 0;
-      this.nextSpawnTime = Phaser.Math.Between(minGap, maxGap);
+      this.nextSpawnTime = this.rng
+        ? this.rng.intBetween(minGap, maxGap)
+        : Phaser.Math.Between(minGap, maxGap);
     }
 
     for (const obstacle of this.pool) {
@@ -122,7 +131,9 @@ export class ObstacleSpawner {
     const inactive = this.pool.find((o) => !o.active);
     if (!inactive) return;
 
-    const type = OBSTACLE_TYPES[Phaser.Math.Between(0, OBSTACLE_TYPES.length - 1)];
+    const type = this.rng
+      ? this.rng.pick(OBSTACLE_TYPES)
+      : OBSTACLE_TYPES[Phaser.Math.Between(0, OBSTACLE_TYPES.length - 1)];
     inactive.setType(type);
     inactive.spawn();
   }

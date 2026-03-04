@@ -8,7 +8,7 @@ export function CountdownOverlay({ seconds }: CountdownOverlayProps) {
   const display = seconds === 0 ? "GO!" : String(seconds);
 
   return (
-    <div className="absolute inset-0 z-30 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+    <div className="absolute inset-0 z-30 flex items-center justify-center bg-black/60 backdrop-blur-sm" aria-live="assertive">
       <span
         key={display}
         className="animate-ping-once text-8xl font-black tracking-tighter text-white drop-shadow-[0_0_40px_rgba(15,172,237,0.6)]"
