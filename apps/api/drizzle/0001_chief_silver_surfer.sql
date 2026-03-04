@@ -19,9 +19,9 @@ DROP TABLE `player`;--> statement-breakpoint
 ALTER TABLE `__new_player` RENAME TO `player`;--> statement-breakpoint
 PRAGMA foreign_keys=ON;--> statement-breakpoint
 CREATE UNIQUE INDEX `player_user_id_unique` ON `player` (`user_id`);--> statement-breakpoint
-ALTER TABLE `score` ADD `duration` integer NOT NULL;--> statement-breakpoint
+ALTER TABLE `score` ADD `duration` integer DEFAULT 0 NOT NULL;--> statement-breakpoint
 CREATE INDEX `score_player_id_idx` ON `score` (`player_id`);--> statement-breakpoint
-ALTER TABLE `user` ADD `role` text DEFAULT 'user' NOT NULL;--> statement-breakpoint
+ALTER TABLE `user` ADD `role` text DEFAULT 'user' NOT NULL CHECK(`role` IN ('user', 'admin', 'dev'));--> statement-breakpoint
 ALTER TABLE `user` ADD `banned` integer;--> statement-breakpoint
 ALTER TABLE `user` ADD `ban_reason` text;--> statement-breakpoint
 ALTER TABLE `user` ADD `ban_expires` integer;--> statement-breakpoint

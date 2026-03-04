@@ -22,28 +22,13 @@ export const protectedProcedure = t.procedure.use(({ ctx, next }) => {
   });
 });
 
-/**
- * Procedure restricted to users with the 'admin' role.
- */
-export const adminProcedure = protectedProcedure.use(({ ctx, next }) => {
-  if (ctx.user.role !== "admin") {
-    throw new TRPCError({
-      code: "FORBIDDEN",
-      message: "Admin access required",
-    });
-  }
-  return next({ ctx });
-});
+const roleGuard = (allowedRoles: string[], message: string) =>
+  protectedProcedure.use(({ ctx, next }) => {
+    if (!ctx.user.role || !allowedRoles.includes(ctx.user.role)) {
+      throw new TRPCError({ code: "FORBIDDEN", message });
+    }
+    return next({ ctx });
+  });
 
-/**
- * Procedure restricted to users with the 'dev' or 'admin' role.
- */
-export const devProcedure = protectedProcedure.use(({ ctx, next }) => {
-  if (ctx.user.role !== "dev" && ctx.user.role !== "admin") {
-    throw new TRPCError({
-      code: "FORBIDDEN",
-      message: "Developer access required",
-    });
-  }
-  return next({ ctx });
-});
+export const adminProcedure = roleGuard(["admin"], "Admin access required");
+export const devProcedure = roleGuard(["dev", "admin"], "Developer access required");
