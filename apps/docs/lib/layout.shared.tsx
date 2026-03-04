@@ -1,9 +1,5 @@
 import type { BaseLayoutProps } from "fumadocs-ui/layouts/shared";
-
-const GAME_URL =
-  process.env.NODE_ENV === "development"
-    ? "http://localhost:3000"
-    : "https://fangdash.mrdemonwolf.workers.dev";
+import { GAME_URL } from "@/lib/constants";
 
 export function baseOptions(): BaseLayoutProps {
   return {

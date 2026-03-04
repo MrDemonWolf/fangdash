@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { DebugState, DebugCommand } from "@fangdash/shared";
-import { useSession } from "@/lib/auth-client";
+import { useIsDevOrAdmin } from "@/lib/use-role";
 import {
   GRAVITY,
   JUMP_VELOCITY,
@@ -547,8 +547,13 @@ function CheatsTab({ onSendCommand }: { onSendCommand: (cmd: DebugCommand) => vo
 // Main DebugPanel Component
 // ---------------------------------------------------------------------------
 export default function DebugPanel({ debugState, onSendCommand }: DebugPanelProps) {
-  const { data: session } = useSession();
+  const isDevOrAdmin = useIsDevOrAdmin();
   const [visible, setVisible] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
   const [minimized, setMinimized] = useState(false);
   const [activeTab, setActiveTab] = useState<Tab>("STATS");
   const [position, setPosition] = useState({ x: 16, y: 80 });
@@ -556,10 +561,6 @@ export default function DebugPanel({ debugState, onSendCommand }: DebugPanelProp
   const dragOffset = useRef({ x: 0, y: 0 });
   const panelRef = useRef<HTMLDivElement>(null);
   const styleInjected = useRef(false);
-
-  // Check role: only render for dev or admin
-  const userRole = (session?.user as Record<string, unknown> | undefined)?.role as string | undefined;
-  const isDevOrAdmin = userRole === "dev" || userRole === "admin";
 
   // Keyboard shortcut: Ctrl+Shift+D
   useEffect(() => {
@@ -617,7 +618,22 @@ export default function DebugPanel({ debugState, onSendCommand }: DebugPanelProp
     };
   }, []);
 
-  if (!isDevOrAdmin || !visible) return null;
+  if (!mounted || !isDevOrAdmin) return null;
+
+  // Toggle button always visible for dev/admin
+  if (!visible) {
+    return (
+      <button
+        onClick={() => setVisible(true)}
+        onPointerDown={(e) => e.stopPropagation()}
+        className="fixed bottom-4 left-4 flex h-8 w-8 items-center justify-center rounded bg-[#0a0a0a] border border-[#33ff33]/40 text-[#33ff33] text-xs font-mono opacity-60 hover:opacity-100 transition-opacity pointer-events-auto"
+        style={{ zIndex: 99999 }}
+        title="Open Debug Panel (Ctrl+Shift+D)"
+      >
+        {">>"}
+      </button>
+    );
+  }
 
   const tabs: Tab[] = ["STATS", "CONSTANTS", "CHEATS"];
 

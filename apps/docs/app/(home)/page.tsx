@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { CSSProperties } from "react";
 import {
   Gamepad2,
   Swords,
@@ -8,11 +9,7 @@ import {
   Target,
   Layers,
 } from "lucide-react";
-
-const GAME_URL =
-  process.env.NODE_ENV === "development"
-    ? "http://localhost:3000"
-    : "https://fangdash.mrdemonwolf.workers.dev";
+import { GAME_URL } from "@/lib/constants";
 
 function Copyright() {
   return <>{new Date().getFullYear()}</>;
@@ -172,7 +169,7 @@ export default function HomePage() {
             style={
               {
                 "--tw-shadow-color": "color-mix(in srgb, var(--color-fd-primary) 10%, transparent)",
-              } as React.CSSProperties
+              } as CSSProperties
             }
           >
             <div
