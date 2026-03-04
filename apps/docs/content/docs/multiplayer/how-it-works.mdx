@@ -1,5 +1,5 @@
 ---
-title: How Multiplayer Works
+title: How It Works
 description: Technical details about FangDash's multiplayer system.
 ---
 
@@ -24,7 +24,7 @@ Other players appear as semi-transparent "ghost" wolves on your screen. Their po
 
 ## Deterministic Obstacles
 
-FangDash uses a mulberry32 seeded PRNG algorithm. When a race starts, the server generates a random seed and sends it to all players. This means:
+FangDash uses a mulberry32 seeded PRNG algorithm. When a race starts, the server generates a random seed using `crypto.randomUUID()` and broadcasts it to all players. Each client then computes obstacle placements locally using that shared seed. This means:
 
 - Every player sees the exact same obstacle layout
 - The game is fair — no player gets easier or harder obstacles

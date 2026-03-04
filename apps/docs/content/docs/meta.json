@@ -2,13 +2,9 @@
   "title": "FangDash",
   "pages": [
     "index",
-    "---Getting Started---",
     "getting-started",
-    "---Gameplay---",
     "gameplay",
-    "---Multiplayer---",
     "multiplayer",
-    "---Customization---",
     "customization",
     "---Legal---",
     "legal"

@@ -3,20 +3,23 @@ title: Scoring
 description: How scores are calculated and validated in FangDash.
 ---
 
-## How Scoring Works
+## Score Formula
 
-Your score in FangDash is based on how far you run and how long you survive.
+Your score in FangDash is calculated from two sources:
 
-- **Distance** — The primary factor in your score. The further you run, the higher your score
-- **Duration** — How long your run lasted (in seconds)
+- **Time survived** — 10 points per second
+- **Obstacles cleared** — 50 points per obstacle dodged
+
+Your total score is the sum of both. Distance is also tracked separately at a reduced multiplier for achievements and leaderboard stats.
 
 ## Score Validation
 
 FangDash uses server-side anti-cheat validation. When you submit a score:
 
-1. The server checks that your score is physically possible given the game's max speed
-2. Scores that exceed the maximum theoretical rate are automatically rejected
-3. Your score is recorded along with your distance and duration for verification
+1. The server checks that your score does not exceed 15 points per second (the maximum theoretical rate)
+2. Scores that exceed this limit are automatically rejected
+3. Your score, distance, and duration are all recorded for verification
+4. After a valid score is saved, the server automatically checks for any newly earned achievements and skin unlocks
 
 ## Leaderboards
 

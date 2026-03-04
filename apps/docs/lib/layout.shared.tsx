@@ -1,4 +1,5 @@
 import type { BaseLayoutProps } from "fumadocs-ui/layouts/shared";
+import { GAME_URL } from "@/lib/constants";
 
 export function baseOptions(): BaseLayoutProps {
   return {
@@ -8,7 +9,7 @@ export function baseOptions(): BaseLayoutProps {
     links: [
       {
         text: "Play",
-        url: "https://fangdash.mrdemonwolf.workers.dev",
+        url: `${GAME_URL}/play`,
         external: true,
       },
       {

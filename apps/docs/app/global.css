@@ -2,30 +2,47 @@
 @import "fumadocs-ui/css/neutral.css";
 @import "fumadocs-ui/css/preset.css";
 
-:root {
-  --fd-background: #091533;
-  --fd-foreground: #e2e8f0;
-  --fd-muted: #0f1f4a;
-  --fd-muted-foreground: #94a3b8;
-  --fd-border: #1e3a5f;
-  --fd-accent: #0f2440;
-  --fd-accent-foreground: #e2e8f0;
-  --fd-primary: #0faced;
-  --fd-primary-foreground: #091533;
-  --fd-card: #0c1d3d;
-  --fd-card-foreground: #e2e8f0;
-  --fd-ring: #0faced;
-  --fd-sidebar-background: #070f28;
-  --fd-sidebar-foreground: #cbd5e1;
-  --fd-sidebar-border: #1e3a5f;
-  --fd-sidebar-accent: #0f2440;
-  --fd-sidebar-accent-foreground: #e2e8f0;
-  --fd-sidebar-primary: #0faced;
-  --fd-sidebar-primary-foreground: #091533;
-  --fd-sidebar-ring: #0faced;
+@theme {
+  --color-fd-background: #f8fafc;
+  --color-fd-foreground: #0f172a;
+  --color-fd-muted: #f1f5f9;
+  --color-fd-muted-foreground: #64748b;
+  --color-fd-border: #e2e8f0;
+  --color-fd-accent: #f1f5f9;
+  --color-fd-accent-foreground: #0f172a;
+  --color-fd-primary: #0faced;
+  --color-fd-primary-foreground: #ffffff;
+  --color-fd-card: #ffffff;
+  --color-fd-card-foreground: #0f172a;
+  --color-fd-ring: #0faced;
+  --color-fd-secondary: #f1f5f9;
+  --color-fd-secondary-foreground: #0f172a;
+  --color-fd-popover: #ffffff;
+  --color-fd-popover-foreground: #0f172a;
 }
 
-.dark,
-html {
+.dark {
   color-scheme: dark;
+  --color-fd-background: #091533;
+  --color-fd-foreground: #e2e8f0;
+  --color-fd-muted: #0f1f4a;
+  --color-fd-muted-foreground: #94a3b8;
+  --color-fd-border: #1e3a5f;
+  --color-fd-accent: #0f2440;
+  --color-fd-accent-foreground: #e2e8f0;
+  --color-fd-primary: #0faced;
+  --color-fd-primary-foreground: #091533;
+  --color-fd-card: #0c1d3d;
+  --color-fd-card-foreground: #e2e8f0;
+  --color-fd-ring: #0faced;
+  --color-fd-secondary: #0f1f4a;
+  --color-fd-secondary-foreground: #e2e8f0;
+  --color-fd-popover: #0c1d3d;
+  --color-fd-popover-foreground: #e2e8f0;
+}
+
+.dark #nd-sidebar {
+  --color-fd-muted: #0a1835;
+  --color-fd-secondary: #0f2440;
+  --color-fd-muted-foreground: #cbd5e1;
 }

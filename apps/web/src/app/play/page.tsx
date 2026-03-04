@@ -3,211 +3,15 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import OnboardingOverlay from "@/components/game/OnboardingOverlay";
 import DebugPanel from "@/components/game/DebugPanel";
+import { GameHUD } from "@/components/game/GameHUD";
+import { GameOverModal } from "@/components/game/GameOverModal";
 import type { GameState, DebugState, DebugCommand } from "@fangdash/shared";
 import type { DebugChannel, AudioChannel } from "@fangdash/game";
 import { useSession } from "@/lib/auth-client";
+import { useIsDevOrAdmin } from "@/lib/use-role";
 import { useTRPC } from "@/lib/trpc";
+import { getSkinById } from "@fangdash/shared/skins";
 import { useMutation, useQuery } from "@tanstack/react-query";
-
-// ---------------------------------------------------------------------------
-// Inline GameHUD (local version until the shared component lands)
-// ---------------------------------------------------------------------------
-function SpeakerIcon({ muted }: { muted: boolean }) {
-  if (muted) {
-    return (
-      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
-        <line x1="23" y1="9" x2="17" y2="15" />
-        <line x1="17" y1="9" x2="23" y2="15" />
-      </svg>
-    );
-  }
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
-      <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
-      <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
-    </svg>
-  );
-}
-
-function GameHUD({
-  score,
-  distance,
-  elapsedTime,
-  muted = false,
-  volume = 0.5,
-  onToggleMute,
-  onVolumeChange,
-}: {
-  score: number;
-  distance: number;
-  elapsedTime: number;
-  muted?: boolean;
-  volume?: number;
-  onToggleMute?: () => void;
-  onVolumeChange?: (v: number) => void;
-}) {
-  const formatTime = (ms: number) => {
-    const totalSec = Math.floor(ms / 1000);
-    const min = Math.floor(totalSec / 60);
-    const sec = totalSec % 60;
-    return `${min}:${sec.toString().padStart(2, "0")}`;
-  };
-
-  return (
-    <div className="pointer-events-none absolute inset-x-0 top-0 z-10 flex items-center justify-between px-6 py-4 text-white">
-      <div className="flex items-center gap-6 text-lg font-semibold">
-        <span>
-          Score: <span className="text-[#0FACED]">{score}</span>
-        </span>
-        <span>
-          Distance:{" "}
-          <span className="text-[#0FACED]">{Math.floor(distance)}m</span>
-        </span>
-      </div>
-      <div className="flex items-center gap-4">
-        <div className="text-lg font-semibold">
-          Time: <span className="text-[#0FACED]">{formatTime(elapsedTime)}</span>
-        </div>
-        {onToggleMute && (
-          <div className="pointer-events-auto flex items-center gap-2 px-3 py-1.5 rounded-lg bg-black/50 backdrop-blur-sm">
-            <button
-              onClick={onToggleMute}
-              className="text-white/80 hover:text-white transition-colors"
-              aria-label={muted ? "Unmute" : "Mute"}
-            >
-              <SpeakerIcon muted={muted} />
-            </button>
-            {onVolumeChange && (
-              <input
-                type="range"
-                min="0"
-                max="1"
-                step="0.05"
-                value={muted ? 0 : volume}
-                onChange={(e) => onVolumeChange(parseFloat(e.target.value))}
-                className="w-16 h-1 accent-[#0FACED] cursor-pointer"
-                aria-label="Volume"
-              />
-            )}
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// Inline GameOverModal (local version until the shared component lands)
-// ---------------------------------------------------------------------------
-function GameOverModal({
-  state,
-  elapsedTime,
-  onRestart,
-  submitting,
-  submitResult,
-  isSignedIn,
-}: {
-  state: GameState;
-  elapsedTime: number;
-  onRestart: () => void;
-  submitting: boolean;
-  submitResult: {
-    scoreId: string;
-    newAchievements: string[];
-    newSkins: string[];
-  } | null;
-  isSignedIn: boolean;
-}) {
-  const formatTime = (ms: number) => {
-    const totalSec = Math.floor(ms / 1000);
-    const min = Math.floor(totalSec / 60);
-    const sec = totalSec % 60;
-    return `${min}:${sec.toString().padStart(2, "0")}`;
-  };
-
-  return (
-    <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/70">
-      <div className="mx-4 w-full max-w-md rounded-2xl border border-[#0FACED]/30 bg-[#091533] p-8 text-center shadow-2xl">
-        <h2 className="mb-6 text-3xl font-bold text-white">Game Over</h2>
-
-        <div className="mb-6 space-y-2 text-lg text-gray-300">
-          <p>
-            Score:{" "}
-            <span className="font-semibold text-[#0FACED]">{state.score}</span>
-          </p>
-          <p>
-            Distance:{" "}
-            <span className="font-semibold text-[#0FACED]">
-              {Math.floor(state.distance)}m
-            </span>
-          </p>
-          <p>
-            Obstacles Cleared:{" "}
-            <span className="font-semibold text-[#0FACED]">
-              {state.obstaclesCleared}
-            </span>
-          </p>
-          <p>
-            Time:{" "}
-            <span className="font-semibold text-[#0FACED]">
-              {formatTime(elapsedTime)}
-            </span>
-          </p>
-        </div>
-
-        {isSignedIn && submitting && (
-          <p className="mb-4 text-sm text-gray-400">Saving score...</p>
-        )}
-
-        {submitResult &&
-          (submitResult.newAchievements.length > 0 ||
-            submitResult.newSkins.length > 0) && (
-            <div className="mb-6 rounded-lg border border-[var(--color-fang-gold)]/40 bg-[var(--color-fang-gold)]/10 p-4">
-              {submitResult.newAchievements.length > 0 && (
-                <div className="mb-2">
-                  <p className="text-sm font-semibold text-[var(--color-fang-gold)]">
-                    New Achievements!
-                  </p>
-                  {submitResult.newAchievements.map((id) => (
-                    <p key={id} className="text-sm text-gray-300">
-                      {id}
-                    </p>
-                  ))}
-                </div>
-              )}
-              {submitResult.newSkins.length > 0 && (
-                <div>
-                  <p className="text-sm font-semibold text-[var(--color-fang-gold)]">
-                    New Skins Unlocked!
-                  </p>
-                  {submitResult.newSkins.map((id) => (
-                    <p key={id} className="text-sm text-gray-300">
-                      {id}
-                    </p>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
-
-        {!isSignedIn && (
-          <p className="mb-4 text-sm text-gray-400">
-            Sign in to save your scores and unlock achievements!
-          </p>
-        )}
-
-        <button
-          onClick={onRestart}
-          className="rounded-lg bg-[#0FACED] px-8 py-3 font-semibold text-[#091533] transition-colors hover:bg-[#0FACED]/80"
-        >
-          Play Again
-        </button>
-      </div>
-    </div>
-  );
-}
 
 // ---------------------------------------------------------------------------
 // Main Play Page
@@ -239,8 +43,7 @@ export default function PlayPage() {
 
   const { data: session } = useSession();
   const isSignedIn = !!session?.user;
-  const userRole = (session?.user as Record<string, unknown> | undefined)?.role as string | undefined;
-  const isDevOrAdmin = userRole === "dev" || userRole === "admin";
+  const isDevOrAdmin = useIsDevOrAdmin();
 
   // Fetch equipped skin (only when signed in)
   const trpc = useTRPC();
@@ -255,6 +58,7 @@ export default function PlayPage() {
     mutate: submitScore,
     data: submitResult,
     isPending: submitting,
+    error: submitError,
   } = useMutation(
     trpc.score.submit.mutationOptions({
       onError: (err) => {
@@ -326,16 +130,14 @@ export default function PlayPage() {
 
     const { game, debug, audio } = createGame({
       parent: containerRef.current,
-      skinKey: skinData?.skinId,
+      skinKey: skinData?.skinId ? getSkinById(skinData.skinId)?.spriteKey ?? "wolf-gray" : undefined,
       onStateUpdate: (state) => {
         setGameState(state);
       },
       onGameOver: handleGameOver,
-      ...(isDevOrAdmin && {
-        onDebugUpdate: (state: DebugState) => {
-          setDebugState(state);
-        },
-      }),
+      onDebugUpdate: (state: DebugState) => {
+        setDebugState(state);
+      },
     });
 
     gameRef.current = game;
@@ -344,7 +146,7 @@ export default function PlayPage() {
     setAudioMuted(audio.getMuted());
     setAudioVolume(audio.getVolume());
     startTimer();
-  }, [skinData?.skinId, handleGameOver, startTimer, isDevOrAdmin]);
+  }, [skinData?.skinId, handleGameOver, startTimer]);
 
   // Check onboarding status on mount
   useEffect(() => {
@@ -451,15 +253,17 @@ export default function PlayPage() {
             onRestart={handleRestart}
             submitting={submitting}
             submitResult={submitResult ?? null}
+            submitError={submitError}
             isSignedIn={isSignedIn}
           />
         )}
 
-        {/* Debug Panel (dev/admin only, Ctrl+Shift+D) */}
-        {isDevOrAdmin && (
-          <DebugPanel debugState={debugState} onSendCommand={handleDebugCommand} />
-        )}
       </div>
+
+      {/* Debug Panel (dev/admin only, Ctrl+Shift+D) */}
+      {isDevOrAdmin && (
+        <DebugPanel debugState={debugState} onSendCommand={handleDebugCommand} />
+      )}
     </main>
   );
 }

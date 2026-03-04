@@ -1,30 +1,32 @@
 ---
-title: Difficulty Scaling
+title: Difficulty
 description: How FangDash gets harder the further you run.
 ---
 
 FangDash uses a progressive difficulty system. The game starts easy and ramps up as you run further.
 
-## Speed Scaling
+## Difficulty Tiers
 
-| Distance | Speed | Difficulty |
-| --- | --- | --- |
-| 0m | 300 px/s | Easy |
-| 500m | 400 px/s | Medium |
-| 1500m | 550 px/s | Hard |
-| 3000m | 700 px/s | Expert |
-| 5000m+ | 800 px/s | Maximum |
+| Distance | Difficulty | Speed Multiplier | Spawn Rate Multiplier |
+| --- | --- | --- | --- |
+| 0m | Easy | 1.0x | 1.0x |
+| 500m | Medium | 1.3x | 1.2x |
+| 1,500m | Hard | 1.6x | 1.5x |
+| 3,000m | Insane | 2.0x | 1.8x |
+| 5,000m+ | Nightmare | 2.5x | 2.2x |
+
+Base speed is 300 px/s. At Nightmare difficulty, speed reaches 750 px/s (capped at 800 px/s max).
 
 ## What Changes
 
 As difficulty increases:
 
 - **Speed increases** — Your wolf runs faster, giving you less reaction time
-- **Gaps narrow** — The space between obstacles gets tighter
+- **Gaps narrow** — Obstacles spawn more frequently, tightening the space between them
 - **Patterns get complex** — Obstacle combinations become more challenging
 
 ## Tips for High Scores
 
 - The first 500 meters are free points. Don't take unnecessary risks
 - Medium difficulty is where most players start losing lives. Practice here
-- At expert and above, every jump needs to be precise. Watch the patterns
+- At Insane and above, every jump needs to be precise. Watch the patterns
