@@ -1,0 +1,3 @@
+-- This migration is intentionally left as a no-op.
+-- Dev role seeding is handled by the seed-dev-role script (scripts/seed-dev-role.sh).
+-- Run it manually in local/dev environments only.

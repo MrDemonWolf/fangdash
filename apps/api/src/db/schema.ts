@@ -10,6 +10,10 @@ export const user = sqliteTable("user", {
   image: text("image"),
   twitchId: text("twitch_id").unique(),
   twitchAvatar: text("twitch_avatar"),
+  role: text("role").notNull().default("user"),
+  banned: integer("banned", { mode: "boolean" }),
+  banReason: text("ban_reason"),
+  banExpires: integer("ban_expires", { mode: "timestamp" }),
   createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
   updatedAt: integer("updated_at", { mode: "timestamp" }).notNull(),
 });

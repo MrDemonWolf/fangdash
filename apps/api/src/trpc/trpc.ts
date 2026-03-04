@@ -21,3 +21,14 @@ export const protectedProcedure = t.procedure.use(({ ctx, next }) => {
     },
   });
 });
+
+const roleGuard = (allowedRoles: string[], message: string) =>
+  protectedProcedure.use(({ ctx, next }) => {
+    if (!ctx.user.role || !allowedRoles.includes(ctx.user.role)) {
+      throw new TRPCError({ code: "FORBIDDEN", message });
+    }
+    return next({ ctx });
+  });
+
+export const adminProcedure = roleGuard(["admin"], "Admin access required");
+export const devProcedure = roleGuard(["dev", "admin"], "Developer access required");
