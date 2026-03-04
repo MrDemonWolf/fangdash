@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { eq, desc, sql } from "drizzle-orm";
+import { eq, desc, sql, gte } from "drizzle-orm";
 import { router, protectedProcedure, publicProcedure } from "../trpc";
 import { score, player, user } from "../../db/schema";
 import { ensurePlayer } from "../../lib/ensure-player";
@@ -85,11 +85,18 @@ export const scoreRouter = router({
       z
         .object({
           limit: z.number().int().min(1).max(100).default(50),
+          period: z.enum(["daily", "weekly", "all"]).default("all"),
         })
         .optional()
     )
     .query(async ({ ctx, input }) => {
       const limit = input?.limit ?? 50;
+      const period = input?.period ?? "all";
+
+      const cutoff =
+        period === "daily"  ? new Date(Date.now() - 24 * 60 * 60 * 1000) :
+        period === "weekly" ? new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) :
+        null;
 
       const rows = await ctx.db
         .select({
@@ -104,6 +111,7 @@ export const scoreRouter = router({
         .from(score)
         .innerJoin(player, eq(score.playerId, player.id))
         .innerJoin(user, eq(player.userId, user.id))
+        .where(cutoff ? gte(score.createdAt, cutoff) : undefined)
         .orderBy(desc(score.score))
         .limit(limit);
 
