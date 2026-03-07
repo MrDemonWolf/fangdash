@@ -38,6 +38,7 @@ export default function PlayPage() {
   const [finalElapsedTime, setFinalElapsedTime] = useState(0);
   const [showOnboarding, setShowOnboarding] = useState<boolean | null>(null);
   const [debugState, setDebugState] = useState<DebugState | null>(null);
+  const [gameKey, setGameKey] = useState(0);
   const [audioMuted, setAudioMuted] = useState(false);
   const [audioVolume, setAudioVolume] = useState(0.5);
 
@@ -106,6 +107,8 @@ export default function PlayPage() {
 
   const startGame = useCallback(async () => {
     if (!containerRef.current) return;
+    setGameKey((k) => k + 1);
+    setDebugState(null);
 
     // Dynamically import Phaser game (not available during SSR)
     const { createGame, destroyGame } = await import("@fangdash/game");
@@ -262,7 +265,7 @@ export default function PlayPage() {
 
       {/* Debug Panel (dev/admin only, Ctrl+Shift+D) */}
       {isDevOrAdmin && (
-        <DebugPanel debugState={debugState} onSendCommand={handleDebugCommand} />
+        <DebugPanel debugState={debugState} onSendCommand={handleDebugCommand} gameKey={gameKey} />
       )}
     </main>
   );
