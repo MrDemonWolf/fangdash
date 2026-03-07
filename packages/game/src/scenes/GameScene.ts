@@ -31,6 +31,7 @@ export class GameScene extends Phaser.Scene {
   // Debug state
   private debugInvincible = false;
   private debugHitboxes = false;
+  private debugRenderBoxes = false;
   private debugGraphics: Phaser.GameObjects.Graphics | null = null;
   private debugElapsedMs = 0;
   private debugSpeedMultiplier = 1.0;
@@ -95,6 +96,7 @@ export class GameScene extends Phaser.Scene {
     });
 
     this.running = false;
+    this.callbacks.onDebugUpdate?.(this.collectDebugState(0));
   }
 
   update(_time: number, delta: number) {
@@ -129,8 +131,8 @@ export class GameScene extends Phaser.Scene {
       }
     }
 
-    // Draw hitbox visualizations
-    if (this.debugHitboxes) {
+    // Draw hitbox/render box visualizations
+    if (this.debugHitboxes || this.debugRenderBoxes) {
       this.drawDebugHitboxes();
     }
 
@@ -210,6 +212,12 @@ export class GameScene extends Phaser.Scene {
         nextSpawnTime: Math.round(this.spawner.currentNextSpawnTime),
         activeObstacleCount: this.spawner.activeObstacleCount,
       },
+      debug: {
+        hitboxes: this.debugHitboxes,
+        renderBoxes: this.debugRenderBoxes,
+        invincible: this.debugInvincible,
+        speedMultiplier: this.debugSpeedMultiplier,
+      },
     };
   }
 
@@ -221,16 +229,35 @@ export class GameScene extends Phaser.Scene {
 
     this.debugGraphics.clear();
 
-    // Player hitbox — green
-    const pb = this.player.bounds;
-    this.debugGraphics.lineStyle(2, 0x00ff00, 0.8);
-    this.debugGraphics.strokeRect(pb.x, pb.y, pb.width, pb.height);
+    // Collision hitboxes
+    if (this.debugHitboxes) {
+      // Player hitbox — green
+      const pb = this.player.bounds;
+      this.debugGraphics.lineStyle(2, 0x00ff00, 0.8);
+      this.debugGraphics.strokeRect(pb.x, pb.y, pb.width, pb.height);
 
-    // Obstacle hitboxes — red
-    this.debugGraphics.lineStyle(2, 0xff0000, 0.8);
-    for (const obstacle of this.spawner.getActiveObstacles()) {
-      const ob = obstacle.bounds;
-      this.debugGraphics.strokeRect(ob.x, ob.y, ob.width, ob.height);
+      // Obstacle hitboxes — red
+      this.debugGraphics.lineStyle(2, 0xff0000, 0.8);
+      for (const obstacle of this.spawner.getActiveObstacles()) {
+        const ob = obstacle.bounds;
+        this.debugGraphics.strokeRect(ob.x, ob.y, ob.width, ob.height);
+      }
+    }
+
+    // Render/sprite bounds
+    if (this.debugRenderBoxes) {
+      // Player sprite bounds — cyan
+      const playerSprite = this.player.sprite;
+      const pb = playerSprite.getBounds();
+      this.debugGraphics.lineStyle(2, 0x0faced, 0.8);
+      this.debugGraphics.strokeRect(pb.x, pb.y, pb.width, pb.height);
+
+      // Obstacle sprite bounds — orange
+      this.debugGraphics.lineStyle(2, 0xff6b2b, 0.8);
+      for (const obstacle of this.spawner.getActiveObstacles()) {
+        const ob = obstacle.sprite.getBounds();
+        this.debugGraphics.strokeRect(ob.x, ob.y, ob.width, ob.height);
+      }
     }
   }
 
@@ -252,7 +279,14 @@ export class GameScene extends Phaser.Scene {
 
       case "toggle-hitboxes":
         this.debugHitboxes = !this.debugHitboxes;
-        if (!this.debugHitboxes) {
+        if (!this.debugHitboxes && !this.debugRenderBoxes) {
+          this.clearDebugHitboxes();
+        }
+        break;
+
+      case "toggle-render-boxes":
+        this.debugRenderBoxes = !this.debugRenderBoxes;
+        if (!this.debugRenderBoxes && !this.debugHitboxes) {
           this.clearDebugHitboxes();
         }
         break;
@@ -282,6 +316,7 @@ export class GameScene extends Phaser.Scene {
       case "reset-constants":
         this.debugInvincible = false;
         this.debugHitboxes = false;
+        this.debugRenderBoxes = false;
         this.debugSpeedMultiplier = 1.0;
         this.difficulty.forceDifficulty(null);
         this.difficulty.overrides = {};
@@ -290,6 +325,7 @@ export class GameScene extends Phaser.Scene {
         this.clearDebugHitboxes();
         break;
     }
+    this.callbacks.onDebugUpdate?.(this.collectDebugState(0));
   }
 
   private applyConstantOverride(key: string, value: number) {
