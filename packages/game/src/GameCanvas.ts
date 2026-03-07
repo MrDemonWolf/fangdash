@@ -13,6 +13,12 @@ export interface DebugChannel {
   sendCommand: (command: DebugCommand) => void;
 }
 
+export interface GameChannel {
+  start: () => void;
+  pause: () => void;
+  resume: () => void;
+}
+
 export interface GameCanvasOptions {
   parent: HTMLElement;
   skinKey?: string;
@@ -32,6 +38,7 @@ export interface GameCanvasResult {
   game: Phaser.Game;
   debug: DebugChannel;
   audio: AudioChannel;
+  gameChannel: GameChannel;
 }
 
 export interface RaceCanvasOptions {
@@ -71,7 +78,7 @@ function createPhaserConfig(
       },
     },
     scale: {
-      mode: Phaser.Scale.ENVELOP,
+      mode: Phaser.Scale.FIT,
       autoCenter: Phaser.Scale.CENTER_BOTH,
     },
     input: {
@@ -136,7 +143,24 @@ export function createGame(options: GameCanvasOptions): GameCanvasResult {
     },
   };
 
-  return { game, debug, audio };
+  const gameChannel: GameChannel = {
+    start: () => {
+      const gameScene = game.scene.getScene("GameScene") as GameScene;
+      if (gameScene) {
+        gameScene.beginRun();
+      }
+    },
+    pause: () => {
+      const gameScene = game.scene.getScene("GameScene") as GameScene;
+      gameScene?.pause();
+    },
+    resume: () => {
+      const gameScene = game.scene.getScene("GameScene") as GameScene;
+      gameScene?.resume();
+    },
+  };
+
+  return { game, debug, audio, gameChannel };
 }
 
 export function createRaceGame(options: RaceCanvasOptions): RaceCanvasResult {

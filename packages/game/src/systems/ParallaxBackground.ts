@@ -16,8 +16,14 @@ export class ParallaxBackground {
   }
 
   private addLayer(scene: Phaser.Scene, key: string, speed: number) {
-    const img1 = scene.add.image(0, 0, key).setOrigin(0, 0).setDepth(-10 + this.layers.length);
-    const img2 = scene.add.image(GAME_WIDTH * 2, 0, key).setOrigin(0, 0).setDepth(-10 + this.layers.length);
+    const img1 = scene.add.image(0, 0, key)
+      .setOrigin(0, 0)
+      .setDepth(-10 + this.layers.length)
+      .setDisplaySize(GAME_WIDTH * 2, GAME_HEIGHT);
+    const img2 = scene.add.image(GAME_WIDTH * 2, 0, key)
+      .setOrigin(0, 0)
+      .setDepth(-10 + this.layers.length)
+      .setDisplaySize(GAME_WIDTH * 2, GAME_HEIGHT);
 
     this.layers.push({
       images: [img1, img2],

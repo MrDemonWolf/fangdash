@@ -2,6 +2,41 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { DebugState, DebugCommand } from "@fangdash/shared";
+
+// ---------------------------------------------------------------------------
+// localStorage persistence helpers
+// ---------------------------------------------------------------------------
+const DEBUG_FLAGS_KEY = "fangdash:debug:flags";
+
+interface StoredDebugFlags {
+  hitboxes: boolean;
+  renderBoxes: boolean;
+  invincible: boolean;
+  difficulty: number;
+  speedMultiplier: number;
+}
+
+const DEFAULT_DEBUG_FLAGS: StoredDebugFlags = {
+  hitboxes: false,
+  renderBoxes: false,
+  invincible: false,
+  difficulty: 0,
+  speedMultiplier: 1.0,
+};
+
+function loadDebugFlags(): StoredDebugFlags {
+  try {
+    const raw = localStorage.getItem(DEBUG_FLAGS_KEY);
+    if (!raw) return { ...DEFAULT_DEBUG_FLAGS };
+    return { ...DEFAULT_DEBUG_FLAGS, ...JSON.parse(raw) };
+  } catch {
+    return { ...DEFAULT_DEBUG_FLAGS };
+  }
+}
+
+function saveDebugFlags(flags: StoredDebugFlags) {
+  localStorage.setItem(DEBUG_FLAGS_KEY, JSON.stringify(flags));
+}
 import { useIsDevOrAdmin } from "@/lib/use-role";
 import {
   GRAVITY,
@@ -27,6 +62,7 @@ type Tab = "STATS" | "CONSTANTS" | "CHEATS";
 interface DebugPanelProps {
   debugState: DebugState | null;
   onSendCommand: (command: DebugCommand) => void;
+  gameKey: number;
 }
 
 // ---------------------------------------------------------------------------
@@ -37,13 +73,13 @@ const CRT_STYLES = `
 
 .debug-crt {
   font-family: 'Press Start 2P', 'Courier New', monospace;
-  background: #0a0a0a;
-  color: #33ff33;
-  border: 2px solid #33ff33;
+  background: #0f0f1a;
+  color: #0FACED;
+  border: 2px solid #0FACED;
   border-radius: 8px;
   box-shadow:
-    0 0 10px rgba(51, 255, 51, 0.3),
-    0 0 20px rgba(51, 255, 51, 0.1),
+    0 0 10px rgba(15, 172, 237, 0.3),
+    0 0 20px rgba(15, 172, 237, 0.1),
     inset 0 0 30px rgba(0, 0, 0, 0.5);
   position: relative;
   overflow: hidden;
@@ -78,8 +114,8 @@ const CRT_STYLES = `
 }
 
 .debug-crt-title {
-  background: #1a1a1a;
-  border-bottom: 1px solid #33ff33;
+  background: #1a1a2e;
+  border-bottom: 1px solid #0FACED;
   cursor: grab;
   user-select: none;
   padding: 6px 8px;
@@ -94,8 +130,8 @@ const CRT_STYLES = `
 
 .debug-tab {
   background: transparent;
-  color: #33ff33;
-  border: 1px solid #33ff33;
+  color: #0FACED;
+  border: 1px solid #0FACED;
   padding: 3px 8px;
   font-family: 'Press Start 2P', monospace;
   font-size: 7px;
@@ -104,13 +140,13 @@ const CRT_STYLES = `
 }
 
 .debug-tab:hover {
-  background: rgba(51, 255, 51, 0.15);
-  text-shadow: 0 0 6px #33ff33;
+  background: rgba(15, 172, 237, 0.15);
+  text-shadow: 0 0 6px #0FACED;
 }
 
 .debug-tab-active {
-  background: #33ff33;
-  color: #0a0a0a;
+  background: #0FACED;
+  color: #0f0f1a;
   text-shadow: none;
 }
 
@@ -121,9 +157,9 @@ const CRT_STYLES = `
 }
 
 .debug-value {
-  color: #33ff33;
+  color: #0FACED;
   font-size: 7px;
-  text-shadow: 0 0 4px rgba(51, 255, 51, 0.5);
+  text-shadow: 0 0 4px rgba(15, 172, 237, 0.5);
 }
 
 .debug-value-warn {
@@ -138,7 +174,7 @@ const CRT_STYLES = `
 
 .debug-section-header {
   color: #0FACED;
-  font-size: 7px;
+  font-size: 8px;
   border-bottom: 1px dashed #0FACED;
   padding-bottom: 2px;
   margin-bottom: 4px;
@@ -147,9 +183,9 @@ const CRT_STYLES = `
 }
 
 .debug-btn {
-  background: #1a1a1a;
-  color: #33ff33;
-  border: 1px solid #33ff33;
+  background: #1a1a2e;
+  color: #0FACED;
+  border: 1px solid #0FACED;
   padding: 4px 10px;
   font-family: 'Press Start 2P', monospace;
   font-size: 7px;
@@ -159,9 +195,10 @@ const CRT_STYLES = `
 }
 
 .debug-btn:hover {
-  background: #33ff33;
-  color: #0a0a0a;
-  box-shadow: 0 0 8px rgba(51, 255, 51, 0.4);
+  background: #ff6b2b;
+  color: #0f0f1a;
+  border-color: #ff6b2b;
+  box-shadow: 0 0 8px rgba(255, 107, 43, 0.4);
 }
 
 .debug-btn-danger {
@@ -171,7 +208,8 @@ const CRT_STYLES = `
 
 .debug-btn-danger:hover {
   background: #ff3333;
-  color: #0a0a0a;
+  color: #0f0f1a;
+  border-color: #ff3333;
   box-shadow: 0 0 8px rgba(255, 51, 51, 0.4);
 }
 
@@ -186,7 +224,7 @@ const CRT_STYLES = `
 .debug-toggle-box {
   width: 14px;
   height: 14px;
-  border: 1px solid #33ff33;
+  border: 1px solid #0FACED;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -195,9 +233,10 @@ const CRT_STYLES = `
 }
 
 .debug-toggle-box-on {
-  background: #33ff33;
-  color: #0a0a0a;
-  box-shadow: 0 0 6px rgba(51, 255, 51, 0.5);
+  background: #ff6b2b;
+  color: #0f0f1a;
+  border-color: #ff6b2b;
+  box-shadow: 0 0 6px rgba(255, 107, 43, 0.5);
 }
 
 .debug-slider-container {
@@ -212,8 +251,8 @@ const CRT_STYLES = `
   appearance: none;
   width: 100%;
   height: 4px;
-  background: #1a1a1a;
-  border: 1px solid #33ff33;
+  background: #1a1a2e;
+  border: 1px solid #0FACED;
   outline: none;
 }
 
@@ -222,7 +261,7 @@ const CRT_STYLES = `
   appearance: none;
   width: 10px;
   height: 14px;
-  background: #33ff33;
+  background: #0FACED;
   cursor: pointer;
   border: none;
 }
@@ -230,15 +269,15 @@ const CRT_STYLES = `
 .debug-slider::-moz-range-thumb {
   width: 10px;
   height: 14px;
-  background: #33ff33;
+  background: #0FACED;
   cursor: pointer;
   border: none;
 }
 
 .debug-select {
-  background: #1a1a1a;
-  color: #33ff33;
-  border: 1px solid #33ff33;
+  background: #1a1a2e;
+  color: #0FACED;
+  border: 1px solid #0FACED;
   padding: 3px 6px;
   font-family: 'Press Start 2P', monospace;
   font-size: 7px;
@@ -247,8 +286,8 @@ const CRT_STYLES = `
 }
 
 .debug-select option {
-  background: #0a0a0a;
-  color: #33ff33;
+  background: #0f0f1a;
+  color: #0FACED;
 }
 
 @keyframes debug-flicker {
@@ -265,8 +304,8 @@ const CRT_STYLES = `
 
 .debug-minimize-btn {
   background: none;
-  border: 1px solid #33ff33;
-  color: #33ff33;
+  border: 1px solid #0FACED;
+  color: #0FACED;
   width: 16px;
   height: 16px;
   font-size: 10px;
@@ -279,9 +318,25 @@ const CRT_STYLES = `
 }
 
 .debug-minimize-btn:hover {
-  background: #33ff33;
-  color: #0a0a0a;
+  background: #0FACED;
+  color: #0f0f1a;
 }
+
+.debug-toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 5px 0;
+  cursor: pointer;
+  border-bottom: 1px solid rgba(15, 172, 237, 0.1);
+}
+.debug-toggle-row:hover { background: rgba(15, 172, 237, 0.05); }
+
+.debug-pill { font-size: 6px; padding: 2px 6px; border: 1px solid currentColor; }
+.debug-pill-on  { background: #ff6b2b; color: #0f0f1a; border-color: #ff6b2b; box-shadow: 0 0 6px rgba(255,107,43,.5); }
+.debug-pill-off { color: #444; border-color: #333; }
+
+.debug-slider-labels { display: flex; justify-content: space-between; font-size: 6px; color: #444; margin-top: 2px; }
 `;
 
 // ---------------------------------------------------------------------------
@@ -455,71 +510,113 @@ function ConstantsTab({ onSendCommand }: { onSendCommand: (cmd: DebugCommand) =>
 // ---------------------------------------------------------------------------
 const DIFFICULTY_NAMES = ["EASY", "MEDIUM", "HARD", "INSANE", "NIGHTMARE"] as const;
 
-function CheatsTab({ onSendCommand }: { onSendCommand: (cmd: DebugCommand) => void }) {
-  const [hitboxes, setHitboxes] = useState(false);
-  const [invincible, setInvincible] = useState(false);
-  const [speedMultiplier, setSpeedMultiplier] = useState(1.0);
-  const [difficulty, setDifficulty] = useState(0);
+function CheatsTab({ debugState, onSendCommand, gameKey }: { debugState: DebugState | null; onSendCommand: (cmd: DebugCommand) => void; gameKey: number }) {
+  const [localFlags, setLocalFlags] = useState<StoredDebugFlags>(loadDebugFlags);
+  const [difficulty, setDifficulty] = useState(() => loadDebugFlags().difficulty);
+  const prevGameKeyRef = useRef(-1);
+
+  // Prefer live game state when available, else fall back to localStorage
+  const hitboxes = debugState?.debug?.hitboxes ?? localFlags.hitboxes;
+  const renderBoxes = debugState?.debug?.renderBoxes ?? localFlags.renderBoxes;
+  const invincible = debugState?.debug?.invincible ?? localFlags.invincible;
+  const speedMultiplier = debugState?.debug?.speedMultiplier ?? localFlags.speedMultiplier;
+
+  // Sync stored flags to game when a new game starts (gameKey increments from event handler,
+  // debugState becomes non-null from Phaser's rAF loop — always separate React batch cycles)
+  useEffect(() => {
+    if (debugState !== null && gameKey !== prevGameKeyRef.current) {
+      prevGameKeyRef.current = gameKey;
+      const stored = loadDebugFlags();
+      if (stored.hitboxes) onSendCommand({ type: "toggle-hitboxes" });
+      if (stored.renderBoxes) onSendCommand({ type: "toggle-render-boxes" });
+      if (stored.invincible) onSendCommand({ type: "toggle-invincibility" });
+      if (stored.difficulty !== 0) onSendCommand({ type: "set-difficulty", payload: stored.difficulty });
+      if (stored.speedMultiplier !== 1.0) onSendCommand({ type: "set-speed-multiplier", payload: stored.speedMultiplier });
+    }
+  }, [debugState, gameKey, onSendCommand]);
 
   const toggleHitboxes = () => {
-    setHitboxes((v) => !v);
+    const updated = { ...localFlags, hitboxes: !hitboxes };
+    setLocalFlags(updated);
+    saveDebugFlags(updated);
     onSendCommand({ type: "toggle-hitboxes" });
   };
 
-  const toggleInvincibility = () => {
-    setInvincible((v) => !v);
-    onSendCommand({ type: "toggle-invincibility" });
+  const toggleRenderBoxes = () => {
+    const updated = { ...localFlags, renderBoxes: !renderBoxes };
+    setLocalFlags(updated);
+    saveDebugFlags(updated);
+    onSendCommand({ type: "toggle-render-boxes" });
   };
 
-  const handleSpeedChange = (val: number) => {
-    setSpeedMultiplier(val);
-    onSendCommand({ type: "set-speed-multiplier", payload: val });
+  const toggleInvincible = () => {
+    const updated = { ...localFlags, invincible: !invincible };
+    setLocalFlags(updated);
+    saveDebugFlags(updated);
+    onSendCommand({ type: "toggle-invincibility" });
   };
 
   const handleDifficultyChange = (idx: number) => {
     setDifficulty(idx);
+    const updated = { ...localFlags, difficulty: idx };
+    setLocalFlags(updated);
+    saveDebugFlags(updated);
     onSendCommand({ type: "set-difficulty", payload: idx });
   };
 
-  const handleForceGameOver = () => {
-    onSendCommand({ type: "force-game-over" });
+  const handleSpeedMultiplierChange = (value: number) => {
+    const updated = { ...localFlags, speedMultiplier: value };
+    setLocalFlags(updated);
+    saveDebugFlags(updated);
+    onSendCommand({ type: "set-speed-multiplier", payload: value });
+  };
+
+  const handleReset = () => {
+    setDifficulty(0);
+    setLocalFlags({ ...DEFAULT_DEBUG_FLAGS });
+    saveDebugFlags({ ...DEFAULT_DEBUG_FLAGS });
+    if (hitboxes) onSendCommand({ type: "toggle-hitboxes" });
+    if (renderBoxes) onSendCommand({ type: "toggle-render-boxes" });
+    if (invincible) onSendCommand({ type: "toggle-invincibility" });
+    if (difficulty !== 0) onSendCommand({ type: "set-difficulty", payload: 0 });
+    if (speedMultiplier !== 1.0) onSendCommand({ type: "set-speed-multiplier", payload: 1.0 });
   };
 
   return (
-    <div className="space-y-3 p-2">
-      <div className="debug-section-header">{"// TOGGLES"}</div>
-
-      <label className="debug-toggle" onClick={toggleHitboxes}>
-        <span className={`debug-toggle-box ${hitboxes ? "debug-toggle-box-on" : ""}`}>
-          {hitboxes ? "X" : ""}
-        </span>
+    <div className="p-2">
+      <div className="debug-section-header">{"// VISIBILITY"}</div>
+      <div className="debug-toggle-row" onClick={toggleHitboxes}>
         <span className="debug-label">HITBOX VIZ</span>
-      </label>
+        <span className={`debug-pill ${hitboxes ? "debug-pill-on" : "debug-pill-off"}`}>{hitboxes ? "ON" : "OFF"}</span>
+      </div>
+      <div className="debug-toggle-row" onClick={toggleRenderBoxes}>
+        <span className="debug-label">RENDER VIZ</span>
+        <span className={`debug-pill ${renderBoxes ? "debug-pill-on" : "debug-pill-off"}`}>{renderBoxes ? "ON" : "OFF"}</span>
+      </div>
 
-      <label className="debug-toggle" onClick={toggleInvincibility}>
-        <span className={`debug-toggle-box ${invincible ? "debug-toggle-box-on" : ""}`}>
-          {invincible ? "X" : ""}
-        </span>
-        <span className="debug-label">INVINCIBILITY</span>
-      </label>
+      <div className="debug-section-header">{"// INVINCIBILITY"}</div>
+      <div className="debug-toggle-row" onClick={toggleInvincible}>
+        <span className="debug-label">INVINCIBLE</span>
+        <span className={`debug-pill ${invincible ? "debug-pill-on" : "debug-pill-off"}`}>{invincible ? "ON" : "OFF"}</span>
+      </div>
 
-      <div className="debug-section-header">{"// DIFFICULTY"}</div>
-      <div>
+      <div className="debug-section-header">{"// GAME OVERRIDES"}</div>
+      <div className="mb-2">
+        <div className="flex justify-between items-baseline mb-1">
+          <span className="debug-label">DIFFICULTY</span>
+          <span className="debug-value">{DIFFICULTY_NAMES[difficulty]}</span>
+        </div>
         <select
           className="debug-select w-full"
           value={difficulty}
           onChange={(e) => handleDifficultyChange(parseInt(e.target.value))}
         >
           {DIFFICULTY_NAMES.map((name, idx) => (
-            <option key={name} value={idx}>
-              {name}
-            </option>
+            <option key={name} value={idx}>{name}</option>
           ))}
         </select>
       </div>
-
-      <div className="debug-section-header">{"// SPEED MULTIPLIER"}</div>
-      <div>
+      <div className="mb-2">
         <div className="flex justify-between items-baseline mb-1">
           <span className="debug-label">TIME SCALE</span>
           <span className="debug-value">{speedMultiplier.toFixed(1)}x</span>
@@ -531,13 +628,19 @@ function CheatsTab({ onSendCommand }: { onSendCommand: (cmd: DebugCommand) => vo
           max={3.0}
           step={0.1}
           value={speedMultiplier}
-          onChange={(e) => handleSpeedChange(parseFloat(e.target.value))}
+          onChange={(e) => handleSpeedMultiplierChange(parseFloat(e.target.value))}
         />
+        <div className="debug-slider-labels"><span>0.1x</span><span>3.0x</span></div>
       </div>
 
       <div className="debug-section-header">{"// ACTIONS"}</div>
-      <button className="debug-btn-danger debug-btn w-full" onClick={handleForceGameOver}>
+      <button className="debug-btn-danger debug-btn w-full mb-2" onClick={() => onSendCommand({ type: "force-game-over" })}>
         FORCE GAME OVER
+      </button>
+
+      <div className="debug-section-header">{"// RESET"}</div>
+      <button className="debug-btn debug-btn w-full" onClick={handleReset}>
+        RESET CHEATS
       </button>
     </div>
   );
@@ -546,7 +649,7 @@ function CheatsTab({ onSendCommand }: { onSendCommand: (cmd: DebugCommand) => vo
 // ---------------------------------------------------------------------------
 // Main DebugPanel Component
 // ---------------------------------------------------------------------------
-export default function DebugPanel({ debugState, onSendCommand }: DebugPanelProps) {
+export default function DebugPanel({ debugState, onSendCommand, gameKey }: DebugPanelProps) {
   const isDevOrAdmin = useIsDevOrAdmin();
   const [visible, setVisible] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -626,8 +729,8 @@ export default function DebugPanel({ debugState, onSendCommand }: DebugPanelProp
       <button
         onClick={() => setVisible(true)}
         onPointerDown={(e) => e.stopPropagation()}
-        className="fixed bottom-4 left-4 flex h-8 w-8 items-center justify-center rounded bg-[#0a0a0a] border border-[#33ff33]/40 text-[#33ff33] text-xs font-mono opacity-60 hover:opacity-100 transition-opacity pointer-events-auto"
-        style={{ zIndex: 99999 }}
+        className="fixed bottom-4 left-4 flex h-8 w-8 items-center justify-center rounded bg-[#0f0f1a] border border-[#0FACED]/40 text-[#0FACED] text-xs font-mono opacity-60 hover:opacity-100 transition-opacity pointer-events-auto"
+        style={{ zIndex: 15 }}
         title="Open Debug Panel (Ctrl+Shift+D)"
       >
         {">>"}
@@ -640,11 +743,13 @@ export default function DebugPanel({ debugState, onSendCommand }: DebugPanelProp
   return (
     <div
       ref={panelRef}
-      className="debug-crt fixed z-50"
+      className="debug-crt fixed"
       style={{
+        position: 'fixed',
         left: position.x,
         top: position.y,
-        width: minimized ? 220 : 280,
+        width: minimized ? 220 : 300,
+        zIndex: 15,
       }}
     >
       {/* Title bar */}
@@ -663,7 +768,7 @@ export default function DebugPanel({ debugState, onSendCommand }: DebugPanelProp
       {!minimized && (
         <div className="debug-crt-body">
           {/* Tabs */}
-          <div className="flex gap-1 p-1 border-b border-[#33ff33]/30">
+          <div className="flex gap-1 p-1 border-b border-[#0FACED]/30">
             {tabs.map((tab) => (
               <button
                 key={tab}
@@ -676,14 +781,14 @@ export default function DebugPanel({ debugState, onSendCommand }: DebugPanelProp
           </div>
 
           {/* Tab content */}
-          <div className="max-h-[60vh] overflow-y-auto" style={{ scrollbarWidth: "thin", scrollbarColor: "#33ff33 #0a0a0a" }}>
+          <div className="max-h-[60vh] overflow-y-auto" style={{ scrollbarWidth: "thin", scrollbarColor: "#0FACED #0f0f1a" }}>
             {activeTab === "STATS" && <StatsTab state={debugState} />}
             {activeTab === "CONSTANTS" && <ConstantsTab onSendCommand={onSendCommand} />}
-            {activeTab === "CHEATS" && <CheatsTab onSendCommand={onSendCommand} />}
+            {activeTab === "CHEATS" && <CheatsTab debugState={debugState} onSendCommand={onSendCommand} gameKey={gameKey} />}
           </div>
 
           {/* Footer */}
-          <div className="border-t border-[#33ff33]/30 p-1" style={{ fontSize: "6px", fontFamily: "'Press Start 2P', monospace" }}>
+          <div className="border-t border-[#0FACED]/30 p-1" style={{ fontSize: "6px", fontFamily: "'Press Start 2P', monospace" }}>
             <span className="debug-label">CTRL+SHIFT+D TO CLOSE</span>
           </div>
         </div>

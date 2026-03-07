@@ -1,10 +1,16 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useSession, signIn } from "@/lib/auth-client";
 
 export function HeroCTA() {
   const { data: session } = useSession();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const handleSignIn = () => {
     signIn.social({ provider: "twitch", callbackURL: window.location.origin });
@@ -18,7 +24,7 @@ export function HeroCTA() {
       >
         Play Now
       </Link>
-      {!session && (
+      {mounted && !session && (
         <button
           onClick={handleSignIn}
           className="inline-flex items-center justify-center rounded-lg border border-[#0FACED]/40 px-6 py-3 text-sm font-medium text-[#0FACED] transition-colors hover:bg-[#0FACED]/10 cursor-pointer"

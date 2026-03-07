@@ -73,6 +73,7 @@ export default function RaceRoomPage() {
   // Debug
   const [debugState, setDebugState] = useState<DebugState | null>(null);
   const debugRef = useRef<DebugChannel | null>(null);
+  const [gameKey, setGameKey] = useState(0);
 
   // Refs
   const containerRef = useRef<HTMLDivElement>(null);
@@ -466,7 +467,7 @@ export default function RaceRoomPage() {
 
         {/* Debug Panel (dev/admin only, Ctrl+Shift+D) */}
         {isDevOrAdmin && (
-          <DebugPanel debugState={debugState} onSendCommand={handleDebugCommand} />
+          <DebugPanel debugState={debugState} onSendCommand={handleDebugCommand} gameKey={gameKey} />
         )}
       </div>
     </main>
