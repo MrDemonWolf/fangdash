@@ -69,7 +69,7 @@ export function createAuth(env: AuthBindings) {
     session: {
       cookieCache: {
         enabled: true,
-        maxAge: 5 * 60,
+        maxAge: 30 * 60,
       },
     },
     trustedOrigins,

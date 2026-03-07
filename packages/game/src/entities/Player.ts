@@ -28,7 +28,7 @@ export class Player {
 
   constructor(scene: Phaser.Scene, skinKey = "wolf-gray") {
     this.scene = scene;
-    this.sprite = scene.add.sprite(PLAYER_START_X, GROUND_Y - 20, skinKey);
+    this.sprite = scene.add.sprite(PLAYER_START_X, GROUND_Y, skinKey);
     this.sprite.setOrigin(0.5, 1);
     this.sprite.setScale(3);
     this.sprite.texture.setFilter(Phaser.Textures.FilterMode.NEAREST);

@@ -5,8 +5,10 @@ import OnboardingOverlay from "@/components/game/OnboardingOverlay";
 import DebugPanel from "@/components/game/DebugPanel";
 import { GameHUD } from "@/components/game/GameHUD";
 import { GameOverModal } from "@/components/game/GameOverModal";
+import { PlayMenu } from "@/components/game/PlayMenu";
 import type { GameState, DebugState, DebugCommand } from "@fangdash/shared";
-import type { DebugChannel, AudioChannel } from "@fangdash/game";
+import type { DebugChannel, AudioChannel, GameChannel } from "@fangdash/game";
+import { CountdownOverlay } from "@/components/game/CountdownOverlay";
 import { useSession } from "@/lib/auth-client";
 import { useIsDevOrAdmin } from "@/lib/use-role";
 import { useTRPC } from "@/lib/trpc";
@@ -22,7 +24,9 @@ export default function PlayPage() {
   const gameRef = useRef<any>(null);
   const debugRef = useRef<DebugChannel | null>(null);
   const audioRef = useRef<AudioChannel | null>(null);
+  const gameChannelRef = useRef<GameChannel | null>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const countdownTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const startTimeRef = useRef<number>(0);
 
   const [gameState, setGameState] = useState<GameState>({
@@ -41,6 +45,8 @@ export default function PlayPage() {
   const [gameKey, setGameKey] = useState(0);
   const [audioMuted, setAudioMuted] = useState(false);
   const [audioVolume, setAudioVolume] = useState(0.5);
+  const [countdown, setCountdown] = useState<number | null>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const { data: session } = useSession();
   const isSignedIn = !!session?.user;
@@ -83,6 +89,26 @@ export default function PlayPage() {
       setElapsedTime(Date.now() - startTimeRef.current);
     }, 100);
   }, [stopTimer]);
+
+  const startCountdown = useCallback(() => {
+    if (countdownTimerRef.current) clearInterval(countdownTimerRef.current);
+    setCountdown(5);
+    let remaining = 5;
+    countdownTimerRef.current = setInterval(() => {
+      remaining -= 1;
+      setCountdown(remaining);
+      if (remaining <= 0) {
+        clearInterval(countdownTimerRef.current!);
+        countdownTimerRef.current = null;
+        // Show "GO!" briefly then launch
+        setTimeout(() => {
+          gameChannelRef.current?.start();
+          startTimer();
+          setCountdown(null);
+        }, 700);
+      }
+    }, 1000);
+  }, [startTimer]);
 
   const handleGameOver = useCallback(
     (state: GameState) => {
@@ -131,7 +157,7 @@ export default function PlayPage() {
       speed: 0,
     });
 
-    const { game, debug, audio } = createGame({
+    const { game, debug, audio, gameChannel } = createGame({
       parent: containerRef.current,
       skinKey: skinData?.skinId ? getSkinById(skinData.skinId)?.spriteKey ?? "wolf-gray" : undefined,
       onStateUpdate: (state) => {
@@ -146,10 +172,11 @@ export default function PlayPage() {
     gameRef.current = game;
     debugRef.current = debug;
     audioRef.current = audio;
+    gameChannelRef.current = gameChannel;
     setAudioMuted(audio.getMuted());
     setAudioVolume(audio.getVolume());
-    startTimer();
-  }, [skinData?.skinId, handleGameOver, startTimer]);
+    startCountdown();
+  }, [skinData?.skinId, handleGameOver, startCountdown]);
 
   // Check onboarding status on mount
   useEffect(() => {
@@ -180,6 +207,16 @@ export default function PlayPage() {
     debugRef.current?.sendCommand(command);
   }, []);
 
+  const openMenu = useCallback(() => {
+    gameChannelRef.current?.pause();
+    setMenuOpen(true);
+  }, []);
+
+  const closeMenu = useCallback(() => {
+    setMenuOpen(false);
+    gameChannelRef.current?.resume();
+  }, []);
+
   const handleOnboardingComplete = useCallback(() => {
     localStorage.setItem("fangdash_onboarding_complete", "true");
     setShowOnboarding(false);
@@ -203,6 +240,7 @@ export default function PlayPage() {
   // Clean up on unmount
   useEffect(() => {
     return () => {
+      if (countdownTimerRef.current) clearInterval(countdownTimerRef.current);
       stopTimer();
       if (gameRef.current) {
         import("@fangdash/game").then(({ destroyGame }) => {
@@ -215,6 +253,32 @@ export default function PlayPage() {
     };
   }, [stopTimer]);
 
+  // Escape key toggles menu (only when game is running, not during countdown or game over)
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key !== "Escape") return;
+      if (gameOver || countdown !== null) return;
+      if (menuOpen) {
+        closeMenu();
+      } else {
+        openMenu();
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [gameOver, countdown, menuOpen, openMenu, closeMenu]);
+
+  const handleRetrySubmit = useCallback(() => {
+    if (!finalState) return;
+    submitScore({
+      score: finalState.score,
+      distance: finalState.distance,
+      obstaclesCleared: finalState.obstaclesCleared,
+      duration: finalElapsedTime,
+      seed: Date.now().toString(),
+    });
+  }, [finalState, finalElapsedTime, submitScore]);
+
   const handleRestart = useCallback(() => {
     hasInitialized.current = false;
     startGame();
@@ -223,7 +287,7 @@ export default function PlayPage() {
 
   return (
     <main className="flex flex-col bg-[#091533]">
-      <div className="relative w-full h-[calc(100vh-64px)]">
+      <div className="relative w-full h-[calc(100dvh-64px)]">
         {/* HUD overlay */}
         {!gameOver && (
           <GameHUD
@@ -234,14 +298,30 @@ export default function PlayPage() {
             volume={audioVolume}
             onToggleMute={handleToggleMute}
             onVolumeChange={handleVolumeChange}
+            onOpenMenu={countdown === null ? openMenu : undefined}
           />
         )}
 
         {/* Game canvas container */}
         <div
           ref={containerRef}
-          className="w-full h-full overflow-hidden"
+          className="w-full h-full overflow-hidden bg-[#0f0f1a]"
         />
+
+        {/* Countdown overlay */}
+        {countdown !== null && <CountdownOverlay seconds={countdown} />}
+
+        {/* Play menu overlay */}
+        {menuOpen && !gameOver && (
+          <PlayMenu
+            onClose={closeMenu}
+            muted={audioMuted}
+            volume={audioVolume}
+            onToggleMute={handleToggleMute}
+            onVolumeChange={handleVolumeChange}
+            isSignedIn={isSignedIn}
+          />
+        )}
 
         {/* Onboarding overlay */}
         {showOnboarding && (
@@ -258,6 +338,7 @@ export default function PlayPage() {
             submitResult={submitResult ?? null}
             submitError={submitError}
             isSignedIn={isSignedIn}
+            onRetrySubmit={isSignedIn ? handleRetrySubmit : undefined}
           />
         )}
 

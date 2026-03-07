@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { TRPCError } from "@trpc/server";
 import { eq, desc, sql, gte } from "drizzle-orm";
 import { router, protectedProcedure, publicProcedure } from "../trpc";
 import { score, player, user } from "../../db/schema";
@@ -23,7 +24,7 @@ export const scoreRouter = router({
       // Anti-cheat: reject impossible scores
       const maxAllowedScore = (input.duration / 1000) * MAX_SCORE_PER_SECOND;
       if (input.score > maxAllowedScore) {
-        throw new Error("Score exceeds maximum allowed rate");
+        throw new TRPCError({ code: "BAD_REQUEST", message: "Score exceeds maximum allowed rate" });
       }
 
       const playerRecord = await ensurePlayer(ctx.db, ctx.user.id);

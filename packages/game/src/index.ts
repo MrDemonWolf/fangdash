@@ -8,6 +8,7 @@ export {
   type RaceCanvasResult,
   type DebugChannel,
   type AudioChannel,
+  type GameChannel,
 } from "./GameCanvas";
 export { BootScene } from "./scenes/BootScene";
 export { GameScene, type GameEventCallback } from "./scenes/GameScene";

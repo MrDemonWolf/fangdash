@@ -76,9 +76,7 @@ export class GameScene extends Phaser.Scene {
       this.jumpKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
 
       this.input.keyboard.on("keydown-SPACE", () => {
-        if (!this.running) {
-          this.startRun();
-        } else {
+        if (this.running) {
           this.player.jump();
           this.audioManager.playSFX(AUDIO_KEYS.SFX_JUMP);
         }
@@ -87,9 +85,7 @@ export class GameScene extends Phaser.Scene {
 
     // Touch / click input
     this.input.on("pointerdown", () => {
-      if (!this.running) {
-        this.startRun();
-      } else {
+      if (this.running) {
         this.player.jump();
         this.audioManager.playSFX(AUDIO_KEYS.SFX_JUMP);
       }
@@ -166,6 +162,20 @@ export class GameScene extends Phaser.Scene {
 
     const finalState = this.scoreManager.getState(false, this.difficulty.currentSpeed);
     this.callbacks.onGameOver?.(finalState);
+  }
+
+  public beginRun() {
+    if (!this.running) {
+      this.startRun();
+    }
+  }
+
+  public pause() {
+    this.running = false;
+  }
+
+  public resume() {
+    if (this.player.alive) this.running = true;
   }
 
   restart() {
