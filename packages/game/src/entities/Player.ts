@@ -28,7 +28,7 @@ export class Player {
 
   constructor(scene: Phaser.Scene, skinKey = "wolf-gray") {
     this.scene = scene;
-    this.sprite = scene.add.sprite(PLAYER_START_X, GROUND_Y - 20, skinKey);
+    this.sprite = scene.add.sprite(PLAYER_START_X, GROUND_Y, skinKey);
     this.sprite.setOrigin(0.5, 1);
     this.sprite.setScale(3);
     this.sprite.texture.setFilter(Phaser.Textures.FilterMode.NEAREST);
@@ -55,13 +55,14 @@ export class Player {
   }
 
   get bounds(): Phaser.Geom.Rectangle {
-    const insetX = 4 * this.sprite.scaleX;
-    const insetY = 4 * this.sprite.scaleY;
+    const insetX    = 8  * this.sprite.scaleX;
+    const insetYTop = 10 * this.sprite.scaleY;  // more forgiving at top (head/ears)
+    const insetYBot = 2  * this.sprite.scaleY;  // keep ground contact accurate
     this._boundsRect.setTo(
       this.sprite.x - this.sprite.displayWidth / 2 + insetX,
-      this.sprite.y - this.sprite.displayHeight + insetY,
+      this.sprite.y - this.sprite.displayHeight + insetYTop,
       this.sprite.displayWidth - insetX * 2,
-      this.sprite.displayHeight - insetY * 2
+      this.sprite.displayHeight - insetYTop - insetYBot
     );
     return this._boundsRect;
   }

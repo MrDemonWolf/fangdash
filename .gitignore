@@ -34,3 +34,9 @@ Thumbs.db
 # Fumadocs
 .source/
 out/
+
+# PWA (generated at build time)
+apps/web/public/workbox-*.js
+
+# Claude Code
+.claude/worktrees/

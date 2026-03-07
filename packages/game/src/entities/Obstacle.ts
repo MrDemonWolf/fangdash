@@ -8,7 +8,6 @@ import {
 } from "@fangdash/shared";
 
 const OBSTACLE_SCALE = 2;
-const HITBOX_INSET = 4;
 
 export class Obstacle {
   sprite: Phaser.GameObjects.Sprite;
@@ -26,13 +25,14 @@ export class Obstacle {
   }
 
   get bounds(): Phaser.Geom.Rectangle {
+    const inset = 6 * OBSTACLE_SCALE;  // scale-aware: 12px per side at 2x scale
     const w = this.sprite.displayWidth;
     const h = this.sprite.displayHeight;
     this._boundsRect.setTo(
-      this.sprite.x - w / 2 + HITBOX_INSET,
-      this.sprite.y - h + HITBOX_INSET,
-      w - HITBOX_INSET * 2,
-      h - HITBOX_INSET * 2
+      this.sprite.x - w / 2 + inset,
+      this.sprite.y - h + inset,
+      w - inset * 2,
+      h - inset * 2
     );
     return this._boundsRect;
   }

@@ -3,7 +3,7 @@ export const GRAVITY = 1200;
 export const JUMP_VELOCITY = -500;
 export const DOUBLE_JUMP_VELOCITY = -420;
 export const MAX_JUMPS = 2;
-export const GROUND_Y = 500;
+export const GROUND_Y = 560;
 
 // ── Speed & Difficulty ──
 export const BASE_SPEED = 300;

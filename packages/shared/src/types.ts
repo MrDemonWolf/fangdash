@@ -174,12 +174,19 @@ export interface DebugState {
     nextSpawnTime: number;
     activeObstacleCount: number;
   };
+  debug: {
+    hitboxes: boolean;
+    renderBoxes: boolean;
+    invincible: boolean;
+    speedMultiplier: number;
+  };
 }
 
 export interface DebugCommand {
   type:
     | "set-constant"
     | "toggle-hitboxes"
+    | "toggle-render-boxes"
     | "toggle-invincibility"
     | "set-difficulty"
     | "force-game-over"
