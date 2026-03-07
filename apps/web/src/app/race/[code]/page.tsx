@@ -77,7 +77,6 @@ export default function RaceRoomPage() {
 
   // Refs
   const containerRef = useRef<HTMLDivElement>(null);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const gameRef = useRef<any>(null);
   const connectionRef = useRef<RaceConnection | null>(null);
 

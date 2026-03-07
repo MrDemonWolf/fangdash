@@ -20,7 +20,6 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 // ---------------------------------------------------------------------------
 export default function PlayPage() {
   const containerRef = useRef<HTMLDivElement>(null);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const gameRef = useRef<any>(null);
   const debugRef = useRef<DebugChannel | null>(null);
   const audioRef = useRef<AudioChannel | null>(null);
