@@ -59,6 +59,14 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Cache Next.js build
+        uses: actions/cache@v4
+        with:
+          path: apps/web/.next/cache
+          key: nextjs-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: |
+            nextjs-${{ runner.os }}-
+
       - name: Deploy Web to Cloudflare Workers
         run: pnpm --filter @fangdash/web run deploy
         env:
