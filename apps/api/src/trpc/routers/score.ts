@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
-import { eq, desc, sql, gte } from "drizzle-orm";
+import { eq, desc, sql, count } from "drizzle-orm";
 import { router, protectedProcedure, publicProcedure } from "../trpc";
 import { score, player, user } from "../../db/schema";
 import { ensurePlayer } from "../../lib/ensure-player";
@@ -143,6 +143,19 @@ export const scoreRouter = router({
       totalScore: playerRecord.totalScore,
       totalDistance: playerRecord.totalDistance,
       totalObstaclesCleared: playerRecord.totalObstaclesCleared,
+    };
+  }),
+
+  getGlobalStats: publicProcedure.query(async ({ ctx }) => {
+    const result = await ctx.db
+      .select({
+        totalPlayers: count(),
+        totalMeters: sql<number>`coalesce(sum(${player.totalDistance}), 0)`,
+      })
+      .from(player);
+    return {
+      totalPlayers: result[0].totalPlayers,
+      totalMeters: Math.round(result[0].totalMeters),
     };
   }),
 

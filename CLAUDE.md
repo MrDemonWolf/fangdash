@@ -9,7 +9,7 @@ FangDash is a multiplayer endless runner game for Twitch streamers. Players race
 ## Commands
 
 ```bash
-pnpm dev                # Start all apps: web (3000), api (8787), party (1999)
+pnpm dev                # Start all apps: web (3000), api (8787), party (1999), docs (3001)
 pnpm build              # Build all packages (respects dependency order)
 pnpm test               # Run all tests (Vitest)
 pnpm type-check         # Type-check all packages
@@ -28,6 +28,9 @@ pnpm ship               # Deploy all (api, web, party)
 pnpm ship:api           # Deploy API to Cloudflare Workers
 pnpm ship:web           # Deploy web to Cloudflare Workers
 pnpm ship:party         # Deploy PartyKit server
+
+# Icon generation (web + docs)
+pnpm --filter @fangdash/web generate:icons
 
 # Database migrations (from apps/api/)
 npx wrangler d1 migrations apply fangdash-db --local
@@ -54,6 +57,8 @@ npx drizzle-kit generate   # Generate new migration from schema changes
 - tRPC routers at `apps/api/src/trpc/routers/` — score, skin, achievement, race
 - Auth at `apps/api/src/lib/auth.ts` — Better Auth with Twitch OAuth, cookie-based sessions
 - Game scenes: `BootScene` (asset loading) → `GameScene` (solo) or `RaceScene` (multiplayer)
+- OG image route: `apps/web/src/app/api/og/route.tsx` — uses base64 `<img>` (not `dangerouslySetInnerHTML`) so Satori renders correctly; layout metadata explicitly sets `openGraph.images` and `twitter.images` to `/api/og`
+- Icon generation: `apps/web/scripts/generate-icons.mjs` — crops wolf head from `public/wolves/wolf-mrdemonwolf.png`, centres on white circle, outputs PNGs to `apps/web/public/icons/` and `apps/docs/public/icons/`
 
 ## Tech Stack
 
