@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { eq, desc, sql } from "drizzle-orm";
+import { eq, desc, sql, count } from "drizzle-orm";
 import { router, protectedProcedure } from "../trpc";
 import { raceHistory, player } from "../../db/schema";
 import { ensurePlayer } from "../../lib/ensure-player";
@@ -21,11 +21,11 @@ export const raceRouter = router({
       if (!playerRecord) throw new Error("Failed to create player");
 
       // Compute placement server-side
-      const existingResults = await ctx.db
-        .select({ id: raceHistory.id })
+      const [{ total }] = await ctx.db
+        .select({ total: count() })
         .from(raceHistory)
         .where(eq(raceHistory.raceId, input.raceId));
-      const placement = existingResults.length + 1;
+      const placement = total + 1;
 
       const now = new Date();
       const raceHistoryId = crypto.randomUUID();
@@ -63,7 +63,8 @@ export const raceRouter = router({
       );
       const newSkinUnlocks = await checkSkinUnlocks(
         ctx.db,
-        playerRecord.id
+        playerRecord.id,
+        achievementResult.stats
       );
 
       return {
