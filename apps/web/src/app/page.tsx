@@ -36,7 +36,7 @@ export default function Home() {
               {/* Subtitle */}
               <p className="text-lg text-gray-300 sm:text-xl max-w-xl">
                 The ultimate multiplayer endless runner for Twitch streamers.
-                Race <span className="text-[#FF6B2B]">your community</span> in
+                Race <span className="text-[#0FACED]">your community</span> in
                 real-time and climb the global ranks.
               </p>
 
@@ -74,7 +74,7 @@ export default function Home() {
 
             {/* Tagline */}
             <p className="mt-10 text-lg font-bold uppercase tracking-widest text-white sm:text-xl">
-              LEVEL UP <span className="text-[#FF6B2B]">YOUR STREAM</span>
+              LEVEL UP <span className="text-[#0FACED]">YOUR STREAM</span>
             </p>
           </div>
         </div>

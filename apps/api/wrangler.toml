@@ -6,7 +6,7 @@ compatibility_flags = ["nodejs_compat"]
 [[d1_databases]]
 binding = "DB"
 database_name = "fangdash-db"
-database_id = "055d576a-fd5a-4ba3-a0ac-3c5cb3fa1355"
+database_id = "b9de4b53-55fd-4490-b4d1-2534da296b0e"
 migrations_dir = "drizzle"
 
 [vars]
@@ -14,3 +14,9 @@ ENVIRONMENT = "development"
 
 [env.production.vars]
 ENVIRONMENT = "production"
+
+[[env.production.d1_databases]]
+binding = "DB"
+database_name = "fangdash-db"
+database_id = "b9de4b53-55fd-4490-b4d1-2534da296b0e"
+migrations_dir = "drizzle"

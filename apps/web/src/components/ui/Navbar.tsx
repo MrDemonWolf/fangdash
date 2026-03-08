@@ -7,6 +7,14 @@ import { useState, useRef, useEffect } from "react";
 import { Menu, X, LogOut, User } from "lucide-react";
 import { useSession, signIn, signOut } from "@/lib/auth-client";
 
+function TwitchIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" className={className} aria-hidden="true">
+      <path d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714z"/>
+    </svg>
+  );
+}
+
 const NAV_LINKS = [
   { href: "/play", label: "Play" },
   { href: "/race", label: "Race" },
@@ -51,7 +59,7 @@ export function Navbar() {
   return (
     <>
     <header className="fixed top-0 left-0 right-0 z-50 px-4 py-3 pointer-events-none">
-      <nav className="pointer-events-auto mx-auto max-w-5xl rounded-2xl border border-white/10 bg-[#0a1628]/80 shadow-2xl shadow-black/40 backdrop-blur-xl backdrop-saturate-150 ring-1 ring-inset ring-white/5">
+      <nav className="pointer-events-auto mx-auto max-w-7xl rounded-2xl border border-white/10 bg-[#0a1628]/80 shadow-2xl shadow-black/40 backdrop-blur-xl backdrop-saturate-150 ring-1 ring-inset ring-white/5">
         <div className="flex h-14 items-center justify-between px-5">
           {/* Logo */}
           <Link
@@ -133,9 +141,10 @@ export function Navbar() {
             ) : (
               <button
                 onClick={handleSignIn}
-                className="rounded-full border border-[#0FACED]/60 px-4 py-1.5 text-sm font-semibold text-[#0FACED] hover:bg-[#0FACED]/10 transition-colors cursor-pointer"
+                className="inline-flex items-center gap-2 rounded-full border border-[#0FACED]/60 px-4 py-1.5 text-sm font-semibold text-[#0FACED] hover:bg-[#0FACED]/10 transition-colors cursor-pointer"
               >
-                Sign In
+                <TwitchIcon className="h-4 w-4" />
+                Login with Twitch
               </button>
             )}
           </div>
@@ -213,9 +222,10 @@ export function Navbar() {
               ) : (
                 <button
                   onClick={handleSignIn}
-                  className="w-full rounded-full border border-[#0FACED]/60 px-4 py-2 text-sm font-semibold text-[#0FACED] hover:bg-[#0FACED]/10 transition-colors cursor-pointer"
+                  className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-[#0FACED]/60 px-4 py-2 text-sm font-semibold text-[#0FACED] hover:bg-[#0FACED]/10 transition-colors cursor-pointer"
                 >
-                  Sign In
+                  <TwitchIcon className="h-4 w-4" />
+                  Login with Twitch
                 </button>
               )}
             </div>
