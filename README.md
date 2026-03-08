@@ -56,7 +56,7 @@ pnpm dev
 ```
 
 The web app runs at `http://localhost:3000` and the API at
-`http://localhost:8787`.
+`http://localhost:8787`. The docs site runs at `http://localhost:3001`.
 
 ## Tech Stack
 
@@ -70,6 +70,7 @@ The web app runs at `http://localhost:3000` and the API at
 | API Layer      | tRPC v11                            |
 | Multiplayer    | PartyKit (WebSockets)               |
 | Monorepo       | Turborepo + pnpm workspaces         |
+| Docs           | Fumadocs + Next.js                  |
 | Testing        | Vitest                              |
 | CI/CD          | GitHub Actions + Cloudflare Workers  |
 | Language       | TypeScript 5.7 (strict mode)        |
@@ -141,6 +142,7 @@ pnpm dev
 - `pnpm ship:api` — Deploy API to Cloudflare Workers.
 - `pnpm ship:web` — Deploy web app to Cloudflare Workers.
 - `pnpm ship:party` — Deploy PartyKit server.
+- `pnpm --filter @fangdash/web generate:icons` — Regenerate favicon and PWA icons from the wolf sprite (web + docs).
 
 ### Code Quality
 
@@ -155,6 +157,7 @@ pnpm dev
 fangdash/
 ├── apps/
 │   ├── api/           # Hono API on Cloudflare Workers
+│   ├── docs/          # Fumadocs documentation site
 │   ├── party/         # PartyKit WebSocket server
 │   └── web/           # Next.js frontend
 ├── packages/
@@ -180,5 +183,3 @@ Have questions or feedback?
 ---
 
 Made with love by [MrDemonWolf, Inc.](https://www.mrdemonwolf.com)
-
-Copyright FangWolf by MrDemonWolf, Inc.
