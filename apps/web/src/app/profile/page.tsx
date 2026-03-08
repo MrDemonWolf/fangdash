@@ -3,61 +3,277 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { useSession } from "@/lib/auth-client";
 import { useTRPC } from "@/lib/trpc";
-import { getSkinById } from "@fangdash/shared";
-import {
-  Trophy,
-  Gamepad2,
-  Target,
-  Swords,
-  Award,
-  ChevronRight,
-} from "lucide-react";
+import { getSkinById, ACHIEVEMENTS } from "@fangdash/shared";
+import { ProfileSkeleton } from "./_skeleton";
 
 /* ------------------------------------------------------------------ */
-/*  Skeleton helpers                                                   */
+/*  Helper: format distance as km                                      */
 /* ------------------------------------------------------------------ */
 
-function SkeletonBlock({ className }: { className?: string }) {
-  return (
-    <div
-      className={`animate-pulse rounded-lg bg-white/5 ${className ?? ""}`}
-    />
-  );
+function fmtKm(meters: number): string {
+  return (meters / 1000).toFixed(1) + " km";
 }
 
-function StatCardSkeleton() {
+/* ------------------------------------------------------------------ */
+/*  Header Banner                                                      */
+/* ------------------------------------------------------------------ */
+
+function ProfileHeader({
+  userName,
+  userImage,
+  skinSpriteKey,
+  skinName,
+  highScore,
+  gamesPlayed,
+}: {
+  userName: string;
+  userImage: string | null | undefined;
+  skinSpriteKey: string | null;
+  skinName: string | null;
+  highScore: number;
+  gamesPlayed: number;
+}) {
   return (
-    <div className="rounded-xl border border-white/10 bg-white/5 p-5">
-      <SkeletonBlock className="mb-3 h-5 w-20" />
-      <SkeletonBlock className="h-8 w-16" />
+    <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-[#0a1628]/60 backdrop-blur-xl">
+      {/* Subtle grid overlay */}
+      <div
+        className="pointer-events-none absolute inset-0 opacity-5"
+        style={{
+          backgroundImage:
+            "linear-gradient(rgba(15,172,237,0.4) 1px, transparent 1px), linear-gradient(90deg, rgba(15,172,237,0.4) 1px, transparent 1px)",
+          backgroundSize: "40px 40px",
+        }}
+      />
+
+      <div className="relative flex flex-col items-center gap-6 p-6 sm:flex-row sm:items-center">
+        {/* Wolf sprite */}
+        <div className="shrink-0">
+          {skinSpriteKey ? (
+            <div className="relative h-32 w-32">
+              <Image
+                src={`/wolves/${skinSpriteKey}.png`}
+                alt={skinName ?? "Wolf"}
+                fill
+                className="object-contain drop-shadow-[0_0_40px_rgba(15,172,237,0.5)]"
+                style={{ imageRendering: "pixelated" }}
+              />
+            </div>
+          ) : (
+            <div className="flex h-32 w-32 items-center justify-center rounded-2xl border border-[#0FACED]/20 bg-[#0FACED]/5 text-6xl">
+              🐺
+            </div>
+          )}
+        </div>
+
+        {/* Info */}
+        <div className="flex flex-1 flex-col items-center gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div className="text-center sm:text-left">
+            <h1 className="text-2xl font-bold text-white">{userName}</h1>
+            <div className="mt-1 flex items-center justify-center gap-2 sm:justify-start">
+              {userImage && (
+                <Image
+                  src={userImage}
+                  alt={userName}
+                  width={20}
+                  height={20}
+                  className="rounded-full"
+                />
+              )}
+              <span className="text-sm text-gray-400">@{userName.toLowerCase().replace(/\s+/g, "")}</span>
+            </div>
+            {skinName && (
+              <p className="mt-1 text-xs text-[#0FACED]/70">
+                Equipped: {skinName}
+              </p>
+            )}
+          </div>
+
+          {/* Right-side badges */}
+          <div className="flex flex-wrap items-center justify-center gap-3 sm:justify-end">
+            <div className="rounded-full border border-[#0FACED]/30 bg-[#0FACED]/10 px-3 py-1">
+              <span className="font-mono text-sm font-bold text-[#0FACED]">
+                HI {highScore.toLocaleString()}
+              </span>
+            </div>
+            <div className="rounded-full border border-purple-400/30 bg-purple-400/10 px-3 py-1">
+              <span className="font-mono text-sm font-bold text-purple-400">
+                {gamesPlayed} RUNS
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
 
 /* ------------------------------------------------------------------ */
-/*  Stat card                                                          */
+/*  Performance Matrix                                                 */
 /* ------------------------------------------------------------------ */
 
-function StatCard({
-  icon,
-  label,
-  value,
-}: {
-  icon: React.ReactNode;
+interface MetricTile {
   label: string;
-  value: string | number;
+  value: string;
+  accent: string;
+}
+
+function PerformanceMatrix({ tiles }: { tiles: MetricTile[] }) {
+  return (
+    <div className="rounded-2xl border border-white/10 bg-[#0a1628]/60 backdrop-blur-xl">
+      <div className="border-b border-white/10 px-5 py-3">
+        <h2 className="text-xs font-bold uppercase tracking-widest text-gray-400">
+          Performance Matrix
+        </h2>
+      </div>
+      <div className="grid grid-cols-2 gap-px bg-white/5 p-px">
+        {tiles.map((tile) => (
+          <div
+            key={tile.label}
+            className="rounded-xl border border-white/5 bg-[#0a1628] p-4 transition-all hover:border-[#0FACED]/30"
+          >
+            <p className="mb-1 text-xs font-bold uppercase tracking-widest text-gray-500">
+              {tile.label}
+            </p>
+            <p className={`font-mono text-2xl font-bold ${tile.accent}`}>
+              {tile.value}
+            </p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/*  Honor Badges                                                       */
+/* ------------------------------------------------------------------ */
+
+interface Badge {
+  icon: string;
+  name: string;
+  description: string;
+  unlocked: boolean;
+}
+
+function HonorBadges({
+  badges,
+  unlockedCount,
+  totalCount,
+}: {
+  badges: Badge[];
+  unlockedCount: number;
+  totalCount: number;
 }) {
   return (
-    <div className="rounded-xl border border-white/10 bg-white/5 p-5 transition hover:border-[#0FACED]/40">
-      <div className="mb-1 flex items-center gap-2 text-sm text-gray-400">
-        {icon}
-        {label}
+    <div className="rounded-2xl border border-white/10 bg-[#0a1628]/60 backdrop-blur-xl">
+      <div className="flex items-center justify-between border-b border-white/10 px-5 py-3">
+        <h2 className="text-xs font-bold uppercase tracking-widest text-gray-400">
+          Honor Badges
+        </h2>
+        <span className="font-mono text-xs text-[#0FACED]">
+          {unlockedCount} / {totalCount}
+        </span>
       </div>
-      <p className="text-2xl font-bold text-white">{value}</p>
+      <div className="flex flex-wrap gap-3 p-5">
+        {badges.map((badge, i) => (
+          <div
+            key={i}
+            title={`${badge.name}: ${badge.description}`}
+            className={`flex h-12 w-12 items-center justify-center rounded-full border-2 transition-all ${
+              badge.unlocked
+                ? "border-[#0FACED]/40 bg-[#0FACED]/10 shadow-[0_0_12px_rgba(15,172,237,0.2)]"
+                : "border-white/10 bg-white/5 grayscale opacity-40"
+            }`}
+          >
+            <span className="text-2xl" role="img" aria-label={badge.name}>
+              {badge.unlocked ? badge.icon : "🔒"}
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/*  Recent Scorelines                                                  */
+/* ------------------------------------------------------------------ */
+
+interface ScoreEntry {
+  id: string;
+  score: number;
+  distance: number;
+  obstaclesCleared: number;
+  createdAt: string | Date;
+}
+
+function TrendArrow({ trend }: { trend: "up" | "down" | "same" }) {
+  if (trend === "up")
+    return <span className="font-mono text-xl font-bold text-emerald-400">↑</span>;
+  if (trend === "down")
+    return <span className="font-mono text-xl font-bold text-red-400">↓</span>;
+  return <span className="font-mono text-xl font-bold text-gray-500">—</span>;
+}
+
+function RecentScorelines({ scores }: { scores: ScoreEntry[] }) {
+  const top8 = scores.slice(0, 8);
+
+  return (
+    <div className="rounded-2xl border border-white/10 bg-[#0a1628]/60 backdrop-blur-xl">
+      <div className="border-b border-white/10 px-5 py-3">
+        <h2 className="text-xs font-bold uppercase tracking-widest text-gray-400">
+          Recent Scorelines
+        </h2>
+      </div>
+
+      {top8.length === 0 ? (
+        <p className="px-5 py-8 text-center text-sm text-gray-500">
+          No scores yet. Play a game!
+        </p>
+      ) : (
+        <ul className="divide-y divide-white/5">
+          {top8.map((entry, i) => {
+            const next = top8[i + 1];
+            const trend: "up" | "down" | "same" =
+              next === undefined
+                ? "same"
+                : entry.score > next.score
+                  ? "up"
+                  : entry.score < next.score
+                    ? "down"
+                    : "same";
+
+            return (
+              <li
+                key={entry.id}
+                className="flex items-center gap-3 px-5 py-3 transition hover:bg-white/5"
+              >
+                <TrendArrow trend={trend} />
+                <div className="flex flex-1 flex-col gap-0.5">
+                  <span className="font-mono font-bold text-white">
+                    {entry.score.toLocaleString()}
+                  </span>
+                  <span className="text-xs text-gray-500">
+                    {fmtKm(entry.distance)} ·{" "}
+                    {new Date(entry.createdAt).toLocaleDateString("en-US", {
+                      month: "short",
+                      day: "numeric",
+                    })}
+                  </span>
+                </div>
+                {entry.obstaclesCleared > 0 && (
+                  <span className="rounded-full bg-orange-400/10 px-2 py-0.5 font-mono text-xs text-orange-400">
+                    {entry.obstaclesCleared}
+                  </span>
+                )}
+              </li>
+            );
+          })}
+        </ul>
+      )}
     </div>
   );
 }
@@ -71,33 +287,34 @@ export default function ProfilePage() {
   const { data: session, isPending: sessionLoading } = useSession();
   const trpc = useTRPC();
 
-  /* ---- tRPC queries (only enabled when authenticated) ---- */
   const isSignedIn = !!session?.user;
 
-  const {
-    data: scores,
-    isPending: scoresLoading,
-  } = useQuery(trpc.score.myScores.queryOptions(undefined, { enabled: isSignedIn }));
+  const { data: scores, isPending: scoresLoading } = useQuery(
+    trpc.score.myScores.queryOptions(undefined, { enabled: isSignedIn }),
+  );
 
-  const {
-    data: equippedSkin,
-    isPending: skinLoading,
-  } = useQuery(trpc.skin.getEquippedSkin.queryOptions(undefined, { enabled: isSignedIn }));
+  const { data: equippedSkin, isPending: skinLoading } = useQuery(
+    trpc.skin.getEquippedSkin.queryOptions(undefined, { enabled: isSignedIn }),
+  );
 
-  const {
-    data: achievements,
-    isPending: achievementsLoading,
-  } = useQuery(trpc.achievement.getMine.queryOptions(undefined, { enabled: isSignedIn }));
+  const { data: achievements, isPending: achievementsLoading } = useQuery(
+    trpc.achievement.getMine.queryOptions(undefined, { enabled: isSignedIn }),
+  );
 
-  const {
-    data: playerStats,
-    isPending: playerStatsLoading,
-  } = useQuery(trpc.score.getPlayerStats.queryOptions(undefined, { enabled: isSignedIn }));
+  const { data: playerStats, isPending: playerStatsLoading } = useQuery(
+    trpc.score.getPlayerStats.queryOptions(undefined, { enabled: isSignedIn }),
+  );
 
-  const {
-    data: raceStats,
-    isPending: raceStatsLoading,
-  } = useQuery(trpc.race.getStats.queryOptions(undefined, { enabled: isSignedIn }));
+  const { data: raceStats, isPending: raceStatsLoading } = useQuery(
+    trpc.race.getStats.queryOptions(undefined, { enabled: isSignedIn }),
+  );
+
+  const isDataLoading =
+    scoresLoading ||
+    skinLoading ||
+    achievementsLoading ||
+    raceStatsLoading ||
+    playerStatsLoading;
 
   /* ---- Redirect unauthenticated users ---- */
   useEffect(() => {
@@ -106,40 +323,9 @@ export default function ProfilePage() {
     }
   }, [sessionLoading, session, router]);
 
-  /* ---- Derived data ---- */
-  const highScore =
-    scores && scores.length > 0
-      ? Math.max(...scores.map((s) => s.score))
-      : 0;
-
-  const gamesPlayed = playerStats?.gamesPlayed ?? 0;
-
-  const recentScores = scores?.slice(0, 10) ?? [];
-
-  const recentAchievements = achievements
-    ? [...achievements]
-        .sort((a, b) => {
-          const aTime = a?.unlockedAt ? new Date(a.unlockedAt).getTime() : 0;
-          const bTime = b?.unlockedAt ? new Date(b.unlockedAt).getTime() : 0;
-          return bTime - aTime;
-        })
-        .slice(0, 5)
-    : [];
-
-  const skinDef = equippedSkin ? getSkinById(equippedSkin.skinId) : null;
-
-  /* ---- Loading / unauthenticated guard ---- */
-  if (sessionLoading) {
-    return (
-      <main className="mx-auto max-w-4xl px-4 py-12">
-        <SkeletonBlock className="mb-6 h-10 w-48" />
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <StatCardSkeleton key={i} />
-          ))}
-        </div>
-      </main>
-    );
+  /* ---- Skeleton while session or data queries are pending ---- */
+  if (sessionLoading || (isSignedIn && isDataLoading)) {
+    return <ProfileSkeleton />;
   }
 
   if (!session?.user) {
@@ -151,197 +337,132 @@ export default function ProfilePage() {
   }
 
   const user = session.user;
-  const isDataLoading = scoresLoading || skinLoading || achievementsLoading || raceStatsLoading || playerStatsLoading;
+
+  /* ---- Derived values ---- */
+  const skinDef = equippedSkin ? getSkinById(equippedSkin.skinId) : null;
+
+  const highScore =
+    scores && scores.length > 0 ? Math.max(...scores.map((s) => s.score)) : 0;
+
+  const gamesPlayed = playerStats?.gamesPlayed ?? 0;
+  const totalDistance = playerStats?.totalDistance ?? 0;
+  const totalObstacles = playerStats?.totalObstaclesCleared ?? 0;
+  const totalScore = playerStats?.totalScore ?? 0;
+
+  const racesPlayed = raceStats?.racesPlayed ?? 0;
+  const racesWon = raceStats?.racesWon ?? 0;
+  const winRate =
+    racesPlayed > 0
+      ? ((racesWon / racesPlayed) * 100).toFixed(0) + "%"
+      : "N/A";
+
+  /* ---- Performance tiles ---- */
+  const performanceTiles: MetricTile[] = [
+    {
+      label: "Total Distance",
+      value: isDataLoading ? "—" : fmtKm(totalDistance),
+      accent: "text-[#0FACED]",
+    },
+    {
+      label: "High Score",
+      value: isDataLoading ? "—" : highScore.toLocaleString(),
+      accent: "text-[#0FACED]",
+    },
+    {
+      label: "Win Rate",
+      value: isDataLoading ? "—" : winRate,
+      accent: "text-emerald-400",
+    },
+    {
+      label: "Obstacles",
+      value: isDataLoading ? "—" : totalObstacles.toLocaleString(),
+      accent: "text-orange-400",
+    },
+    {
+      label: "Games Played",
+      value: isDataLoading ? "—" : gamesPlayed.toLocaleString(),
+      accent: "text-purple-400",
+    },
+    {
+      label: "Total Score",
+      value: isDataLoading ? "—" : totalScore.toLocaleString(),
+      accent: "text-yellow-400",
+    },
+  ];
+
+  /* ---- Honor Badges ---- */
+  const unlockedIds = new Set((achievements ?? []).map((a) => a?.id));
+  const sortedUnlocked = [...(achievements ?? [])]
+    .filter(Boolean)
+    .sort((a, b) => {
+      const aT = a?.unlockedAt ? new Date(a.unlockedAt).getTime() : 0;
+      const bT = b?.unlockedAt ? new Date(b.unlockedAt).getTime() : 0;
+      return bT - aT;
+    });
+  const unlockedByIdMap = new Map(sortedUnlocked.map((a) => [a!.id, a]));
+
+  // Build up to 12 badges: unlocked first (most recent), then locked
+  const BADGE_LIMIT = 12;
+  const unlockedBadges: Badge[] = sortedUnlocked.slice(0, BADGE_LIMIT).map(
+    (a) => ({
+      icon: a!.icon,
+      name: a!.name,
+      description: a!.description ?? "",
+      unlocked: true,
+    }),
+  );
+
+  const lockedDefs = ACHIEVEMENTS.filter((a) => !unlockedIds.has(a.id));
+  const lockedBadges: Badge[] = lockedDefs
+    .slice(0, Math.max(0, BADGE_LIMIT - unlockedBadges.length))
+    .map((a) => ({
+      icon: a.icon,
+      name: a.name,
+      description: a.description,
+      unlocked: false,
+    }));
+
+  const allBadges = [...unlockedBadges, ...lockedBadges];
+
+  // Suppress unused warning while map is constructed above
+  void unlockedByIdMap;
+
+  /* ---- Scores for scorelines ---- */
+  const recentScores = (scores ?? []) as ScoreEntry[];
 
   /* ---------------------------------------------------------------- */
   return (
-    <main className="mx-auto max-w-4xl px-4 py-12">
-      {/* ── User Info ── */}
-      <section className="mb-10 flex flex-col items-center gap-6 sm:flex-row sm:items-start">
-        {/* Avatar */}
-        <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-full border-2 border-[#0FACED]/60">
-          {user.image ? (
-            <Image
-              src={user.image}
-              alt={user.name ?? "Avatar"}
-              fill
-              className="object-cover"
+    <main className="mx-auto max-w-5xl px-4 py-8">
+      <div className="space-y-6">
+        {/* Header banner */}
+        <ProfileHeader
+          userName={user.name ?? "Unknown"}
+          userImage={user.image}
+          skinSpriteKey={skinDef?.spriteKey ?? null}
+          skinName={skinDef?.name ?? null}
+          highScore={highScore}
+          gamesPlayed={gamesPlayed}
+        />
+
+        {/* Main two-column grid */}
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_340px]">
+          {/* Left: Performance Matrix + Honor Badges */}
+          <div className="space-y-6">
+            <PerformanceMatrix tiles={performanceTiles} />
+            <HonorBadges
+              badges={allBadges}
+              unlockedCount={sortedUnlocked.length}
+              totalCount={ACHIEVEMENTS.length}
             />
-          ) : (
-            <div className="flex h-full w-full items-center justify-center bg-[#091533] text-3xl font-bold text-[#0FACED]">
-              {(user.name ?? "?").charAt(0).toUpperCase()}
-            </div>
-          )}
+          </div>
+
+          {/* Right: Recent Scorelines (sticky on large screens) */}
+          <div className="lg:sticky lg:top-24 lg:self-start">
+            <RecentScorelines scores={recentScores} />
+          </div>
         </div>
-
-        <div className="text-center sm:text-left">
-          <h1 className="text-3xl font-bold text-white">{user.name}</h1>
-          <p className="mt-1 text-sm text-gray-400">{user.email}</p>
-
-          {/* Equipped skin preview */}
-          {skinLoading ? (
-            <SkeletonBlock className="mt-3 h-16 w-16" />
-          ) : skinDef ? (
-            <div className="mt-3 flex items-center gap-2">
-              <Image
-                src={`/wolves/${skinDef.spriteKey}.png`}
-                alt={skinDef.name}
-                width={48}
-                height={48}
-                className="rounded"
-              />
-              <span className="text-sm text-[#0FACED]">{skinDef.name}</span>
-            </div>
-          ) : null}
-        </div>
-      </section>
-
-      {/* ── Stats Grid ── */}
-      <section className="mb-10">
-        <h2 className="mb-4 text-lg font-semibold text-white">Stats</h2>
-        {isDataLoading ? (
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-            {Array.from({ length: 4 }).map((_, i) => (
-              <StatCardSkeleton key={i} />
-            ))}
-          </div>
-        ) : (
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-            <StatCard
-              icon={<Gamepad2 size={16} />}
-              label="Games Played"
-              value={gamesPlayed}
-            />
-            <StatCard
-              icon={<Trophy size={16} />}
-              label="High Score"
-              value={highScore.toLocaleString()}
-            />
-            <StatCard
-              icon={<Swords size={16} />}
-              label="Total Races"
-              value={raceStats?.racesPlayed ?? 0}
-            />
-            <StatCard
-              icon={<Target size={16} />}
-              label="Total Wins"
-              value={raceStats?.racesWon ?? 0}
-            />
-          </div>
-        )}
-      </section>
-
-      {/* ── Recent Achievements ── */}
-      <section className="mb-10">
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-white">
-            Recent Achievements
-          </h2>
-          <Link
-            href="/achievements"
-            className="flex items-center gap-1 text-sm text-[#0FACED] hover:underline"
-          >
-            View all <ChevronRight size={14} />
-          </Link>
-        </div>
-
-        {achievementsLoading ? (
-          <div className="space-y-3">
-            {Array.from({ length: 3 }).map((_, i) => (
-              <SkeletonBlock key={i} className="h-14 w-full" />
-            ))}
-          </div>
-        ) : recentAchievements.length === 0 ? (
-          <p className="text-sm text-gray-500">
-            No achievements unlocked yet. Start playing to earn some!
-          </p>
-        ) : (
-          <ul className="space-y-2">
-            {recentAchievements.map((a) =>
-              a ? (
-                <li
-                  key={a.id}
-                  className="flex items-center gap-3 rounded-lg border border-white/10 bg-white/5 p-3 transition hover:border-[#0FACED]/40"
-                >
-                  <span className="text-2xl" role="img" aria-label={a.name}>
-                    {a.icon}
-                  </span>
-                  <div className="flex-1">
-                    <p className="font-medium text-white">{a.name}</p>
-                    {a.unlockedAt && (
-                      <p className="text-xs text-gray-500">
-                        {new Date(a.unlockedAt).toLocaleDateString()}
-                      </p>
-                    )}
-                  </div>
-                  <Award size={16} className="text-[#0FACED]" />
-                </li>
-              ) : null
-            )}
-          </ul>
-        )}
-      </section>
-
-      {/* ── Recent Scores ── */}
-      <section>
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-white">Recent Scores</h2>
-          <Link
-            href="/leaderboard"
-            className="flex items-center gap-1 text-sm text-[#0FACED] hover:underline"
-          >
-            Leaderboard <ChevronRight size={14} />
-          </Link>
-        </div>
-
-        {scoresLoading ? (
-          <div className="space-y-3">
-            {Array.from({ length: 4 }).map((_, i) => (
-              <SkeletonBlock key={i} className="h-12 w-full" />
-            ))}
-          </div>
-        ) : recentScores.length === 0 ? (
-          <p className="text-sm text-gray-500">
-            No scores yet. Play a game to see your results here!
-          </p>
-        ) : (
-          <div className="overflow-hidden rounded-xl border border-white/10">
-            <table className="w-full text-left text-sm">
-              <thead className="border-b border-white/10 bg-white/5">
-                <tr>
-                  <th className="px-4 py-3 font-medium text-gray-400">
-                    Score
-                  </th>
-                  <th className="px-4 py-3 font-medium text-gray-400">
-                    Distance
-                  </th>
-                  <th className="px-4 py-3 font-medium text-gray-400">
-                    Date
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {recentScores.map((s) => (
-                  <tr
-                    key={s.id}
-                    className="border-b border-white/5 transition hover:bg-white/5"
-                  >
-                    <td className="px-4 py-3 font-semibold text-white">
-                      {s.score.toLocaleString()}
-                    </td>
-                    <td className="px-4 py-3 text-gray-300">
-                      {s.distance.toLocaleString()}m
-                    </td>
-                    <td className="px-4 py-3 text-gray-500">
-                      {new Date(s.createdAt).toLocaleDateString()}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </section>
+      </div>
     </main>
   );
 }
+

@@ -84,6 +84,14 @@ export class DifficultyScaler {
     this.timeSinceIncrease = 0;
   }
 
+  setStartLevel(name: string) {
+    const level = DIFFICULTY_LEVELS.find((l) => l.name === name);
+    if (!level) return;
+    const baseSpeed = this.overrides.baseSpeed ?? BASE_SPEED;
+    const increment = this.overrides.speedIncrement ?? SPEED_INCREMENT;
+    this.currentSpeed = baseSpeed + (level.startDistance / 10) * increment;
+  }
+
   private distanceFromSpeed(): number {
     const baseSpeed = this.overrides.baseSpeed ?? BASE_SPEED;
     const increment = this.overrides.speedIncrement ?? SPEED_INCREMENT;

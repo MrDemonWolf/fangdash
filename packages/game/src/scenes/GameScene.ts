@@ -26,6 +26,8 @@ export class GameScene extends Phaser.Scene {
   protected skinKey = "wolf-gray";
   protected seed?: string;
   protected running = false;
+  private previewing = false;
+  private startDifficulty?: string;
   audioManager!: AudioManager;
 
   // Debug state
@@ -40,10 +42,11 @@ export class GameScene extends Phaser.Scene {
     super({ key });
   }
 
-  init(data: { callbacks?: GameEventCallback; skinKey?: string; seed?: string }) {
+  init(data: { callbacks?: GameEventCallback; skinKey?: string; seed?: string; startDifficulty?: string }) {
     this.callbacks = data.callbacks ?? {};
     this.skinKey = data.skinKey ?? "wolf-gray";
     this.seed = data.seed;
+    this.startDifficulty = data.startDifficulty;
   }
 
   create() {
@@ -96,6 +99,12 @@ export class GameScene extends Phaser.Scene {
   }
 
   update(_time: number, delta: number) {
+    if (this.previewing) {
+      const speed = this.difficulty.currentSpeed;
+      this.background.update(speed, delta);
+      this.ground.tilePositionX += speed * (delta / 1000);
+      return;
+    }
     if (!this.running || !this.player.alive) return;
 
     // Apply speed multiplier for debug slow-mo / fast-forward
@@ -143,11 +152,15 @@ export class GameScene extends Phaser.Scene {
   }
 
   protected startRun() {
+    this.previewing = false;
     this.running = true;
     this.debugElapsedMs = 0;
     this.player.reset();
     this.spawner.reset();
     this.difficulty.reset();
+    if (this.startDifficulty) {
+      this.difficulty.setStartLevel(this.startDifficulty);
+    }
     this.scoreManager.reset();
     this.background.reset();
     this.audioManager.playBGM(AUDIO_KEYS.BGM_GAME);
@@ -168,6 +181,10 @@ export class GameScene extends Phaser.Scene {
     if (!this.running) {
       this.startRun();
     }
+  }
+
+  public beginPreview() {
+    this.previewing = true;
   }
 
   public pause() {

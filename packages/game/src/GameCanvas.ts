@@ -15,6 +15,7 @@ export interface DebugChannel {
 
 export interface GameChannel {
   start: () => void;
+  preview: () => void;
   pause: () => void;
   resume: () => void;
 }
@@ -22,6 +23,7 @@ export interface GameChannel {
 export interface GameCanvasOptions {
   parent: HTMLElement;
   skinKey?: string;
+  startDifficulty?: string;
   onStateUpdate?: (state: GameState) => void;
   onGameOver?: (state: GameState) => void;
   onDebugUpdate?: (state: DebugState) => void;
@@ -103,7 +105,7 @@ export function createGame(options: GameCanvasOptions): GameCanvasResult {
   game.events.on("ready", () => {
     const gameScene = game.scene.getScene("GameScene") as GameScene;
     if (gameScene) {
-      gameScene.scene.restart({ callbacks, skinKey: options.skinKey });
+      gameScene.scene.restart({ callbacks, skinKey: options.skinKey, startDifficulty: options.startDifficulty });
     }
   });
 
@@ -149,6 +151,10 @@ export function createGame(options: GameCanvasOptions): GameCanvasResult {
       if (gameScene) {
         gameScene.beginRun();
       }
+    },
+    preview: () => {
+      const gameScene = game.scene.getScene("GameScene") as GameScene;
+      gameScene?.beginPreview();
     },
     pause: () => {
       const gameScene = game.scene.getScene("GameScene") as GameScene;
