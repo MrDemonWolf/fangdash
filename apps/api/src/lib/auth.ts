@@ -36,6 +36,10 @@ export function createAuth(env: AuthBindings) {
     ? ["http://localhost:3000", "https://fangdash.mrdemonwolf.workers.dev"]
     : ["https://fangdash.mrdemonwolf.workers.dev"];
 
+  const webURL = isDev
+    ? "http://localhost:3000"
+    : "https://fangdash.mrdemonwolf.workers.dev";
+
   return betterAuth({
     database: drizzleAdapter(db, {
       provider: "sqlite",
@@ -73,6 +77,9 @@ export function createAuth(env: AuthBindings) {
       },
     },
     trustedOrigins,
+    onAPIError: {
+      errorURL: `${webURL}/auth/error`,
+    },
     plugins: [
       admin({
         defaultRole: "user",
