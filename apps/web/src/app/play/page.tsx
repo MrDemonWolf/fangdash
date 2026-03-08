@@ -6,10 +6,11 @@ import DebugPanel from "@/components/game/DebugPanel";
 import { GameHUD } from "@/components/game/GameHUD";
 import { GameOverModal } from "@/components/game/GameOverModal";
 import { PlayMenu } from "@/components/game/PlayMenu";
+import { PlayMainMenu } from "@/components/game/PlayMainMenu";
 import type { GameState, DebugState, DebugCommand } from "@fangdash/shared";
 import type { DebugChannel, AudioChannel, GameChannel } from "@fangdash/game";
 import { CountdownOverlay } from "@/components/game/CountdownOverlay";
-import { useSession } from "@/lib/auth-client";
+import { useSession, signIn, signOut } from "@/lib/auth-client";
 import { useIsDevOrAdmin } from "@/lib/use-role";
 import { useTRPC } from "@/lib/trpc";
 import { getSkinById } from "@fangdash/shared/skins";
@@ -46,8 +47,10 @@ export default function PlayPage() {
   const [audioVolume, setAudioVolume] = useState(0.5);
   const [countdown, setCountdown] = useState<number | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [showMenu, setShowMenu] = useState(true);
+  const [selectedDifficulty, setSelectedDifficulty] = useState("easy");
 
-  const { data: session } = useSession();
+  const { data: session, isPending: sessionPending } = useSession();
   const isSignedIn = !!session?.user;
   const isDevOrAdmin = useIsDevOrAdmin();
 
@@ -58,6 +61,18 @@ export default function PlayPage() {
       enabled: isSignedIn,
     })
   );
+
+  // Fetch best score (only when signed in)
+  const { data: myScores } = useQuery(
+    trpc.score.myScores.queryOptions(undefined, {
+      enabled: isSignedIn,
+    })
+  );
+  const bestScore = myScores?.[0]?.score ?? 0;
+
+  const equippedSkinKey = skinData?.skinId
+    ? getSkinById(skinData.skinId)?.spriteKey ?? "wolf-gray"
+    : "wolf-gray";
 
   // Score submission mutation
   const {
@@ -158,7 +173,8 @@ export default function PlayPage() {
 
     const { game, debug, audio, gameChannel } = createGame({
       parent: containerRef.current,
-      skinKey: skinData?.skinId ? getSkinById(skinData.skinId)?.spriteKey ?? "wolf-gray" : undefined,
+      skinKey: equippedSkinKey,
+      startDifficulty: selectedDifficulty,
       onStateUpdate: (state) => {
         setGameState(state);
       },
@@ -174,8 +190,9 @@ export default function PlayPage() {
     gameChannelRef.current = gameChannel;
     setAudioMuted(audio.getMuted());
     setAudioVolume(audio.getVolume());
-    startCountdown();
-  }, [skinData?.skinId, handleGameOver, startCountdown]);
+    // Start in preview mode (background scrolls, no gameplay)
+    gameChannel.preview();
+  }, [equippedSkinKey, selectedDifficulty, handleGameOver]);
 
   // Check onboarding status on mount
   useEffect(() => {
@@ -256,7 +273,7 @@ export default function PlayPage() {
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key !== "Escape") return;
-      if (gameOver || countdown !== null) return;
+      if (gameOver || countdown !== null || showMenu) return;
       if (menuOpen) {
         closeMenu();
       } else {
@@ -265,7 +282,7 @@ export default function PlayPage() {
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [gameOver, countdown, menuOpen, openMenu, closeMenu]);
+  }, [gameOver, countdown, menuOpen, showMenu, openMenu, closeMenu]);
 
   const handleRetrySubmit = useCallback(() => {
     if (!finalState) return;
@@ -278,7 +295,21 @@ export default function PlayPage() {
     });
   }, [finalState, finalElapsedTime, submitScore]);
 
+  const handleSignIn = useCallback(() => {
+    signIn.social({ provider: "twitch", callbackURL: window.location.href });
+  }, []);
+
+  const handleSignOut = useCallback(() => {
+    signOut();
+  }, []);
+
+  const handleStartPlay = useCallback(() => {
+    setShowMenu(false);
+    startCountdown();
+  }, [startCountdown]);
+
   const handleRestart = useCallback(() => {
+    setShowMenu(true);
     hasInitialized.current = false;
     startGame();
     hasInitialized.current = true;
@@ -286,9 +317,9 @@ export default function PlayPage() {
 
   return (
     <main className="flex flex-col bg-[#091533]">
-      <div className="relative w-full h-[calc(100dvh-64px)]">
+      <div className="relative w-full h-dvh">
         {/* HUD overlay */}
-        {!gameOver && (
+        {!gameOver && !showMenu && (
           <GameHUD
             score={gameState.score}
             distance={gameState.distance}
@@ -309,6 +340,23 @@ export default function PlayPage() {
 
         {/* Countdown overlay */}
         {countdown !== null && <CountdownOverlay seconds={countdown} />}
+
+        {/* Main menu overlay */}
+        {showMenu && (
+          <PlayMainMenu
+            onPlay={handleStartPlay}
+            skinKey={equippedSkinKey}
+            isSignedIn={isSignedIn}
+            bestScore={bestScore}
+            selectedDifficulty={selectedDifficulty}
+            onSelectDifficulty={setSelectedDifficulty}
+            userName={session?.user?.name ?? undefined}
+            userImage={session?.user?.image ?? undefined}
+            isPending={sessionPending}
+            onSignIn={handleSignIn}
+            onSignOut={handleSignOut}
+          />
+        )}
 
         {/* Play menu overlay */}
         {menuOpen && !gameOver && (

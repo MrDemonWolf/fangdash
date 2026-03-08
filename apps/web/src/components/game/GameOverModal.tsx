@@ -23,7 +23,12 @@ function formatTime(ms: number): string {
   const totalSec = Math.floor(ms / 1000);
   const min = Math.floor(totalSec / 60);
   const sec = totalSec % 60;
-  return `${min}:${sec.toString().padStart(2, "0")}`;
+  return `${String(min).padStart(2, "0")}:${sec.toString().padStart(2, "0")}`;
+}
+
+function formatDistance(m: number): string {
+  if (m >= 1000) return `${(m / 1000).toFixed(1)}km`;
+  return `${Math.floor(m)}m`;
 }
 
 function subtitle(score: number): string {
@@ -96,70 +101,50 @@ export function GameOverModal({
             </p>
           </div>
 
-          {/* Stats */}
-          <div className="mb-6 space-y-2">
-            {/* Score — hero row */}
-            <div
-              className="flex items-center justify-between rounded px-4 py-3"
-              style={{
-                background: "rgba(15,172,237,0.07)",
-                border: "1px solid rgba(15,172,237,0.2)",
-              }}
-            >
-              <div className="flex items-center gap-2">
-                <span
-                  className="w-2 h-2 rounded-full bg-[#0FACED] flex-shrink-0"
-                  style={{ boxShadow: "0 0 6px #0FACED" }}
-                />
-                <span className="text-sm font-mono text-white/60 uppercase tracking-wider">
-                  Score
-                </span>
-              </div>
+          {/* Stats — 2×2 grid */}
+          <div className="mb-6 grid grid-cols-2 gap-px bg-[#0FACED]/10 rounded overflow-hidden">
+            {/* FINAL SCORE */}
+            <div className="bg-[#091533] px-4 py-3">
+              <p className="text-[10px] font-mono uppercase tracking-widest text-white/40 mb-1">
+                Final Score
+              </p>
               <span
-                className="text-xl font-bold font-mono tabular-nums text-[#0FACED]"
+                className="text-2xl font-bold font-mono tabular-nums text-[#0FACED]"
                 style={{ textShadow: "0 0 10px rgba(15,172,237,0.5)" }}
               >
                 {state.score.toLocaleString()}
               </span>
             </div>
 
-            <div className="flex items-center justify-between rounded px-4 py-2.5 bg-white/5">
-              <div className="flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-white/25 flex-shrink-0" />
-                <span className="text-sm font-mono text-white/60 uppercase tracking-wider">
-                  Distance
-                </span>
-              </div>
-              <span className="text-lg font-bold font-mono tabular-nums text-white/80">
-                {Math.floor(state.distance).toLocaleString()}m
+            {/* DISTANCE */}
+            <div className="bg-[#091533] px-4 py-3">
+              <p className="text-[10px] font-mono uppercase tracking-widest text-white/40 mb-1">
+                Distance
+              </p>
+              <span className="text-2xl font-bold font-mono tabular-nums text-white/80">
+                {formatDistance(state.distance)}
               </span>
             </div>
 
-            <div className="flex items-center justify-between rounded px-4 py-2.5 bg-white/5">
-              <div className="flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-white/25 flex-shrink-0" />
-                <span className="text-sm font-mono text-white/60 uppercase tracking-wider">
-                  Obstacles
-                </span>
-              </div>
-              <span className="text-lg font-bold font-mono tabular-nums text-white/80">
+            {/* DODGES */}
+            <div className="bg-[#091533] px-4 py-3">
+              <p className="text-[10px] font-mono uppercase tracking-widest text-white/40 mb-1">
+                Dodges
+              </p>
+              <span className="text-2xl font-bold font-mono tabular-nums text-white/80">
                 {state.obstaclesCleared.toLocaleString()}
               </span>
             </div>
 
-            {elapsedTime !== undefined && (
-              <div className="flex items-center justify-between rounded px-4 py-2.5 bg-white/5">
-                <div className="flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-white/25 flex-shrink-0" />
-                  <span className="text-sm font-mono text-white/60 uppercase tracking-wider">
-                    Time
-                  </span>
-                </div>
-                <span className="text-lg font-bold font-mono tabular-nums text-white/80">
-                  {formatTime(elapsedTime)}
-                </span>
-              </div>
-            )}
+            {/* TIME */}
+            <div className="bg-[#091533] px-4 py-3">
+              <p className="text-[10px] font-mono uppercase tracking-widest text-white/40 mb-1">
+                Time
+              </p>
+              <span className="text-2xl font-bold font-mono tabular-nums text-white/80">
+                {elapsedTime !== undefined ? formatTime(elapsedTime) : "--:--"}
+              </span>
+            </div>
           </div>
 
           {/* Submit error */}
@@ -185,58 +170,44 @@ export function GameOverModal({
             </p>
           )}
 
-          {/* Unlocks */}
+          {/* Unlocks — horizontal pill badges */}
           {hasUnlocks && (
-            <div
-              className="mb-5 rounded p-4 space-y-3"
-              style={{
-                background: "rgba(255,196,0,0.06)",
-                border: "1px solid rgba(255,196,0,0.2)",
-              }}
-            >
-              {submitResult.newAchievements.length > 0 && (
-                <div>
-                  <p className="text-xs font-mono font-bold uppercase tracking-widest text-yellow-400/70 mb-2">
-                    🏆 Achievements Unlocked
-                  </p>
-                  {submitResult.newAchievements.map((id) => {
-                    const achievement = getAchievementById(id);
-                    return (
-                      <div key={id} className="flex items-center gap-2 py-0.5">
-                        <span className="text-base leading-none">
-                          {achievement?.icon ?? "⭐"}
-                        </span>
-                        <span className="text-sm font-mono text-white/80">
-                          {achievement?.name ?? id}
-                        </span>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-              {submitResult.newSkins.length > 0 && (
-                <div>
-                  <p className="text-xs font-mono font-bold uppercase tracking-widest text-yellow-400/70 mb-2">
-                    ✨ Skins Unlocked
-                  </p>
-                  {submitResult.newSkins.map((id) => {
-                    const skin = getSkinById(id);
-                    return (
-                      <div key={id} className="flex items-center gap-2 py-0.5">
-                        <span className="text-base leading-none">🐺</span>
-                        <span className="text-sm font-mono text-white/80">
-                          {skin?.name ?? id}
-                        </span>
-                        {skin && (
-                          <span className="ml-auto text-xs font-mono text-yellow-400/50 capitalize">
-                            {skin.rarity}
-                          </span>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
+            <div className="mb-5">
+              <p className="text-xs font-mono font-bold uppercase tracking-widest text-yellow-400/70 mb-2">
+                Unlocked
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {submitResult.newAchievements.map((id) => {
+                  const achievement = getAchievementById(id);
+                  return (
+                    <span
+                      key={id}
+                      className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-mono"
+                      style={{
+                        background: "rgba(255,196,0,0.1)",
+                        border: "1px solid rgba(255,196,0,0.3)",
+                      }}
+                    >
+                      🏆 {achievement?.name ?? id}
+                    </span>
+                  );
+                })}
+                {submitResult.newSkins.map((id) => {
+                  const skin = getSkinById(id);
+                  return (
+                    <span
+                      key={id}
+                      className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-mono"
+                      style={{
+                        background: "rgba(255,196,0,0.1)",
+                        border: "1px solid rgba(255,196,0,0.3)",
+                      }}
+                    >
+                      🐺 {skin?.name ?? id}
+                    </span>
+                  );
+                })}
+              </div>
             </div>
           )}
 
@@ -259,14 +230,14 @@ export function GameOverModal({
                   "0 0 20px rgba(15,172,237,0.35), 0 0 40px rgba(15,172,237,0.12)",
               }}
             >
-              Play Again
+              PLAY AGAIN
             </button>
 
             <Link
               href="/"
-              className="block w-full rounded px-6 py-2.5 text-center text-xs font-mono uppercase tracking-widest text-white/40 border border-white/10 transition-colors hover:text-white/70 hover:border-white/20"
+              className="text-xs font-mono uppercase tracking-widest text-white/30 hover:text-white/60 transition-colors text-center block w-full py-2"
             >
-              Back to Home
+              &lt; Back to Home &gt;
             </Link>
           </div>
         </div>

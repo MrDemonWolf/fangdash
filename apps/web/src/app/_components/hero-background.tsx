@@ -6,7 +6,7 @@ export function HeroBackground() {
         className="absolute inset-0 animate-scroll-slow bg-repeat-x"
         style={{
           backgroundImage: "url(/backgrounds/bg-sky.png)",
-          backgroundSize: "auto 100%",
+          backgroundSize: "800px 100%",
           imageRendering: "pixelated",
         }}
       />
@@ -15,7 +15,7 @@ export function HeroBackground() {
         className="absolute inset-0 animate-scroll-medium bg-repeat-x"
         style={{
           backgroundImage: "url(/backgrounds/bg-hills.png)",
-          backgroundSize: "auto 100%",
+          backgroundSize: "1600px 100%",
           imageRendering: "pixelated",
         }}
       />
@@ -24,12 +24,12 @@ export function HeroBackground() {
         className="absolute inset-0 animate-scroll-fast bg-repeat-x"
         style={{
           backgroundImage: "url(/backgrounds/bg-trees.png)",
-          backgroundSize: "auto 100%",
+          backgroundSize: "1600px 100%",
           imageRendering: "pixelated",
         }}
       />
       {/* Gradient overlay for text readability */}
-      <div className="absolute inset-0 bg-gradient-to-b from-[#091533]/60 via-[#091533]/40 to-[#091533]/80" />
+      <div className="absolute inset-0 bg-gradient-to-b from-[#091533]/70 via-[#091533]/60 to-[#091533]/90" />
     </div>
   );
 }
