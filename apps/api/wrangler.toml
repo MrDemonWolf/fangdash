@@ -12,6 +12,9 @@ migrations_dir = "drizzle"
 [vars]
 ENVIRONMENT = "development"
 
+[env.production]
+name = "fangdash-api"
+
 [env.production.vars]
 ENVIRONMENT = "production"
 

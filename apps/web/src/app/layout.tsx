@@ -15,7 +15,6 @@ export const metadata: Metadata = {
   title: "FangDash",
   description:
     "A multiplayer endless runner where players race as wolves on Twitch.",
-  themeColor: "#091533",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
