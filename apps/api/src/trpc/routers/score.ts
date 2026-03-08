@@ -153,7 +153,7 @@ export const scoreRouter = router({
       .select()
       .from(score)
       .where(eq(score.playerId, playerRecord.id))
-      .orderBy(desc(score.score))
+      .orderBy(desc(score.createdAt))
       .limit(20);
   }),
 });
