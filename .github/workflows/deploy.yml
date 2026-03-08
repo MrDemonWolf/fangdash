@@ -65,6 +65,7 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           NEXT_PUBLIC_API_URL: https://fangdash-api.mrdemonwolf.workers.dev
           NEXT_PUBLIC_PARTYKIT_HOST: ${{ secrets.PARTYKIT_HOST }}
+          COMMIT_SHA: ${{ github.sha }}
 
   deploy-party:
     name: Deploy PartyKit

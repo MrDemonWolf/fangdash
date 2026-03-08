@@ -82,9 +82,9 @@ export default function Home() {
 
       {/* Footer */}
       <footer className="border-t border-white/10 bg-[#091533] px-4 py-8">
-        <div className="mx-auto flex max-w-5xl flex-col items-center gap-4 text-sm text-gray-400 sm:flex-row sm:justify-between">
-          <p>
-            © {new Date().getFullYear()} FangDash by {""}
+        <div className="mx-auto grid max-w-5xl grid-cols-1 gap-4 text-center text-sm text-gray-400 sm:grid-cols-3 sm:text-left">
+          <p className="sm:text-left">
+            © {new Date().getFullYear()} FangDash by{" "}
             <Link
               href="https://mrdemonwolf.com"
               target="_blank"
@@ -94,7 +94,11 @@ export default function Home() {
               MrDemonWolf, Inc.
             </Link>
           </p>
-          <div className="flex gap-6">
+          <p className="font-mono text-xs text-gray-500 sm:text-center self-center">
+            v{process.env.NEXT_PUBLIC_APP_VERSION} ·{" "}
+            {process.env.NEXT_PUBLIC_COMMIT_SHA}
+          </p>
+          <div className="flex justify-center gap-6 sm:justify-end self-center">
             <Link
               href="https://github.com/MrDemonWolf/fangdash"
               target="_blank"
