@@ -10,7 +10,8 @@
     "start": "next start",
     "lint": "next lint",
     "type-check": "tsc --noEmit",
-    "clean": "rm -rf .next .turbo"
+    "clean": "rm -rf .next .turbo",
+    "generate:icons": "node scripts/generate-icons.mjs"
   },
   "dependencies": {
     "@fangdash/game": "workspace:*",
@@ -43,6 +44,7 @@
     "eslint": "^9.39.4",
     "eslint-config-next": "^15.5.12",
     "postcss": "^8.5.0",
+    "sharp": "^0.33.5",
     "tailwindcss": "^4.0.0",
     "typescript": "^5.7.0",
     "wrangler": "^4.65.0"

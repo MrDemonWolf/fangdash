@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="160 75 190 190">
+  <!-- Background -->
+  <rect width="512" height="512" rx="96" fill="#091533"/>
+
+  <!-- Wolf body -->
+  <ellipse cx="256" cy="300" rx="110" ry="80" fill="#0FACED"/>
+
+  <!-- Wolf head -->
+  <ellipse cx="256" cy="200" rx="75" ry="65" fill="#0FACED"/>
+
+  <!-- Wolf ears (left) -->
+  <polygon points="195,150 175,90 230,140" fill="#0FACED"/>
+  <polygon points="200,148 183,103 225,142" fill="#091533"/>
+
+  <!-- Wolf ears (right) -->
+  <polygon points="317,150 337,90 282,140" fill="#0FACED"/>
+  <polygon points="312,148 329,103 287,142" fill="#091533"/>
+
+  <!-- Wolf snout -->
+  <ellipse cx="256" cy="225" rx="35" ry="25" fill="#0a9eb8"/>
+
+  <!-- Wolf nose -->
+  <ellipse cx="256" cy="210" rx="12" ry="8" fill="#091533"/>
+
+  <!-- Wolf eyes -->
+  <ellipse cx="230" cy="190" rx="10" ry="10" fill="#091533"/>
+  <ellipse cx="282" cy="190" rx="10" ry="10" fill="#091533"/>
+  <ellipse cx="233" cy="188" rx="4" ry="4" fill="white"/>
+  <ellipse cx="285" cy="188" rx="4" ry="4" fill="white"/>
+
+  <!-- Wolf legs -->
+  <rect x="180" y="360" width="35" height="70" rx="12" fill="#0FACED"/>
+  <rect x="225" y="360" width="35" height="70" rx="12" fill="#0FACED"/>
+  <rect x="270" y="360" width="35" height="70" rx="12" fill="#0FACED"/>
+  <rect x="315" y="360" width="35" height="70" rx="12" fill="#0FACED"/>
+
+  <!-- Wolf tail -->
+  <path d="M 366 290 Q 430 240 420 180 Q 415 160 400 170 Q 410 200 380 240 Q 370 260 355 275 Z" fill="#0FACED"/>
+
+  <!-- Accent dash lines (speed effect) -->
+  <rect x="60" y="270" width="60" height="8" rx="4" fill="#0FACED" opacity="0.5"/>
+  <rect x="70" y="290" width="45" height="8" rx="4" fill="#0FACED" opacity="0.3"/>
+  <rect x="65" y="310" width="55" height="8" rx="4" fill="#0FACED" opacity="0.4"/>
+</svg>

@@ -64,13 +64,13 @@ export function Navbar() {
           {/* Logo */}
           <Link
             href="/"
-            className="flex items-center gap-2 text-lg font-bold tracking-wide text-white hover:text-[#0FACED] transition-colors"
+            className="flex items-center gap-0 text-lg font-bold tracking-wide text-white hover:text-[#0FACED] transition-colors"
           >
             <Image
               src="/wolves/wolf-mrdemonwolf.png"
               alt=""
-              width={24}
-              height={24}
+              width={48}
+              height={48}
               style={{ imageRendering: "pixelated" }}
               aria-hidden="true"
             />
