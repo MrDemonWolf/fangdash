@@ -1,4 +1,5 @@
 import { eq, desc } from "drizzle-orm";
+import type { CheckStats } from "./achievement-checker";
 import type { DrizzleD1Database } from "drizzle-orm/d1";
 import { player, playerSkin, playerAchievement, score } from "../db/schema";
 import type * as schema from "../db/schema";
@@ -12,7 +13,8 @@ import type { SkinDefinition } from "@fangdash/shared/types";
  */
 export async function checkSkinUnlocks(
   db: DrizzleD1Database<typeof schema>,
-  playerId: string
+  playerId: string,
+  prefetchedStats?: CheckStats
 ): Promise<string[]> {
   // Get player stats
   const playerRecord = await db
@@ -41,31 +43,39 @@ export async function checkSkinUnlocks(
     unlockedAchievements.map((a) => a.achievementId)
   );
 
-  const newSkins: string[] = [];
   const now = new Date();
 
-  const highestScoreRow = await db
-    .select({ value: score.score })
-    .from(score)
-    .where(eq(score.playerId, playerId))
-    .orderBy(desc(score.score))
-    .limit(1)
-    .get();
+  let highestScore: number;
+  let highestDistance: number;
 
-  const highestDistanceRow = await db
-    .select({ value: score.distance })
-    .from(score)
-    .where(eq(score.playerId, playerId))
-    .orderBy(desc(score.distance))
-    .limit(1)
-    .get();
+  if (prefetchedStats) {
+    highestScore = prefetchedStats.highestScore;
+    highestDistance = prefetchedStats.highestDistance;
+  } else {
+    const highestScoreRow = await db
+      .select({ value: score.score })
+      .from(score)
+      .where(eq(score.playerId, playerId))
+      .orderBy(desc(score.score))
+      .limit(1)
+      .get();
 
-  const highestScore = highestScoreRow?.value ?? 0;
-  const highestDistance = highestDistanceRow?.value ?? 0;
+    const highestDistanceRow = await db
+      .select({ value: score.distance })
+      .from(score)
+      .where(eq(score.playerId, playerId))
+      .orderBy(desc(score.distance))
+      .limit(1)
+      .get();
 
+    highestScore = highestScoreRow?.value ?? 0;
+    highestDistance = highestDistanceRow?.value ?? 0;
+  }
+
+  // Collect skins to unlock
+  const skinsToInsert: string[] = [];
   for (const skin of SKINS) {
     if (ownedSkinIds.has(skin.id)) continue;
-
     if (
       isSkinUnlocked(skin, {
         highestScore,
@@ -74,21 +84,27 @@ export async function checkSkinUnlocks(
         achievementIds,
       })
     ) {
-      try {
-        await db.insert(playerSkin).values({
-          id: crypto.randomUUID(),
-          playerId,
-          skinId: skin.id,
-          unlockedAt: now,
-        });
-        newSkins.push(skin.id);
-      } catch {
-        // Unique constraint — already owns this skin
-      }
+      skinsToInsert.push(skin.id);
     }
   }
 
-  return newSkins;
+  if (skinsToInsert.length === 0) return [];
+
+  // Batch insert, skip conflicts
+  const inserted = await db
+    .insert(playerSkin)
+    .values(
+      skinsToInsert.map((skinId) => ({
+        id: crypto.randomUUID(),
+        playerId,
+        skinId,
+        unlockedAt: now,
+      }))
+    )
+    .onConflictDoNothing()
+    .returning({ skinId: playerSkin.skinId });
+
+  return inserted.map((r) => r.skinId);
 }
 
 export function isSkinUnlocked(

@@ -16,9 +16,15 @@ export interface PlayerStats {
   racesWon: number;
 }
 
+export interface CheckStats {
+  highestScore: number;
+  highestDistance: number;
+}
+
 interface CheckResult {
   newAchievements: string[];
   newSkins: string[];
+  stats: CheckStats;
 }
 
 /**
@@ -37,7 +43,8 @@ export async function checkAchievements(
     .where(eq(player.id, playerId))
     .get();
 
-  if (!playerRecord) return { newAchievements: [], newSkins: [] };
+  const emptyStats: CheckStats = { highestScore: 0, highestDistance: 0 };
+  if (!playerRecord) return { newAchievements: [], newSkins: [], stats: emptyStats };
 
   // Get already unlocked achievements
   const existing = await db
@@ -81,37 +88,57 @@ export async function checkAchievements(
     racesWon: playerRecord.racesWon,
   };
 
+  const checkStats: CheckStats = {
+    highestScore: stats.highestScore,
+    highestDistance: stats.highestDistance,
+  };
+
   const newAchievements: string[] = [];
-  const newSkins: string[] = [];
+  const rewardSkinIds: string[] = [];
   const now = new Date();
 
+  // Collect newly earned achievements
+  const achievementRows: { id: string; playerId: string; achievementId: string; unlockedAt: Date }[] = [];
   for (const achievement of ACHIEVEMENTS) {
     if (unlockedIds.has(achievement.id)) continue;
-
     if (isAchievementEarned(achievement, stats)) {
-      await db.insert(playerAchievement).values({
+      achievementRows.push({
         id: crypto.randomUUID(),
         playerId,
         achievementId: achievement.id,
         unlockedAt: now,
       });
       newAchievements.push(achievement.id);
-
-      // Grant reward skin if applicable
       if (achievement.rewardSkinId) {
-        const skinGranted = await grantSkin(
-          db,
-          playerId,
-          achievement.rewardSkinId
-        );
-        if (skinGranted) {
-          newSkins.push(achievement.rewardSkinId);
-        }
+        rewardSkinIds.push(achievement.rewardSkinId);
       }
     }
   }
 
-  return { newAchievements, newSkins };
+  // Batch insert achievements
+  if (achievementRows.length > 0) {
+    await db.insert(playerAchievement).values(achievementRows);
+  }
+
+  // Batch insert reward skins (skip conflicts — player may already own them)
+  let newSkins: string[] = [];
+  if (rewardSkinIds.length > 0) {
+    const inserted = await db
+      .insert(playerSkin)
+      .values(
+        rewardSkinIds.map((skinId) => ({
+          id: crypto.randomUUID(),
+          playerId,
+          skinId,
+          unlockedAt: now,
+        }))
+      )
+      .onConflictDoNothing()
+      .returning({ skinId: playerSkin.skinId });
+    newSkins = inserted.map((r) => r.skinId);
+  }
+
+  return { newAchievements, newSkins, stats: checkStats };
 }
 
 export function isAchievementEarned(
@@ -146,25 +173,3 @@ export function isAchievementEarned(
   }
 }
 
-/**
- * Grants a skin to a player if they don't already have it.
- * Returns true if the skin was newly granted.
- */
-async function grantSkin(
-  db: DrizzleD1Database<typeof schema>,
-  playerId: string,
-  skinId: string
-): Promise<boolean> {
-  try {
-    await db.insert(playerSkin).values({
-      id: crypto.randomUUID(),
-      playerId,
-      skinId,
-      unlockedAt: new Date(),
-    });
-    return true;
-  } catch {
-    // Unique constraint violation — already has this skin
-    return false;
-  }
-}

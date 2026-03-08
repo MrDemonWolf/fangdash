@@ -68,7 +68,8 @@ export const scoreRouter = router({
       );
       const newSkinUnlocks = await checkSkinUnlocks(
         ctx.db,
-        playerRecord.id
+        playerRecord.id,
+        achievementResult.stats
       );
 
       return {

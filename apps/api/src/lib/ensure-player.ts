@@ -20,21 +20,23 @@ export async function ensurePlayer(
   if (existing) return existing;
 
   const now = new Date();
-  const id = crypto.randomUUID();
 
-  await db.insert(player).values({
-    id,
-    userId,
-    equippedSkinId: "gray-wolf",
-    totalScore: 0,
-    totalDistance: 0,
-    totalObstaclesCleared: 0,
-    gamesPlayed: 0,
-    racesPlayed: 0,
-    racesWon: 0,
-    createdAt: now,
-    updatedAt: now,
-  });
+  const [newPlayer] = await db
+    .insert(player)
+    .values({
+      id: crypto.randomUUID(),
+      userId,
+      equippedSkinId: "gray-wolf",
+      totalScore: 0,
+      totalDistance: 0,
+      totalObstaclesCleared: 0,
+      gamesPlayed: 0,
+      racesPlayed: 0,
+      racesWon: 0,
+      createdAt: now,
+      updatedAt: now,
+    })
+    .returning();
 
-  return db.select().from(player).where(eq(player.id, id)).get();
+  return newPlayer;
 }
