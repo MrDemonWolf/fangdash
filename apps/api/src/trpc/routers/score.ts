@@ -6,8 +6,7 @@ import { score, player, user } from "../../db/schema";
 import { ensurePlayer } from "../../lib/ensure-player";
 import { checkAchievements } from "../../lib/achievement-checker";
 import { checkSkinUnlocks } from "../../lib/skin-unlocker";
-
-const MAX_SCORE_PER_SECOND = 15;
+import { SCORE_PER_SECOND, SCORE_PER_OBSTACLE } from "@fangdash/shared";
 
 export const scoreRouter = router({
   submit: protectedProcedure
@@ -22,7 +21,9 @@ export const scoreRouter = router({
     )
     .mutation(async ({ ctx, input }) => {
       // Anti-cheat: reject impossible scores
-      const maxAllowedScore = (input.duration / 1000) * MAX_SCORE_PER_SECOND;
+      const maxAllowedScore =
+        (input.duration / 1000) * SCORE_PER_SECOND +
+        input.obstaclesCleared * SCORE_PER_OBSTACLE;
       if (input.score > maxAllowedScore) {
         throw new TRPCError({ code: "BAD_REQUEST", message: "Score exceeds maximum allowed rate" });
       }
