@@ -26,6 +26,7 @@ export const metadata: Metadata = {
       "A multiplayer endless runner where players race as wolves on Twitch.",
     type: "website",
     siteName: "FangDash",
+    url: "/",
     images: [{ url: "/api/og", width: 1200, height: 630, alt: "FangDash" }],
   },
   twitter: {
@@ -35,6 +36,7 @@ export const metadata: Metadata = {
       "A multiplayer endless runner where players race as wolves on Twitch.",
     images: ["/api/og"],
   },
+  metadataBase: new URL("https://fangdash.mrdemonwolf.workers.dev"),
   icons: {
     icon: [
       { url: "/icons/icon-32.png", sizes: "32x32", type: "image/png" },

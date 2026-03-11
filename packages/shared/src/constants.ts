@@ -3,7 +3,10 @@ export const GRAVITY = 1200;
 export const JUMP_VELOCITY = -500;
 export const DOUBLE_JUMP_VELOCITY = -420;
 export const MAX_JUMPS = 2;
-export const GROUND_Y = 560;
+// Wolf sprite (48×48, 3× scale) has 13 transparent rows at the bottom = 39px visual offset.
+// Grass tile top is at GAME_HEIGHT - 100 = 500. Visible feet land 8px into the grass (y=508).
+// GROUND_Y = 508 + 39 = 547.
+export const GROUND_Y = 547;
 
 // ── Speed & Difficulty ──
 export const BASE_SPEED = 300;
@@ -17,6 +20,9 @@ export const SCORE_PER_OBSTACLE = 50;
 export const DISTANCE_MULTIPLIER = 0.1;
 
 // ── Obstacles ──
+// Obstacle sprites (32×32, 2× scale) have 3–8 transparent rows at bottom (6–16px visual offset).
+// Grass top is at GAME_HEIGHT - 100 = 500. Spawn Y=515 places all visible bases 7–9px into grass.
+export const OBSTACLE_GROUND_Y = 515;
 export const MIN_OBSTACLE_GAP_MS = 800;
 export const MAX_OBSTACLE_GAP_MS = 2500;
 export const OBSTACLE_TYPES = ["rock", "log", "bush", "spike"] as const;

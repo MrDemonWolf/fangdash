@@ -79,6 +79,7 @@ export default function RaceRoomPage() {
   const containerRef = useRef<HTMLDivElement>(null);
   const gameRef = useRef<any>(null);
   const connectionRef = useRef<RaceConnection | null>(null);
+  const hasJoinedRef = useRef(false);
 
   const equippedSkin = skinData?.skinId ? getSkinById(skinData.skinId)?.spriteKey ?? "wolf-gray" : "wolf-gray";
 
@@ -176,12 +177,9 @@ export default function RaceRoomPage() {
   useEffect(() => {
     if (!isSignedIn || !session?.user) return;
 
+    hasJoinedRef.current = false;
     const connection = new RaceConnection({ roomCode });
     connectionRef.current = connection;
-
-    // Join with username and skin
-    const username = session.user.name || session.user.email || "Player";
-    connection.join(username, equippedSkin);
 
     // Listen for room state (initial snapshot)
     connection.on("room_state", (room) => {
@@ -251,6 +249,18 @@ export default function RaceRoomPage() {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isSignedIn, roomCode]);
+
+  // ── Join once skin data has resolved ──
+  useEffect(() => {
+    if (!isSignedIn || !session?.user) return;
+    if (skinData === undefined) return; // still loading
+    if (hasJoinedRef.current) return;   // already joined
+    const connection = connectionRef.current;
+    if (!connection) return;
+    hasJoinedRef.current = true;
+    const username = session.user.name || session.user.email || "Player";
+    connection.join(username, equippedSkin);
+  }, [isSignedIn, session, equippedSkin, skinData]);
 
   // ── Start game when phase transitions to racing ──
   useEffect(() => {
