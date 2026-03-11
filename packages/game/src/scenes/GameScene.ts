@@ -1,5 +1,5 @@
 import * as Phaser from "phaser";
-import { GAME_WIDTH, GROUND_Y, AUDIO_KEYS } from "@fangdash/shared";
+import { GAME_WIDTH, GAME_HEIGHT, GROUND_HEIGHT, GROUND_Y, AUDIO_KEYS } from "@fangdash/shared";
 import type { GameState, DebugState, DebugCommand } from "@fangdash/shared";
 import { Player } from "../entities/Player";
 import { ObstacleSpawner } from "../entities/Obstacle";
@@ -54,7 +54,7 @@ export class GameScene extends Phaser.Scene {
     this.background = new ParallaxBackground(this);
 
     // Ground
-    this.ground = this.add.tileSprite(0, GROUND_Y, GAME_WIDTH * 2, 16, "ground");
+    this.ground = this.add.tileSprite(0, GAME_HEIGHT - GROUND_HEIGHT, GAME_WIDTH * 2, GROUND_HEIGHT, "ground");
     this.ground.setOrigin(0, 0);
     this.ground.setDepth(0);
 

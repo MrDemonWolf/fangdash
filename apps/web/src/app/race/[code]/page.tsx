@@ -36,7 +36,7 @@ export default function RaceRoomPage() {
 
   // tRPC
   const trpc = useTRPC();
-  const { data: skinData } = useQuery(
+  const { data: skinData, isLoading: skinLoading } = useQuery(
     trpc.skin.getEquippedSkin.queryOptions(undefined, {
       enabled: isSignedIn,
     })
@@ -79,6 +79,7 @@ export default function RaceRoomPage() {
   const containerRef = useRef<HTMLDivElement>(null);
   const gameRef = useRef<any>(null);
   const connectionRef = useRef<RaceConnection | null>(null);
+  const hasJoinedRef = useRef(false);
 
   const equippedSkin = skinData?.skinId ? getSkinById(skinData.skinId)?.spriteKey ?? "wolf-gray" : "wolf-gray";
 
@@ -176,19 +177,17 @@ export default function RaceRoomPage() {
   useEffect(() => {
     if (!isSignedIn || !session?.user) return;
 
+    hasJoinedRef.current = false;
     const connection = new RaceConnection({ roomCode });
     connectionRef.current = connection;
 
-    // Join with username and skin
-    const username = session.user.name || session.user.email || "Player";
-    connection.join(username, equippedSkin);
-
     // Listen for room state (initial snapshot)
+    const currentUsername = session.user.name || session.user.email || "Player";
     connection.on("room_state", (room) => {
       setPlayers(room.players);
       // Try to find our own id from the players list
       const me = room.players.find(
-        (p) => p.username === username
+        (p) => p.username === currentUsername
       );
       if (me) setMyId(me.id);
     });
@@ -251,6 +250,18 @@ export default function RaceRoomPage() {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isSignedIn, roomCode]);
+
+  // ── Join once skin data has resolved ──
+  useEffect(() => {
+    if (!isSignedIn || !session?.user) return;
+    if (skinLoading) return;             // still loading (errors treated as loaded)
+    if (hasJoinedRef.current) return;    // already joined
+    const connection = connectionRef.current;
+    if (!connection) return;
+    hasJoinedRef.current = true;
+    const username = session.user.name || session.user.email || "Player";
+    connection.join(username, equippedSkin);
+  }, [isSignedIn, session, equippedSkin, skinLoading, roomCode]);
 
   // ── Start game when phase transitions to racing ──
   useEffect(() => {

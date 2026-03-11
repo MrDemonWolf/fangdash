@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Providers } from "./providers";
 import { Navbar } from "@/components/ui/Navbar";
 import { ServiceWorkerRegistration } from "@/components/ServiceWorkerRegistration";
+import { SITE_URL } from "@/lib/site-config";
 import "./globals.css";
 
 export const viewport: Viewport = {
@@ -26,6 +27,7 @@ export const metadata: Metadata = {
       "A multiplayer endless runner where players race as wolves on Twitch.",
     type: "website",
     siteName: "FangDash",
+    url: "/",
     images: [{ url: "/api/og", width: 1200, height: 630, alt: "FangDash" }],
   },
   twitter: {
@@ -35,6 +37,7 @@ export const metadata: Metadata = {
       "A multiplayer endless runner where players race as wolves on Twitch.",
     images: ["/api/og"],
   },
+  metadataBase: new URL(SITE_URL),
   icons: {
     icon: [
       { url: "/icons/icon-32.png", sizes: "32x32", type: "image/png" },

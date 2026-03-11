@@ -18,6 +18,11 @@ const nextConfig: NextConfig = {
       process.env.VERCEL_GIT_COMMIT_SHA ??
       "dev"
     ).slice(0, 7),
+    NEXT_PUBLIC_PARTYKIT_HOST:
+      process.env.NEXT_PUBLIC_PARTYKIT_HOST ||
+      (process.env.NODE_ENV === "production"
+        ? "fangdash.nathanialhenniges.partykit.dev"
+        : "localhost:1999"),
   },
 };
 
