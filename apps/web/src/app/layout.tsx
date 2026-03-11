@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Providers } from "./providers";
 import { Navbar } from "@/components/ui/Navbar";
 import { ServiceWorkerRegistration } from "@/components/ServiceWorkerRegistration";
+import { SITE_URL } from "@/lib/site-config";
 import "./globals.css";
 
 export const viewport: Viewport = {
@@ -36,7 +37,7 @@ export const metadata: Metadata = {
       "A multiplayer endless runner where players race as wolves on Twitch.",
     images: ["/api/og"],
   },
-  metadataBase: new URL("https://fangdash.mrdemonwolf.workers.dev"),
+  metadataBase: new URL(SITE_URL),
   icons: {
     icon: [
       { url: "/icons/icon-32.png", sizes: "32x32", type: "image/png" },

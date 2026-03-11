@@ -1,7 +1,7 @@
 import * as Phaser from "phaser";
 import {
   GAME_WIDTH,
-  OBSTACLE_GROUND_Y,
+  OBSTACLE_SPAWN_Y,
   OBSTACLE_TYPES,
   SeededRandom,
   type ObstacleType,
@@ -51,7 +51,7 @@ export class Obstacle {
     this.active = true;
     this.sprite.setVisible(true);
     this.sprite.x = x ?? GAME_WIDTH + 50;
-    this.sprite.y = OBSTACLE_GROUND_Y;
+    this.sprite.y = OBSTACLE_SPAWN_Y[this.type] ?? 512;
   }
 
   update(speed: number, delta: number) {

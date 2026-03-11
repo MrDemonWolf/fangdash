@@ -4,7 +4,7 @@ export const JUMP_VELOCITY = -500;
 export const DOUBLE_JUMP_VELOCITY = -420;
 export const MAX_JUMPS = 2;
 // Wolf sprite (48×48, 3× scale) has 13 transparent rows at the bottom = 39px visual offset.
-// Grass tile top is at GAME_HEIGHT - 100 = 500. Visible feet land 8px into the grass (y=508).
+// Grass tile top is at GAME_HEIGHT - GROUND_HEIGHT = 500. Visible feet land 8px into the grass (y=508).
 // GROUND_Y = 508 + 39 = 547.
 export const GROUND_Y = 547;
 
@@ -20,9 +20,14 @@ export const SCORE_PER_OBSTACLE = 50;
 export const DISTANCE_MULTIPLIER = 0.1;
 
 // ── Obstacles ──
-// Obstacle sprites (32×32, 2× scale) have 3–8 transparent rows at bottom (6–16px visual offset).
-// Grass top is at GAME_HEIGHT - 100 = 500. Spawn Y=515 places all visible bases 7–9px into grass.
-export const OBSTACLE_GROUND_Y = 515;
+// Per-obstacle spawn Y: visible base ≈ 4–8px into grass (grass top = GAME_HEIGHT − GROUND_HEIGHT = 500).
+// spawnY = 504 + (transparent_bottom_rows × OBSTACLE_SCALE).
+export const OBSTACLE_SPAWN_Y: Record<string, number> = {
+  rock: 510,   // 3 transparent rows × 2 = 6px offset
+  log: 520,    // 8 transparent rows × 2 = 16px offset
+  bush: 512,   // 4 transparent rows × 2 = 8px offset
+  spike: 512,  // 4 transparent rows × 2 = 8px offset
+} as const;
 export const MIN_OBSTACLE_GAP_MS = 800;
 export const MAX_OBSTACLE_GAP_MS = 2500;
 export const OBSTACLE_TYPES = ["rock", "log", "bush", "spike"] as const;
@@ -31,6 +36,7 @@ export type ObstacleType = (typeof OBSTACLE_TYPES)[number];
 // ── Viewport ──
 export const GAME_WIDTH = 800;
 export const GAME_HEIGHT = 600;
+export const GROUND_HEIGHT = 100;
 export const PLAYER_START_X = 150;
 
 // ── Multiplayer ──

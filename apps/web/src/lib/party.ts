@@ -35,7 +35,7 @@ export class RaceConnection {
 
   constructor(options: RaceConnectionOptions) {
     const host =
-      options.host || process.env.NEXT_PUBLIC_PARTYKIT_HOST || "localhost:1999";
+      options.host ?? process.env.NEXT_PUBLIC_PARTYKIT_HOST ?? "localhost:1999";
 
     this.socket = new PartySocket({
       host,
