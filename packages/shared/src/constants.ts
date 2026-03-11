@@ -20,14 +20,6 @@ export const SCORE_PER_OBSTACLE = 50;
 export const DISTANCE_MULTIPLIER = 0.1;
 
 // ── Obstacles ──
-// Per-obstacle spawn Y: visible base ≈ 4–8px into grass (grass top = GAME_HEIGHT − GROUND_HEIGHT = 500).
-// spawnY = 504 + (transparent_bottom_rows × OBSTACLE_SCALE).
-export const OBSTACLE_SPAWN_Y: Record<string, number> = {
-  rock: 510,   // 3 transparent rows × 2 = 6px offset
-  log: 520,    // 8 transparent rows × 2 = 16px offset
-  bush: 512,   // 4 transparent rows × 2 = 8px offset
-  spike: 512,  // 4 transparent rows × 2 = 8px offset
-} as const;
 export const MIN_OBSTACLE_GAP_MS = 800;
 export const MAX_OBSTACLE_GAP_MS = 2500;
 export const OBSTACLE_TYPES = ["rock", "log", "bush", "spike"] as const;

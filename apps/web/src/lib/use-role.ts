@@ -6,5 +6,5 @@ export function useIsDevOrAdmin(): boolean {
   const hasRole = userRole === "dev" || userRole === "admin";
   // In local development, always allow debug access for signed-in users
   const isDev = process.env.NODE_ENV === "development";
-  return hasRole || (isDev && !!session?.user);
+  return hasRole || isDev;
 }
