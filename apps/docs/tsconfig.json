@@ -29,7 +29,8 @@
       {
         "name": "next"
       }
-    ]
+    ],
+    "isolatedModules": true
   },
   "include": [
     "**/*.mjs",

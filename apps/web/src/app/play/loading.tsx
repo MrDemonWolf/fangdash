@@ -1,14 +1,15 @@
+// biome-ignore lint/style/noDefaultExport: required by Next.js
 export default function PlayLoading() {
-  return (
-    <main className="flex min-h-screen flex-col items-center justify-center bg-[#091533] px-4">
-      <div className="w-full max-w-4xl space-y-6">
-        <div className="h-10 w-48 animate-pulse rounded-lg bg-white/10" />
-        <div className="aspect-video w-full animate-pulse rounded-xl bg-white/10" />
-        <div className="flex justify-center gap-4">
-          <div className="h-12 w-32 animate-pulse rounded-lg bg-white/10" />
-          <div className="h-12 w-32 animate-pulse rounded-lg bg-white/10" />
-        </div>
-      </div>
-    </main>
-  );
+	return (
+		<main className="flex min-h-screen flex-col items-center justify-center bg-[#091533] px-4">
+			<div className="w-full max-w-4xl space-y-6">
+				<div className="h-10 w-48 animate-pulse rounded-lg bg-white/10" />
+				<div className="aspect-video w-full animate-pulse rounded-xl bg-white/10" />
+				<div className="flex justify-center gap-4">
+					<div className="h-12 w-32 animate-pulse rounded-lg bg-white/10" />
+					<div className="h-12 w-32 animate-pulse rounded-lg bg-white/10" />
+				</div>
+			</div>
+		</main>
+	);
 }

@@ -39,23 +39,23 @@ git clone https://github.com/MrDemonWolf/fangdash.git
 cd fangdash
 ```
 
-2. Install dependencies:
+1. Install dependencies:
 
 ```bash
-pnpm install
+bun install
 ```
 
-3. Set up environment variables:
+1. Set up environment variables:
 
 ```bash
 cp apps/api/.dev.vars.example apps/api/.dev.vars
 cp apps/web/.env.local.example apps/web/.env.local
 ```
 
-4. Start all services in development:
+1. Start all services in development:
 
 ```bash
-pnpm dev
+bun dev
 ```
 
 The web app runs at `http://localhost:3000` and the API at
@@ -63,27 +63,27 @@ The web app runs at `http://localhost:3000` and the API at
 
 ## Tech Stack
 
-| Layer          | Technology                          |
-| -------------- | ----------------------------------- |
-| Frontend       | Next.js 15, React 19, Tailwind v4   |
-| Game Engine    | Phaser 3                            |
-| API            | Hono on Cloudflare Workers          |
-| Database       | Cloudflare D1 (SQLite) + Drizzle ORM|
-| Auth           | Better Auth with Twitch OAuth       |
-| API Layer      | tRPC v11                            |
-| Multiplayer    | PartyKit (WebSockets)               |
-| Monorepo       | Turborepo + pnpm workspaces         |
-| Docs           | Fumadocs + Next.js                  |
-| Testing        | Vitest                              |
-| CI/CD          | GitHub Actions + Cloudflare Workers  |
-| Language       | TypeScript 5.7 (strict mode)        |
+| Layer       | Technology                           |
+| ----------- | ------------------------------------ |
+| Frontend    | Next.js 15, React 19, Tailwind v4    |
+| Game Engine | Phaser 3                             |
+| API         | Hono on Cloudflare Workers           |
+| Database    | Cloudflare D1 (SQLite) + Drizzle ORM |
+| Auth        | Better Auth with Twitch OAuth        |
+| API Layer   | tRPC v11                             |
+| Multiplayer | PartyKit (WebSockets)                |
+| Monorepo    | Turborepo + bun workspaces           |
+| Docs        | Fumadocs + Next.js                   |
+| Testing     | Vitest                               |
+| CI/CD       | GitHub Actions + Cloudflare Workers  |
+| Language    | TypeScript 5.7 (strict mode)         |
 
 ## Development
 
 ### Prerequisites
 
 - Node.js >= 20
-- pnpm 10.x (`corepack enable`)
+- bun 10.x (`corepack enable`)
 - Cloudflare account (for D1 database and Workers deploys)
 - Twitch Developer application (for OAuth)
 
@@ -92,71 +92,71 @@ The web app runs at `http://localhost:3000` and the API at
 1. Install dependencies:
 
 ```bash
-pnpm install
+bun install
 ```
 
-2. Create a Cloudflare D1 database:
+1. Create a Cloudflare D1 database:
 
 ```bash
 cd apps/api
-npx wrangler d1 create fangdash-db
+bunx wrangler d1 create fangdash-db
 ```
 
-3. Update `apps/api/wrangler.toml` with your D1 database ID.
+1. Update `apps/api/wrangler.toml` with your D1 database ID.
 
-4. Run database migrations:
+2. Run database migrations:
 
 ```bash
 cd apps/api
-npx wrangler d1 migrations apply fangdash-db --local
+bunx wrangler d1 migrations apply fangdash-db --local
 ```
 
-5. Configure `apps/api/.dev.vars` with your secrets:
+1. Configure `apps/api/.dev.vars` with your secrets:
 
-```
+```bash
 BETTER_AUTH_SECRET=<your-secret>
 BETTER_AUTH_URL=http://localhost:8787
 TWITCH_CLIENT_ID=<your-twitch-client-id>
 TWITCH_CLIENT_SECRET=<your-twitch-client-secret>
 ```
 
-6. Configure `apps/web/.env.local`:
+1. Configure `apps/web/.env.local`:
 
-```
+```bash
 NEXT_PUBLIC_API_URL=http://localhost:8787
 ```
 
-7. Start development:
+1. Start development:
 
 ```bash
-pnpm dev
+bun dev
 ```
 
 ### Development Scripts
 
-- `pnpm dev` — Start all apps in development mode.
-- `pnpm build` — Build all packages and apps.
-- `pnpm test` — Run all tests with Vitest.
-- `pnpm test:coverage` — Run tests with coverage report.
-- `pnpm type-check` — Type-check all packages.
-- `pnpm lint` — Lint all packages.
-- `pnpm clean` — Remove all build artifacts.
-- `pnpm ship` — Deploy API, web, and PartyKit to production.
-- `pnpm ship:api` — Deploy API to Cloudflare Workers.
-- `pnpm ship:web` — Deploy web app to Cloudflare Workers.
-- `pnpm ship:party` — Deploy PartyKit server.
-- `pnpm --filter @fangdash/web generate:icons` — Regenerate favicon and PWA icons from the wolf sprite (web + docs).
+- `bun dev` — Start all apps in development mode.
+- `bun build` — Build all packages and apps.
+- `bun test` — Run all tests with Vitest.
+- `bun test:coverage` — Run tests with coverage report.
+- `bun typecheck` — Type-check all packages.
+- `bun lint` — Lint all packages.
+- `bun clean` — Remove all build artifacts.
+- `bun ship` — Deploy API, web, and PartyKit to production.
+- `bun ship:api` — Deploy API to Cloudflare Workers.
+- `bun ship:web` — Deploy web app to Cloudflare Workers.
+- `bun ship:party` — Deploy PartyKit server.
+- `bun --filter @fangdash/web generate:icons` — Regenerate favicon and PWA icons from the wolf sprite (web + docs).
 
 ### Code Quality
 
 - Strict TypeScript with `strict: true` across all packages.
 - Vitest for unit and integration testing.
-- GitHub Actions CI runs type-check and tests on every PR.
+- GitHub Actions CI runs typecheck and tests on every PR.
 - tRPC for end-to-end type safety between API and frontend.
 
 ## Project Structure
 
-```
+```text
 fangdash/
 ├── apps/
 │   ├── api/           # Hono API on Cloudflare Workers

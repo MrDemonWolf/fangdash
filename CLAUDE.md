@@ -4,37 +4,43 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-FangDash is a multiplayer endless runner game for Twitch streamers. Players race as wolves, dodging obstacles and competing for scores. Built as a Turborepo monorepo with pnpm workspaces.
+FangDash is a multiplayer endless runner game for Twitch streamers. Players race as wolves, dodging obstacles and competing for scores. Built as a Turborepo monorepo with bun workspaces.
 
 ## Commands
 
 ```bash
-pnpm dev                # Start all apps: web (3000), api (8787), party (1999), docs (3001)
-pnpm build              # Build all packages (respects dependency order)
-pnpm test               # Run all tests (Vitest)
-pnpm type-check         # Type-check all packages
-pnpm lint               # Lint all packages
-pnpm clean              # Remove build artifacts
+bun run dev             # Start all apps: web (3000), api (8787), party (1999), docs (3001)
+bun run build           # Build all packages (respects dependency order)
+bun run test            # Run all tests (Vitest)
+bun run typecheck      # Type-check all packages
+bun run lint            # Lint all packages (turbo → next lint per workspace)
+bun run clean           # Remove build artifacts
+
+# Biome (root-level, runs on entire repo)
+bun run check           # Run biome check (lint + format)
+bun run format          # Format all files (write)
+bun run format:check    # Check formatting without writing
+bun run lint:biome      # Run biome lint only
 
 # Run tests for a single workspace
-pnpm --filter @fangdash/api test
-pnpm --filter @fangdash/shared test
+bun run --filter @fangdash/api test
+bun run --filter @fangdash/shared test
 
 # Type-check a single workspace
-pnpm --filter @fangdash/web type-check
+bun run --filter @fangdash/web typecheck
 
 # Deploy
-pnpm ship               # Deploy all (api, web, party)
-pnpm ship:api           # Deploy API to Cloudflare Workers
-pnpm ship:web           # Deploy web to Cloudflare Workers
-pnpm ship:party         # Deploy PartyKit server
+bun run ship            # Deploy all (api, web, party)
+bun run ship:api        # Deploy API to Cloudflare Workers
+bun run ship:web        # Deploy web to Cloudflare Workers
+bun run ship:party      # Deploy PartyKit server
 
 # Icon generation (web + docs)
-pnpm --filter @fangdash/web generate:icons
+bun run --filter @fangdash/web generate:icons
 
 # Database migrations (from apps/api/)
-npx wrangler d1 migrations apply fangdash-db --local
-npx drizzle-kit generate   # Generate new migration from schema changes
+bunx wrangler d1 migrations apply fangdash-db --local
+bunx drizzle-kit generate   # Generate new migration from schema changes
 ```
 
 ## Architecture
@@ -62,15 +68,16 @@ npx drizzle-kit generate   # Generate new migration from schema changes
 
 ## Tech Stack
 
-- **Runtime:** Node.js >= 20, pnpm 10.x
+- **Runtime:** Bun, Node.js >= 20
 - **Language:** TypeScript 5.7, strict mode everywhere
 - **Frontend:** Next.js 15, React 19, Tailwind CSS v4
 - **Game:** Phaser 3
 - **API:** Hono, tRPC v11, Better Auth, Drizzle ORM
 - **Database:** Cloudflare D1 (SQLite)
 - **WebSockets:** PartyKit
+- **Linting/Formatting:** Biome
 - **Testing:** Vitest (workspaces: packages/shared, apps/api)
-- **CI:** GitHub Actions — type-check + test on PRs, deploy on main push
+- **CI:** GitHub Actions — typecheck + test on PRs, deploy on main push
 
 ## Conventions
 

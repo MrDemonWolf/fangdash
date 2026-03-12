@@ -9,14 +9,14 @@
     "./*": "./src/*.ts"
   },
   "scripts": {
-    "type-check": "tsc --noEmit",
+    "typecheck": "tsc --noEmit",
     "clean": "rm -rf dist"
   },
   "dependencies": {
     "@fangdash/shared": "workspace:*",
-    "phaser": "^3.87.0"
+    "phaser": "^3.90.0"
   },
   "devDependencies": {
-    "typescript": "^5.7.0"
+    "typescript": "^5.9.3"
   }
 }

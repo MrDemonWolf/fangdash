@@ -1,256 +1,260 @@
 "use client";
 
-import Link from "next/link";
 import type { GameState } from "@fangdash/shared";
-import { getSkinById, getAchievementById } from "@fangdash/shared";
+import { getAchievementById, getSkinById } from "@fangdash/shared";
+import Link from "next/link";
+import { formatTime } from "@/lib/format-time.ts";
 
 interface GameOverModalProps {
-  state: GameState;
-  elapsedTime?: number;
-  onRestart: () => void;
-  submitting?: boolean;
-  submitResult?: {
-    scoreId: string;
-    newAchievements: string[];
-    newSkins: string[];
-  } | null;
-  submitError?: unknown;
-  isSignedIn?: boolean;
-  onRetrySubmit?: () => void;
-}
-
-function formatTime(ms: number): string {
-  const totalSec = Math.floor(ms / 1000);
-  const min = Math.floor(totalSec / 60);
-  const sec = totalSec % 60;
-  return `${String(min).padStart(2, "0")}:${sec.toString().padStart(2, "0")}`;
+	state: GameState;
+	elapsedTime?: number;
+	onRestart: () => void;
+	submitting?: boolean;
+	submitResult?: {
+		scoreId: string;
+		newAchievements: string[];
+		newSkins: string[];
+	} | null;
+	submitError?: unknown;
+	isSignedIn?: boolean;
+	onRetrySubmit?: () => void;
 }
 
 function formatDistance(m: number): string {
-  if (m >= 1000) return `${(m / 1000).toFixed(1)}km`;
-  return `${Math.floor(m)}m`;
+	if (m >= 1000) {
+		return `${(m / 1000).toFixed(1)}km`;
+	}
+	return `${Math.floor(m)}m`;
 }
 
 function subtitle(score: number): string {
-  if (score >= 10000) return "Legendary run! 🔥";
-  if (score >= 5000) return "Incredible effort!";
-  if (score >= 1000) return "Great run!";
-  if (score > 0) return "Nice effort!";
-  return "Better luck next time!";
+	if (score >= 10000) {
+		return "Legendary run! 🔥";
+	}
+	if (score >= 5000) {
+		return "Incredible effort!";
+	}
+	if (score >= 1000) {
+		return "Great run!";
+	}
+	if (score > 0) {
+		return "Nice effort!";
+	}
+	return "Better luck next time!";
 }
 
 export function GameOverModal({
-  state,
-  elapsedTime,
-  onRestart,
-  submitting,
-  submitResult,
-  submitError,
-  isSignedIn,
-  onRetrySubmit,
+	state,
+	elapsedTime,
+	onRestart,
+	submitting,
+	submitResult,
+	submitError,
+	isSignedIn,
+	onRetrySubmit,
 }: GameOverModalProps) {
-  const hasUnlocks =
-    submitResult &&
-    (submitResult.newAchievements.length > 0 ||
-      submitResult.newSkins.length > 0);
+	const hasUnlocks =
+		submitResult &&
+		(submitResult.newAchievements.length > 0 ||
+			submitResult.newSkins.length > 0);
 
-  return (
-    <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/80 backdrop-blur-sm">
-      {/* Scanline overlay */}
-      <div
-        className="absolute inset-0 pointer-events-none opacity-[0.06]"
-        style={{
-          backgroundImage:
-            "repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,1) 2px, rgba(0,0,0,1) 4px)",
-        }}
-      />
+	return (
+		<div className="absolute inset-0 z-20 flex items-center justify-center bg-black/80 backdrop-blur-sm">
+			{/* Scanline overlay */}
+			<div
+				className="absolute inset-0 pointer-events-none opacity-[0.06]"
+				style={{
+					backgroundImage:
+						"repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,1) 2px, rgba(0,0,0,1) 4px)",
+				}}
+			/>
 
-      <div
-        className="relative w-full max-w-sm mx-4 rounded-lg overflow-hidden"
-        style={{
-          background: "linear-gradient(180deg, #0a1a3a 0%, #091533 100%)",
-          border: "1px solid rgba(15,172,237,0.2)",
-          boxShadow:
-            "0 0 0 1px rgba(15,172,237,0.05), 0 8px 48px rgba(0,0,0,0.7), 0 0 60px rgba(15,172,237,0.07)",
-        }}
-      >
-        {/* Top accent line */}
-        <div
-          className="h-px w-full"
-          style={{
-            background:
-              "linear-gradient(90deg, transparent, #0FACED, transparent)",
-          }}
-        />
+			<div
+				className="relative w-full max-w-sm mx-4 rounded-lg overflow-hidden"
+				style={{
+					background: "linear-gradient(180deg, #0a1a3a 0%, #091533 100%)",
+					border: "1px solid rgba(15,172,237,0.2)",
+					boxShadow:
+						"0 0 0 1px rgba(15,172,237,0.05), 0 8px 48px rgba(0,0,0,0.7), 0 0 60px rgba(15,172,237,0.07)",
+				}}
+			>
+				{/* Top accent line */}
+				<div
+					className="h-px w-full"
+					style={{
+						background:
+							"linear-gradient(90deg, transparent, #0FACED, transparent)",
+					}}
+				/>
 
-        <div className="px-6 pt-8 pb-6">
-          {/* GAME OVER heading */}
-          <div className="text-center mb-6">
-            <h2
-              className="text-5xl font-black font-mono uppercase tracking-tight leading-none mb-2"
-              style={{
-                color: "#ff6b2b",
-                textShadow:
-                  "0 0 20px rgba(255,107,43,0.6), 0 0 40px rgba(255,107,43,0.25)",
-              }}
-            >
-              Game Over
-            </h2>
-            <p className="text-sm font-mono text-white/50">
-              {subtitle(state.score)}
-            </p>
-          </div>
+				<div className="px-6 pt-8 pb-6">
+					{/* GAME OVER heading */}
+					<div className="text-center mb-6">
+						<h2
+							className="text-5xl font-black font-mono uppercase tracking-tight leading-none mb-2"
+							style={{
+								color: "#ff6b2b",
+								textShadow:
+									"0 0 20px rgba(255,107,43,0.6), 0 0 40px rgba(255,107,43,0.25)",
+							}}
+						>
+							Game Over
+						</h2>
+						<p className="text-sm font-mono text-white/50">
+							{subtitle(state.score)}
+						</p>
+					</div>
 
-          {/* Stats — 2×2 grid */}
-          <div className="mb-6 grid grid-cols-2 gap-px bg-[#0FACED]/10 rounded overflow-hidden">
-            {/* FINAL SCORE */}
-            <div className="bg-[#091533] px-4 py-3">
-              <p className="text-[10px] font-mono uppercase tracking-widest text-white/40 mb-1">
-                Final Score
-              </p>
-              <span
-                className="text-2xl font-bold font-mono tabular-nums text-[#0FACED]"
-                style={{ textShadow: "0 0 10px rgba(15,172,237,0.5)" }}
-              >
-                {state.score.toLocaleString()}
-              </span>
-            </div>
+					{/* Stats — 2×2 grid */}
+					<div className="mb-6 grid grid-cols-2 gap-px bg-[#0FACED]/10 rounded overflow-hidden">
+						{/* FINAL SCORE */}
+						<div className="bg-[#091533] px-4 py-3">
+							<p className="text-[10px] font-mono uppercase tracking-widest text-white/40 mb-1">
+								Final Score
+							</p>
+							<span
+								className="text-2xl font-bold font-mono tabular-nums text-[#0FACED]"
+								style={{ textShadow: "0 0 10px rgba(15,172,237,0.5)" }}
+							>
+								{state.score.toLocaleString()}
+							</span>
+						</div>
 
-            {/* DISTANCE */}
-            <div className="bg-[#091533] px-4 py-3">
-              <p className="text-[10px] font-mono uppercase tracking-widest text-white/40 mb-1">
-                Distance
-              </p>
-              <span className="text-2xl font-bold font-mono tabular-nums text-white/80">
-                {formatDistance(state.distance)}
-              </span>
-            </div>
+						{/* DISTANCE */}
+						<div className="bg-[#091533] px-4 py-3">
+							<p className="text-[10px] font-mono uppercase tracking-widest text-white/40 mb-1">
+								Distance
+							</p>
+							<span className="text-2xl font-bold font-mono tabular-nums text-white/80">
+								{formatDistance(state.distance)}
+							</span>
+						</div>
 
-            {/* DODGES */}
-            <div className="bg-[#091533] px-4 py-3">
-              <p className="text-[10px] font-mono uppercase tracking-widest text-white/40 mb-1">
-                Dodges
-              </p>
-              <span className="text-2xl font-bold font-mono tabular-nums text-white/80">
-                {state.obstaclesCleared.toLocaleString()}
-              </span>
-            </div>
+						{/* DODGES */}
+						<div className="bg-[#091533] px-4 py-3">
+							<p className="text-[10px] font-mono uppercase tracking-widest text-white/40 mb-1">
+								Dodges
+							</p>
+							<span className="text-2xl font-bold font-mono tabular-nums text-white/80">
+								{state.obstaclesCleared.toLocaleString()}
+							</span>
+						</div>
 
-            {/* TIME */}
-            <div className="bg-[#091533] px-4 py-3">
-              <p className="text-[10px] font-mono uppercase tracking-widest text-white/40 mb-1">
-                Time
-              </p>
-              <span className="text-2xl font-bold font-mono tabular-nums text-white/80">
-                {elapsedTime !== undefined ? formatTime(elapsedTime) : "--:--"}
-              </span>
-            </div>
-          </div>
+						{/* TIME */}
+						<div className="bg-[#091533] px-4 py-3">
+							<p className="text-[10px] font-mono uppercase tracking-widest text-white/40 mb-1">
+								Time
+							</p>
+							<span className="text-2xl font-bold font-mono tabular-nums text-white/80">
+								{elapsedTime !== undefined ? formatTime(elapsedTime) : "--:--"}
+							</span>
+						</div>
+					</div>
 
-          {/* Submit error */}
-          {!!submitError && (
-            <div className="mb-4 text-center">
-              <p className="text-sm text-red-400 mb-2">Failed to save score.</p>
-              {onRetrySubmit && (
-                <button
-                  type="button"
-                  onClick={onRetrySubmit}
-                  className="text-xs font-mono text-[#0FACED] underline hover:no-underline"
-                >
-                  Try again
-                </button>
-              )}
-            </div>
-          )}
+					{/* Submit error */}
+					{!!submitError && (
+						<div className="mb-4 text-center">
+							<p className="text-sm text-red-400 mb-2">Failed to save score.</p>
+							{onRetrySubmit && (
+								<button
+									type="button"
+									onClick={onRetrySubmit}
+									className="text-xs font-mono text-[#0FACED] underline hover:no-underline"
+								>
+									Try again
+								</button>
+							)}
+						</div>
+					)}
 
-          {/* Saving indicator */}
-          {isSignedIn && submitting && (
-            <p className="mb-4 text-sm text-center font-mono text-white/40">
-              Saving score...
-            </p>
-          )}
+					{/* Saving indicator */}
+					{isSignedIn && submitting && (
+						<p className="mb-4 text-sm text-center font-mono text-white/40">
+							Saving score...
+						</p>
+					)}
 
-          {/* Unlocks — horizontal pill badges */}
-          {hasUnlocks && (
-            <div className="mb-5">
-              <p className="text-xs font-mono font-bold uppercase tracking-widest text-yellow-400/70 mb-2">
-                Unlocked
-              </p>
-              <div className="flex flex-wrap gap-2">
-                {submitResult.newAchievements.map((id) => {
-                  const achievement = getAchievementById(id);
-                  return (
-                    <span
-                      key={id}
-                      className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-mono"
-                      style={{
-                        background: "rgba(255,196,0,0.1)",
-                        border: "1px solid rgba(255,196,0,0.3)",
-                      }}
-                    >
-                      🏆 {achievement?.name ?? id}
-                    </span>
-                  );
-                })}
-                {submitResult.newSkins.map((id) => {
-                  const skin = getSkinById(id);
-                  return (
-                    <span
-                      key={id}
-                      className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-mono"
-                      style={{
-                        background: "rgba(255,196,0,0.1)",
-                        border: "1px solid rgba(255,196,0,0.3)",
-                      }}
-                    >
-                      🐺 {skin?.name ?? id}
-                    </span>
-                  );
-                })}
-              </div>
-            </div>
-          )}
+					{/* Unlocks — horizontal pill badges */}
+					{hasUnlocks && (
+						<div className="mb-5">
+							<p className="text-xs font-mono font-bold uppercase tracking-widest text-yellow-400/70 mb-2">
+								Unlocked
+							</p>
+							<div className="flex flex-wrap gap-2">
+								{submitResult.newAchievements.map((id) => {
+									const achievement = getAchievementById(id);
+									return (
+										<span
+											key={id}
+											className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-mono"
+											style={{
+												background: "rgba(255,196,0,0.1)",
+												border: "1px solid rgba(255,196,0,0.3)",
+											}}
+										>
+											🏆 {achievement?.name ?? id}
+										</span>
+									);
+								})}
+								{submitResult.newSkins.map((id) => {
+									const skin = getSkinById(id);
+									return (
+										<span
+											key={id}
+											className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-mono"
+											style={{
+												background: "rgba(255,196,0,0.1)",
+												border: "1px solid rgba(255,196,0,0.3)",
+											}}
+										>
+											🐺 {skin?.name ?? id}
+										</span>
+									);
+								})}
+							</div>
+						</div>
+					)}
 
-          {/* Sign-in nudge */}
-          {isSignedIn === false && (
-            <p className="mb-4 text-sm text-center font-mono text-white/40">
-              Sign in to save scores &amp; unlock achievements
-            </p>
-          )}
+					{/* Sign-in nudge */}
+					{isSignedIn === false && (
+						<p className="mb-4 text-sm text-center font-mono text-white/40">
+							Sign in to save scores &amp; unlock achievements
+						</p>
+					)}
 
-          {/* Buttons */}
-          <div className="flex flex-col gap-2.5">
-            <button
-              type="button"
-              onClick={onRestart}
-              className="w-full cursor-pointer rounded px-6 py-3 text-sm font-black font-mono uppercase tracking-widest text-[#091533] transition-all hover:brightness-110 active:scale-95"
-              style={{
-                background: "#0FACED",
-                boxShadow:
-                  "0 0 20px rgba(15,172,237,0.35), 0 0 40px rgba(15,172,237,0.12)",
-              }}
-            >
-              PLAY AGAIN
-            </button>
+					{/* Buttons */}
+					<div className="flex flex-col gap-2.5">
+						<button
+							type="button"
+							onClick={onRestart}
+							className="w-full cursor-pointer rounded px-6 py-3 text-sm font-black font-mono uppercase tracking-widest text-[#091533] transition-all hover:brightness-110 active:scale-95"
+							style={{
+								background: "#0FACED",
+								boxShadow:
+									"0 0 20px rgba(15,172,237,0.35), 0 0 40px rgba(15,172,237,0.12)",
+							}}
+						>
+							PLAY AGAIN
+						</button>
 
-            <Link
-              href="/"
-              className="text-xs font-mono uppercase tracking-widest text-white/30 hover:text-white/60 transition-colors text-center block w-full py-2"
-            >
-              &lt; Back to Home &gt;
-            </Link>
-          </div>
-        </div>
+						<Link
+							href="/"
+							className="text-xs font-mono uppercase tracking-widest text-white/30 hover:text-white/60 transition-colors text-center block w-full py-2"
+						>
+							&lt; Back to Home &gt;
+						</Link>
+					</div>
+				</div>
 
-        {/* Bottom accent line */}
-        <div
-          className="h-px w-full"
-          style={{
-            background:
-              "linear-gradient(90deg, transparent, rgba(15,172,237,0.3), transparent)",
-          }}
-        />
-      </div>
-    </div>
-  );
+				{/* Bottom accent line */}
+				<div
+					className="h-px w-full"
+					style={{
+						background:
+							"linear-gradient(90deg, transparent, rgba(15,172,237,0.3), transparent)",
+					}}
+				/>
+			</div>
+		</div>
+	);
 }

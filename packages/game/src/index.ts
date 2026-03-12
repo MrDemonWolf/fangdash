@@ -1,27 +1,28 @@
+// biome-ignore lint/performance/noBarrelFile: package entry point
+export { GhostPlayer } from "./entities/GhostPlayer.ts";
+export { Obstacle, ObstacleSpawner } from "./entities/Obstacle.ts";
+export { Player } from "./entities/Player.ts";
 export {
-  createGame,
-  createRaceGame,
-  destroyGame,
-  type GameCanvasOptions,
-  type GameCanvasResult,
-  type RaceCanvasOptions,
-  type RaceCanvasResult,
-  type DebugChannel,
-  type AudioChannel,
-  type GameChannel,
-} from "./GameCanvas";
-export { BootScene } from "./scenes/BootScene";
-export { GameScene, type GameEventCallback } from "./scenes/GameScene";
+	type AudioChannel,
+	createGame,
+	createRaceGame,
+	type DebugChannel,
+	destroyGame,
+	type GameCanvasOptions,
+	type GameCanvasResult,
+	type GameChannel,
+	type RaceCanvasOptions,
+	type RaceCanvasResult,
+} from "./GameCanvas.ts";
+export { BootScene } from "./scenes/BootScene.ts";
+export { type GameEventCallback, GameScene } from "./scenes/GameScene.ts";
 export {
-  RaceScene,
-  type RaceCallbacks,
-  type RaceOpponent,
-  type RaceInitData,
-} from "./scenes/RaceScene";
-export { Player } from "./entities/Player";
-export { GhostPlayer } from "./entities/GhostPlayer";
-export { Obstacle, ObstacleSpawner } from "./entities/Obstacle";
-export { ParallaxBackground } from "./systems/ParallaxBackground";
-export { DifficultyScaler } from "./systems/DifficultyScaler";
-export { ScoreManager } from "./systems/ScoreManager";
-export { AudioManager } from "./systems/AudioManager";
+	type RaceCallbacks,
+	type RaceInitData,
+	type RaceOpponent,
+	RaceScene,
+} from "./scenes/RaceScene.ts";
+export { AudioManager } from "./systems/AudioManager.ts";
+export { DifficultyScaler } from "./systems/DifficultyScaler.ts";
+export { ParallaxBackground } from "./systems/ParallaxBackground.ts";
+export { ScoreManager } from "./systems/ScoreManager.ts";

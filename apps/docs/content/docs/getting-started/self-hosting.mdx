@@ -31,15 +31,15 @@ The **API** runs on Cloudflare Workers with a D1 database.
 3. Set your secrets:
 
 ```bash
-npx wrangler secret put BETTER_AUTH_SECRET --config apps/api/wrangler.toml
-npx wrangler secret put TWITCH_CLIENT_ID --config apps/api/wrangler.toml
-npx wrangler secret put TWITCH_CLIENT_SECRET --config apps/api/wrangler.toml
+bunx wrangler secret put BETTER_AUTH_SECRET --config apps/api/wrangler.toml
+bunx wrangler secret put TWITCH_CLIENT_ID --config apps/api/wrangler.toml
+bunx wrangler secret put TWITCH_CLIENT_SECRET --config apps/api/wrangler.toml
 ```
 
 4. Deploy from the repo root:
 
 ```bash
-pnpm ship:api
+bun ship:api
 ```
 </Step>
 
@@ -52,7 +52,7 @@ The **web app** deploys to Cloudflare Workers using OpenNext.
 2. Deploy:
 
 ```bash
-pnpm ship:web
+bun ship:web
 ```
 </Step>
 
@@ -70,7 +70,7 @@ export PARTYKIT_TOKEN=your-token
 2. Deploy:
 
 ```bash
-pnpm ship:party
+bun ship:party
 ```
 </Step>
 </Steps>
@@ -78,7 +78,7 @@ pnpm ship:party
 ## Deploy Everything at Once
 
 ```bash
-pnpm ship
+bun ship
 ```
 
 This runs all three deploy commands in parallel.
