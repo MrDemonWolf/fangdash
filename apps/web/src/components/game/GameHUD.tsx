@@ -1,21 +1,14 @@
 "use client";
 
+import { formatTime } from "@/lib/format-time.ts";
+
 interface GameHUDProps {
 	score: number;
 	distance: number;
 	elapsedTime: number;
 	muted?: boolean;
-	volume?: number;
 	onToggleMute?: () => void;
-	onVolumeChange?: (v: number) => void;
 	onOpenMenu?: () => void;
-}
-
-function formatTime(ms: number): string {
-	const totalSec = Math.floor(ms / 1000);
-	const mins = Math.floor(totalSec / 60);
-	const secs = totalSec % 60;
-	return `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
 }
 
 function SpeakerIcon({ muted }: { muted: boolean }) {

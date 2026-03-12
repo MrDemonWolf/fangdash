@@ -406,7 +406,6 @@ export default function ProfilePage() {
 			const bT = b?.unlockedAt ? new Date(b.unlockedAt).getTime() : 0;
 			return bT - aT;
 		});
-	const unlockedByIdMap = new Map(sortedUnlocked.map((a) => [a?.id, a]));
 
 	// Build up to 12 badges: unlocked first (most recent), then locked
 	const BADGE_LIMIT = 12;
@@ -430,10 +429,6 @@ export default function ProfilePage() {
 		}));
 
 	const allBadges = [...unlockedBadges, ...lockedBadges];
-
-	// Suppress unused warning while map is constructed above
-	// biome-ignore lint/complexity/noVoid: fire-and-forget
-	void unlockedByIdMap;
 
 	/* ---- Scores for scorelines ---- */
 	const recentScores = (scores ?? []) as ScoreEntry[];

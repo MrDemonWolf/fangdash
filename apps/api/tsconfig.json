@@ -3,7 +3,7 @@
   "compilerOptions": {
     "outDir": "./dist",
     "rootDir": "./src",
-    "types": ["@cloudflare/workers-types", "bun-types"],
+    "types": ["@cloudflare/workers-types"],
     "moduleResolution": "bundler"
   },
   "include": ["src"]
