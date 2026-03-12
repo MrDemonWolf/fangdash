@@ -1,5 +1,5 @@
 import { loader } from "fumadocs-core/source";
-import { docs } from "@/.source/index.ts";
+import { docs } from "@/.source/server.ts";
 
 // fumadocs-mdx@11.5+ returns files as a lazy function,
 // but fumadocs-core@15.x expects an array — resolve it here.

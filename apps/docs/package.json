@@ -6,7 +6,7 @@
     "dev": "next dev --turbopack --port 3001",
     "build": "next build",
     "start": "bunx serve out",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "fumadocs-mdx && tsc --noEmit",
     "clean": "rm -rf .next .turbo .source out",
     "postinstall": "fumadocs-mdx"
   },
