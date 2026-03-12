@@ -8,40 +8,40 @@ The game uses **programmatically generated placeholder assets** (colored shapes 
 
 ### Wolf Sprites (40x40px, PNG with transparency)
 
-| Filename | Description |
-|---|---|
-| `wolf-gray.png` | Default gray wolf |
-| `wolf-arctic.png` | Arctic wolf (white) |
-| `wolf-shadow.png` | Shadow wolf (dark) |
-| `wolf-fire.png` | Fire wolf (orange/red) |
-| `wolf-frost.png` | Frost wolf (ice blue) |
-| `wolf-golden.png` | Golden wolf |
-| `wolf-storm.png` | Storm wolf (electric) |
-| `wolf-blood-moon.png` | Blood moon wolf (crimson) |
-| `wolf-spirit.png` | Spirit wolf (ethereal) |
-| `wolf-phantom.png` | Phantom wolf (translucent) |
+| Filename              | Description                |
+| --------------------- | -------------------------- |
+| `wolf-gray.png`       | Default gray wolf          |
+| `wolf-arctic.png`     | Arctic wolf (white)        |
+| `wolf-shadow.png`     | Shadow wolf (dark)         |
+| `wolf-fire.png`       | Fire wolf (orange/red)     |
+| `wolf-frost.png`      | Frost wolf (ice blue)      |
+| `wolf-golden.png`     | Golden wolf                |
+| `wolf-storm.png`      | Storm wolf (electric)      |
+| `wolf-blood-moon.png` | Blood moon wolf (crimson)  |
+| `wolf-spirit.png`     | Spirit wolf (ethereal)     |
+| `wolf-phantom.png`    | Phantom wolf (translucent) |
 
 ### Obstacles (PNG with transparency)
 
-| Filename | Size | Description |
-|---|---|---|
-| `obstacle-rock.png` | 30x30 | Rock |
-| `obstacle-log.png` | 50x25 | Fallen log |
-| `obstacle-bush.png` | 35x28 | Bush |
-| `obstacle-spike.png` | 20x40 | Spike trap |
+| Filename             | Size  | Description |
+| -------------------- | ----- | ----------- |
+| `obstacle-rock.png`  | 30x30 | Rock        |
+| `obstacle-log.png`   | 50x25 | Fallen log  |
+| `obstacle-bush.png`  | 35x28 | Bush        |
+| `obstacle-spike.png` | 20x40 | Spike trap  |
 
 ### Backgrounds (PNG)
 
-| Filename | Size | Description |
-|---|---|---|
-| `bg-sky.png` | 800x600 | Night sky (furthest layer) |
-| `bg-hills.png` | 1600x600 | Rolling hills (mid layer, transparent bg) |
-| `bg-trees.png` | 1600x600 | Tree silhouettes (near layer, transparent bg) |
-| `ground.png` | 800x100 | Ground tile (seamlessly repeating horizontally) |
+| Filename       | Size     | Description                                     |
+| -------------- | -------- | ----------------------------------------------- |
+| `bg-sky.png`   | 800x600  | Night sky (furthest layer)                      |
+| `bg-hills.png` | 1600x600 | Rolling hills (mid layer, transparent bg)       |
+| `bg-trees.png` | 1600x600 | Tree silhouettes (near layer, transparent bg)   |
+| `ground.png`   | 800x100  | Ground tile (seamlessly repeating horizontally) |
 
 ## Where to Put Them
 
-```
+```text
 apps/web/public/assets/
 ├── sprites/
 │   ├── wolf-gray.png
@@ -61,13 +61,13 @@ apps/web/public/assets/
 
 ## Recommended Tools
 
-| Tool | Best For | Cost |
-|---|---|---|
-| [Aseprite](https://www.aseprite.org/) | Pixel art sprites & animations | ~$20 |
-| [Piskel](https://www.piskelapp.com/) | Pixel art (browser-based) | Free |
-| [Photoshop](https://www.adobe.com/products/photoshop.html) / [GIMP](https://www.gimp.org/) | Background art & compositing | Paid / Free |
-| [Figma](https://www.figma.com/) | Flat/geometric game art | Free tier |
-| AI generators (Midjourney, DALL-E) | Base art to clean up | Varies |
+| Tool                                                                                       | Best For                       | Cost        |
+| ------------------------------------------------------------------------------------------ | ------------------------------ | ----------- |
+| [Aseprite](https://www.aseprite.org/)                                                      | Pixel art sprites & animations | ~$20        |
+| [Piskel](https://www.piskelapp.com/)                                                       | Pixel art (browser-based)      | Free        |
+| [Photoshop](https://www.adobe.com/products/photoshop.html) / [GIMP](https://www.gimp.org/) | Background art & compositing   | Paid / Free |
+| [Figma](https://www.figma.com/)                                                            | Flat/geometric game art        | Free tier   |
+| AI generators (Midjourney, DALL-E)                                                         | Base art to clean up           | Varies      |
 
 ## Notes
 
@@ -87,12 +87,12 @@ A stylized wolf fang/tooth combined with a speed/dash element. The wolf theme sh
 
 ### Color Palette
 
-| Color        | Hex       | Usage                        |
-| ------------ | --------- | ---------------------------- |
-| Deep Navy    | `#091533` | Primary background           |
-| Cyan         | `#0FACED` | Accents, highlights          |
-| Fang Orange  | `#FF6B2B` | Wolf fang, CTA elements      |
-| Gold         | `#FFD700` | Achievements, premium feel   |
+| Color       | Hex       | Usage                      |
+| ----------- | --------- | -------------------------- |
+| Deep Navy   | `#091533` | Primary background         |
+| Cyan        | `#0FACED` | Accents, highlights        |
+| Fang Orange | `#FF6B2B` | Wolf fang, CTA elements    |
+| Gold        | `#FFD700` | Achievements, premium feel |
 
 ### Required Icon Assets
 
