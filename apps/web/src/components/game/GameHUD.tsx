@@ -106,15 +106,16 @@ export function GameHUD({
 				{/* Right controls */}
 				<div className="pointer-events-auto flex items-center gap-3">
 					{/* Mute button */}
-					<button
-						type="button"
-						onClick={onToggleMute}
-						className="text-white/60 hover:text-[#0FACED] transition-colors disabled:opacity-30"
-						aria-label={muted ? "Unmute" : "Mute"}
-						disabled={!onToggleMute}
-					>
-						<SpeakerIcon muted={muted} />
-					</button>
+					{onToggleMute && (
+						<button
+							type="button"
+							onClick={onToggleMute}
+							className="text-white/60 hover:text-[#0FACED] transition-colors"
+							aria-label={muted ? "Unmute" : "Mute"}
+						>
+							<SpeakerIcon muted={muted} />
+						</button>
+					)}
 
 					{/* Pause text button */}
 					{onOpenMenu && (

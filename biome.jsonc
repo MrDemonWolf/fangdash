@@ -95,7 +95,7 @@
 					"options": {
 						"strictCase": false,
 						"requireAscii": true,
-						"match": "%?(.+?)[.](.+)"
+						"filenameCases": ["kebab-case", "PascalCase"]
 					}
 				},
 				"useForOf": "info",

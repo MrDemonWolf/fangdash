@@ -86,6 +86,7 @@ export class ObstacleSpawner {
 	private timeSinceLastSpawn = 0;
 	private nextSpawnTime = 1500;
 	private allowedTypes: readonly ObstacleType[] = OBSTACLE_TYPES;
+	private activeCount = 0;
 	obstaclesCleared = 0;
 
 	constructor(scene: Phaser.Scene, poolSize = 10, seed?: string) {
@@ -123,11 +124,15 @@ export class ObstacleSpawner {
 				: Phaser.Math.Between(minGap, maxGap);
 		}
 
+		this.activeCount = 0;
 		for (const obstacle of this.pool) {
 			const wasActive = obstacle.active;
 			obstacle.update(speed, delta);
 			if (wasActive && !obstacle.active) {
 				this.obstaclesCleared++;
+			}
+			if (obstacle.active) {
+				this.activeCount++;
 			}
 		}
 	}
@@ -145,7 +150,7 @@ export class ObstacleSpawner {
 	}
 
 	get activeObstacleCount(): number {
-		return this.pool.filter((o) => o.active).length;
+		return this.activeCount;
 	}
 
 	private spawn() {
@@ -170,6 +175,7 @@ export class ObstacleSpawner {
 		this.timeSinceLastSpawn = 0;
 		this.nextSpawnTime = 1500;
 		this.obstaclesCleared = 0;
+		this.activeCount = 0;
 		for (const obstacle of this.pool) {
 			obstacle.deactivate();
 		}
