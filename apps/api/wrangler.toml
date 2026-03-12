@@ -17,6 +17,7 @@ name = "fangdash-api"
 
 [env.production.vars]
 ENVIRONMENT = "production"
+BETTER_AUTH_URL = "https://fangdash-api.mrdemonwolf.workers.dev"
 
 [[env.production.d1_databases]]
 binding = "DB"
