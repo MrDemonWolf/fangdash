@@ -54,7 +54,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: apps/web/.next/cache
-          key: nextjs-${{ runner.os }}-${{ hashFiles('bun.lock') }}
+          key: nextjs-${{ runner.os }}-${{ hashFiles('bun.lock') }}-${{ hashFiles('apps/web/.env.production') }}
           restore-keys: |
             nextjs-${{ runner.os }}-
 
