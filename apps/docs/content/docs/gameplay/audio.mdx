@@ -3,11 +3,18 @@ title: Audio
 description: Background music, sound effects, and volume controls in FangDash.
 ---
 
+<Callout type="info">
+**TL;DR**
+- 3 BGM tracks auto-crossfade based on where you are (menu, solo, race)
+- 9 sound effects covering all major game events
+- BGM and SFX volume are saved to `localStorage` and persist across sessions
+</Callout>
+
 FangDash features a full audio system with background music and sound effects.
 
 ## Background Music
 
-Three BGM tracks play depending on where you are:
+Three **BGM tracks** play depending on where you are:
 
 | Track | When it plays |
 | --- | --- |
@@ -15,7 +22,7 @@ Three BGM tracks play depending on where you are:
 | Game BGM | Solo endless runner gameplay |
 | Race BGM | Multiplayer race gameplay |
 
-Music crossfades automatically when transitioning between screens.
+Music **crossfades automatically** when transitioning between screens.
 
 ## Sound Effects
 
@@ -35,6 +42,5 @@ Music crossfades automatically when transitioning between screens.
 
 - **BGM Volume** — Adjustable slider for background music
 - **SFX Volume** — Adjustable slider for sound effects
-- **Mute** — Toggle to silence all audio
 
 Volume preferences are saved to `localStorage` and persist across sessions.

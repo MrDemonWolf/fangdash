@@ -3,29 +3,49 @@ title: How It Works
 description: Technical details about FangDash's multiplayer system.
 ---
 
-FangDash uses WebSockets for real-time multiplayer communication, powered by PartyKit.
+<Callout type="info">
+**TL;DR**
+- Real-time multiplayer powered by **PartyKit** WebSockets
+- A shared seed ensures all players face identical obstacles — no server-side simulation needed
+- Ghost players update live via WebSocket position broadcasts
+</Callout>
+
+FangDash uses WebSockets for real-time multiplayer communication, powered by **PartyKit**.
 
 ## Architecture
 
-- **PartyKit Server** — Manages race rooms, player connections, and game state
-- **WebSocket Connections** — Each player maintains a persistent connection to the race room
-- **Seeded PRNG** — A shared seed ensures all players face identical obstacles
+| Component | Role |
+| --- | --- |
+| **PartyKit Server** | Manages race rooms, player connections, and game state |
+| **WebSocket Connections** | Each player maintains a persistent connection to the race room |
+| **Seeded PRNG** | A shared seed ensures all players face identical obstacles |
 
 ## Race Flow
 
-1. **Lobby** — Players join a room and mark themselves as ready
-2. **Countdown** — Once all players are ready, a 3-second countdown begins
-3. **Racing** — Players run through the same obstacle course. Position updates are broadcast to all players
-4. **Results** — When all players finish (or die), final scores are compared and results are shown
+<Steps>
+<Step>**Lobby** — Players join a room and mark themselves as ready</Step>
+<Step>**Countdown** — Once all players are ready, a 3-second countdown begins</Step>
+<Step>**Racing** — Players run through the same obstacle course. Position updates are broadcast to all players in real-time</Step>
+<Step>**Results** — When all players finish (or hit an obstacle), final scores are compared and placements are saved</Step>
+</Steps>
 
 ## Ghost Players
 
-Other players appear as semi-transparent "ghost" wolves on your screen. Their positions update in real-time via WebSocket messages. You can see them running, jumping, and hitting obstacles.
+Other players appear as **semi-transparent "ghost" wolves** on your screen. Their positions update in real-time via WebSocket messages. You can see them running, jumping, and hitting obstacles.
 
 ## Deterministic Obstacles
 
-FangDash uses a mulberry32 seeded PRNG algorithm. When a race starts, the server generates a random seed using `crypto.randomUUID()` and broadcasts it to all players. Each client then computes obstacle placements locally using that shared seed. This means:
+<Callout type="info">
+FangDash uses a **mulberry32 seeded PRNG** algorithm. Obstacle layouts are computed locally by each client from a shared seed — no server needs to simulate the game.
+</Callout>
 
-- Every player sees the exact same obstacle layout
-- The game is fair — no player gets easier or harder obstacles
-- The obstacle layout can be reconstructed from the seed, though full replays also depend on player input timing
+When a race starts:
+
+1. The server generates a random seed using `crypto.randomUUID()` and broadcasts it to all players
+2. Each client computes obstacle placements locally using that shared seed
+3. Every player sees the exact same obstacle layout
+
+This means:
+
+- The game is **fair** — no player gets easier or harder obstacles
+- The obstacle layout can be reconstructed from the seed alone

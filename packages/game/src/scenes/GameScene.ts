@@ -53,13 +53,14 @@ export class GameScene extends Phaser.Scene {
     // Background
     this.background = new ParallaxBackground(this);
 
-    // Ground
+    // Ground — depth 2 so it renders over the embedded bottom half of obstacles
     this.ground = this.add.tileSprite(0, GAME_HEIGHT - GROUND_HEIGHT, GAME_WIDTH * 2, GROUND_HEIGHT, "ground");
     this.ground.setOrigin(0, 0);
-    this.ground.setDepth(0);
+    this.ground.setDepth(2);
 
-    // Player
+    // Player — depth 3 (always in front)
     this.player = new Player(this, this.skinKey);
+    this.player.sprite.setDepth(3);
 
     // Obstacles
     this.spawner = new ObstacleSpawner(this, 10, this.seed);
