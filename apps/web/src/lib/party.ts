@@ -32,6 +32,7 @@ export interface RaceConnectionOptions {
 export class RaceConnection {
   private socket: PartySocket;
   private listeners = new Map<string, Set<EventHandler<ServerMessageType>>>();
+  private messageHandler: (event: MessageEvent) => void;
 
   constructor(options: RaceConnectionOptions) {
     const host =
@@ -43,9 +44,10 @@ export class RaceConnection {
       party: "race",
     });
 
-    this.socket.addEventListener("message", (event) => {
+    this.messageHandler = (event: MessageEvent) => {
       this.handleMessage(event.data);
-    });
+    };
+    this.socket.addEventListener("message", this.messageHandler);
   }
 
   // ── Public API: sending messages ──
@@ -70,8 +72,19 @@ export class RaceConnection {
     this.send({ type: "ready" });
   }
 
+  /** Kick a player from the room (host only) */
+  sendKick(playerId: string): void {
+    this.send({ type: "kick", payload: { playerId } });
+  }
+
+  /** Request a rematch after the race ends (host only) */
+  sendRematch(): void {
+    this.send({ type: "rematch" });
+  }
+
   /** Close the WebSocket connection */
   disconnect(): void {
+    this.socket.removeEventListener("message", this.messageHandler);
     this.socket.close();
   }
 
@@ -114,6 +127,11 @@ export class RaceConnection {
   /** Expose the underlying socket's readyState for connection-status checks */
   get readyState(): number {
     return this.socket.readyState;
+  }
+
+  /** Expose the underlying socket's connection id */
+  get id(): string {
+    return this.socket.id;
   }
 
   // ── Internals ──
