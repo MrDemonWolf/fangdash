@@ -90,6 +90,7 @@ export default function OnboardingOverlay({
 	}, [isLastStep, onComplete]);
 
 	const step = STEPS[currentStep];
+	if (!step) return null;
 
 	return (
 		<div className="absolute inset-0 z-30 flex items-center justify-center bg-black/70">

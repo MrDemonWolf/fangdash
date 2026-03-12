@@ -8,7 +8,7 @@ interface GameHUDProps {
 	elapsedTime: number;
 	muted?: boolean;
 	onToggleMute?: () => void;
-	onOpenMenu?: () => void;
+	onOpenMenu?: (() => void) | undefined;
 }
 
 function SpeakerIcon({ muted }: { muted: boolean }) {

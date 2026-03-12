@@ -10,7 +10,7 @@ export async function GET(_req: NextRequest) {
 	let totalMeters = 0;
 
 	try {
-		const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+		const apiUrl = process.env["NEXT_PUBLIC_API_URL"];
 		if (apiUrl) {
 			const res = await fetch(`${apiUrl}/trpc/score.getGlobalStats`, {
 				next: { revalidate: 86400 },

@@ -11,8 +11,8 @@ interface PlayMainMenuProps {
 	bestScore: number;
 	selectedDifficulty: string;
 	onSelectDifficulty: (d: string) => void;
-	userName?: string;
-	userImage?: string;
+	userName?: string | undefined;
+	userImage?: string | undefined;
 	isPending?: boolean;
 	onSignIn: () => void;
 	onSignOut: () => void;
@@ -23,8 +23,8 @@ function UserPill({
 	userImage,
 	onSignOut,
 }: {
-	userName?: string;
-	userImage?: string;
+	userName?: string | undefined;
+	userImage?: string | undefined;
 	onSignOut: () => void;
 }) {
 	const [dropdownOpen, setDropdownOpen] = useState(false);

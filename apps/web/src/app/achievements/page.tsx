@@ -64,8 +64,8 @@ interface AchievementCardProps {
 	category: AchievementCategory;
 	unlocked: boolean;
 	unlockedAt?: Date | string | null;
-	condition?: AchievementCondition;
-	rewardSkinId?: string | null;
+	condition?: AchievementCondition | undefined;
+	rewardSkinId?: string | null | undefined;
 }
 
 function AchievementCard({

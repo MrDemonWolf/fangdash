@@ -96,7 +96,7 @@ export default function RaceRoomPage() {
 	// Debug
 	const [debugState, setDebugState] = useState<DebugState | null>(null);
 	const debugRef = useRef<DebugChannel | null>(null);
-	const [gameKey, setGameKey] = useState(0);
+	const [gameKey, _setGameKey] = useState(0);
 
 	// Refs
 	const containerRef = useRef<HTMLDivElement>(null);
@@ -377,8 +377,8 @@ export default function RaceRoomPage() {
 	}, [
 		isSignedIn,
 		roomCode,
-		session.user.email,
-		session.user.name,
+		session?.user?.email,
+		session?.user?.name,
 		session?.user,
 	]);
 

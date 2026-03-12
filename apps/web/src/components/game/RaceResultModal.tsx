@@ -12,7 +12,7 @@ interface RaceResultEntry {
 
 interface RaceResultModalProps {
 	results: RaceResultEntry[];
-	onRematch?: () => void;
+	onRematch?: (() => void) | undefined;
 }
 
 function placementLabel(placement: number): string {

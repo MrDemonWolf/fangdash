@@ -55,7 +55,7 @@ export class RaceConnection {
 	constructor(options: RaceConnectionOptions) {
 		this.options = options;
 		this.host =
-			options.host ?? process.env.NEXT_PUBLIC_PARTYKIT_HOST ?? "localhost:1999";
+			options.host ?? process.env["NEXT_PUBLIC_PARTYKIT_HOST"] ?? "localhost:1999";
 
 		this.messageHandler = (event: MessageEvent) => {
 			this.handleMessage(event.data);
