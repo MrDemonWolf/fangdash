@@ -9,7 +9,7 @@
     "deploy": "opennextjs-cloudflare build && wrangler deploy",
     "start": "next start",
     "lint": "next lint",
-    "type-check": "tsc --noEmit",
+    "typecheck": "tsc --noEmit",
     "clean": "rm -rf .next .turbo",
     "generate:icons": "node scripts/generate-icons.mjs"
   },
