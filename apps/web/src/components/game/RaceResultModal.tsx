@@ -12,7 +12,7 @@ interface RaceResultEntry {
 
 interface RaceResultModalProps {
   results: RaceResultEntry[];
-  onRematch: () => void;
+  onRematch?: () => void;
 }
 
 function placementLabel(placement: number): string {
@@ -101,13 +101,15 @@ export function RaceResultModal({ results, onRematch }: RaceResultModalProps) {
         </div>
 
         <div className="flex flex-col gap-3">
-          <button
-            type="button"
-            onClick={onRematch}
-            className="w-full cursor-pointer rounded-lg bg-[#0FACED] px-6 py-3 text-sm font-bold uppercase tracking-wider text-[#091533] transition-colors hover:bg-[#0FACED]/80"
-          >
-            Rematch
-          </button>
+          {onRematch && (
+            <button
+              type="button"
+              onClick={onRematch}
+              className="w-full cursor-pointer rounded-lg bg-[#0FACED] px-6 py-3 text-sm font-bold uppercase tracking-wider text-[#091533] transition-colors hover:bg-[#0FACED]/80"
+            >
+              Rematch
+            </button>
+          )}
 
           <Link
             href="/"

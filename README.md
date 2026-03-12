@@ -1,12 +1,15 @@
-# FangDash - Multiplayer Endless Runner for Twitch
+<div align="center">
+  <img src="apps/web/public/icons/icon-512.png" alt="FangDash" width="128" />
+  <h1>FangDash</h1>
+  <p><em>Run with the pack. Dash to the top.</em></p>
+  <p>Multiplayer endless runner for Twitch streamers and their communities.</p>
+</div>
 
 FangDash is a fast-paced multiplayer endless runner where
 players race as wolves, dodging obstacles and competing for
 the highest score. Built for Twitch streamers and their
 communities, it features real-time racing, unlockable skins,
 achievements, and leaderboards.
-
-Run with the pack. Dash to the top.
 
 ## Features
 
