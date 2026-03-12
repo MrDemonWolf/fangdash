@@ -8,7 +8,7 @@ This guide is for developers who want to run FangDash locally or contribute to t
 ## Prerequisites
 
 - Node.js 20 or higher
-- pnpm 10.x (run `corepack enable` to install)
+- bun 10.x (run `corepack enable` to install)
 - A Cloudflare account (for D1 database)
 - A Twitch Developer application (for OAuth)
 
@@ -17,7 +17,7 @@ This guide is for developers who want to run FangDash locally or contribute to t
 ```bash
 git clone https://github.com/MrDemonWolf/fangdash.git
 cd fangdash
-pnpm install
+bun install
 ```
 
 ## Set Up the Database
@@ -25,7 +25,7 @@ pnpm install
 Create a Cloudflare D1 database:
 
 ```bash
-npx wrangler d1 create fangdash-db
+bunx wrangler d1 create fangdash-db
 ```
 
 Copy the database ID from the output and update `apps/api/wrangler.toml`.
@@ -33,7 +33,7 @@ Copy the database ID from the output and update `apps/api/wrangler.toml`.
 Run migrations:
 
 ```bash
-npx wrangler d1 migrations apply fangdash-db --local
+bunx wrangler d1 migrations apply fangdash-db --local
 ```
 
 ## Configure Environment Variables
@@ -63,7 +63,7 @@ NEXT_PUBLIC_API_URL=http://localhost:8787
 ## Start Development
 
 ```bash
-pnpm dev
+bun dev
 ```
 
 The web app runs at `http://localhost:3000` and the API at `http://localhost:8787`.
@@ -72,10 +72,10 @@ The web app runs at `http://localhost:3000` and the API at `http://localhost:878
 
 | Command | Description |
 | --- | --- |
-| `pnpm dev` | Start all apps in development mode |
-| `pnpm build` | Build all packages and apps |
-| `pnpm test` | Run all tests with Vitest |
-| `pnpm test:coverage` | Run tests with coverage report |
-| `pnpm type-check` | Type-check all packages |
-| `pnpm lint` | Lint all packages |
-| `pnpm clean` | Remove all build artifacts |
+| `bun dev` | Start all apps in development mode |
+| `bun build` | Build all packages and apps |
+| `bun test` | Run all tests with Vitest |
+| `bun test:coverage` | Run tests with coverage report |
+| `bun typecheck` | Type-check all packages |
+| `bun lint` | Lint all packages |
+| `bun clean` | Remove all build artifacts |
