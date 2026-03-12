@@ -26,12 +26,17 @@ app.use("*", async (c, next) => {
 
 // Better Auth handler
 app.on(["POST", "GET"], "/api/auth/**", async (c) => {
+	const url = new URL(c.req.url);
+	console.log(`[auth] ${c.req.method} ${url.pathname}`);
+
 	try {
 		const auth = createAuth(c.env);
 		if (!auth) {
 			return c.json({ error: "Auth not configured" }, 503);
 		}
-		return await auth.handler(c.req.raw);
+		const response = await auth.handler(c.req.raw);
+		console.log(`[auth] ${url.pathname} → ${response.status}`);
+		return response;
 	} catch (err) {
 		console.error("[auth] Handler error:", err);
 		return c.json({ error: "Internal auth error" }, 500);

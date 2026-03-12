@@ -1,13 +1,15 @@
 # ── Required ──────────────────────────────────────────────
 BETTER_AUTH_SECRET=change-me-to-a-long-random-string-32-chars
-BETTER_AUTH_URL=http://localhost:8787
 TWITCH_CLIENT_ID=your_twitch_client_id_here
 TWITCH_CLIENT_SECRET=your_twitch_client_secret_here
-# NOTE: You must add http://localhost:8787/api/auth/callback/twitch
+# NOTE: You must add http://localhost:3000/api/auth/callback/twitch
 # as an OAuth Redirect URL in your Twitch Developer Console app settings
 # (https://dev.twitch.tv/console/apps) for local login to work.
+# Auth requests are proxied through Next.js (localhost:3000) to avoid
+# cross-origin cookie issues between the web app and API server.
 
 # ── Set in wrangler.toml [vars] ───────────────────────────
+# BETTER_AUTH_URL — defaults to http://localhost:3000 for local dev (see wrangler.toml)
 # WEB_URL — defaults to http://localhost:3000 for local dev (see wrangler.toml)
 
 # ── Optional ──────────────────────────────────────────────

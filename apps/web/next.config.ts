@@ -1,5 +1,7 @@
 import type { NextConfig } from "next";
 
+const apiURL = process.env["NEXT_PUBLIC_API_URL"] || "http://localhost:8787";
+
 const nextConfig: NextConfig = {
 	transpilePackages: ["@fangdash/shared", "@fangdash/game"],
 	images: {
@@ -23,6 +25,14 @@ const nextConfig: NextConfig = {
 			(process.env.NODE_ENV === "production"
 				? "fangdash.nathanialhenniges.partykit.dev"
 				: "localhost:1999"),
+	},
+	async rewrites() {
+		return [
+			{
+				source: "/api/auth/:path*",
+				destination: `${apiURL}/api/auth/:path*`,
+			},
+		];
 	},
 };
 

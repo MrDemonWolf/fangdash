@@ -12,6 +12,7 @@ migrations_dir = "drizzle"
 [vars]
 ENVIRONMENT = "development"
 WEB_URL = "http://localhost:3000"
+BETTER_AUTH_URL = "http://localhost:3000"
 
 [env.production]
 name = "fangdash-api"
