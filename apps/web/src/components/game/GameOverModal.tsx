@@ -17,7 +17,7 @@ interface GameOverModalProps {
 	} | null;
 	submitError?: unknown;
 	isSignedIn?: boolean;
-	onRetrySubmit?: () => void;
+	onRetrySubmit?: (() => void) | undefined;
 }
 
 function formatDistance(m: number): string {

@@ -400,10 +400,10 @@ export default function ProfilePage() {
 	/* ---- Honor Badges ---- */
 	const unlockedIds = new Set((achievements ?? []).map((a) => a?.id));
 	const sortedUnlocked = [...(achievements ?? [])]
-		.filter(Boolean)
+		.filter((a): a is NonNullable<typeof a> => a != null)
 		.sort((a, b) => {
-			const aT = a?.unlockedAt ? new Date(a.unlockedAt).getTime() : 0;
-			const bT = b?.unlockedAt ? new Date(b.unlockedAt).getTime() : 0;
+			const aT = a.unlockedAt ? new Date(a.unlockedAt).getTime() : 0;
+			const bT = b.unlockedAt ? new Date(b.unlockedAt).getTime() : 0;
 			return bT - aT;
 		});
 
@@ -411,6 +411,7 @@ export default function ProfilePage() {
 	const BADGE_LIMIT = 12;
 	const unlockedBadges: Badge[] = sortedUnlocked
 		.slice(0, BADGE_LIMIT)
+		.filter((a): a is NonNullable<typeof a> => a != null)
 		.map((a) => ({
 			icon: a.icon ?? "default",
 			name: a.name ?? "Unnamed Badge",

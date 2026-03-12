@@ -7,7 +7,7 @@ import { useState } from "react";
 import superjson from "superjson";
 import { TRPCProvider as TRPCCtxProvider } from "./trpc.ts";
 
-const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+const apiUrl = process.env["NEXT_PUBLIC_API_URL"];
 if (!apiUrl) {
 	throw new Error("NEXT_PUBLIC_API_URL is required for tRPC client");
 }
@@ -24,7 +24,7 @@ export function TRPCProvider({ children }: { children: React.ReactNode }) {
 						return fetch(url, {
 							...options,
 							credentials: "include",
-						});
+						} as RequestInit);
 					},
 				}),
 			],

@@ -1,7 +1,7 @@
 import { adminClient } from "better-auth/client/plugins";
 import { createAuthClient } from "better-auth/react";
 
-const baseURL = process.env.NEXT_PUBLIC_API_URL;
+const baseURL = process.env["NEXT_PUBLIC_API_URL"];
 if (!baseURL) {
 	throw new Error("NEXT_PUBLIC_API_URL is required for auth client");
 }

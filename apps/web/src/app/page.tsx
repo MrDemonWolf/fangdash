@@ -98,18 +98,18 @@ export default function Home() {
 						</Link>
 					</p>
 					<p className="font-mono text-xs text-gray-500 sm:text-center self-center">
-						v{process.env.NEXT_PUBLIC_APP_VERSION}
-						{process.env.NEXT_PUBLIC_COMMIT_SHA &&
-							COMMIT_SHA_PATTERN.test(process.env.NEXT_PUBLIC_COMMIT_SHA) && (
+						v{process.env["NEXT_PUBLIC_APP_VERSION"]}
+						{process.env["NEXT_PUBLIC_COMMIT_SHA"] &&
+							COMMIT_SHA_PATTERN.test(process.env["NEXT_PUBLIC_COMMIT_SHA"]) && (
 								<>
 									{" · "}
 									<Link
-										href={`https://github.com/MrDemonWolf/fangdash/commit/${process.env.NEXT_PUBLIC_COMMIT_SHA}`}
+										href={`https://github.com/MrDemonWolf/fangdash/commit/${process.env["NEXT_PUBLIC_COMMIT_SHA"]}`}
 										target="_blank"
 										rel="noopener noreferrer"
 										className="hover:text-white"
 									>
-										{process.env.NEXT_PUBLIC_COMMIT_SHA}
+										{process.env["NEXT_PUBLIC_COMMIT_SHA"]}
 									</Link>
 								</>
 							)}
