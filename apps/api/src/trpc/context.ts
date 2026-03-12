@@ -6,13 +6,17 @@ export async function createContext(c: Context) {
 	const db = createDb(c.env.DB);
 	const auth = createAuth(c.env);
 
-	let sessionData: Awaited<ReturnType<typeof auth.api.getSession>> | null = null;
-	try {
-		sessionData = await auth.api.getSession({
-			headers: c.req.raw.headers,
-		});
-	} catch {
-		// Auth failure — continue as unauthenticated for public procedures
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	let sessionData: { session: any; user: any } | null = null;
+
+	if (auth) {
+		try {
+			sessionData = await auth.api.getSession({
+				headers: c.req.raw.headers,
+			});
+		} catch {
+			// Auth failure — continue as unauthenticated for public procedures
+		}
 	}
 
 	return {
@@ -25,7 +29,7 @@ export async function createContext(c: Context) {
 				}): Promise<unknown>;
 				unbanUser(opts: { body: { userId: string }; headers: Headers }): Promise<unknown>;
 			};
-		},
+		} | null,
 		headers: c.req.raw.headers,
 		session: sessionData?.session
 			? {

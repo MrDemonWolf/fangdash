@@ -13,12 +13,12 @@ function TwitchIcon({ className }: { className?: string }) {
 }
 
 export function HeroCTA() {
-	const { data: session } = useSession();
-	const [mounted, setMounted] = useState(false);
-
-	useEffect(() => {
-		setMounted(true);
-	}, []);
+	const { data: session, isPending: sessionPending } = useSession();
+	// Prevent hydration mismatch: useSession returns isPending=false on the server
+	// but isPending=true on the client's first render.
+	const [hasMounted, setHasMounted] = useState(false);
+	useEffect(() => setHasMounted(true), []);
+	const isPending = !hasMounted || sessionPending;
 
 	const handleSignIn = () => {
 		signIn.social({ provider: "twitch", callbackURL: window.location.origin });
@@ -32,7 +32,7 @@ export function HeroCTA() {
 			>
 				Play Now
 			</Link>
-			{mounted && !session && (
+			{!isPending && !session && (
 				<button
 					type="button"
 					onClick={handleSignIn}

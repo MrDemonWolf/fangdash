@@ -32,7 +32,7 @@ export class AudioManager {
 	// ── BGM ──
 
 	playBGM(key: string): void {
-		if (!this.scene.cache.audio.exists(key)) {
+		if (!this.scene.cache?.audio?.exists(key)) {
 			return;
 		}
 
@@ -56,7 +56,7 @@ export class AudioManager {
 	// ── SFX ──
 
 	playSFX(key: string): void {
-		if (!this.scene.cache.audio.exists(key)) {
+		if (!this.scene.cache?.audio?.exists(key)) {
 			return;
 		}
 

@@ -60,10 +60,7 @@ export default function RaceRoomPage() {
 	const [playerReadyMap, setPlayerReadyMap] = useState<Record<string, boolean>>({});
 	const [kicked, setKicked] = useState(false);
 	const [copied, setCopied] = useState(false);
-	const [streamerMode, setStreamerMode] = useState<boolean>(() => {
-		if (typeof window === "undefined") return false;
-		return localStorage.getItem("fangdash:streamer-mode") === "true";
-	});
+	const [streamerMode, setStreamerMode] = useState(false);
 	const [countdownSeconds, setCountdownSeconds] = useState(3);
 	const [raceSeed, setRaceSeed] = useState("");
 	const [raceResults, setRaceResults] = useState<RaceResult[]>([]);
@@ -103,6 +100,11 @@ export default function RaceRoomPage() {
 		: "wolf-gray";
 
 	const isHost = myId !== "" && myId === hostId;
+
+	// Sync streamer mode from localStorage after hydration
+	useEffect(() => {
+		setStreamerMode(localStorage.getItem("fangdash:streamer-mode") === "true");
+	}, []);
 
 	// ── Streamer mode toggle ──
 	const toggleStreamerMode = () => {

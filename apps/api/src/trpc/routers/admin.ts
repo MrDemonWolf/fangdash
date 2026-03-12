@@ -88,6 +88,9 @@ export const adminRouter = router({
 			}),
 		)
 		.mutation(async ({ ctx, input }) => {
+			if (!ctx.auth) {
+				throw new TRPCError({ code: "PRECONDITION_FAILED", message: "Auth not configured" });
+			}
 			const body: { userId: string; banReason?: string; banExpiresIn?: number } = {
 				userId: input.userId,
 			};
@@ -108,6 +111,9 @@ export const adminRouter = router({
 	unbanUser: devProcedure
 		.input(z.object({ userId: z.string() }))
 		.mutation(async ({ ctx, input }) => {
+			if (!ctx.auth) {
+				throw new TRPCError({ code: "PRECONDITION_FAILED", message: "Auth not configured" });
+			}
 			await ctx.auth.api.unbanUser({
 				body: { userId: input.userId },
 				headers: ctx.headers,

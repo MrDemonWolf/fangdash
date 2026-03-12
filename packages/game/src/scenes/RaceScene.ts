@@ -33,14 +33,20 @@ export class RaceScene extends GameScene {
 	}
 
 	override init(data: RaceInitData) {
+		// When started by BootScene (no explicit data), fall back to registry values
+		const callbacks = data.callbacks ?? this.game.registry.get("callbacks");
+		const skinKey = data.skinKey ?? this.game.registry.get("skinKey");
+		const seed = data.seed ?? this.game.registry.get("seed");
+		const opponents = data.opponents ?? this.game.registry.get("opponents") ?? [];
+
 		// Forward base callbacks to parent
 		super.init({
-			...(data.callbacks && { callbacks: data.callbacks }),
-			...(data.skinKey && { skinKey: data.skinKey }),
-			seed: data.seed,
+			...(callbacks && { callbacks }),
+			...(skinKey && { skinKey }),
+			seed,
 		});
 
-		this.raceCallbacks = data.callbacks ?? {};
+		this.raceCallbacks = callbacks ?? {};
 		this.raceStarted = false;
 		this.lastPositionUpdate = 0;
 		this.localDistance = 0;
@@ -52,7 +58,7 @@ export class RaceScene extends GameScene {
 		this.ghosts.clear();
 
 		// Store opponents to create after create() sets up the scene
-		this.pendingOpponents = data.opponents ?? [];
+		this.pendingOpponents = opponents;
 	}
 
 	override create() {

@@ -29,6 +29,9 @@ app.use("*", async (c, next) => {
 app.on(["POST", "GET"], "/api/auth/**", async (c) => {
 	try {
 		const auth = createAuth(c.env);
+		if (!auth) {
+			return c.json({ error: "Auth not configured" }, 503);
+		}
 		return await auth.handler(c.req.raw);
 	} catch (err) {
 		console.error("[auth] Handler error:", err);
