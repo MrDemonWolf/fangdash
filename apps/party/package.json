@@ -10,10 +10,10 @@
   },
   "dependencies": {
     "@fangdash/shared": "workspace:*",
-    "partysocket": "^1.0.0"
+    "partysocket": "^1.1.16"
   },
   "devDependencies": {
-    "partykit": "^0.0.111",
-    "typescript": "^5.7.0"
+    "partykit": "^0.0.115",
+    "typescript": "^5.9.3"
   }
 }
