@@ -20,6 +20,7 @@
 	},
 	"overrides": [
 		{
+			"includes": ["apps/docs/**"],
 			"linter": {
 				"rules": {
 					"style": {

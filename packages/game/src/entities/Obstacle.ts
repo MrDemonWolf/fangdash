@@ -3,8 +3,8 @@ import {
 	GROUND_VISUAL_Y,
 	OBSTACLE_EMBED_RATIO,
 	OBSTACLE_TYPES,
-	SeededRandom,
 	type ObstacleType,
+	SeededRandom,
 } from "@fangdash/shared";
 // biome-ignore lint/performance/noNamespaceImport: Phaser requires namespace import
 import * as Phaser from "phaser";
@@ -56,7 +56,8 @@ export class Obstacle {
 		this.sprite.setVisible(true);
 		this.sprite.x = x ?? GAME_WIDTH + 50;
 		// Push bottom half of sprite below GROUND_VISUAL_Y so the ground tile clips it
-		this.sprite.y = GROUND_VISUAL_Y + this.sprite.displayHeight * OBSTACLE_EMBED_RATIO;
+		this.sprite.y =
+			GROUND_VISUAL_Y + this.sprite.displayHeight * OBSTACLE_EMBED_RATIO;
 	}
 
 	update(speed: number, delta: number) {
@@ -154,6 +155,9 @@ export class ObstacleSpawner {
 		}
 
 		const types = this.allowedTypes;
+		if (types.length === 0) {
+			return;
+		}
 		const type = this.rng
 			? this.rng.pick(types)
 			: // biome-ignore lint/style/noNonNullAssertion: array index always valid

@@ -31,6 +31,7 @@ export default function PlayPage() {
 	const gameChannelRef = useRef<GameChannel | null>(null);
 	const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 	const countdownTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+	const goTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 	const startTimeRef = useRef<number>(0);
 	const retrySubmitRef = useRef<(() => void) | null>(null);
 
@@ -134,7 +135,8 @@ export default function PlayPage() {
 				clearInterval(countdownTimerRef.current!);
 				countdownTimerRef.current = null;
 				// Show "GO!" briefly then launch
-				setTimeout(() => {
+				goTimeoutRef.current = setTimeout(() => {
+					goTimeoutRef.current = null;
 					gameChannelRef.current?.start(selectedDifficultyRef.current);
 					startTimer();
 					setCountdown(null);
@@ -294,6 +296,9 @@ export default function PlayPage() {
 			if (countdownTimerRef.current) {
 				clearInterval(countdownTimerRef.current);
 			}
+			if (goTimeoutRef.current) {
+				clearTimeout(goTimeoutRef.current);
+			}
 			stopTimer();
 			if (gameRef.current) {
 				import("@fangdash/game").then(({ destroyGame }) => {
@@ -371,9 +376,7 @@ export default function PlayPage() {
 						distance={gameState.distance}
 						elapsedTime={elapsedTime}
 						muted={audioMuted}
-						volume={audioVolume}
 						onToggleMute={handleToggleMute}
-						onVolumeChange={handleVolumeChange}
 						onOpenMenu={countdown === null ? openMenu : undefined}
 					/>
 				)}
@@ -390,7 +393,9 @@ export default function PlayPage() {
 					<div className="absolute inset-0 flex items-center justify-center bg-[#091533]/90 z-50">
 						<div className="w-full max-w-sm rounded-xl border border-red-500/30 bg-[#091533] p-8 text-center shadow-2xl mx-4">
 							<div className="mb-4 text-4xl">⚠</div>
-							<h2 className="mb-2 text-xl font-bold text-white">Failed to load game</h2>
+							<h2 className="mb-2 text-xl font-bold text-white">
+								Failed to load game
+							</h2>
 							<p className="mb-6 text-sm text-white/50">{gameError}</p>
 							<button
 								type="button"

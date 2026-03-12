@@ -3,6 +3,7 @@
 import type { GameState } from "@fangdash/shared";
 import { getAchievementById, getSkinById } from "@fangdash/shared";
 import Link from "next/link";
+import { formatTime } from "@/lib/format-time.ts";
 
 interface GameOverModalProps {
 	state: GameState;
@@ -17,13 +18,6 @@ interface GameOverModalProps {
 	submitError?: unknown;
 	isSignedIn?: boolean;
 	onRetrySubmit?: () => void;
-}
-
-function formatTime(ms: number): string {
-	const totalSec = Math.floor(ms / 1000);
-	const min = Math.floor(totalSec / 60);
-	const sec = totalSec % 60;
-	return `${String(min).padStart(2, "0")}:${sec.toString().padStart(2, "0")}`;
 }
 
 function formatDistance(m: number): string {
