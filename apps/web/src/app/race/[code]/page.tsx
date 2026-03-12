@@ -1,20 +1,26 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
-import Link from "next/link";
-import type { GameState, RacePlayer, RaceResult, DebugState, DebugCommand } from "@fangdash/shared";
 import type { DebugChannel } from "@fangdash/game";
-import { useSession } from "@/lib/auth-client";
-import { useIsDevOrAdmin } from "@/lib/use-role";
-import { useTRPC } from "@/lib/trpc";
+import type {
+	DebugCommand,
+	DebugState,
+	GameState,
+	RacePlayer,
+	RaceResult,
+} from "@fangdash/shared";
 import { getSkinById } from "@fangdash/shared/skins";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { RaceConnection } from "@/lib/party";
-import { RaceResultModal } from "@/components/game/RaceResultModal";
-import { CountdownOverlay } from "@/components/game/CountdownOverlay";
-import DebugPanel from "@/components/game/DebugPanel";
-import { GameHUD } from "@/components/game/GameHUD";
+import Link from "next/link";
+import { useParams, useRouter } from "next/navigation";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { CountdownOverlay } from "@/components/game/CountdownOverlay.tsx";
+import DebugPanel from "@/components/game/DebugPanel.tsx";
+import { GameHUD } from "@/components/game/GameHUD.tsx";
+import { RaceResultModal } from "@/components/game/RaceResultModal.tsx";
+import { useSession } from "@/lib/auth-client.ts";
+import { RaceConnection } from "@/lib/party.ts";
+import { useTRPC } from "@/lib/trpc.ts";
+import { useIsDevOrAdmin } from "@/lib/use-role.ts";
 
 // ---------------------------------------------------------------------------
 // Phase type
@@ -24,461 +30,490 @@ type Phase = "waiting" | "countdown" | "racing" | "results";
 // ---------------------------------------------------------------------------
 // Active Race Room Page
 // ---------------------------------------------------------------------------
+// biome-ignore lint/style/noDefaultExport: required by Next.js
 export default function RaceRoomPage() {
-  const params = useParams<{ code: string }>();
-  const router = useRouter();
-  const roomCode = params.code.toUpperCase();
+	const params = useParams<{ code: string }>();
+	const _router = useRouter();
+	const roomCode = params.code.toUpperCase();
 
-  // Auth
-  const { data: session } = useSession();
-  const isSignedIn = !!session?.user;
-  const isDevOrAdmin = useIsDevOrAdmin();
+	// Auth
+	const { data: session } = useSession();
+	const isSignedIn = !!session?.user;
+	const isDevOrAdmin = useIsDevOrAdmin();
 
-  // tRPC
-  const trpc = useTRPC();
-  const { data: skinData, isLoading: skinLoading } = useQuery(
-    trpc.skin.getEquippedSkin.queryOptions(undefined, {
-      enabled: isSignedIn,
-    })
-  );
-  const { mutate: submitResult } = useMutation(
-    trpc.race.submitResult.mutationOptions({
-      onError: (err) => {
-        console.error("Failed to submit race result:", err);
-      },
-    })
-  );
+	// tRPC
+	const trpc = useTRPC();
+	const { data: skinData, isLoading: skinLoading } = useQuery(
+		trpc.skin.getEquippedSkin.queryOptions(undefined, {
+			enabled: isSignedIn,
+		}),
+	);
+	const { mutate: submitResult } = useMutation(
+		trpc.race.submitResult.mutationOptions({
+			onError: (err) => {
+				console.error("Failed to submit race result:", err);
+			},
+		}),
+	);
 
-  // State
-  const [readySent, setReadySent] = useState(false);
-  const [phase, setPhase] = useState<Phase>("waiting");
-  const [players, setPlayers] = useState<RacePlayer[]>([]);
-  const [myId, setMyId] = useState<string>("");
-  const [countdownSeconds, setCountdownSeconds] = useState(3);
-  const [raceSeed, setRaceSeed] = useState("");
-  const [raceResults, setRaceResults] = useState<RaceResult[]>([]);
+	// State
+	const [readySent, setReadySent] = useState(false);
+	const [phase, setPhase] = useState<Phase>("waiting");
+	const [players, setPlayers] = useState<RacePlayer[]>([]);
+	const [myId, setMyId] = useState<string>("");
+	const [countdownSeconds, setCountdownSeconds] = useState(3);
+	const [raceSeed, setRaceSeed] = useState("");
+	const [raceResults, setRaceResults] = useState<RaceResult[]>([]);
 
-  // Game state for HUD
-  const [gameState, setGameState] = useState<GameState>({
-    score: 0,
-    distance: 0,
-    obstaclesCleared: 0,
-    alive: true,
-    speed: 0,
-  });
-  const [elapsedTime, setElapsedTime] = useState(0);
-  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const startTimeRef = useRef<number>(0);
+	// Game state for HUD
+	const [gameState, setGameState] = useState<GameState>({
+		score: 0,
+		distance: 0,
+		obstaclesCleared: 0,
+		alive: true,
+		speed: 0,
+	});
+	const [elapsedTime, setElapsedTime] = useState(0);
+	const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+	const startTimeRef = useRef<number>(0);
 
-  // Debug
-  const [debugState, setDebugState] = useState<DebugState | null>(null);
-  const debugRef = useRef<DebugChannel | null>(null);
-  const [gameKey, setGameKey] = useState(0);
+	// Debug
+	const [debugState, setDebugState] = useState<DebugState | null>(null);
+	const debugRef = useRef<DebugChannel | null>(null);
+	const [gameKey, _setGameKey] = useState(0);
 
-  // Refs
-  const containerRef = useRef<HTMLDivElement>(null);
-  const gameRef = useRef<any>(null);
-  const connectionRef = useRef<RaceConnection | null>(null);
-  const hasJoinedRef = useRef(false);
+	// Refs
+	const containerRef = useRef<HTMLDivElement>(null);
+	// biome-ignore lint/suspicious/noExplicitAny: Phaser game instance ref
+	const gameRef = useRef<any>(null);
+	const connectionRef = useRef<RaceConnection | null>(null);
+	const hasJoinedRef = useRef(false);
 
-  const equippedSkin = skinData?.skinId ? getSkinById(skinData.skinId)?.spriteKey ?? "wolf-gray" : "wolf-gray";
+	const equippedSkin = skinData?.skinId
+		? (getSkinById(skinData.skinId)?.spriteKey ?? "wolf-gray")
+		: "wolf-gray";
 
-  // ── Timer helpers ──
-  const stopTimer = useCallback(() => {
-    if (timerRef.current) {
-      clearInterval(timerRef.current);
-      timerRef.current = null;
-    }
-  }, []);
+	// ── Timer helpers ──
+	const stopTimer = useCallback(() => {
+		if (timerRef.current) {
+			clearInterval(timerRef.current);
+			timerRef.current = null;
+		}
+	}, []);
 
-  const startTimer = useCallback(() => {
-    stopTimer();
-    startTimeRef.current = Date.now();
-    setElapsedTime(0);
-    timerRef.current = setInterval(() => {
-      setElapsedTime(Date.now() - startTimeRef.current);
-    }, 100);
-  }, [stopTimer]);
+	const startTimer = useCallback(() => {
+		stopTimer();
+		startTimeRef.current = Date.now();
+		setElapsedTime(0);
+		timerRef.current = setInterval(() => {
+			setElapsedTime(Date.now() - startTimeRef.current);
+		}, 100);
+	}, [stopTimer]);
 
-  // ── Game over handler ──
-  const handleGameOver = useCallback(
-    (state: GameState) => {
-      stopTimer();
-      // The race_end message from the server will trigger the results phase
-      // For now just update state
-      setGameState(state);
-    },
-    [stopTimer]
-  );
+	// ── Game over handler ──
+	const handleGameOver = useCallback(
+		(state: GameState) => {
+			stopTimer();
+			// The race_end message from the server will trigger the results phase
+			// For now just update state
+			setGameState(state);
+		},
+		[stopTimer],
+	);
 
-  // ── Start the Phaser race game ──
-  const startRaceGame = useCallback(
-    async (seed: string) => {
-      if (!containerRef.current) return;
+	// ── Start the Phaser race game ──
+	const startRaceGame = useCallback(
+		async (seed: string) => {
+			if (!containerRef.current) {
+				return;
+			}
 
-      const { createRaceGame, destroyGame } = await import("@fangdash/game");
+			const { createRaceGame, destroyGame } = await import("@fangdash/game");
 
-      // Clean up previous game
-      if (gameRef.current) {
-        destroyGame(gameRef.current);
-        gameRef.current = null;
-      }
+			// Clean up previous game
+			if (gameRef.current) {
+				destroyGame(gameRef.current);
+				gameRef.current = null;
+			}
 
-      // Reset game state
-      setGameState({
-        score: 0,
-        distance: 0,
-        obstaclesCleared: 0,
-        alive: true,
-        speed: 0,
-      });
+			// Reset game state
+			setGameState({
+				score: 0,
+				distance: 0,
+				obstaclesCleared: 0,
+				alive: true,
+				speed: 0,
+			});
 
-      const connection = connectionRef.current;
+			const connection = connectionRef.current;
 
-      const { game, debug } = createRaceGame({
-        parent: containerRef.current,
-        skinKey: equippedSkin,
-        seed,
-        opponents: players
-          .filter((p) => p.id !== myId)
-          .map((p) => ({ id: p.id, username: p.username, skinId: p.skinId })),
-        onStateUpdate: (state) => setGameState(state),
-        onGameOver: handleGameOver,
-        onPositionUpdate: (distance, score) => {
-          connection?.sendUpdate(distance, score);
-        },
-        onPlayerDied: () => {
-          connection?.sendDied();
-        },
-        ...(isDevOrAdmin && {
-          onDebugUpdate: (state: DebugState) => {
-            setDebugState(state);
-          },
-        }),
-      });
+			const { game, debug } = createRaceGame({
+				parent: containerRef.current,
+				skinKey: equippedSkin,
+				seed,
+				opponents: players
+					.filter((p) => p.id !== myId)
+					.map((p) => ({ id: p.id, username: p.username, skinId: p.skinId })),
+				onStateUpdate: (state) => setGameState(state),
+				onGameOver: handleGameOver,
+				onPositionUpdate: (distance, score) => {
+					connection?.sendUpdate(distance, score);
+				},
+				onPlayerDied: () => {
+					connection?.sendDied();
+				},
+				...(isDevOrAdmin && {
+					onDebugUpdate: (state: DebugState) => {
+						setDebugState(state);
+					},
+				}),
+			});
 
-      gameRef.current = game;
-      debugRef.current = debug;
-      startTimer();
+			gameRef.current = game;
+			debugRef.current = debug;
+			startTimer();
 
-      // Wait for the scene to initialize, then start the race
-      // The Phaser scene needs a frame to be fully ready
-      setTimeout(() => {
-        const raceScene = game.scene.getScene("RaceScene");
-        if (raceScene && "beginRace" in raceScene) {
-          (raceScene as { beginRace: () => void }).beginRace();
-        }
-      }, 100);
-    },
-    [equippedSkin, players, myId, handleGameOver, startTimer]
-  );
+			// Wait for the scene to initialize, then start the race
+			// The Phaser scene needs a frame to be fully ready
+			setTimeout(() => {
+				const raceScene = game.scene.getScene("RaceScene");
+				if (raceScene && "beginRace" in raceScene) {
+					(raceScene as { beginRace: () => void }).beginRace();
+				}
+			}, 100);
+		},
+		[equippedSkin, players, myId, handleGameOver, startTimer, isDevOrAdmin],
+	);
 
-  // ── Connect to PartyKit ──
-  useEffect(() => {
-    if (!isSignedIn || !session?.user) return;
+	// ── Connect to PartyKit ──
+	useEffect(() => {
+		if (!(isSignedIn && session?.user)) {
+			return;
+		}
 
-    hasJoinedRef.current = false;
-    const connection = new RaceConnection({ roomCode });
-    connectionRef.current = connection;
+		hasJoinedRef.current = false;
+		const connection = new RaceConnection({ roomCode });
+		connectionRef.current = connection;
 
-    // Listen for room state (initial snapshot)
-    const currentUsername = session.user.name || session.user.email || "Player";
-    connection.on("room_state", (room) => {
-      setPlayers(room.players);
-      // Try to find our own id from the players list
-      const me = room.players.find(
-        (p) => p.username === currentUsername
-      );
-      if (me) setMyId(me.id);
-    });
+		// Listen for room state (initial snapshot)
+		const currentUsername = session.user.name || session.user.email || "Player";
+		connection.on("room_state", (room) => {
+			setPlayers(room.players);
+			// Try to find our own id from the players list
+			const me = room.players.find((p) => p.username === currentUsername);
+			if (me) {
+				setMyId(me.id);
+			}
+		});
 
-    connection.on("player_joined", (player) => {
-      setPlayers((prev) => {
-        if (prev.some((p) => p.id === player.id)) return prev;
-        return [...prev, player];
-      });
-    });
+		connection.on("player_joined", (player) => {
+			setPlayers((prev) => {
+				if (prev.some((p) => p.id === player.id)) {
+					return prev;
+				}
+				return [...prev, player];
+			});
+		});
 
-    connection.on("player_left", ({ id }) => {
-      setPlayers((prev) => prev.filter((p) => p.id !== id));
-    });
+		connection.on("player_left", ({ id }) => {
+			setPlayers((prev) => prev.filter((p) => p.id !== id));
+		});
 
-    connection.on("countdown", ({ seconds }) => {
-      setPhase("countdown");
-      setCountdownSeconds(seconds);
-    });
+		connection.on("countdown", ({ seconds }) => {
+			setPhase("countdown");
+			setCountdownSeconds(seconds);
+		});
 
-    connection.on("race_start", ({ seed }) => {
-      setPhase("racing");
-      setRaceSeed(seed);
-    });
+		connection.on("race_start", ({ seed }) => {
+			setPhase("racing");
+			setRaceSeed(seed);
+		});
 
-    connection.on("player_update", ({ id, distance, score }) => {
-      // Forward to Phaser game
-      if (gameRef.current) {
-        const raceScene = gameRef.current.scene.getScene("RaceScene");
-        if (raceScene?.receiveOpponentUpdate) {
-          raceScene.receiveOpponentUpdate(id, distance, score);
-        }
-      }
-      // Update players state
-      setPlayers((prev) =>
-        prev.map((p) => (p.id === id ? { ...p, distance, score } : p))
-      );
-    });
+		connection.on("player_update", ({ id, distance, score }) => {
+			// Forward to Phaser game
+			if (gameRef.current) {
+				const raceScene = gameRef.current.scene.getScene("RaceScene");
+				if (raceScene?.receiveOpponentUpdate) {
+					raceScene.receiveOpponentUpdate(id, distance, score);
+				}
+			}
+			// Update players state
+			setPlayers((prev) =>
+				prev.map((p) => (p.id === id ? { ...p, distance, score } : p)),
+			);
+		});
 
-    connection.on("player_died", ({ id }) => {
-      if (gameRef.current) {
-        const raceScene = gameRef.current.scene.getScene("RaceScene");
-        if (raceScene?.receiveOpponentDied) {
-          raceScene.receiveOpponentDied(id);
-        }
-      }
-      setPlayers((prev) =>
-        prev.map((p) => (p.id === id ? { ...p, alive: false } : p))
-      );
-    });
+		connection.on("player_died", ({ id }) => {
+			if (gameRef.current) {
+				const raceScene = gameRef.current.scene.getScene("RaceScene");
+				if (raceScene?.receiveOpponentDied) {
+					raceScene.receiveOpponentDied(id);
+				}
+			}
+			setPlayers((prev) =>
+				prev.map((p) => (p.id === id ? { ...p, alive: false } : p)),
+			);
+		});
 
-    connection.on("race_end", ({ results }) => {
-      setPhase("results");
-      setRaceResults(results);
-    });
+		connection.on("race_end", ({ results }) => {
+			setPhase("results");
+			setRaceResults(results);
+		});
 
-    return () => {
-      connection.disconnect();
-      connectionRef.current = null;
-    };
-  }, [isSignedIn, roomCode]);
+		return () => {
+			connection.disconnect();
+			connectionRef.current = null;
+		};
+	}, [
+		isSignedIn,
+		roomCode,
+		session.user.email,
+		session.user.name,
+		session?.user,
+	]);
 
-  // ── Join once skin data has resolved ──
-  useEffect(() => {
-    if (!isSignedIn || !session?.user) return;
-    if (skinLoading) return;             // still loading (errors treated as loaded)
-    if (hasJoinedRef.current) return;    // already joined
-    const connection = connectionRef.current;
-    if (!connection) return;
-    hasJoinedRef.current = true;
-    const username = session.user.name || session.user.email || "Player";
-    connection.join(username, equippedSkin);
-  }, [isSignedIn, session, equippedSkin, skinLoading, roomCode]);
+	// ── Join once skin data has resolved ──
+	useEffect(() => {
+		if (!(isSignedIn && session?.user)) {
+			return;
+		}
+		if (skinLoading) {
+			return; // still loading (errors treated as loaded)
+		}
+		if (hasJoinedRef.current) {
+			return; // already joined
+		}
+		const connection = connectionRef.current;
+		if (!connection) {
+			return;
+		}
+		hasJoinedRef.current = true;
+		const username = session.user.name || session.user.email || "Player";
+		connection.join(username, equippedSkin);
+	}, [isSignedIn, session, equippedSkin, skinLoading]);
 
-  // ── Start game when phase transitions to racing ──
-  useEffect(() => {
-    if (phase === "racing" && raceSeed) {
-      startRaceGame(raceSeed);
-    }
-  }, [phase, raceSeed, startRaceGame]);
+	// ── Start game when phase transitions to racing ──
+	useEffect(() => {
+		if (phase === "racing" && raceSeed) {
+			startRaceGame(raceSeed);
+		}
+	}, [phase, raceSeed, startRaceGame]);
 
-  // ── Submit result when race ends ──
-  useEffect(() => {
-    if (phase !== "results" || raceResults.length === 0) return;
+	// ── Submit result when race ends ──
+	useEffect(() => {
+		if (phase !== "results" || raceResults.length === 0) {
+			return;
+		}
 
-    // Destroy game
-    if (gameRef.current) {
-      import("@fangdash/game").then(({ destroyGame }) => {
-        if (gameRef.current) {
-          destroyGame(gameRef.current);
-          gameRef.current = null;
-        }
-      });
-    }
-    stopTimer();
+		// Destroy game
+		if (gameRef.current) {
+			import("@fangdash/game").then(({ destroyGame }) => {
+				if (gameRef.current) {
+					destroyGame(gameRef.current);
+					gameRef.current = null;
+				}
+			});
+		}
+		stopTimer();
 
-    // Submit our result
-    const myResult = raceResults.find((r) => r.playerId === myId);
-    if (myResult && isSignedIn) {
-      submitResult({
-        raceId: myResult.raceId,
-        score: myResult.score,
-        distance: myResult.distance,
-        seed: raceSeed,
-      });
-    }
-  }, [phase, raceResults, myId, isSignedIn, submitResult, raceSeed, stopTimer]);
+		// Submit our result
+		const myResult = raceResults.find((r) => r.playerId === myId);
+		if (myResult && isSignedIn) {
+			submitResult({
+				raceId: myResult.raceId,
+				score: myResult.score,
+				distance: myResult.distance,
+				seed: raceSeed,
+			});
+		}
+	}, [phase, raceResults, myId, isSignedIn, submitResult, raceSeed, stopTimer]);
 
-  // ── Cleanup on unmount ──
-  useEffect(() => {
-    return () => {
-      stopTimer();
-      if (gameRef.current) {
-        import("@fangdash/game").then(({ destroyGame }) => {
-          if (gameRef.current) {
-            destroyGame(gameRef.current);
-            gameRef.current = null;
-          }
-        });
-      }
-    };
-  }, [stopTimer]);
+	// ── Cleanup on unmount ──
+	useEffect(() => {
+		return () => {
+			stopTimer();
+			if (gameRef.current) {
+				import("@fangdash/game").then(({ destroyGame }) => {
+					if (gameRef.current) {
+						destroyGame(gameRef.current);
+						gameRef.current = null;
+					}
+				});
+			}
+		};
+	}, [stopTimer]);
 
-  // ── Debug command handler ──
-  const handleDebugCommand = useCallback((command: DebugCommand) => {
-    debugRef.current?.sendCommand(command);
-  }, []);
+	// ── Debug command handler ──
+	const handleDebugCommand = useCallback((command: DebugCommand) => {
+		debugRef.current?.sendCommand(command);
+	}, []);
 
-  // ── Handlers ──
-  const handleReady = () => {
-    connectionRef.current?.sendReady();
-    setReadySent(true);
-  };
+	// ── Handlers ──
+	const handleReady = () => {
+		connectionRef.current?.sendReady();
+		setReadySent(true);
+	};
 
-  const handleRematch = () => {
-    setReadySent(false);
-    setPhase("waiting");
-    setRaceResults([]);
-    setRaceSeed("");
-    setGameState({
-      score: 0,
-      distance: 0,
-      obstaclesCleared: 0,
-      alive: true,
-      speed: 0,
-    });
-    setElapsedTime(0);
-    connectionRef.current?.sendReady();
-  };
+	const handleRematch = () => {
+		setReadySent(false);
+		setPhase("waiting");
+		setRaceResults([]);
+		setRaceSeed("");
+		setGameState({
+			score: 0,
+			distance: 0,
+			obstaclesCleared: 0,
+			alive: true,
+			speed: 0,
+		});
+		setElapsedTime(0);
+		connectionRef.current?.sendReady();
+	};
 
-  // ── Auth guard ──
-  if (!isSignedIn) {
-    return (
-      <main className="flex min-h-screen flex-col items-center justify-center bg-[#091533] px-4">
-        <div className="w-full max-w-md rounded-xl border border-[#0FACED]/20 bg-[#091533]/95 p-8 text-center shadow-2xl">
-          <h1 className="mb-4 text-3xl font-extrabold tracking-tight text-white">
-            Race Room
-          </h1>
-          <p className="mb-6 text-white/50">
-            Sign in to join this race.
-          </p>
-          <Link
-            href="/race"
-            className="inline-block rounded-lg border border-white/10 px-6 py-3 text-sm font-medium text-white/70 transition-colors hover:border-white/20 hover:text-white"
-          >
-            Back to Lobby
-          </Link>
-        </div>
-      </main>
-    );
-  }
+	// ── Auth guard ──
+	if (!isSignedIn) {
+		return (
+			<main className="flex min-h-screen flex-col items-center justify-center bg-[#091533] px-4">
+				<div className="w-full max-w-md rounded-xl border border-[#0FACED]/20 bg-[#091533]/95 p-8 text-center shadow-2xl">
+					<h1 className="mb-4 text-3xl font-extrabold tracking-tight text-white">
+						Race Room
+					</h1>
+					<p className="mb-6 text-white/50">Sign in to join this race.</p>
+					<Link
+						href="/race"
+						className="inline-block rounded-lg border border-white/10 px-6 py-3 text-sm font-medium text-white/70 transition-colors hover:border-white/20 hover:text-white"
+					>
+						Back to Lobby
+					</Link>
+				</div>
+			</main>
+		);
+	}
 
-  // ── Waiting Phase ──
-  if (phase === "waiting") {
-    return (
-      <main className="flex min-h-screen flex-col items-center justify-center bg-[#091533] px-4">
-        <div className="w-full max-w-lg space-y-6">
-          {/* Room code header */}
-          <div className="text-center">
-            <p className="mb-2 text-sm font-medium uppercase tracking-wider text-white/40">
-              Room Code
-            </p>
-            <h1 className="mb-1 text-5xl font-black tracking-widest text-[#0FACED]">
-              {roomCode}
-            </h1>
-            <p className="text-sm text-white/40">
-              Share this code with friends to join
-            </p>
-          </div>
+	// ── Waiting Phase ──
+	if (phase === "waiting") {
+		return (
+			<main className="flex min-h-screen flex-col items-center justify-center bg-[#091533] px-4">
+				<div className="w-full max-w-lg space-y-6">
+					{/* Room code header */}
+					<div className="text-center">
+						<p className="mb-2 text-sm font-medium uppercase tracking-wider text-white/40">
+							Room Code
+						</p>
+						<h1 className="mb-1 text-5xl font-black tracking-widest text-[#0FACED]">
+							{roomCode}
+						</h1>
+						<p className="text-sm text-white/40">
+							Share this code with friends to join
+						</p>
+					</div>
 
-          {/* Player list */}
-          <div className="rounded-xl border border-[#0FACED]/20 bg-white/5 p-6">
-            <h2 className="mb-4 text-lg font-semibold text-white">
-              Players ({players.length})
-            </h2>
-            <div className="space-y-2">
-              {players.length === 0 && (
-                <p className="text-sm text-white/30">Connecting...</p>
-              )}
-              {players.map((player) => (
-                <div
-                  key={player.id}
-                  className="flex items-center gap-3 rounded-lg bg-white/5 px-4 py-3"
-                >
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#0FACED]/20 text-xs font-bold text-[#0FACED]">
-                    {player.skinId === "default" ? "D" : player.skinId.charAt(0).toUpperCase()}
-                  </div>
-                  <span className="flex-1 truncate text-sm font-semibold text-white">
-                    {player.username}
-                  </span>
-                  {player.id === myId && (
-                    <span className="text-xs text-white/30">(you)</span>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
+					{/* Player list */}
+					<div className="rounded-xl border border-[#0FACED]/20 bg-white/5 p-6">
+						<h2 className="mb-4 text-lg font-semibold text-white">
+							Players ({players.length})
+						</h2>
+						<div className="space-y-2">
+							{players.length === 0 && (
+								<p className="text-sm text-white/30">Connecting...</p>
+							)}
+							{players.map((player) => (
+								<div
+									key={player.id}
+									className="flex items-center gap-3 rounded-lg bg-white/5 px-4 py-3"
+								>
+									<div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#0FACED]/20 text-xs font-bold text-[#0FACED]">
+										{player.skinId === "default"
+											? "D"
+											: player.skinId.charAt(0).toUpperCase()}
+									</div>
+									<span className="flex-1 truncate text-sm font-semibold text-white">
+										{player.username}
+									</span>
+									{player.id === myId && (
+										<span className="text-xs text-white/30">(you)</span>
+									)}
+								</div>
+							))}
+						</div>
+					</div>
 
-          {/* Ready button */}
-          <button
-            type="button"
-            onClick={handleReady}
-            disabled={readySent}
-            className={`w-full cursor-pointer rounded-lg px-6 py-4 text-sm font-bold uppercase tracking-wider transition-colors ${
-              readySent
-                ? "bg-[#0FACED]/40 text-[#091533]/60 cursor-not-allowed"
-                : "bg-[#0FACED] text-[#091533] hover:bg-[#0FACED]/80"
-            }`}
-          >
-            {readySent ? "Waiting..." : "Ready"}
-          </button>
+					{/* Ready button */}
+					<button
+						type="button"
+						onClick={handleReady}
+						disabled={readySent}
+						className={`w-full cursor-pointer rounded-lg px-6 py-4 text-sm font-bold uppercase tracking-wider transition-colors ${
+							readySent
+								? "bg-[#0FACED]/40 text-[#091533]/60 cursor-not-allowed"
+								: "bg-[#0FACED] text-[#091533] hover:bg-[#0FACED]/80"
+						}`}
+					>
+						{readySent ? "Waiting..." : "Ready"}
+					</button>
 
-          {/* Back to lobby */}
-          <div className="text-center">
-            <Link
-              href="/race"
-              className="text-sm text-white/40 transition-colors hover:text-white/70"
-            >
-              Back to Lobby
-            </Link>
-          </div>
-        </div>
-      </main>
-    );
-  }
+					{/* Back to lobby */}
+					<div className="text-center">
+						<Link
+							href="/race"
+							className="text-sm text-white/40 transition-colors hover:text-white/70"
+						>
+							Back to Lobby
+						</Link>
+					</div>
+				</div>
+			</main>
+		);
+	}
 
-  // ── Countdown / Racing / Results phases ──
-  return (
-    <main className="flex min-h-screen flex-col items-center justify-center bg-[#091533]">
-      <div className="relative w-full max-w-[800px]">
-        {/* HUD overlay (visible during racing) */}
-        {phase === "racing" && (
-          <GameHUD
-            score={gameState.score}
-            distance={gameState.distance}
-            elapsedTime={elapsedTime}
-          />
-        )}
+	// ── Countdown / Racing / Results phases ──
+	return (
+		<main className="flex min-h-screen flex-col items-center justify-center bg-[#091533]">
+			<div className="relative w-full max-w-[800px]">
+				{/* HUD overlay (visible during racing) */}
+				{phase === "racing" && (
+					<GameHUD
+						score={gameState.score}
+						distance={gameState.distance}
+						elapsedTime={elapsedTime}
+					/>
+				)}
 
-        {/* Game canvas container */}
-        <div
-          ref={containerRef}
-          className="aspect-[4/3] w-full overflow-hidden rounded-xl border border-[#0FACED]/20"
-        />
+				{/* Game canvas container */}
+				<div
+					ref={containerRef}
+					className="aspect-[4/3] w-full overflow-hidden rounded-xl border border-[#0FACED]/20"
+				/>
 
-        {/* Countdown overlay */}
-        {phase === "countdown" && (
-          <CountdownOverlay seconds={countdownSeconds} />
-        )}
+				{/* Countdown overlay */}
+				{phase === "countdown" && (
+					<CountdownOverlay seconds={countdownSeconds} />
+				)}
 
-        {/* Race results modal */}
-        {phase === "results" && raceResults.length > 0 && (
-          <RaceResultModal
-            results={raceResults.map((r) => ({
-              playerId: r.playerId,
-              username:
-                players.find((p) => p.id === r.playerId)?.username ??
-                "Unknown",
-              placement: r.placement,
-              score: r.score,
-              distance: r.distance,
-            }))}
-            onRematch={handleRematch}
-          />
-        )}
+				{/* Race results modal */}
+				{phase === "results" && raceResults.length > 0 && (
+					<RaceResultModal
+						results={raceResults.map((r) => ({
+							playerId: r.playerId,
+							username:
+								players.find((p) => p.id === r.playerId)?.username ?? "Unknown",
+							placement: r.placement,
+							score: r.score,
+							distance: r.distance,
+						}))}
+						onRematch={handleRematch}
+					/>
+				)}
 
-        {/* Debug Panel (dev/admin only, Ctrl+Shift+D) */}
-        {isDevOrAdmin && (
-          <DebugPanel debugState={debugState} onSendCommand={handleDebugCommand} gameKey={gameKey} />
-        )}
-      </div>
-    </main>
-  );
+				{/* Debug Panel (dev/admin only, Ctrl+Shift+D) */}
+				{isDevOrAdmin && (
+					<DebugPanel
+						debugState={debugState}
+						onSendCommand={handleDebugCommand}
+						gameKey={gameKey}
+					/>
+				)}
+			</div>
+		</main>
+	);
 }
