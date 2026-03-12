@@ -97,7 +97,18 @@ export function createGame(options: GameCanvasOptions): GameCanvasResult {
 		onDebugUpdate: options.onDebugUpdate,
 	} satisfies GameEventCallback;
 
-	const game = new Phaser.Game(createPhaserConfig(options.parent, [BootScene, GameScene]));
+	const config = createPhaserConfig(options.parent, [BootScene, GameScene]);
+
+	// Store data in registry so GameScene can read it when started by BootScene
+	config.callbacks = {
+		preBoot: (game: Phaser.Game) => {
+			game.registry.set("callbacks", callbacks);
+			game.registry.set("skinKey", options.skinKey);
+			game.registry.set("startDifficulty", options.startDifficulty);
+		},
+	};
+
+	const game = new Phaser.Game(config);
 
 	// Surface critical asset load failures to the React layer
 	if (options.onError) {
@@ -105,18 +116,6 @@ export function createGame(options: GameCanvasOptions): GameCanvasResult {
 			options.onError!(message);
 		});
 	}
-
-	// Pass callbacks to GameScene when it starts
-	game.events.on("ready", () => {
-		const gameScene = game.scene.getScene("GameScene") as GameScene;
-		if (gameScene) {
-			gameScene.scene.restart({
-				callbacks,
-				skinKey: options.skinKey,
-				startDifficulty: options.startDifficulty,
-			});
-		}
-	});
 
 	const debug: DebugChannel = {
 		sendCommand: (command: DebugCommand) => {
@@ -205,7 +204,19 @@ export function createRaceGame(options: RaceCanvasOptions): RaceCanvasResult {
 		onDebugUpdate: options.onDebugUpdate,
 	} satisfies RaceCallbacks;
 
-	const game = new Phaser.Game(createPhaserConfig(options.parent, [BootScene, RaceScene]));
+	const config = createPhaserConfig(options.parent, [BootScene, RaceScene]);
+
+	// Store data in registry so RaceScene can read it when started by BootScene
+	config.callbacks = {
+		preBoot: (game: Phaser.Game) => {
+			game.registry.set("callbacks", callbacks);
+			game.registry.set("skinKey", options.skinKey);
+			game.registry.set("seed", options.seed);
+			game.registry.set("opponents", options.opponents);
+		},
+	};
+
+	const game = new Phaser.Game(config);
 
 	// Surface critical asset load failures to the React layer
 	if (options.onError) {
@@ -213,19 +224,6 @@ export function createRaceGame(options: RaceCanvasOptions): RaceCanvasResult {
 			options.onError!(message);
 		});
 	}
-
-	// Pass race data to RaceScene when it starts
-	game.events.on("ready", () => {
-		const raceScene = game.scene.getScene("RaceScene") as RaceScene;
-		if (raceScene) {
-			raceScene.scene.restart({
-				callbacks,
-				skinKey: options.skinKey,
-				seed: options.seed,
-				opponents: options.opponents,
-			});
-		}
-	});
 
 	const debug: DebugChannel = {
 		sendCommand: (command: DebugCommand) => {

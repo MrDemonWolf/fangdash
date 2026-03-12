@@ -48,10 +48,11 @@ export class GameScene extends Phaser.Scene {
 		seed?: string;
 		startDifficulty?: string;
 	}) {
-		this.callbacks = data.callbacks ?? {};
-		this.skinKey = data.skinKey ?? "wolf-gray";
-		this.seed = data.seed;
-		this.startDifficulty = data.startDifficulty;
+		// When started by BootScene (no explicit data), fall back to registry values
+		this.callbacks = data.callbacks ?? this.game.registry.get("callbacks") ?? {};
+		this.skinKey = data.skinKey ?? this.game.registry.get("skinKey") ?? "wolf-gray";
+		this.seed = data.seed ?? this.game.registry.get("seed");
+		this.startDifficulty = data.startDifficulty ?? this.game.registry.get("startDifficulty");
 	}
 
 	create() {
