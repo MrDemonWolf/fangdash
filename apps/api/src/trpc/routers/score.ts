@@ -160,9 +160,10 @@ export const scoreRouter = router({
 				totalMeters: sql<number>`coalesce(sum(${player.totalDistance}), 0)`,
 			})
 			.from(player);
+		const row = result[0] ?? { totalPlayers: 0, totalMeters: 0 };
 		return {
-			totalPlayers: result[0].totalPlayers,
-			totalMeters: Math.round(result[0].totalMeters),
+			totalPlayers: row.totalPlayers,
+			totalMeters: Math.round(row.totalMeters),
 		};
 	}),
 
