@@ -19,16 +19,23 @@ achievements, and leaderboards.
   using WebSocket-powered rooms.
 - **Twitch Integration** — Sign in with Twitch, race your
   chat, and show off your skins on stream.
-- **10 Unlockable Wolf Skins** — Earn skins from Gray Wolf to
-  Phantom Wolf through achievements and milestones.
+- **6 Wolf Skins** — Earn skins from Gray Wolf to
+  MrDemonWolf through achievements and milestones.
 - **16 Achievements** — Track your progress across score,
   distance, games played, skill, and social categories.
 - **Leaderboards** — Compete globally with anti-cheat
-  validated score submissions.
+  validated score submissions, per-difficulty filtering, and
+  time-period filters (daily/weekly/all-time).
 - **Difficulty Scaling** — Speed ramps from 300 to 800 px/s
   with narrowing obstacle gaps as you run further.
 - **Deterministic Multiplayer** — Seeded PRNG ensures all
   racers face the same obstacle layout.
+- **Audio System** — BGM tracks and SFX with adjustable
+  volume sliders.
+- **PWA Support** — Installable with offline support via
+  service worker.
+- **Admin Dashboard** — Player management, score moderation,
+  and race history for admins.
 
 ## Getting Started
 
@@ -141,6 +148,9 @@ bun dev
 - `bun typecheck` — Type-check all packages.
 - `bun lint` — Lint all packages.
 - `bun clean` — Remove all build artifacts.
+- `bun check` — Run ESLint + Prettier check.
+- `bun format` — Format all files with Prettier.
+- `bun format:check` — Check formatting without writing.
 - `bun ship` — Deploy API, web, and PartyKit to production.
 - `bun ship:api` — Deploy API to Cloudflare Workers.
 - `bun ship:web` — Deploy web app to Cloudflare Workers.
@@ -151,7 +161,7 @@ bun dev
 
 - Strict TypeScript with `strict: true` across all packages.
 - Vitest for unit and integration testing.
-- GitHub Actions CI runs typecheck and tests on every PR.
+- GitHub Actions CI runs typecheck, tests, lint, and format check on every PR.
 - tRPC for end-to-end type safety between API and frontend.
 
 ## Project Structure
@@ -169,8 +179,7 @@ fangdash/
 ├── .github/
 │   └── workflows/     # CI and deploy pipelines
 ├── turbo.json         # Turborepo task config
-├── tsconfig.base.json # Shared TypeScript config
-└── pnpm-workspace.yaml
+└── tsconfig.base.json # Shared TypeScript config
 ```
 
 ## License
