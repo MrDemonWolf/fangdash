@@ -1,8 +1,8 @@
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { admin } from "better-auth/plugins";
+import { eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/d1";
-import { and, eq } from "drizzle-orm";
 // biome-ignore lint/performance/noNamespaceImport: drizzle requires namespace import for schema
 import * as schema from "../db/schema.ts";
 
@@ -34,7 +34,7 @@ export function createAuth(env: AuthBindings) {
 
 	const db = drizzle(env.DB, { schema });
 
-	const isDev = env.ENVIRONMENT !== "production";
+	const isDev = env.ENVIRONMENT === "development";
 	const trustedOrigins = isDev
 		? ["http://localhost:3000", "https://fangdash.mrdemonwolf.workers.dev"]
 		: ["https://fangdash.mrdemonwolf.workers.dev"];
@@ -89,26 +89,23 @@ export function createAuth(env: AuthBindings) {
 			}),
 		],
 		databaseHooks: {
-			user: {
+			account: {
 				create: {
-					after: async (user) => {
-						if (!env.ADMIN_TWITCH_ID) return;
-						const adminIds = env.ADMIN_TWITCH_ID.split(",").map((id) => id.trim());
-						const acct = await db
-							.select()
-							.from(schema.account)
-							.where(
-								and(
-									eq(schema.account.userId, user.id),
-									eq(schema.account.providerId, "twitch"),
-								),
-							)
-							.get();
-						if (acct && adminIds.includes(acct.accountId)) {
+					after: async (account) => {
+						if (!env.ADMIN_TWITCH_ID) {
+							return;
+						}
+						if (account.providerId !== "twitch") {
+							return;
+						}
+						const adminIds = env.ADMIN_TWITCH_ID.split(",").map((id) =>
+							id.trim(),
+						);
+						if (adminIds.includes(account.accountId)) {
 							await db
 								.update(schema.user)
 								.set({ role: "admin" })
-								.where(eq(schema.user.id, user.id));
+								.where(eq(schema.user.id, account.userId));
 						}
 					},
 				},

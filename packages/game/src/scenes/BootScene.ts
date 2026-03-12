@@ -9,6 +9,8 @@ import { SKINS } from "@fangdash/shared/skins";
 import * as Phaser from "phaser";
 
 export class BootScene extends Phaser.Scene {
+	private failedAssets = new Set<string>();
+
 	constructor() {
 		super({ key: "BootScene" });
 	}
@@ -49,18 +51,23 @@ export class BootScene extends Phaser.Scene {
 		this.load.image("bg-trees", "/backgrounds/bg-trees.png");
 		this.load.image("ground", "/backgrounds/ground.png");
 
-		// Critical assets — if any fail, the game cannot run
-		const criticalAssets = ["wolf-gray", "obstacle-rock", "obstacle-log", "bg-sky", "ground"];
-
+		// Critical assets — built dynamically from skins, obstacles, and backgrounds
+		const criticalAssets = new Set<string>([
+			...SKINS.map((s) => s.spriteKey),
+			...OBSTACLE_TYPES.map((t) => `obstacle-${t}`),
+			"bg-sky",
+			"bg-hills",
+			"bg-trees",
+			"ground",
+		]);
 		// Silently ignore missing audio files so the game works without audio assets
 		this.load.on("loaderror", (file: Phaser.Loader.File) => {
-			if (file.type === "audio") return; // Audio is optional; continue without it
+			if (file.type === "audio") {
+				return; // Audio is optional; continue without it
+			}
 			console.error(`Failed to load asset: ${file.key} (${file.url})`);
-			if (criticalAssets.includes(file.key as string)) {
-				this.game.events.emit("boot-error", {
-					key: file.key,
-					message: "Failed to load game assets. Please check your connection and reload.",
-				});
+			if (criticalAssets.has(file.key as string)) {
+				this.failedAssets.add(file.key as string);
 			}
 		});
 
@@ -70,6 +77,17 @@ export class BootScene extends Phaser.Scene {
 	}
 
 	create() {
+		// Check if any critical assets failed to load
+		if (this.failedAssets && this.failedAssets.size > 0) {
+			const failed = [...this.failedAssets].join(", ");
+			this.game.events.emit("boot-error", {
+				key: failed,
+				message:
+					"Failed to load game assets. Please check your connection and reload.",
+			});
+			return;
+		}
+
 		// Start whichever game scene is registered (RaceScene or GameScene)
 		const target = this.scene.get("RaceScene") ? "RaceScene" : "GameScene";
 		this.scene.start(target);

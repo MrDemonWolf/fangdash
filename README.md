@@ -83,7 +83,7 @@ The web app runs at `http://localhost:3000` and the API at
 ### Prerequisites
 
 - Node.js >= 20
-- bun 10.x (`corepack enable`)
+- Bun >= 1.0 (see [bun.sh](https://bun.sh) for installation)
 - Cloudflare account (for D1 database and Workers deploys)
 - Twitch Developer application (for OAuth)
 
