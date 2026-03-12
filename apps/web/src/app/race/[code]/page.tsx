@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import type { GameState, RacePlayer, RaceResult, DebugState, DebugCommand } from "@fangdash/shared";
@@ -10,7 +11,7 @@ import { useIsDevOrAdmin } from "@/lib/use-role";
 import { useTRPC } from "@/lib/trpc";
 import { getSkinById } from "@fangdash/shared/skins";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { RaceConnection } from "@/lib/party";
+import { RaceConnection, type ConnectionState } from "@/lib/party";
 import { RaceResultModal } from "@/components/game/RaceResultModal";
 import { CountdownOverlay } from "@/components/game/CountdownOverlay";
 import DebugPanel from "@/components/game/DebugPanel";
@@ -45,6 +46,7 @@ export default function RaceRoomPage() {
     trpc.race.submitResult.mutationOptions({
       onError: (err) => {
         console.error("Failed to submit race result:", err);
+        toast.error("Failed to submit race result.");
       },
     })
   );
@@ -77,6 +79,12 @@ export default function RaceRoomPage() {
   const [elapsedTime, setElapsedTime] = useState(0);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const startTimeRef = useRef<number>(0);
+
+  // Connection state
+  const [connectionState, setConnectionState] = useState<ConnectionState>("connecting");
+
+  // Game error
+  const [gameError, setGameError] = useState<string | null>(null);
 
   // Debug
   const [debugState, setDebugState] = useState<DebugState | null>(null);
@@ -141,6 +149,7 @@ export default function RaceRoomPage() {
     async (seed: string) => {
       if (!containerRef.current) return;
 
+      try {
       const { createRaceGame, destroyGame } = await import("@fangdash/game");
 
       if (gameRef.current) {
@@ -155,6 +164,7 @@ export default function RaceRoomPage() {
         alive: true,
         speed: 0,
       });
+      setGameError(null);
 
       const connection = connectionRef.current;
 
@@ -173,6 +183,7 @@ export default function RaceRoomPage() {
         onPlayerDied: () => {
           connection?.sendDied();
         },
+        onError: (msg) => setGameError(msg),
         ...(isDevOrAdmin && {
           onDebugUpdate: (state: DebugState) => {
             setDebugState(state);
@@ -190,8 +201,12 @@ export default function RaceRoomPage() {
           (raceScene as { beginRace: () => void }).beginRace();
         }
       }, 100);
+      } catch (err) {
+        console.error("Failed to start race game:", err);
+        setGameError("Failed to start game. Please reload and try again.");
+      }
     },
-    [equippedSkin, players, myId, handleGameOver, startTimer]
+    [equippedSkin, players, myId, handleGameOver, startTimer, isDevOrAdmin]
   );
 
   // ── Connect to PartyKit ──
@@ -199,7 +214,20 @@ export default function RaceRoomPage() {
     if (!isSignedIn || !session?.user) return;
 
     hasJoinedRef.current = false;
-    const connection = new RaceConnection({ roomCode });
+    let wasDisconnected = false;
+    const connection = new RaceConnection({
+      roomCode,
+      onConnectionStateChange: (state) => {
+        setConnectionState(state);
+        if (state === "disconnected" || state === "error") {
+          wasDisconnected = true;
+        }
+        if (state === "connected" && wasDisconnected) {
+          wasDisconnected = false;
+          toast.success("Reconnected to race room.");
+        }
+      },
+    });
     connectionRef.current = connection;
 
     connection.on("room_state", (room) => {
@@ -595,7 +623,46 @@ export default function RaceRoomPage() {
         <div
           ref={containerRef}
           className="aspect-[4/3] w-full overflow-hidden rounded-xl border border-[#0FACED]/20"
+          style={{ touchAction: "none" }}
         />
+
+        {/* Connection lost overlay */}
+        {(connectionState === "disconnected" || connectionState === "error") && phase === "racing" && (
+          <div className="absolute inset-0 flex items-center justify-center bg-[#091533]/80 z-40 rounded-xl">
+            <div className="w-full max-w-xs rounded-xl border border-yellow-500/30 bg-[#091533] p-6 text-center shadow-2xl mx-4">
+              <div className="mb-3 text-3xl">⚡</div>
+              <h2 className="mb-1 text-lg font-bold text-white">Connection Lost</h2>
+              <p className="mb-4 text-sm text-white/50">
+                Attempting to reconnect…
+              </p>
+              <button
+                type="button"
+                onClick={() => { connectionRef.current?.disconnect(); router.push("/race"); }}
+                className="rounded-lg border border-white/10 px-5 py-2 text-sm font-medium text-white/60 transition-colors hover:border-white/20 hover:text-white"
+              >
+                Leave Race
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Game load error overlay */}
+        {gameError && (
+          <div className="absolute inset-0 flex items-center justify-center bg-[#091533]/90 z-50 rounded-xl">
+            <div className="w-full max-w-xs rounded-xl border border-red-500/30 bg-[#091533] p-6 text-center shadow-2xl mx-4">
+              <div className="mb-3 text-3xl">⚠</div>
+              <h2 className="mb-1 text-lg font-bold text-white">Failed to load game</h2>
+              <p className="mb-4 text-sm text-white/50">{gameError}</p>
+              <button
+                type="button"
+                onClick={() => window.location.reload()}
+                className="rounded-lg bg-[#0FACED] px-5 py-2 text-sm font-bold text-[#091533] transition-colors hover:bg-[#0FACED]/80"
+              >
+                Reload Page
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Countdown overlay */}
         {phase === "countdown" && (

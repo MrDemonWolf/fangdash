@@ -1,7 +1,9 @@
 import type { Metadata, Viewport } from "next";
+import { Toaster } from "sonner";
 import { Providers } from "./providers";
 import { Navbar } from "@/components/ui/Navbar";
 import { ServiceWorkerRegistration } from "@/components/ServiceWorkerRegistration";
+import { PWAInstallBanner } from "@/components/PWAInstallBanner";
 import { SITE_URL } from "@/lib/site-config";
 import "./globals.css";
 
@@ -57,7 +59,9 @@ export default function RootLayout({
       <body className="bg-[var(--color-fang-darker)] text-white min-h-screen">
         <Providers>
           <ServiceWorkerRegistration />
+          <Toaster position="top-right" theme="dark" richColors />
           <Navbar />
+          <PWAInstallBanner />
           {children}
         </Providers>
       </body>

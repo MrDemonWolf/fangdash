@@ -3,6 +3,7 @@ import { scoreRouter } from "./routers/score";
 import { skinRouter } from "./routers/skin";
 import { achievementRouter } from "./routers/achievement";
 import { raceRouter } from "./routers/race";
+import { adminRouter } from "./routers/admin";
 
 export const appRouter = router({
   health: publicProcedure.query(() => {
@@ -12,6 +13,7 @@ export const appRouter = router({
   skin: skinRouter,
   achievement: achievementRouter,
   race: raceRouter,
+  admin: adminRouter,
 });
 
 export type AppRouter = typeof appRouter;

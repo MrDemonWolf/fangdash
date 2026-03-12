@@ -3,26 +3,41 @@ title: Scoring
 description: How scores are calculated and validated in FangDash.
 ---
 
+<Callout type="info">
+**TL;DR**
+- Earn 10 pts/sec for surviving + 50 pts per obstacle cleared
+- All scores are validated server-side against the theoretical maximum
+- Invalid scores are automatically rejected
+</Callout>
+
 ## Score Formula
 
-Your score in FangDash is calculated from two sources:
+Your score comes from two sources:
 
-- **Time survived** — 10 points per second
-- **Obstacles cleared** — 50 points per obstacle dodged
+| Source | Points |
+| --- | --- |
+| **Time survived** | 10 points per second |
+| **Obstacles cleared** | 50 points per obstacle dodged |
 
-Your total score is the sum of both. Distance is also tracked separately at a reduced multiplier for achievements and leaderboard stats.
+Your total score is the sum of both. Distance is tracked separately for achievements and leaderboard stats.
 
 ## Score Validation
 
-FangDash uses server-side anti-cheat validation. When you submit a score:
+FangDash uses **server-side anti-cheat validation**. When you submit a score:
 
-1. The server checks that your score does not exceed 15 points per second (the maximum theoretical rate)
-2. Scores that exceed this limit are automatically rejected
-3. Your score, distance, and duration are all recorded for verification
-4. After a valid score is saved, the server automatically checks for any newly earned achievements and skin unlocks
+<Steps>
+<Step>The server checks that your score does not exceed `(seconds × 10) + (obstacles × 50)` — the maximum possible for the given run duration and obstacle count</Step>
+<Step>Scores above this limit are automatically rejected</Step>
+<Step>Your score, distance, and duration are all recorded for verification</Step>
+<Step>After a valid score is saved, the server automatically checks for newly earned achievements and skin unlocks</Step>
+</Steps>
+
+<Callout type="warn">
+Submitted scores that exceed the theoretical maximum for your run duration and obstacle count will be silently rejected. No error is shown — the score simply won't appear on the leaderboard.
+</Callout>
 
 ## Leaderboards
 
-The global leaderboard shows the top scores across all players. Your personal best scores are also tracked on your profile.
+The **global leaderboard** shows the top scores across all players. Your personal best scores are tracked on your profile.
 
 Leaderboard rankings update in real-time as new scores are submitted.
