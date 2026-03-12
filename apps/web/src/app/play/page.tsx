@@ -1,400 +1,434 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
-import OnboardingOverlay from "@/components/game/OnboardingOverlay";
-import DebugPanel from "@/components/game/DebugPanel";
-import { GameHUD } from "@/components/game/GameHUD";
-import { GameOverModal } from "@/components/game/GameOverModal";
-import { PlayMenu } from "@/components/game/PlayMenu";
-import { PlayMainMenu } from "@/components/game/PlayMainMenu";
-import type { GameState, DebugState, DebugCommand } from "@fangdash/shared";
-import type { DebugChannel, AudioChannel, GameChannel } from "@fangdash/game";
-import { CountdownOverlay } from "@/components/game/CountdownOverlay";
-import { useSession, signIn, signOut } from "@/lib/auth-client";
-import { useIsDevOrAdmin } from "@/lib/use-role";
-import { useTRPC } from "@/lib/trpc";
+import type { AudioChannel, DebugChannel, GameChannel } from "@fangdash/game";
+import type { DebugCommand, DebugState, GameState } from "@fangdash/shared";
 import { getSkinById } from "@fangdash/shared/skins";
 import { useMutation, useQuery } from "@tanstack/react-query";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { CountdownOverlay } from "@/components/game/CountdownOverlay.tsx";
+import DebugPanel from "@/components/game/DebugPanel.tsx";
+import { GameHUD } from "@/components/game/GameHUD.tsx";
+import { GameOverModal } from "@/components/game/GameOverModal.tsx";
+import OnboardingOverlay from "@/components/game/OnboardingOverlay.tsx";
+import { PlayMainMenu } from "@/components/game/PlayMainMenu.tsx";
+import { PlayMenu } from "@/components/game/PlayMenu.tsx";
+import { signIn, signOut, useSession } from "@/lib/auth-client.ts";
+import { useTRPC } from "@/lib/trpc.ts";
+import { useIsDevOrAdmin } from "@/lib/use-role.ts";
 
 // ---------------------------------------------------------------------------
 // Main Play Page
 // ---------------------------------------------------------------------------
+// biome-ignore lint/style/noDefaultExport: required by Next.js
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: complex page component
 export default function PlayPage() {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const gameRef = useRef<any>(null);
-  const debugRef = useRef<DebugChannel | null>(null);
-  const audioRef = useRef<AudioChannel | null>(null);
-  const gameChannelRef = useRef<GameChannel | null>(null);
-  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const countdownTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const startTimeRef = useRef<number>(0);
+	const containerRef = useRef<HTMLDivElement>(null);
+	// biome-ignore lint/suspicious/noExplicitAny: Phaser game instance ref
+	const gameRef = useRef<any>(null);
+	const debugRef = useRef<DebugChannel | null>(null);
+	const audioRef = useRef<AudioChannel | null>(null);
+	const gameChannelRef = useRef<GameChannel | null>(null);
+	const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+	const countdownTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+	const startTimeRef = useRef<number>(0);
 
-  const [gameState, setGameState] = useState<GameState>({
-    score: 0,
-    distance: 0,
-    obstaclesCleared: 0,
-    alive: true,
-    speed: 0,
-  });
-  const [elapsedTime, setElapsedTime] = useState(0);
-  const [gameOver, setGameOver] = useState(false);
-  const [finalState, setFinalState] = useState<GameState | null>(null);
-  const [finalElapsedTime, setFinalElapsedTime] = useState(0);
-  const [showOnboarding, setShowOnboarding] = useState<boolean | null>(null);
-  const [debugState, setDebugState] = useState<DebugState | null>(null);
-  const [gameKey, setGameKey] = useState(0);
-  const [audioMuted, setAudioMuted] = useState(false);
-  const [audioVolume, setAudioVolume] = useState(0.5);
-  const [countdown, setCountdown] = useState<number | null>(null);
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [showMenu, setShowMenu] = useState(true);
-  const [selectedDifficulty, setSelectedDifficulty] = useState("easy");
+	const [gameState, setGameState] = useState<GameState>({
+		score: 0,
+		distance: 0,
+		obstaclesCleared: 0,
+		alive: true,
+		speed: 0,
+	});
+	const [elapsedTime, setElapsedTime] = useState(0);
+	const [gameOver, setGameOver] = useState(false);
+	const [finalState, setFinalState] = useState<GameState | null>(null);
+	const [finalElapsedTime, setFinalElapsedTime] = useState(0);
+	const [showOnboarding, setShowOnboarding] = useState<boolean | null>(null);
+	const [debugState, setDebugState] = useState<DebugState | null>(null);
+	const [gameKey, setGameKey] = useState(0);
+	const [audioMuted, setAudioMuted] = useState(false);
+	const [audioVolume, setAudioVolume] = useState(0.5);
+	const [countdown, setCountdown] = useState<number | null>(null);
+	const [menuOpen, setMenuOpen] = useState(false);
+	const [showMenu, setShowMenu] = useState(true);
+	const [selectedDifficulty, setSelectedDifficulty] = useState("easy");
+	const selectedDifficultyRef = useRef("easy");
 
-  const { data: session, isPending: sessionPending } = useSession();
-  const isSignedIn = !!session?.user;
-  const isDevOrAdmin = useIsDevOrAdmin();
+	// Keep ref in sync so countdown callback reads latest value
+	selectedDifficultyRef.current = selectedDifficulty;
 
-  // Fetch equipped skin (only when signed in)
-  const trpc = useTRPC();
-  const { data: skinData } = useQuery(
-    trpc.skin.getEquippedSkin.queryOptions(undefined, {
-      enabled: isSignedIn,
-    })
-  );
+	const { data: session, isPending: sessionPending } = useSession();
+	const isSignedIn = !!session?.user;
+	const isDevOrAdmin = useIsDevOrAdmin();
 
-  // Fetch best score (only when signed in)
-  const { data: myScores } = useQuery(
-    trpc.score.myScores.queryOptions(undefined, {
-      enabled: isSignedIn,
-    })
-  );
-  const bestScore = myScores?.[0]?.score ?? 0;
+	// Fetch equipped skin (only when signed in)
+	const trpc = useTRPC();
+	const { data: skinData } = useQuery(
+		trpc.skin.getEquippedSkin.queryOptions(undefined, {
+			enabled: isSignedIn,
+		}),
+	);
 
-  const equippedSkinKey = skinData?.skinId
-    ? getSkinById(skinData.skinId)?.spriteKey ?? "wolf-gray"
-    : "wolf-gray";
+	// Fetch best score (only when signed in)
+	const { data: myScores } = useQuery(
+		trpc.score.myScores.queryOptions(undefined, {
+			enabled: isSignedIn,
+		}),
+	);
+	const bestScore = myScores?.[0]?.score ?? 0;
 
-  // Score submission mutation
-  const {
-    mutate: submitScore,
-    data: submitResult,
-    isPending: submitting,
-    error: submitError,
-  } = useMutation(
-    trpc.score.submit.mutationOptions({
-      onError: (err) => {
-        console.error("Failed to submit score:", err);
-      },
-    })
-  );
+	const equippedSkinKey = skinData?.skinId
+		? (getSkinById(skinData.skinId)?.spriteKey ?? "wolf-gray")
+		: "wolf-gray";
 
-  const stopTimer = useCallback(() => {
-    if (timerRef.current) {
-      clearInterval(timerRef.current);
-      timerRef.current = null;
-    }
-  }, []);
+	// Score submission mutation
+	const {
+		mutate: submitScore,
+		data: submitResult,
+		isPending: submitting,
+		error: submitError,
+	} = useMutation(
+		trpc.score.submit.mutationOptions({
+			onError: (err) => {
+				console.error("Failed to submit score:", err);
+			},
+		}),
+	);
 
-  const startTimer = useCallback(() => {
-    stopTimer();
-    startTimeRef.current = Date.now();
-    setElapsedTime(0);
-    timerRef.current = setInterval(() => {
-      setElapsedTime(Date.now() - startTimeRef.current);
-    }, 100);
-  }, [stopTimer]);
+	const stopTimer = useCallback(() => {
+		if (timerRef.current) {
+			clearInterval(timerRef.current);
+			timerRef.current = null;
+		}
+	}, []);
 
-  const startCountdown = useCallback(() => {
-    if (countdownTimerRef.current) clearInterval(countdownTimerRef.current);
-    setCountdown(5);
-    let remaining = 5;
-    countdownTimerRef.current = setInterval(() => {
-      remaining -= 1;
-      setCountdown(remaining);
-      if (remaining <= 0) {
-        clearInterval(countdownTimerRef.current!);
-        countdownTimerRef.current = null;
-        // Show "GO!" briefly then launch
-        setTimeout(() => {
-          gameChannelRef.current?.start();
-          startTimer();
-          setCountdown(null);
-        }, 700);
-      }
-    }, 1000);
-  }, [startTimer]);
+	const startTimer = useCallback(() => {
+		stopTimer();
+		startTimeRef.current = Date.now();
+		setElapsedTime(0);
+		timerRef.current = setInterval(() => {
+			setElapsedTime(Date.now() - startTimeRef.current);
+		}, 100);
+	}, [stopTimer]);
 
-  const handleGameOver = useCallback(
-    (state: GameState) => {
-      stopTimer();
-      const duration = Date.now() - startTimeRef.current;
-      setFinalState(state);
-      setFinalElapsedTime(duration);
-      setGameOver(true);
+	const startCountdown = useCallback(() => {
+		if (countdownTimerRef.current) {
+			clearInterval(countdownTimerRef.current);
+		}
+		setCountdown(5);
+		let remaining = 5;
+		countdownTimerRef.current = setInterval(() => {
+			remaining -= 1;
+			setCountdown(remaining);
+			if (remaining <= 0) {
+				// biome-ignore lint/style/noNonNullAssertion: ref is set before use
+				clearInterval(countdownTimerRef.current!);
+				countdownTimerRef.current = null;
+				// Show "GO!" briefly then launch
+				setTimeout(() => {
+					gameChannelRef.current?.start(selectedDifficultyRef.current);
+					startTimer();
+					setCountdown(null);
+				}, 700);
+			}
+		}, 1000);
+	}, [startTimer]);
 
-      if (isSignedIn) {
-        submitScore({
-          score: state.score,
-          distance: state.distance,
-          obstaclesCleared: state.obstaclesCleared,
-          duration,
-          seed: Date.now().toString(),
-        });
-      }
-    },
-    [isSignedIn, stopTimer, submitScore]
-  );
+	const handleGameOver = useCallback(
+		(state: GameState) => {
+			stopTimer();
+			const duration = Date.now() - startTimeRef.current;
+			setFinalState(state);
+			setFinalElapsedTime(duration);
+			setGameOver(true);
 
-  const startGame = useCallback(async () => {
-    if (!containerRef.current) return;
-    setGameKey((k) => k + 1);
-    setDebugState(null);
+			if (isSignedIn) {
+				submitScore({
+					score: state.score,
+					distance: state.distance,
+					obstaclesCleared: state.obstaclesCleared,
+					duration,
+					seed: Date.now().toString(),
+				});
+			}
+		},
+		[isSignedIn, stopTimer, submitScore],
+	);
 
-    // Dynamically import Phaser game (not available during SSR)
-    const { createGame, destroyGame } = await import("@fangdash/game");
+	const startGame = useCallback(async () => {
+		if (!containerRef.current) {
+			return;
+		}
+		setGameKey((k) => k + 1);
+		setDebugState(null);
 
-    // Clean up previous game
-    if (gameRef.current) {
-      destroyGame(gameRef.current);
-      gameRef.current = null;
-    }
+		// Dynamically import Phaser game (not available during SSR)
+		const { createGame, destroyGame } = await import("@fangdash/game");
 
-    // Reset state
-    setGameOver(false);
-    setFinalState(null);
-    setFinalElapsedTime(0);
-    setGameState({
-      score: 0,
-      distance: 0,
-      obstaclesCleared: 0,
-      alive: true,
-      speed: 0,
-    });
+		// Clean up previous game
+		if (gameRef.current) {
+			destroyGame(gameRef.current);
+			gameRef.current = null;
+		}
 
-    const { game, debug, audio, gameChannel } = createGame({
-      parent: containerRef.current,
-      skinKey: equippedSkinKey,
-      startDifficulty: selectedDifficulty,
-      onStateUpdate: (state) => {
-        setGameState(state);
-      },
-      onGameOver: handleGameOver,
-      onDebugUpdate: (state: DebugState) => {
-        setDebugState(state);
-      },
-    });
+		// Reset state
+		setGameOver(false);
+		setFinalState(null);
+		setFinalElapsedTime(0);
+		setGameState({
+			score: 0,
+			distance: 0,
+			obstaclesCleared: 0,
+			alive: true,
+			speed: 0,
+		});
 
-    gameRef.current = game;
-    debugRef.current = debug;
-    audioRef.current = audio;
-    gameChannelRef.current = gameChannel;
-    setAudioMuted(audio.getMuted());
-    setAudioVolume(audio.getVolume());
-    // Start in preview mode (background scrolls, no gameplay)
-    gameChannel.preview();
-  }, [equippedSkinKey, selectedDifficulty, handleGameOver]);
+		const { game, debug, audio, gameChannel } = createGame({
+			parent: containerRef.current,
+			skinKey: equippedSkinKey,
+			onStateUpdate: (state) => {
+				setGameState(state);
+			},
+			onGameOver: handleGameOver,
+			onDebugUpdate: (state: DebugState) => {
+				setDebugState(state);
+			},
+		});
 
-  // Check onboarding status on mount
-  useEffect(() => {
-    const done = localStorage.getItem("fangdash_onboarding_complete");
-    setShowOnboarding(done !== "true");
-  }, []);
+		gameRef.current = game;
+		debugRef.current = debug;
+		audioRef.current = audio;
+		gameChannelRef.current = gameChannel;
+		setAudioMuted(audio.getMuted());
+		setAudioVolume(audio.getVolume());
+		// Start in preview mode (background scrolls, no gameplay)
+		gameChannel.preview();
+	}, [equippedSkinKey, handleGameOver]);
 
-  const handleToggleMute = useCallback(() => {
-    const a = audioRef.current;
-    if (!a) return;
-    const newMuted = !a.getMuted();
-    a.setMuted(newMuted);
-    setAudioMuted(newMuted);
-  }, []);
+	// Check onboarding status on mount
+	useEffect(() => {
+		const done = localStorage.getItem("fangdash_onboarding_complete");
+		setShowOnboarding(done !== "true");
+	}, []);
 
-  const handleVolumeChange = useCallback((v: number) => {
-    const a = audioRef.current;
-    if (!a) return;
-    a.setVolume(v);
-    setAudioVolume(v);
-    if (v > 0 && a.getMuted()) {
-      a.setMuted(false);
-      setAudioMuted(false);
-    }
-  }, []);
+	const handleToggleMute = useCallback(() => {
+		const a = audioRef.current;
+		if (!a) {
+			return;
+		}
+		const newMuted = !a.getMuted();
+		a.setMuted(newMuted);
+		setAudioMuted(newMuted);
+	}, []);
 
-  const handleDebugCommand = useCallback((command: DebugCommand) => {
-    debugRef.current?.sendCommand(command);
-  }, []);
+	const handleVolumeChange = useCallback((v: number) => {
+		const a = audioRef.current;
+		if (!a) {
+			return;
+		}
+		a.setVolume(v);
+		setAudioVolume(v);
+		if (v > 0 && a.getMuted()) {
+			a.setMuted(false);
+			setAudioMuted(false);
+		}
+	}, []);
 
-  const openMenu = useCallback(() => {
-    gameChannelRef.current?.pause();
-    setMenuOpen(true);
-  }, []);
+	const handleDebugCommand = useCallback((command: DebugCommand) => {
+		debugRef.current?.sendCommand(command);
+	}, []);
 
-  const closeMenu = useCallback(() => {
-    setMenuOpen(false);
-    gameChannelRef.current?.resume();
-  }, []);
+	const openMenu = useCallback(() => {
+		gameChannelRef.current?.pause();
+		setMenuOpen(true);
+	}, []);
 
-  const handleOnboardingComplete = useCallback(() => {
-    localStorage.setItem("fangdash_onboarding_complete", "true");
-    setShowOnboarding(false);
-  }, []);
+	const closeMenu = useCallback(() => {
+		setMenuOpen(false);
+		gameChannelRef.current?.resume();
+	}, []);
 
-  // Start game on mount (wait for skin data if signed in, wait for onboarding)
-  const hasInitialized = useRef(false);
-  useEffect(() => {
-    if (hasInitialized.current) return;
-    // Wait for onboarding check to complete
-    if (showOnboarding === null) return;
-    // Don't start if onboarding is showing
-    if (showOnboarding) return;
-    // If signed in, wait for skin data before starting
-    if (isSignedIn && !skinData) return;
+	const handleOnboardingComplete = useCallback(() => {
+		localStorage.setItem("fangdash_onboarding_complete", "true");
+		setShowOnboarding(false);
+	}, []);
 
-    hasInitialized.current = true;
-    startGame();
-  }, [isSignedIn, skinData, startGame, showOnboarding]);
+	// Start game on mount (wait for skin data if signed in, wait for onboarding)
+	const hasInitialized = useRef(false);
+	useEffect(() => {
+		if (hasInitialized.current) {
+			return;
+		}
+		// Wait for onboarding check to complete
+		if (showOnboarding === null) {
+			return;
+		}
+		// Don't start if onboarding is showing
+		if (showOnboarding) {
+			return;
+		}
+		// If signed in, wait for skin data before starting
+		if (isSignedIn && !skinData) {
+			return;
+		}
 
-  // Clean up on unmount
-  useEffect(() => {
-    return () => {
-      if (countdownTimerRef.current) clearInterval(countdownTimerRef.current);
-      stopTimer();
-      if (gameRef.current) {
-        import("@fangdash/game").then(({ destroyGame }) => {
-          if (gameRef.current) {
-            destroyGame(gameRef.current);
-            gameRef.current = null;
-          }
-        });
-      }
-    };
-  }, [stopTimer]);
+		hasInitialized.current = true;
+		startGame();
+	}, [isSignedIn, skinData, startGame, showOnboarding]);
 
-  // Escape key toggles menu (only when game is running, not during countdown or game over)
-  useEffect(() => {
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key !== "Escape") return;
-      if (gameOver || countdown !== null || showMenu) return;
-      if (menuOpen) {
-        closeMenu();
-      } else {
-        openMenu();
-      }
-    };
-    window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
-  }, [gameOver, countdown, menuOpen, showMenu, openMenu, closeMenu]);
+	// Clean up on unmount
+	useEffect(() => {
+		return () => {
+			if (countdownTimerRef.current) {
+				clearInterval(countdownTimerRef.current);
+			}
+			stopTimer();
+			if (gameRef.current) {
+				import("@fangdash/game").then(({ destroyGame }) => {
+					if (gameRef.current) {
+						destroyGame(gameRef.current);
+						gameRef.current = null;
+					}
+				});
+			}
+		};
+	}, [stopTimer]);
 
-  const handleRetrySubmit = useCallback(() => {
-    if (!finalState) return;
-    submitScore({
-      score: finalState.score,
-      distance: finalState.distance,
-      obstaclesCleared: finalState.obstaclesCleared,
-      duration: finalElapsedTime,
-      seed: Date.now().toString(),
-    });
-  }, [finalState, finalElapsedTime, submitScore]);
+	// Escape key toggles menu (only when game is running, not during countdown or game over)
+	useEffect(() => {
+		const onKeyDown = (e: KeyboardEvent) => {
+			if (e.key !== "Escape") {
+				return;
+			}
+			if (gameOver || countdown !== null || showMenu) {
+				return;
+			}
+			if (menuOpen) {
+				closeMenu();
+			} else {
+				openMenu();
+			}
+		};
+		window.addEventListener("keydown", onKeyDown);
+		return () => window.removeEventListener("keydown", onKeyDown);
+	}, [gameOver, countdown, menuOpen, showMenu, openMenu, closeMenu]);
 
-  const handleSignIn = useCallback(() => {
-    signIn.social({ provider: "twitch", callbackURL: window.location.href });
-  }, []);
+	const handleRetrySubmit = useCallback(() => {
+		if (!finalState) {
+			return;
+		}
+		submitScore({
+			score: finalState.score,
+			distance: finalState.distance,
+			obstaclesCleared: finalState.obstaclesCleared,
+			duration: finalElapsedTime,
+			seed: Date.now().toString(),
+		});
+	}, [finalState, finalElapsedTime, submitScore]);
 
-  const handleSignOut = useCallback(() => {
-    signOut();
-  }, []);
+	const handleSignIn = useCallback(() => {
+		signIn.social({ provider: "twitch", callbackURL: window.location.href });
+	}, []);
 
-  const handleStartPlay = useCallback(() => {
-    setShowMenu(false);
-    startCountdown();
-  }, [startCountdown]);
+	const handleSignOut = useCallback(() => {
+		signOut();
+	}, []);
 
-  const handleRestart = useCallback(() => {
-    setShowMenu(true);
-    hasInitialized.current = false;
-    startGame();
-    hasInitialized.current = true;
-  }, [startGame]);
+	const handleStartPlay = useCallback(() => {
+		setShowMenu(false);
+		startCountdown();
+	}, [startCountdown]);
 
-  return (
-    <main className="flex flex-col bg-[#091533]">
-      <div className="relative w-full h-dvh">
-        {/* HUD overlay */}
-        {!gameOver && !showMenu && (
-          <GameHUD
-            score={gameState.score}
-            distance={gameState.distance}
-            elapsedTime={elapsedTime}
-            muted={audioMuted}
-            volume={audioVolume}
-            onToggleMute={handleToggleMute}
-            onVolumeChange={handleVolumeChange}
-            onOpenMenu={countdown === null ? openMenu : undefined}
-          />
-        )}
+	const handleRestart = useCallback(() => {
+		setShowMenu(true);
+		hasInitialized.current = false;
+		startGame();
+		hasInitialized.current = true;
+	}, [startGame]);
 
-        {/* Game canvas container */}
-        <div
-          ref={containerRef}
-          className="w-full h-full overflow-hidden bg-[#0f0f1a]"
-        />
+	return (
+		<main className="flex flex-col bg-[#091533]">
+			<div className="relative w-full h-dvh">
+				{/* HUD overlay */}
+				{!(gameOver || showMenu) && (
+					<GameHUD
+						score={gameState.score}
+						distance={gameState.distance}
+						elapsedTime={elapsedTime}
+						muted={audioMuted}
+						volume={audioVolume}
+						onToggleMute={handleToggleMute}
+						onVolumeChange={handleVolumeChange}
+						onOpenMenu={countdown === null ? openMenu : undefined}
+					/>
+				)}
 
-        {/* Countdown overlay */}
-        {countdown !== null && <CountdownOverlay seconds={countdown} />}
+				{/* Game canvas container */}
+				<div
+					ref={containerRef}
+					className="w-full h-full overflow-hidden bg-[#0f0f1a]"
+				/>
 
-        {/* Main menu overlay */}
-        {showMenu && (
-          <PlayMainMenu
-            onPlay={handleStartPlay}
-            skinKey={equippedSkinKey}
-            isSignedIn={isSignedIn}
-            bestScore={bestScore}
-            selectedDifficulty={selectedDifficulty}
-            onSelectDifficulty={setSelectedDifficulty}
-            userName={session?.user?.name ?? undefined}
-            userImage={session?.user?.image ?? undefined}
-            isPending={sessionPending}
-            onSignIn={handleSignIn}
-            onSignOut={handleSignOut}
-          />
-        )}
+				{/* Countdown overlay */}
+				{countdown !== null && <CountdownOverlay seconds={countdown} />}
 
-        {/* Play menu overlay */}
-        {menuOpen && !gameOver && (
-          <PlayMenu
-            onClose={closeMenu}
-            muted={audioMuted}
-            volume={audioVolume}
-            onToggleMute={handleToggleMute}
-            onVolumeChange={handleVolumeChange}
-            isSignedIn={isSignedIn}
-          />
-        )}
+				{/* Main menu overlay */}
+				{showMenu && (
+					<PlayMainMenu
+						onPlay={handleStartPlay}
+						skinKey={equippedSkinKey}
+						isSignedIn={isSignedIn}
+						bestScore={bestScore}
+						selectedDifficulty={selectedDifficulty}
+						onSelectDifficulty={setSelectedDifficulty}
+						userName={session?.user?.name ?? undefined}
+						userImage={session?.user?.image ?? undefined}
+						isPending={sessionPending}
+						onSignIn={handleSignIn}
+						onSignOut={handleSignOut}
+					/>
+				)}
 
-        {/* Onboarding overlay */}
-        {showOnboarding && (
-          <OnboardingOverlay onComplete={handleOnboardingComplete} />
-        )}
+				{/* Play menu overlay */}
+				{menuOpen && !gameOver && (
+					<PlayMenu
+						onClose={closeMenu}
+						muted={audioMuted}
+						volume={audioVolume}
+						onToggleMute={handleToggleMute}
+						onVolumeChange={handleVolumeChange}
+						isSignedIn={isSignedIn}
+					/>
+				)}
 
-        {/* Game Over modal */}
-        {gameOver && finalState && (
-          <GameOverModal
-            state={finalState}
-            elapsedTime={finalElapsedTime}
-            onRestart={handleRestart}
-            submitting={submitting}
-            submitResult={submitResult ?? null}
-            submitError={submitError}
-            isSignedIn={isSignedIn}
-            onRetrySubmit={isSignedIn ? handleRetrySubmit : undefined}
-          />
-        )}
+				{/* Onboarding overlay */}
+				{showOnboarding && (
+					<OnboardingOverlay onComplete={handleOnboardingComplete} />
+				)}
 
-      </div>
+				{/* Game Over modal */}
+				{gameOver && finalState && (
+					<GameOverModal
+						state={finalState}
+						elapsedTime={finalElapsedTime}
+						onRestart={handleRestart}
+						submitting={submitting}
+						submitResult={submitResult ?? null}
+						submitError={submitError}
+						isSignedIn={isSignedIn}
+						onRetrySubmit={isSignedIn ? handleRetrySubmit : undefined}
+					/>
+				)}
+			</div>
 
-      {/* Debug Panel (dev/admin only, Ctrl+Shift+D) */}
-      {isDevOrAdmin && (
-        <DebugPanel debugState={debugState} onSendCommand={handleDebugCommand} gameKey={gameKey} />
-      )}
-    </main>
-  );
+			{/* Debug Panel (dev/admin only, Ctrl+Shift+D) */}
+			{isDevOrAdmin && (
+				<DebugPanel
+					debugState={debugState}
+					onSendCommand={handleDebugCommand}
+					gameKey={gameKey}
+				/>
+			)}
+		</main>
+	);
 }
