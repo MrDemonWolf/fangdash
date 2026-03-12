@@ -1,0 +1,9 @@
+# ── Required ──────────────────────────────────────────────
+BETTER_AUTH_SECRET=change-me-to-a-long-random-string-32-chars
+BETTER_AUTH_URL=http://localhost:8787
+TWITCH_CLIENT_ID=your_twitch_client_id_here
+TWITCH_CLIENT_SECRET=your_twitch_client_secret_here
+
+# ── Optional ──────────────────────────────────────────────
+# Comma-separated Twitch numeric user IDs to auto-promote to admin on first login
+# ADMIN_TWITCH_ID=123456789,987654321

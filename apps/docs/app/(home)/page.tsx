@@ -44,7 +44,7 @@ const features = [
 
 const stats = [
   { icon: Layers, value: "6", label: "Wolf Skins" },
-  { icon: Target, value: "17", label: "Achievements" },
+  { icon: Target, value: "16", label: "Achievements" },
   { icon: Zap, value: "5", label: "Difficulty Tiers" },
 ];
 
