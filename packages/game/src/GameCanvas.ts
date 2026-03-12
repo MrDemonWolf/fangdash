@@ -59,6 +59,50 @@ export interface RaceCanvasResult {
 	audio: AudioChannel;
 }
 
+function createAudioChannel(game: Phaser.Game, sceneName: string): AudioChannel {
+	return {
+		setVolume: (v: number) => {
+			const scene = game.scene.getScene(sceneName) as GameScene;
+			scene?.audioManager?.setVolume(v);
+		},
+		getVolume: () => {
+			const scene = game.scene.getScene(sceneName) as GameScene;
+			if (scene?.audioManager) {
+				return scene.audioManager.volume;
+			}
+			// Fallback: read from localStorage before scene is ready
+			try {
+				const stored = localStorage.getItem("fangdash_volume");
+				if (stored !== null) {
+					const v = Number.parseFloat(stored);
+					if (!Number.isNaN(v)) {
+						return v;
+					}
+				}
+			} catch {
+				/* ignore */
+			}
+			return 0.5;
+		},
+		setMuted: (m: boolean) => {
+			const scene = game.scene.getScene(sceneName) as GameScene;
+			scene?.audioManager?.setMuted(m);
+		},
+		getMuted: () => {
+			const scene = game.scene.getScene(sceneName) as GameScene;
+			if (scene?.audioManager) {
+				return scene.audioManager.muted;
+			}
+			// Fallback: read from localStorage before scene is ready
+			try {
+				return localStorage.getItem("fangdash_muted") === "true";
+			} catch {
+				return false;
+			}
+		},
+	};
+}
+
 function createPhaserConfig(
 	parent: HTMLElement,
 	scenes: Phaser.Types.Scenes.SceneType[],
@@ -126,47 +170,7 @@ export function createGame(options: GameCanvasOptions): GameCanvasResult {
 		},
 	};
 
-	const audio: AudioChannel = {
-		setVolume: (v: number) => {
-			const gameScene = game.scene.getScene("GameScene") as GameScene;
-			gameScene?.audioManager?.setVolume(v);
-		},
-		getVolume: () => {
-			const gameScene = game.scene.getScene("GameScene") as GameScene;
-			if (gameScene?.audioManager) {
-				return gameScene.audioManager.volume;
-			}
-			// Fallback: read from localStorage before scene is ready
-			try {
-				const stored = localStorage.getItem("fangdash_volume");
-				if (stored !== null) {
-					const v = Number.parseFloat(stored);
-					if (!Number.isNaN(v)) {
-						return v;
-					}
-				}
-			} catch {
-				/* ignore */
-			}
-			return 0.5;
-		},
-		setMuted: (m: boolean) => {
-			const gameScene = game.scene.getScene("GameScene") as GameScene;
-			gameScene?.audioManager?.setMuted(m);
-		},
-		getMuted: () => {
-			const gameScene = game.scene.getScene("GameScene") as GameScene;
-			if (gameScene?.audioManager) {
-				return gameScene.audioManager.muted;
-			}
-			// Fallback: read from localStorage before scene is ready
-			try {
-				return localStorage.getItem("fangdash_muted") === "true";
-			} catch {
-				return false;
-			}
-		},
-	};
+	const audio = createAudioChannel(game, "GameScene");
 
 	const gameChannel: GameChannel = {
 		start: (difficulty?: string) => {
@@ -234,45 +238,7 @@ export function createRaceGame(options: RaceCanvasOptions): RaceCanvasResult {
 		},
 	};
 
-	const audio: AudioChannel = {
-		setVolume: (v: number) => {
-			const raceScene = game.scene.getScene("RaceScene") as GameScene;
-			raceScene?.audioManager?.setVolume(v);
-		},
-		getVolume: () => {
-			const raceScene = game.scene.getScene("RaceScene") as GameScene;
-			if (raceScene?.audioManager) {
-				return raceScene.audioManager.volume;
-			}
-			try {
-				const stored = localStorage.getItem("fangdash_volume");
-				if (stored !== null) {
-					const v = Number.parseFloat(stored);
-					if (!Number.isNaN(v)) {
-						return v;
-					}
-				}
-			} catch {
-				/* ignore */
-			}
-			return 0.5;
-		},
-		setMuted: (m: boolean) => {
-			const raceScene = game.scene.getScene("RaceScene") as GameScene;
-			raceScene?.audioManager?.setMuted(m);
-		},
-		getMuted: () => {
-			const raceScene = game.scene.getScene("RaceScene") as GameScene;
-			if (raceScene?.audioManager) {
-				return raceScene.audioManager.muted;
-			}
-			try {
-				return localStorage.getItem("fangdash_muted") === "true";
-			} catch {
-				return false;
-			}
-		},
-	};
+	const audio = createAudioChannel(game, "RaceScene");
 
 	return { game, debug, audio };
 }
