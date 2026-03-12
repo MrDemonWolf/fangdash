@@ -26,9 +26,14 @@ app.use("*", async (c, next) => {
 });
 
 // Better Auth handler
-app.on(["POST", "GET"], "/api/auth/**", (c) => {
-  const auth = createAuth(c.env);
-  return auth.handler(c.req.raw);
+app.on(["POST", "GET"], "/api/auth/**", async (c) => {
+  try {
+    const auth = createAuth(c.env);
+    return await auth.handler(c.req.raw);
+  } catch (err) {
+    console.error("[auth] Handler error:", err);
+    return c.json({ error: "Internal auth error" }, 500);
+  }
 });
 
 // tRPC handler
