@@ -367,32 +367,32 @@ export default function ProfilePage() {
 	const performanceTiles: MetricTile[] = [
 		{
 			label: "Total Distance",
-			value: isDataLoading ? "—" : fmtKm(totalDistance),
+			value: fmtKm(totalDistance),
 			accent: "text-[#0FACED]",
 		},
 		{
 			label: "High Score",
-			value: isDataLoading ? "—" : highScore.toLocaleString(),
+			value: highScore.toLocaleString(),
 			accent: "text-[#0FACED]",
 		},
 		{
 			label: "Win Rate",
-			value: isDataLoading ? "—" : winRate,
+			value: winRate,
 			accent: "text-emerald-400",
 		},
 		{
 			label: "Obstacles",
-			value: isDataLoading ? "—" : totalObstacles.toLocaleString(),
+			value: totalObstacles.toLocaleString(),
 			accent: "text-orange-400",
 		},
 		{
 			label: "Games Played",
-			value: isDataLoading ? "—" : gamesPlayed.toLocaleString(),
+			value: gamesPlayed.toLocaleString(),
 			accent: "text-purple-400",
 		},
 		{
 			label: "Total Score",
-			value: isDataLoading ? "—" : totalScore.toLocaleString(),
+			value: totalScore.toLocaleString(),
 			accent: "text-yellow-400",
 		},
 	];
@@ -412,9 +412,9 @@ export default function ProfilePage() {
 	const unlockedBadges: Badge[] = sortedUnlocked
 		.slice(0, BADGE_LIMIT)
 		.map((a) => ({
-			icon: a?.icon,
-			name: a?.name,
-			description: a?.description ?? "",
+			icon: a.icon ?? "default",
+			name: a.name ?? "Unnamed Badge",
+			description: a.description ?? "",
 			unlocked: true,
 		}));
 
