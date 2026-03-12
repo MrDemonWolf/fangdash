@@ -17,12 +17,18 @@ type Bindings = {
 
 const app = new Hono<{ Bindings: Bindings }>();
 
-app.use("*", async (c, next) => {
-	const isDev = c.env.ENVIRONMENT === "development";
-	const origins = isDev ? ["http://localhost:3000", c.env.WEB_URL] : [c.env.WEB_URL];
-
-	return cors({ origin: origins, credentials: true })(c, next);
-});
+app.use(
+	"*",
+	cors({
+		origin: (origin, c) => {
+			const isDev = c.env.ENVIRONMENT === "development";
+			const webURL = c.env.WEB_URL ?? "";
+			const allowed = isDev ? ["http://localhost:3000", webURL] : [webURL];
+			return allowed.includes(origin) ? origin : null;
+		},
+		credentials: true,
+	}),
+);
 
 // Better Auth handler
 app.on(["POST", "GET"], "/api/auth/**", async (c) => {
@@ -31,7 +37,14 @@ app.on(["POST", "GET"], "/api/auth/**", async (c) => {
 		if (!auth) {
 			return c.json({ error: "Auth not configured" }, 503);
 		}
-		return await auth.handler(c.req.raw);
+		const response = await auth.handler(c.req.raw);
+		// Re-wrap with fresh mutable headers so Hono's CORS middleware can
+		// apply Access-Control-Allow-Origin to Better Auth's raw Response.
+		return new Response(response.body, {
+			status: response.status,
+			statusText: response.statusText,
+			headers: new Headers(response.headers),
+		});
 	} catch (err) {
 		console.error("[auth] Handler error:", err);
 		return c.json({ error: "Internal auth error" }, 500);

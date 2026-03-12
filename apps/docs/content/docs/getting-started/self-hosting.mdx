@@ -5,7 +5,7 @@ description: Deploy your own instance of FangDash.
 
 <Callout type="info">
 	**TL;DR** - FangDash runs entirely on Cloudflare infrastructure (Workers + D1) - Three services to
-	deploy: API, Web, and PartyKit (multiplayer) - `pnpm ship` deploys all three at once
+	deploy: API, Web, and PartyKit (multiplayer) - `bun run ship` deploys all three at once
 </Callout>
 
 FangDash is designed to run on Cloudflare's infrastructure. Here's how to deploy your own instance.
@@ -25,19 +25,34 @@ FangDash is designed to run on Cloudflare's infrastructure. Here's how to deploy
 The **API** runs on Cloudflare Workers with a D1 database.
 
 1. Create a D1 database in the Cloudflare dashboard
-2. Update `apps/api/wrangler.toml` with your database ID
+2. Update `apps/api/wrangler.toml` with your database ID and your production domains:
+
+```toml
+[env.production.vars]
+ENVIRONMENT = "production"
+BETTER_AUTH_URL = "https://your-api-domain.workers.dev"
+WEB_URL = "https://your-web-domain.workers.dev"
+```
+
 3. Set your secrets:
 
 ```bash
-bunx wrangler secret put BETTER_AUTH_SECRET --config apps/api/wrangler.toml
-bunx wrangler secret put TWITCH_CLIENT_ID --config apps/api/wrangler.toml
-bunx wrangler secret put TWITCH_CLIENT_SECRET --config apps/api/wrangler.toml
+bunx wrangler secret put BETTER_AUTH_SECRET --env production
+bunx wrangler secret put TWITCH_CLIENT_ID --env production
+bunx wrangler secret put TWITCH_CLIENT_SECRET --env production
 ```
 
-4. Deploy from the repo root:
+4. Optionally, auto-promote specific Twitch users to admin on first login:
 
 ```bash
-bun ship:api
+bunx wrangler secret put ADMIN_TWITCH_ID --env production
+# Value: comma-separated Twitch numeric user IDs, e.g. 123456789,987654321
+```
+
+5. Deploy:
+
+```bash
+bun run ship:api
 ```
 
 </Step>
@@ -47,11 +62,23 @@ bun ship:api
 
 The **web app** deploys to Cloudflare Workers using OpenNext.
 
-1. Update `apps/web/.env.local` with your API URL
+1. Set your API URL as a build-time environment variable:
+
+```bash
+NEXT_PUBLIC_API_URL=https://your-api-domain.workers.dev bun run ship:web
+```
+
+Or add it to `apps/web/.env.local` first:
+
+```bash
+NEXT_PUBLIC_API_URL=https://your-api-domain.workers.dev
+NEXT_PUBLIC_PARTYKIT_HOST=fangdash.your-username.partykit.dev
+```
+
 2. Deploy:
 
 ```bash
-bun ship:web
+bun run ship:web
 ```
 
 </Step>
@@ -70,7 +97,7 @@ export PARTYKIT_TOKEN=your-token
 2. Deploy:
 
 ```bash
-bun ship:party
+bun run ship:party
 ```
 
 </Step>
@@ -79,10 +106,40 @@ bun ship:party
 ## Deploy Everything at Once
 
 ```bash
-bun ship
+bun run ship
 ```
 
 This runs all three deploy commands in parallel.
+
+## Environment Variables Reference
+
+### API (`apps/api`)
+
+| Variable            | Type      | Where set                    | Description                                        |
+| ------------------- | --------- | ---------------------------- | -------------------------------------------------- |
+| `BETTER_AUTH_SECRET` | Secret   | `wrangler secret put`        | Long random string for signing sessions            |
+| `TWITCH_CLIENT_ID`  | Secret    | `wrangler secret put`        | Twitch OAuth app client ID                         |
+| `TWITCH_CLIENT_SECRET` | Secret | `wrangler secret put`        | Twitch OAuth app client secret                     |
+| `ADMIN_TWITCH_ID`   | Secret    | `wrangler secret put` (optional) | Comma-separated Twitch user IDs to auto-admin  |
+| `BETTER_AUTH_URL`   | Plaintext | `wrangler.toml`              | Public URL of the API worker                       |
+| `WEB_URL`           | Plaintext | `wrangler.toml`              | Public URL of the web worker (for CORS + redirects)|
+| `ENVIRONMENT`       | Plaintext | `wrangler.toml`              | `"development"` or `"production"`                  |
+
+### Web (`apps/web`)
+
+| Variable                  | Type      | Where set              | Description                                  |
+| ------------------------- | --------- | ---------------------- | -------------------------------------------- |
+| `NEXT_PUBLIC_API_URL`     | Plaintext | `.env.local` / CI env  | Public URL of the API worker                 |
+| `NEXT_PUBLIC_PARTYKIT_HOST` | Plaintext | `.env.local` / CI env | PartyKit host (e.g. `fangdash.user.partykit.dev`) |
+
+### Local Development
+
+Copy the example files and fill in your values:
+
+```bash
+cp apps/api/.dev.vars.example apps/api/.dev.vars
+cp apps/web/.env.example apps/web/.env.local
+```
 
 ## Setting Up Twitch OAuth
 
