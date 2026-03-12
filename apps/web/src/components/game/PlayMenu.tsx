@@ -19,7 +19,6 @@ interface PlayMenuProps {
 function SpeakerIcon({ muted }: { muted: boolean }) {
 	if (muted) {
 		return (
-			// biome-ignore lint/a11y/noSvgWithoutTitle: decorative icon
 			<svg
 				xmlns="http://www.w3.org/2000/svg"
 				width="18"
@@ -38,7 +37,6 @@ function SpeakerIcon({ muted }: { muted: boolean }) {
 		);
 	}
 	return (
-		// biome-ignore lint/a11y/noSvgWithoutTitle: decorative icon
 		<svg
 			xmlns="http://www.w3.org/2000/svg"
 			width="18"
@@ -62,10 +60,7 @@ function AudioTab({
 	volume,
 	onToggleMute,
 	onVolumeChange,
-}: Pick<
-	PlayMenuProps,
-	"muted" | "volume" | "onToggleMute" | "onVolumeChange"
->) {
+}: Pick<PlayMenuProps, "muted" | "volume" | "onToggleMute" | "onVolumeChange">) {
 	return (
 		<div className="space-y-6">
 			<h3 className="text-sm font-mono uppercase tracking-widest text-[#0FACED]/60">
@@ -122,21 +117,15 @@ function SkinsTab({ isSignedIn }: { isSignedIn: boolean }) {
 	);
 
 	if (!isSignedIn) {
-		return (
-			<p className="text-sm text-white/40">Sign in to view and equip skins.</p>
-		);
+		return <p className="text-sm text-white/40">Sign in to view and equip skins.</p>;
 	}
 	if (isLoading) {
-		return (
-			<p className="text-sm text-white/40 animate-pulse">Loading skins…</p>
-		);
+		return <p className="text-sm text-white/40 animate-pulse">Loading skins…</p>;
 	}
 
 	return (
 		<div className="space-y-4">
-			<h3 className="text-sm font-mono uppercase tracking-widest text-[#0FACED]/60">
-				Skins
-			</h3>
+			<h3 className="text-sm font-mono uppercase tracking-widest text-[#0FACED]/60">Skins</h3>
 			<div className="grid grid-cols-3 gap-3">
 				{gallery?.map((skin) => {
 					const isEquipped = equipped?.skinId === skin.id;
@@ -145,9 +134,7 @@ function SkinsTab({ isSignedIn }: { isSignedIn: boolean }) {
 							type="button"
 							key={skin.id}
 							disabled={!skin.unlocked || isPending}
-							onClick={() =>
-								skin.unlocked && !isEquipped && equipSkin({ skinId: skin.id })
-							}
+							onClick={() => skin.unlocked && !isEquipped && equipSkin({ skinId: skin.id })}
 							className={[
 								"relative p-3 rounded border text-left transition-all",
 								isEquipped
@@ -157,12 +144,8 @@ function SkinsTab({ isSignedIn }: { isSignedIn: boolean }) {
 										: "border-white/5 bg-white/2 opacity-50 cursor-not-allowed",
 							].join(" ")}
 						>
-							<p className="text-xs font-mono font-bold text-white/80 truncate">
-								{skin.name}
-							</p>
-							{!skin.unlocked && (
-								<p className="text-[10px] text-white/30 mt-0.5">Locked</p>
-							)}
+							<p className="text-xs font-mono font-bold text-white/80 truncate">{skin.name}</p>
+							{!skin.unlocked && <p className="text-[10px] text-white/30 mt-0.5">Locked</p>}
 							{isEquipped && (
 								<span className="absolute top-1.5 right-1.5 text-[10px] font-mono text-[#0FACED] font-bold">
 									ON
@@ -172,9 +155,7 @@ function SkinsTab({ isSignedIn }: { isSignedIn: boolean }) {
 					);
 				})}
 			</div>
-			<p className="text-xs text-white/30">
-				Changes take effect on the next run.
-			</p>
+			<p className="text-xs text-white/30">Changes take effect on the next run.</p>
 		</div>
 	);
 }
@@ -189,9 +170,7 @@ function StatsTab({ isSignedIn }: { isSignedIn: boolean }) {
 		return <p className="text-sm text-white/40">Sign in to view your stats.</p>;
 	}
 	if (isLoading) {
-		return (
-			<p className="text-sm text-white/40 animate-pulse">Loading stats…</p>
-		);
+		return <p className="text-sm text-white/40 animate-pulse">Loading stats…</p>;
 	}
 	if (!stats) {
 		return <p className="text-sm text-white/40">No stats yet. Play a game!</p>;
@@ -199,9 +178,7 @@ function StatsTab({ isSignedIn }: { isSignedIn: boolean }) {
 
 	return (
 		<div className="space-y-4">
-			<h3 className="text-sm font-mono uppercase tracking-widest text-[#0FACED]/60">
-				Your Stats
-			</h3>
+			<h3 className="text-sm font-mono uppercase tracking-widest text-[#0FACED]/60">Your Stats</h3>
 			<div className="grid grid-cols-2 gap-3">
 				{[
 					{ label: "Games Played", value: stats.gamesPlayed.toLocaleString() },
@@ -215,16 +192,9 @@ function StatsTab({ isSignedIn }: { isSignedIn: boolean }) {
 						value: stats.totalObstaclesCleared.toLocaleString(),
 					},
 				].map(({ label, value }) => (
-					<div
-						key={label}
-						className="p-3 rounded border border-white/10 bg-white/5"
-					>
-						<p className="text-[10px] font-mono uppercase tracking-widest text-white/40">
-							{label}
-						</p>
-						<p className="text-xl font-bold font-mono tabular-nums text-white/90 mt-1">
-							{value}
-						</p>
+					<div key={label} className="p-3 rounded border border-white/10 bg-white/5">
+						<p className="text-[10px] font-mono uppercase tracking-widest text-white/40">{label}</p>
+						<p className="text-xl font-bold font-mono tabular-nums text-white/90 mt-1">{value}</p>
 					</div>
 				))}
 			</div>
@@ -234,23 +204,15 @@ function StatsTab({ isSignedIn }: { isSignedIn: boolean }) {
 
 function LeaderboardTab() {
 	const trpc = useTRPC();
-	const { data: entries, isLoading } = useQuery(
-		trpc.score.leaderboard.queryOptions({ limit: 10 }),
-	);
+	const { data: entries, isLoading } = useQuery(trpc.score.leaderboard.queryOptions({ limit: 10 }));
 
 	if (isLoading) {
-		return (
-			<p className="text-sm text-white/40 animate-pulse">
-				Loading leaderboard…
-			</p>
-		);
+		return <p className="text-sm text-white/40 animate-pulse">Loading leaderboard…</p>;
 	}
 
 	return (
 		<div className="space-y-4">
-			<h3 className="text-sm font-mono uppercase tracking-widest text-[#0FACED]/60">
-				Top 10
-			</h3>
+			<h3 className="text-sm font-mono uppercase tracking-widest text-[#0FACED]/60">Top 10</h3>
 			<div className="space-y-1">
 				{entries?.map((entry) => (
 					<div
@@ -290,9 +252,7 @@ function LeaderboardTab() {
 function ControlsTab() {
 	return (
 		<div className="space-y-4">
-			<h3 className="text-sm font-mono uppercase tracking-widest text-[#0FACED]/60">
-				Controls
-			</h3>
+			<h3 className="text-sm font-mono uppercase tracking-widest text-[#0FACED]/60">Controls</h3>
 			<div className="space-y-3">
 				{[
 					{ key: "Space / Click", action: "Jump" },
@@ -361,7 +321,6 @@ export function PlayMenu({
 						className="p-1.5 rounded text-white/40 hover:text-white hover:bg-white/10 transition-colors"
 						aria-label="Close menu"
 					>
-						{/* biome-ignore lint/a11y/noSvgWithoutTitle: decorative icon */}
 						<svg
 							xmlns="http://www.w3.org/2000/svg"
 							width="16"

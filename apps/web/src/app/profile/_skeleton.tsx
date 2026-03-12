@@ -12,11 +12,7 @@ export function ProfileSkeleton() {
 							<div className="h-10 border-b border-white/10" />
 							<div className="grid grid-cols-2 gap-2 p-4">
 								{Array.from({ length: 6 }).map((_, i) => (
-									<div
-										// biome-ignore lint/suspicious/noArrayIndexKey: static placeholder list
-										key={i}
-										className="h-24 animate-pulse rounded-xl bg-white/5"
-									/>
+									<div key={i} className="h-24 animate-pulse rounded-xl bg-white/5" />
 								))}
 							</div>
 						</div>
@@ -25,11 +21,7 @@ export function ProfileSkeleton() {
 							<div className="mb-4 h-4 w-32 animate-pulse rounded bg-white/5" />
 							<div className="flex flex-wrap gap-3">
 								{Array.from({ length: 12 }).map((_, i) => (
-									<div
-										// biome-ignore lint/suspicious/noArrayIndexKey: static placeholder list
-										key={i}
-										className="h-12 w-12 animate-pulse rounded-full bg-white/5"
-									/>
+									<div key={i} className="h-12 w-12 animate-pulse rounded-full bg-white/5" />
 								))}
 							</div>
 						</div>
@@ -40,11 +32,7 @@ export function ProfileSkeleton() {
 						<div className="h-10 border-b border-white/10" />
 						<div className="space-y-2 p-4">
 							{Array.from({ length: 8 }).map((_, i) => (
-								<div
-									// biome-ignore lint/suspicious/noArrayIndexKey: static placeholder list
-									key={i}
-									className="h-10 animate-pulse rounded-lg bg-white/5"
-								/>
+								<div key={i} className="h-10 animate-pulse rounded-lg bg-white/5" />
 							))}
 						</div>
 					</div>

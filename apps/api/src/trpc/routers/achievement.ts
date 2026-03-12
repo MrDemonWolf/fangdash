@@ -26,9 +26,7 @@ export const achievementRouter = router({
 			.from(playerAchievement)
 			.where(eq(playerAchievement.playerId, playerRecord.id));
 
-		const unlockedMap = new Map(
-			unlocked.map((u) => [u.achievementId, u.unlockedAt]),
-		);
+		const unlockedMap = new Map(unlocked.map((u) => [u.achievementId, u.unlockedAt]));
 
 		return ACHIEVEMENTS.map((a) => ({
 			...a,

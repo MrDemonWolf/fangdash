@@ -356,11 +356,7 @@ function StatRow({
 	warn?: boolean;
 	danger?: boolean;
 }) {
-	const cls = danger
-		? "debug-value-danger"
-		: warn
-			? "debug-value-warn"
-			: "debug-value";
+	const cls = danger ? "debug-value-danger" : warn ? "debug-value-warn" : "debug-value";
 	return (
 		<div className="flex justify-between items-baseline gap-2">
 			<span className="debug-label">{label}</span>
@@ -380,12 +376,7 @@ function StatsTab({ state }: { state: DebugState | null }) {
 	return (
 		<div className="space-y-1 p-2">
 			<div className="debug-section-header">{"// PERFORMANCE"}</div>
-			<StatRow
-				label="FPS"
-				value={state.fps}
-				warn={state.fps < 30}
-				danger={state.fps < 15}
-			/>
+			<StatRow label="FPS" value={state.fps} warn={state.fps < 30} danger={state.fps < 15} />
 			<StatRow label="DELTA" value={`${state.frameDelta}ms`} />
 
 			<div className="debug-section-header">{"// PLAYER"}</div>
@@ -408,22 +399,13 @@ function StatsTab({ state }: { state: DebugState | null }) {
 			<StatRow label="DIST" value={`${state.scoring.distance}m`} />
 			<StatRow label="CLEARED" value={state.scoring.obstaclesCleared} />
 			<StatRow label="SPEED" value={state.scoring.currentSpeed} />
-			<StatRow
-				label="TIME"
-				value={`${Math.floor(state.scoring.elapsedMs / 1000)}s`}
-			/>
+			<StatRow label="TIME" value={`${Math.floor(state.scoring.elapsedMs / 1000)}s`} />
 
 			<div className="debug-section-header">{"// DIFFICULTY"}</div>
 			<StatRow label="LEVEL" value={state.difficulty.levelName.toUpperCase()} />
 			<StatRow label="SPD-X" value={`${state.difficulty.speedMultiplier}x`} />
-			<StatRow
-				label="SPN-X"
-				value={`${state.difficulty.spawnRateMultiplier}x`}
-			/>
-			<StatRow
-				label="GAP"
-				value={`${state.difficulty.minGap}-${state.difficulty.maxGap}ms`}
-			/>
+			<StatRow label="SPN-X" value={`${state.difficulty.spawnRateMultiplier}x`} />
+			<StatRow label="GAP" value={`${state.difficulty.minGap}-${state.difficulty.maxGap}ms`} />
 
 			<div className="debug-section-header">{"// SPAWNER"}</div>
 			<StatRow label="SINCE" value={`${state.spawner.timeSinceLastSpawn}ms`} />
@@ -572,11 +554,7 @@ const CONSTANT_GROUPS: { name: string; constants: ConstantDef[] }[] = [
 	},
 ];
 
-function ConstantsTab({
-	onSendCommand,
-}: {
-	onSendCommand: (cmd: DebugCommand) => void;
-}) {
+function ConstantsTab({ onSendCommand }: { onSendCommand: (cmd: DebugCommand) => void }) {
 	const [values, setValues] = useState<Record<string, number>>(() => {
 		const initial: Record<string, number> = {};
 		for (const group of CONSTANT_GROUPS) {
@@ -622,9 +600,7 @@ function ConstantsTab({
 									max={c.max}
 									step={c.step}
 									value={values[c.key]}
-									onChange={(e) =>
-										handleChange(c.key, Number.parseFloat(e.target.value))
-									}
+									onChange={(e) => handleChange(c.key, Number.parseFloat(e.target.value))}
 								/>
 							</div>
 						</div>
@@ -632,11 +608,7 @@ function ConstantsTab({
 				</div>
 			))}
 			<div className="pt-2">
-				<button
-					type="button"
-					className="debug-btn-danger debug-btn w-full"
-					onClick={handleReset}
-				>
+				<button type="button" className="debug-btn-danger debug-btn w-full" onClick={handleReset}>
 					RESET DEFAULTS
 				</button>
 			</div>
@@ -647,13 +619,7 @@ function ConstantsTab({
 // ---------------------------------------------------------------------------
 // Cheats Tab
 // ---------------------------------------------------------------------------
-const DIFFICULTY_NAMES = [
-	"EASY",
-	"MEDIUM",
-	"HARD",
-	"INSANE",
-	"NIGHTMARE",
-] as const;
+const DIFFICULTY_NAMES = ["EASY", "MEDIUM", "HARD", "INSANE", "NIGHTMARE"] as const;
 
 function CheatsTab({
 	debugState,
@@ -664,23 +630,18 @@ function CheatsTab({
 	onSendCommand: (cmd: DebugCommand) => void;
 	gameKey: number;
 }) {
-	const [localFlags, setLocalFlags] =
-		useState<StoredDebugFlags>(loadDebugFlags);
-	const [difficulty, setDifficulty] = useState(
-		() => loadDebugFlags().difficulty,
-	);
+	const [localFlags, setLocalFlags] = useState<StoredDebugFlags>(loadDebugFlags);
+	const [difficulty, setDifficulty] = useState(() => loadDebugFlags().difficulty);
 	const prevGameKeyRef = useRef(-1);
 
 	// Prefer live game state when available, else fall back to localStorage
 	const hitboxes = debugState?.debug?.hitboxes ?? localFlags.hitboxes;
 	const renderBoxes = debugState?.debug?.renderBoxes ?? localFlags.renderBoxes;
 	const invincible = debugState?.debug?.invincible ?? localFlags.invincible;
-	const speedMultiplier =
-		debugState?.debug?.speedMultiplier ?? localFlags.speedMultiplier;
+	const speedMultiplier = debugState?.debug?.speedMultiplier ?? localFlags.speedMultiplier;
 
 	// Sync stored flags to game when a new game starts (gameKey increments from event handler,
 	// debugState becomes non-null from Phaser's rAF loop — always separate React batch cycles)
-	// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: complex debug sync logic
 	useEffect(() => {
 		if (debugState !== null && gameKey !== prevGameKeyRef.current) {
 			prevGameKeyRef.current = gameKey;
@@ -766,35 +727,23 @@ function CheatsTab({
 	return (
 		<div className="p-2">
 			<div className="debug-section-header">{"// VISIBILITY"}</div>
-			{/* biome-ignore lint/a11y/noStaticElementInteractions: debug-only component */}
-			{/* biome-ignore lint/a11y/useKeyWithClickEvents: debug-only component */}
 			<div className="debug-toggle-row" onClick={toggleHitboxes}>
 				<span className="debug-label">HITBOX VIZ</span>
-				<span
-					className={`debug-pill ${hitboxes ? "debug-pill-on" : "debug-pill-off"}`}
-				>
+				<span className={`debug-pill ${hitboxes ? "debug-pill-on" : "debug-pill-off"}`}>
 					{hitboxes ? "ON" : "OFF"}
 				</span>
 			</div>
-			{/* biome-ignore lint/a11y/noStaticElementInteractions: debug-only component */}
-			{/* biome-ignore lint/a11y/useKeyWithClickEvents: debug-only component */}
 			<div className="debug-toggle-row" onClick={toggleRenderBoxes}>
 				<span className="debug-label">RENDER VIZ</span>
-				<span
-					className={`debug-pill ${renderBoxes ? "debug-pill-on" : "debug-pill-off"}`}
-				>
+				<span className={`debug-pill ${renderBoxes ? "debug-pill-on" : "debug-pill-off"}`}>
 					{renderBoxes ? "ON" : "OFF"}
 				</span>
 			</div>
 
 			<div className="debug-section-header">{"// INVINCIBILITY"}</div>
-			{/* biome-ignore lint/a11y/noStaticElementInteractions: debug-only component */}
-			{/* biome-ignore lint/a11y/useKeyWithClickEvents: debug-only component */}
 			<div className="debug-toggle-row" onClick={toggleInvincible}>
 				<span className="debug-label">INVINCIBLE</span>
-				<span
-					className={`debug-pill ${invincible ? "debug-pill-on" : "debug-pill-off"}`}
-				>
+				<span className={`debug-pill ${invincible ? "debug-pill-on" : "debug-pill-off"}`}>
 					{invincible ? "ON" : "OFF"}
 				</span>
 			</div>
@@ -808,9 +757,7 @@ function CheatsTab({
 				<select
 					className="debug-select w-full"
 					value={difficulty}
-					onChange={(e) =>
-						handleDifficultyChange(Number.parseInt(e.target.value, 10))
-					}
+					onChange={(e) => handleDifficultyChange(Number.parseInt(e.target.value, 10))}
 				>
 					{DIFFICULTY_NAMES.map((name, idx) => (
 						<option key={name} value={idx}>
@@ -831,9 +778,7 @@ function CheatsTab({
 					max={3.0}
 					step={0.1}
 					value={speedMultiplier}
-					onChange={(e) =>
-						handleSpeedMultiplierChange(Number.parseFloat(e.target.value))
-					}
+					onChange={(e) => handleSpeedMultiplierChange(Number.parseFloat(e.target.value))}
 				/>
 				<div className="debug-slider-labels">
 					<span>0.1x</span>
@@ -851,11 +796,7 @@ function CheatsTab({
 			</button>
 
 			<div className="debug-section-header">{"// RESET"}</div>
-			<button
-				type="button"
-				className="debug-btn debug-btn w-full"
-				onClick={handleReset}
-			>
+			<button type="button" className="debug-btn debug-btn w-full" onClick={handleReset}>
 				RESET CHEATS
 			</button>
 		</div>
@@ -865,12 +806,7 @@ function CheatsTab({
 // ---------------------------------------------------------------------------
 // Main DebugPanel Component
 // ---------------------------------------------------------------------------
-// biome-ignore lint/style/noDefaultExport: required by Next.js
-export default function DebugPanel({
-	debugState,
-	onSendCommand,
-	gameKey,
-}: DebugPanelProps) {
+export default function DebugPanel({ debugState, onSendCommand, gameKey }: DebugPanelProps) {
 	const isDevOrAdmin = useIsDevOrAdmin();
 	const [visible, setVisible] = useState(false);
 	const [mounted, setMounted] = useState(false);
@@ -983,7 +919,6 @@ export default function DebugPanel({
 			}}
 		>
 			{/* Title bar */}
-			{/* biome-ignore lint/a11y/noStaticElementInteractions: debug drag handler */}
 			<div className="debug-crt-title" onMouseDown={handleMouseDown}>
 				<span
 					style={{
@@ -1031,15 +966,9 @@ export default function DebugPanel({
 						}}
 					>
 						{activeTab === "STATS" && <StatsTab state={debugState} />}
-						{activeTab === "CONSTANTS" && (
-							<ConstantsTab onSendCommand={onSendCommand} />
-						)}
+						{activeTab === "CONSTANTS" && <ConstantsTab onSendCommand={onSendCommand} />}
 						{activeTab === "CHEATS" && (
-							<CheatsTab
-								debugState={debugState}
-								onSendCommand={onSendCommand}
-								gameKey={gameKey}
-							/>
+							<CheatsTab debugState={debugState} onSendCommand={onSendCommand} gameKey={gameKey} />
 						)}
 					</div>
 

@@ -1,4 +1,3 @@
-// biome-ignore lint/correctness/noUndeclaredDependencies: vitest is a workspace root dependency
 import { describe, expect, it } from "vitest";
 import { SeededRandom } from "../seeded-random.ts";
 

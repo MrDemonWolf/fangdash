@@ -16,7 +16,6 @@ type Bindings = {
 
 const app = new Hono<{ Bindings: Bindings }>();
 
-// biome-ignore lint/suspicious/useAwait: Hono middleware returns promise-like
 app.use("*", async (c, next) => {
 	const isDev = c.env.ENVIRONMENT === "development";
 	const origins = isDev
@@ -54,5 +53,4 @@ app.get("/health", (c) => {
 	return c.json({ status: "healthy" });
 });
 
-// biome-ignore lint/style/noDefaultExport: required by Cloudflare Workers
 export default app;

@@ -49,9 +49,9 @@ export class ParallaxBackground {
 
 	reset() {
 		for (const layer of this.layers) {
-			// biome-ignore lint/style/noNonNullAssertion: array always has 2 images
+			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 			layer.images[0]!.x = 0;
-			// biome-ignore lint/style/noNonNullAssertion: array always has 2 images
+			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 			layer.images[1]!.x = GAME_WIDTH * 2;
 		}
 	}

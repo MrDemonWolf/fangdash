@@ -43,9 +43,7 @@ export const adminRouter = router({
 		)
 		.query(async ({ ctx, input }) => {
 			const offset = (input.page - 1) * input.limit;
-			const searchFilter = input.search
-				? like(user.name, `%${input.search}%`)
-				: undefined;
+			const searchFilter = input.search ? like(user.name, `%${input.search}%`) : undefined;
 
 			const [totalResult, rows] = await Promise.all([
 				ctx.db
@@ -160,11 +158,7 @@ export const adminRouter = router({
 	deleteScore: devProcedure
 		.input(z.object({ scoreId: z.string() }))
 		.mutation(async ({ ctx, input }) => {
-			const existing = await ctx.db
-				.select()
-				.from(score)
-				.where(eq(score.id, input.scoreId))
-				.get();
+			const existing = await ctx.db.select().from(score).where(eq(score.id, input.scoreId)).get();
 
 			if (!existing) {
 				throw new TRPCError({ code: "NOT_FOUND", message: "Score not found" });

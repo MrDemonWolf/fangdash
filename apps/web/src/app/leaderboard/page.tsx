@@ -93,7 +93,6 @@ function formatNumber(n: number) {
 	return n.toLocaleString();
 }
 
-// biome-ignore lint/style/noDefaultExport: required by Next.js
 export default function LeaderboardPage() {
 	const [activeTab, setActiveTab] = useState<Tab>("all-time");
 	const trpc = useTRPC();
@@ -101,9 +100,7 @@ export default function LeaderboardPage() {
 
 	const period = activeTab === "all-time" ? ("all" as const) : activeTab;
 
-	const leaderboardQuery = useQuery(
-		trpc.score.leaderboard.queryOptions({ limit: 50, period }),
-	);
+	const leaderboardQuery = useQuery(trpc.score.leaderboard.queryOptions({ limit: 50, period }));
 
 	const entries = leaderboardQuery.data ?? [];
 	const currentUsername = session?.user?.name;
@@ -117,9 +114,7 @@ export default function LeaderboardPage() {
 	return (
 		<main className="min-h-screen bg-[#091533] px-4 py-8 sm:px-6 lg:px-8">
 			<div className="mx-auto max-w-4xl">
-				<h1 className="text-3xl font-bold text-white sm:text-4xl">
-					Leaderboard
-				</h1>
+				<h1 className="text-3xl font-bold text-white sm:text-4xl">Leaderboard</h1>
 				<p className="mt-2 text-gray-400">Top runners in FangDash</p>
 
 				{/* Tabs */}
@@ -165,17 +160,13 @@ export default function LeaderboardPage() {
 							)}
 							{!leaderboardQuery.isLoading && entries.length === 0 && (
 								<tr>
-									<td
-										colSpan={5}
-										className="px-4 py-12 text-center text-gray-500"
-									>
+									<td colSpan={5} className="px-4 py-12 text-center text-gray-500">
 										No scores yet. Be the first to play!
 									</td>
 								</tr>
 							)}
 							{entries.map((entry) => {
-								const isCurrentUser =
-									currentUsername != null && entry.username === currentUsername;
+								const isCurrentUser = currentUsername != null && entry.username === currentUsername;
 								return (
 									<tr
 										key={entry.scoreId}
@@ -190,11 +181,7 @@ export default function LeaderboardPage() {
 										</td>
 										<td className="px-4 py-3 font-medium text-white">
 											{entry.username}
-											{isCurrentUser && (
-												<span className="ml-2 text-xs text-[#0FACED]">
-													(you)
-												</span>
-											)}
+											{isCurrentUser && <span className="ml-2 text-xs text-[#0FACED]">(you)</span>}
 										</td>
 										<td className="px-4 py-3 text-white tabular-nums">
 											{formatNumber(entry.score)}
@@ -202,9 +189,7 @@ export default function LeaderboardPage() {
 										<td className="px-4 py-3 text-gray-300 tabular-nums">
 											{formatNumber(Math.round(entry.distance))}m
 										</td>
-										<td className="px-4 py-3 text-gray-400">
-											{formatDate(entry.createdAt)}
-										</td>
+										<td className="px-4 py-3 text-gray-400">{formatDate(entry.createdAt)}</td>
 									</tr>
 								);
 							})}
@@ -229,24 +214,19 @@ export default function LeaderboardPage() {
 						</div>
 					)}
 					{entries.map((entry) => {
-						const isCurrentUser =
-							currentUsername != null && entry.username === currentUsername;
+						const isCurrentUser = currentUsername != null && entry.username === currentUsername;
 						return (
 							<div
 								key={entry.scoreId}
 								className={`rounded-lg p-4 ${
-									isCurrentUser
-										? "bg-[#0FACED]/10 border border-[#0FACED]/20"
-										: "bg-white/5"
+									isCurrentUser ? "bg-[#0FACED]/10 border border-[#0FACED]/20" : "bg-white/5"
 								}`}
 							>
 								<div className="flex items-center gap-3">
 									<RankBadge rank={entry.rank} />
 									<span className="font-medium text-white">
 										{entry.username}
-										{isCurrentUser && (
-											<span className="ml-2 text-xs text-[#0FACED]">(you)</span>
-										)}
+										{isCurrentUser && <span className="ml-2 text-xs text-[#0FACED]">(you)</span>}
 									</span>
 								</div>
 								<div className="mt-3 flex items-center gap-4 text-sm">
@@ -263,9 +243,7 @@ export default function LeaderboardPage() {
 										</span>
 									</div>
 								</div>
-								<div className="mt-1 text-xs text-gray-500">
-									{formatDate(entry.createdAt)}
-								</div>
+								<div className="mt-1 text-xs text-gray-500">{formatDate(entry.createdAt)}</div>
 							</div>
 						);
 					})}

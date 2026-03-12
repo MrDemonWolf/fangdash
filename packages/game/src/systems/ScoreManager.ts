@@ -1,9 +1,5 @@
 import type { GameState } from "@fangdash/shared";
-import {
-	DISTANCE_MULTIPLIER,
-	SCORE_PER_OBSTACLE,
-	SCORE_PER_SECOND,
-} from "@fangdash/shared";
+import { DISTANCE_MULTIPLIER, SCORE_PER_OBSTACLE, SCORE_PER_SECOND } from "@fangdash/shared";
 
 export class ScoreManager {
 	score = 0;
@@ -22,15 +18,13 @@ export class ScoreManager {
 		const dt = delta / 1000;
 
 		// Distance-based score
-		this.distance +=
-			speed * dt * (this.overrides.distanceMultiplier ?? DISTANCE_MULTIPLIER);
+		this.distance += speed * dt * (this.overrides.distanceMultiplier ?? DISTANCE_MULTIPLIER);
 		this.score += (this.overrides.scorePerSecond ?? SCORE_PER_SECOND) * dt;
 
 		// Obstacle clear bonus
 		const newClears = currentObstaclesCleared - this.lastObstacleCount;
 		if (newClears > 0) {
-			this.score +=
-				newClears * (this.overrides.scorePerObstacle ?? SCORE_PER_OBSTACLE);
+			this.score += newClears * (this.overrides.scorePerObstacle ?? SCORE_PER_OBSTACLE);
 			this.obstaclesCleared += newClears;
 			this.lastObstacleCount = currentObstaclesCleared;
 		}

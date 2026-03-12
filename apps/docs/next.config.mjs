@@ -14,5 +14,4 @@ const config = {
 
 const withMDX = createMDX();
 
-// biome-ignore lint/style/noDefaultExport: required by framework config
 export default withMDX(config);

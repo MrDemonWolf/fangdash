@@ -1,15 +1,9 @@
-// biome-ignore lint/style/useFilenamingConvention: established class name
 import type { DebugCommand, DebugState, GameState } from "@fangdash/shared";
 import { GAME_HEIGHT, GAME_WIDTH } from "@fangdash/shared";
-// biome-ignore lint/performance/noNamespaceImport: Phaser requires namespace import
 import * as Phaser from "phaser";
 import { BootScene } from "./scenes/BootScene.ts";
 import { type GameEventCallback, GameScene } from "./scenes/GameScene.ts";
-import {
-	type RaceCallbacks,
-	type RaceOpponent,
-	RaceScene,
-} from "./scenes/RaceScene.ts";
+import { type RaceCallbacks, type RaceOpponent, RaceScene } from "./scenes/RaceScene.ts";
 
 export interface DebugChannel {
 	sendCommand: (command: DebugCommand) => void;
@@ -103,9 +97,7 @@ export function createGame(options: GameCanvasOptions): GameCanvasResult {
 		onDebugUpdate: options.onDebugUpdate,
 	} satisfies GameEventCallback;
 
-	const game = new Phaser.Game(
-		createPhaserConfig(options.parent, [BootScene, GameScene]),
-	);
+	const game = new Phaser.Game(createPhaserConfig(options.parent, [BootScene, GameScene]));
 
 	// Surface critical asset load failures to the React layer
 	if (options.onError) {
@@ -118,7 +110,11 @@ export function createGame(options: GameCanvasOptions): GameCanvasResult {
 	game.events.on("ready", () => {
 		const gameScene = game.scene.getScene("GameScene") as GameScene;
 		if (gameScene) {
-			gameScene.scene.restart({ callbacks, skinKey: options.skinKey, startDifficulty: options.startDifficulty });
+			gameScene.scene.restart({
+				callbacks,
+				skinKey: options.skinKey,
+				startDifficulty: options.startDifficulty,
+			});
 		}
 	});
 
@@ -209,9 +205,7 @@ export function createRaceGame(options: RaceCanvasOptions): RaceCanvasResult {
 		onDebugUpdate: options.onDebugUpdate,
 	} satisfies RaceCallbacks;
 
-	const game = new Phaser.Game(
-		createPhaserConfig(options.parent, [BootScene, RaceScene]),
-	);
+	const game = new Phaser.Game(createPhaserConfig(options.parent, [BootScene, RaceScene]));
 
 	// Surface critical asset load failures to the React layer
 	if (options.onError) {

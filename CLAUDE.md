@@ -13,14 +13,14 @@ bun run dev             # Start all apps: web (3000), api (8787), party (1999), 
 bun run build           # Build all packages (respects dependency order)
 bun run test            # Run all tests (Vitest)
 bun run typecheck      # Type-check all packages
-bun run lint            # Lint all packages (turbo → next lint per workspace)
+bun run lint            # ESLint (root-level, runs on entire repo)
+bun run lint:fix        # ESLint with auto-fix
 bun run clean           # Remove build artifacts
 
-# Biome (root-level, runs on entire repo)
-bun run check           # Run biome check (lint + format)
+# Formatting (Prettier, root-level)
+bun run check           # Run ESLint + Prettier check
 bun run format          # Format all files (write)
 bun run format:check    # Check formatting without writing
-bun run lint:biome      # Run biome lint only
 
 # Run tests for a single workspace
 bun run --filter @fangdash/api test
@@ -46,6 +46,7 @@ bunx drizzle-kit generate   # Generate new migration from schema changes
 ## Architecture
 
 **Monorepo layout:**
+
 - `apps/api` — Hono API on Cloudflare Workers, tRPC v11 endpoints, Better Auth (Twitch OAuth), Drizzle ORM with Cloudflare D1 (SQLite)
 - `apps/web` — Next.js 15 (App Router, Turbopack), React 19, Tailwind v4, tRPC client via React Query
 - `apps/party` — PartyKit WebSocket server for real-time multiplayer race rooms
@@ -56,6 +57,7 @@ bunx drizzle-kit generate   # Generate new migration from schema changes
 **Data flow:** Web → tRPC → Hono API → Drizzle → D1 (SQLite). Real-time multiplayer: Web → PartySocket → PartyKit race-server.
 
 **Key patterns:**
+
 - tRPC provides end-to-end type safety between `apps/api` and `apps/web`
 - Deterministic multiplayer via seeded PRNG in `packages/shared/src/seeded-random.ts` — all players see identical obstacle layouts
 - Game constants (physics, speeds, scoring, difficulty levels) live in `packages/shared/src/constants.ts`
@@ -75,7 +77,7 @@ bunx drizzle-kit generate   # Generate new migration from schema changes
 - **API:** Hono, tRPC v11, Better Auth, Drizzle ORM
 - **Database:** Cloudflare D1 (SQLite)
 - **WebSockets:** PartyKit
-- **Linting/Formatting:** Biome
+- **Linting/Formatting:** ESLint + Prettier
 - **Testing:** Vitest (workspaces: packages/shared, apps/api)
 - **CI:** GitHub Actions — typecheck + test on PRs, deploy on main push
 

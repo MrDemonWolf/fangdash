@@ -5,11 +5,6 @@ export const metadata: Metadata = {
 	description: "Customize your wolf with unlockable skins.",
 };
 
-// biome-ignore lint/style/noDefaultExport: required by Next.js
-export default function SkinsLayout({
-	children,
-}: {
-	children: React.ReactNode;
-}) {
+export default function SkinsLayout({ children }: { children: React.ReactNode }) {
 	return children;
 }

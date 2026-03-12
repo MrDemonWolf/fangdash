@@ -53,16 +53,10 @@ export const raceRouter = router({
 				updateSet["racesWon"] = sql`${player.racesWon} + 1`;
 			}
 
-			await ctx.db
-				.update(player)
-				.set(updateSet)
-				.where(eq(player.id, playerRecord.id));
+			await ctx.db.update(player).set(updateSet).where(eq(player.id, playerRecord.id));
 
 			// Check achievements and skin unlocks after race submission
-			const achievementResult = await checkAchievements(
-				ctx.db,
-				playerRecord.id,
-			);
+			const achievementResult = await checkAchievements(ctx.db, playerRecord.id);
 			const newSkinUnlocks = await checkSkinUnlocks(
 				ctx.db,
 				playerRecord.id,

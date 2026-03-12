@@ -1,9 +1,6 @@
 "use client";
 
-import type {
-	AchievementCategory,
-	AchievementCondition,
-} from "@fangdash/shared";
+import type { AchievementCategory, AchievementCondition } from "@fangdash/shared";
 import { getSkinById } from "@fangdash/shared";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
@@ -11,18 +8,16 @@ import { toast } from "sonner";
 import { useSession } from "@/lib/auth-client.ts";
 import { useTRPC } from "@/lib/trpc.ts";
 
-const CATEGORIES: Array<{ label: string; value: AchievementCategory | "all" }> =
-	[
-		{ label: "All", value: "all" },
-		{ label: "Score", value: "score" },
-		{ label: "Distance", value: "distance" },
-		{ label: "Games", value: "games" },
-		{ label: "Skill", value: "skill" },
-		{ label: "Social", value: "social" },
-	];
+const CATEGORIES: Array<{ label: string; value: AchievementCategory | "all" }> = [
+	{ label: "All", value: "all" },
+	{ label: "Score", value: "score" },
+	{ label: "Distance", value: "distance" },
+	{ label: "Games", value: "games" },
+	{ label: "Skill", value: "skill" },
+	{ label: "Social", value: "social" },
+];
 
 function formatCondition(condition: AchievementCondition): string {
-	// biome-ignore lint/style/useDefaultSwitchClause: exhaustive cases
 	switch (condition.type) {
 		case "score_single":
 			return `Score ${condition.threshold.toLocaleString()} in a single run`;
@@ -94,18 +89,10 @@ function AchievementCard({
 				</span>
 				<div className="min-w-0 flex-1">
 					<div className="flex items-center gap-2">
-						<h3
-							className={`font-semibold ${
-								unlocked ? "text-white" : "text-gray-400"
-							}`}
-						>
-							{name}
-						</h3>
+						<h3 className={`font-semibold ${unlocked ? "text-white" : "text-gray-400"}`}>{name}</h3>
 						<span
 							className={`rounded-full px-2 py-0.5 text-xs font-medium capitalize ${
-								unlocked
-									? "bg-[#0FACED]/20 text-[#0FACED]"
-									: "bg-white/5 text-gray-500"
+								unlocked ? "bg-[#0FACED]/20 text-[#0FACED]" : "bg-white/5 text-gray-500"
 							}`}
 						>
 							{category}
@@ -114,31 +101,18 @@ function AchievementCard({
 					<p className="mt-1 text-sm text-gray-400">{description}</p>
 
 					{unlocked && unlockedAt ? (
-						<p className="mt-2 text-xs text-[#0FACED]">
-							Unlocked {formatDate(unlockedAt)}
-						</p>
+						<p className="mt-2 text-xs text-[#0FACED]">Unlocked {formatDate(unlockedAt)}</p>
 					) : condition ? (
-						<p className="mt-2 text-xs text-gray-500 italic">
-							{formatCondition(condition)}
-						</p>
+						<p className="mt-2 text-xs text-gray-500 italic">{formatCondition(condition)}</p>
 					) : null}
 
-					{skin && (
-						<p className="mt-1 text-xs text-[#0FACED]/70">
-							Rewards: {skin.name}
-						</p>
-					)}
+					{skin && <p className="mt-1 text-xs text-[#0FACED]/70">Rewards: {skin.name}</p>}
 				</div>
 			</div>
 
 			{unlocked && (
 				<div className="absolute top-3 right-3 text-[#0FACED]">
-					<svg
-						className="h-5 w-5"
-						viewBox="0 0 20 20"
-						fill="currentColor"
-						aria-hidden="true"
-					>
+					<svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
 						<path
 							fillRule="evenodd"
 							d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
@@ -151,11 +125,8 @@ function AchievementCard({
 	);
 }
 
-// biome-ignore lint/style/noDefaultExport: required by Next.js
 export default function AchievementsPage() {
-	const [activeCategory, setActiveCategory] = useState<
-		AchievementCategory | "all"
-	>("all");
+	const [activeCategory, setActiveCategory] = useState<AchievementCategory | "all">("all");
 
 	const { data: session } = useSession();
 	const isSignedIn = !!session?.user;
@@ -214,17 +185,13 @@ export default function AchievementsPage() {
 			<div className="mx-auto max-w-5xl">
 				{/* Header */}
 				<div className="mb-8">
-					<h1 className="text-3xl font-bold text-white sm:text-4xl">
-						Achievements
-					</h1>
+					<h1 className="text-3xl font-bold text-white sm:text-4xl">Achievements</h1>
 					{isSignedIn ? (
 						<p className="mt-2 text-lg text-[#0FACED]">
 							{unlockedCount} of {totalCount} achievements unlocked
 						</p>
 					) : (
-						<p className="mt-2 text-lg text-gray-400">
-							Sign in to track progress
-						</p>
+						<p className="mt-2 text-lg text-gray-400">Sign in to track progress</p>
 					)}
 				</div>
 
@@ -248,9 +215,7 @@ export default function AchievementsPage() {
 
 				{/* Loading state */}
 				{isLoading ? (
-					<div className="py-20 text-center text-gray-400">
-						Loading achievements...
-					</div>
+					<div className="py-20 text-center text-gray-400">Loading achievements...</div>
 				) : (
 					/* Achievement grid */
 					<div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -262,12 +227,8 @@ export default function AchievementsPage() {
 								description={achievement.description}
 								category={achievement.category}
 								unlocked={achievement.unlocked}
-								unlockedAt={
-									"unlockedAt" in achievement ? achievement.unlockedAt : null
-								}
-								condition={
-									"condition" in achievement ? achievement.condition : undefined
-								}
+								unlockedAt={"unlockedAt" in achievement ? achievement.unlockedAt : null}
+								condition={"condition" in achievement ? achievement.condition : undefined}
 								rewardSkinId={achievement.rewardSkinId}
 							/>
 						))}

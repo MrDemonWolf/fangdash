@@ -1,11 +1,5 @@
-// biome-ignore lint/correctness/noUndeclaredDependencies: vitest is a workspace root dependency
 import { describe, expect, it } from "vitest";
-import {
-	DEFAULT_SKIN_ID,
-	getSkinById,
-	getSkinsByRarity,
-	SKINS,
-} from "../skins.ts";
+import { DEFAULT_SKIN_ID, getSkinById, getSkinsByRarity, SKINS } from "../skins.ts";
 
 describe("Skins", () => {
 	it("has a default skin", () => {

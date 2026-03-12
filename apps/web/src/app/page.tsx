@@ -12,7 +12,6 @@ const stats = [
 	{ value: "\u221E", label: "Endless Runs" },
 ];
 
-// biome-ignore lint/style/noDefaultExport: required by Next.js
 export default function Home() {
 	return (
 		<main className="flex min-h-screen flex-col">
@@ -38,9 +37,9 @@ export default function Home() {
 
 							{/* Subtitle */}
 							<p className="text-lg text-gray-300 sm:text-xl max-w-xl">
-								The ultimate multiplayer endless runner for Twitch streamers.
-								Race <span className="text-[#0FACED]">your community</span> in
-								real-time and climb the global ranks.
+								The ultimate multiplayer endless runner for Twitch streamers. Race{" "}
+								<span className="text-[#0FACED]">your community</span> in real-time and climb the
+								global ranks.
 							</p>
 
 							<HeroCTA />
@@ -65,9 +64,7 @@ export default function Home() {
 						<div className="grid grid-cols-2 gap-8 sm:grid-cols-4">
 							{stats.map(({ value, label }) => (
 								<div key={label} className="flex flex-col gap-1">
-									<p className="font-mono text-5xl font-bold text-white sm:text-6xl">
-										{value}
-									</p>
+									<p className="font-mono text-5xl font-bold text-white sm:text-6xl">{value}</p>
 									<p className="text-xs font-semibold uppercase tracking-widest text-gray-400">
 										{label}
 									</p>

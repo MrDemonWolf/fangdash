@@ -15,8 +15,7 @@ const ERROR_MESSAGES: Record<string, string> = {
 function AuthErrorContent() {
 	const searchParams = useSearchParams();
 	const code = searchParams.get("error") ?? "unknown";
-	const message =
-		ERROR_MESSAGES[code] ?? "Authentication failed. Please try again.";
+	const message = ERROR_MESSAGES[code] ?? "Authentication failed. Please try again.";
 
 	const handleTryAgain = () => {
 		signIn.social({ provider: "twitch", callbackURL: window.location.origin });
@@ -79,10 +78,7 @@ function AuthErrorContent() {
 					>
 						TRY AGAIN
 					</button>
-					<Link
-						href="/"
-						className="text-sm text-gray-500 transition-colors hover:text-gray-300"
-					>
+					<Link href="/" className="text-sm text-gray-500 transition-colors hover:text-gray-300">
 						← Back to Home
 					</Link>
 				</div>
@@ -91,7 +87,6 @@ function AuthErrorContent() {
 	);
 }
 
-// biome-ignore lint/style/noDefaultExport: required by Next.js
 export default function AuthErrorPage() {
 	return (
 		<Suspense>
