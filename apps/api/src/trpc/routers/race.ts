@@ -23,11 +23,11 @@ export const raceRouter = router({
 			}
 
 			// Compute placement server-side
-			const [{ total }] = await ctx.db
+			const countRows = await ctx.db
 				.select({ total: count() })
 				.from(raceHistory)
 				.where(eq(raceHistory.raceId, input.raceId));
-			const placement = total + 1;
+			const placement = (countRows[0]?.total ?? 0) + 1;
 
 			const now = new Date();
 			const raceHistoryId = crypto.randomUUID();
@@ -50,7 +50,7 @@ export const raceRouter = router({
 			};
 
 			if (placement === 1) {
-				updateSet.racesWon = sql`${player.racesWon} + 1`;
+				updateSet["racesWon"] = sql`${player.racesWon} + 1`;
 			}
 
 			await ctx.db

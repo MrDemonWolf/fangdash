@@ -6,19 +6,23 @@ import { devProcedure, router } from "../trpc.ts";
 
 export const adminRouter = router({
 	getStats: devProcedure.query(async ({ ctx }) => {
-		const [playerCount] = await ctx.db.select({ count: count() }).from(player);
-		const [scoreStats] = await ctx.db
+		const playerCountRows = await ctx.db.select({ count: count() }).from(player);
+		const scoreStatsRows = await ctx.db
 			.select({
 				totalGames: count(),
 				totalMeters: sql<number>`coalesce(sum(${score.distance}), 0)`,
 			})
 			.from(score);
-		const [raceStats] = await ctx.db
+		const raceStatsRows = await ctx.db
 			.select({
 				distinctRaces: sql<number>`count(distinct ${raceHistory.raceId})`,
 				totalEntries: count(),
 			})
 			.from(raceHistory);
+
+		const playerCount = playerCountRows[0] ?? { count: 0 };
+		const scoreStats = scoreStatsRows[0] ?? { totalGames: 0, totalMeters: 0 };
+		const raceStats = raceStatsRows[0] ?? { distinctRaces: 0, totalEntries: 0 };
 
 		return {
 			totalPlayers: playerCount.count,
@@ -71,7 +75,7 @@ export const adminRouter = router({
 
 			return {
 				items: rows,
-				total: totalResult[0].count,
+				total: (totalResult[0] ?? { count: 0 }).count,
 				page: input.page,
 				limit: input.limit,
 			};
@@ -86,15 +90,17 @@ export const adminRouter = router({
 			}),
 		)
 		.mutation(async ({ ctx, input }) => {
+			const body: { userId: string; banReason?: string; banExpiresIn?: number } = {
+				userId: input.userId,
+			};
+			if (input.reason) {
+				body.banReason = input.reason;
+			}
+			if (input.durationDays && input.durationDays > 0) {
+				body.banExpiresIn = input.durationDays * 24 * 60 * 60;
+			}
 			await ctx.auth.api.banUser({
-				body: {
-					userId: input.userId,
-					banReason: input.reason,
-					banExpiresIn:
-						input.durationDays && input.durationDays > 0
-							? input.durationDays * 24 * 60 * 60
-							: undefined,
-				},
+				body,
 				headers: ctx.headers,
 			});
 
@@ -145,7 +151,7 @@ export const adminRouter = router({
 
 			return {
 				items: rows,
-				total: totalResult[0].count,
+				total: (totalResult[0] ?? { count: 0 }).count,
 				page: input.page,
 				limit: input.limit,
 			};
@@ -192,9 +198,10 @@ export const adminRouter = router({
 			const offset = (input.page - 1) * input.limit;
 
 			// Phase 1: count distinct races for total
-			const [totalResult] = await ctx.db
+			const totalRows = await ctx.db
 				.select({ count: sql<number>`count(distinct ${raceHistory.raceId})` })
 				.from(raceHistory);
+			const totalResult = totalRows[0] ?? { count: 0 };
 
 			// Phase 2: get paginated distinct raceIds
 			const paginatedRaceIds = await ctx.db
