@@ -30,10 +30,12 @@ export class Obstacle {
 		const inset = 4 * OBSTACLE_SCALE; // tighter inset: 8px per side at 2x scale
 		const w = this.sprite.displayWidth;
 		const h = this.sprite.displayHeight;
-		const visibleH = Math.min(h, this.sprite.y - GROUND_VISUAL_Y);
+		// Origin is (0.5, 1), so sprite.y is the bottom edge and top = sprite.y - h
+		const top = this.sprite.y - h;
+		const visibleH = Math.max(0, Math.min(h, GROUND_VISUAL_Y - top));
 		this._boundsRect.setTo(
 			this.sprite.x - w / 2 + inset,
-			GROUND_VISUAL_Y + inset,
+			top + inset,
 			w - inset * 2,
 			visibleH - inset * 2,
 		);

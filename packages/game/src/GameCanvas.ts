@@ -113,7 +113,7 @@ export function createGame(options: GameCanvasOptions): GameCanvasResult {
 	// Surface critical asset load failures to the React layer
 	if (options.onError) {
 		game.events.on("boot-error", ({ message }: { key: string; message: string }) => {
-			options.onError!(message);
+			options.onError?.(message);
 		});
 	}
 
@@ -221,7 +221,7 @@ export function createRaceGame(options: RaceCanvasOptions): RaceCanvasResult {
 	// Surface critical asset load failures to the React layer
 	if (options.onError) {
 		game.events.on("boot-error", ({ message }: { key: string; message: string }) => {
-			options.onError!(message);
+			options.onError?.(message);
 		});
 	}
 

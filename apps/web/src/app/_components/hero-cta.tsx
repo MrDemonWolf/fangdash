@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import { signIn, useSession } from "@/lib/auth-client.ts";
 
 function TwitchIcon({ className }: { className?: string }) {
@@ -12,7 +13,12 @@ function TwitchIcon({ className }: { className?: string }) {
 }
 
 export function HeroCTA() {
-	const { data: session, isPending } = useSession();
+	const { data: session, isPending: sessionPending } = useSession();
+	// Prevent hydration mismatch: useSession returns isPending=false on the server
+	// but isPending=true on the client's first render.
+	const [hasMounted, setHasMounted] = useState(false);
+	useEffect(() => setHasMounted(true), []);
+	const isPending = !hasMounted || sessionPending;
 
 	const handleSignIn = () => {
 		signIn.social({ provider: "twitch", callbackURL: window.location.origin });
