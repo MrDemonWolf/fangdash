@@ -14,6 +14,10 @@ type EventHandler<T extends ServerMessageType> = (
 	payload: ServerMessagePayload<T>,
 ) => void;
 
+// ── Connection state ──
+
+export type ConnectionState = "connecting" | "connected" | "disconnected" | "error";
+
 // ── Connection options ──
 
 export interface RaceConnectionOptions {
@@ -23,33 +27,99 @@ export interface RaceConnectionOptions {
 	 * PartyKit host override. Defaults to NEXT_PUBLIC_PARTYKIT_HOST env var.
 	 */
 	host?: string;
+	/** Called whenever the WebSocket connection state changes */
+	onConnectionStateChange?: (state: ConnectionState) => void;
 }
 
 // ── RaceConnection class ──
 
+const MAX_RECONNECT_ATTEMPTS = 5;
+const RECONNECT_BASE_DELAY_MS = 1000;
+
 export class RaceConnection {
 	private socket: PartySocket;
 	private listeners = new Map<string, Set<EventHandler<ServerMessageType>>>();
+	private messageHandler: (event: MessageEvent) => void;
+	private options: RaceConnectionOptions;
+	private host: string;
+	private connectionState: ConnectionState = "connecting";
+	private isIntentionalDisconnect = false;
+	private reconnectAttempts = 0;
+	private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
+	private lastJoinArgs: { username: string; skinId: string } | null = null;
 
 	constructor(options: RaceConnectionOptions) {
-		const host =
+		this.options = options;
+		this.host =
 			options.host ?? process.env.NEXT_PUBLIC_PARTYKIT_HOST ?? "localhost:1999";
 
-		this.socket = new PartySocket({
-			host,
-			room: options.roomCode,
+		this.messageHandler = (event: MessageEvent) => {
+			this.handleMessage(event.data);
+		};
+
+		this.socket = this.createSocket();
+	}
+
+	private createSocket(): PartySocket {
+		const socket = new PartySocket({
+			host: this.host,
+			room: this.options.roomCode,
 			party: "race",
 		});
 
-		this.socket.addEventListener("message", (event) => {
-			this.handleMessage(event.data);
+		socket.addEventListener("message", this.messageHandler);
+		socket.addEventListener("open", () => this.emitState("connected"));
+		socket.addEventListener("close", () => {
+			if (!this.isIntentionalDisconnect) {
+				this.emitState("disconnected");
+				this.scheduleReconnect();
+			}
 		});
+		socket.addEventListener("error", () => {
+			this.emitState("error");
+		});
+
+		return socket;
+	}
+
+	private emitState(state: ConnectionState): void {
+		this.connectionState = state;
+		this.options.onConnectionStateChange?.(state);
+	}
+
+	private scheduleReconnect(): void {
+		if (this.reconnectAttempts >= MAX_RECONNECT_ATTEMPTS) return;
+
+		const delay = RECONNECT_BASE_DELAY_MS * Math.pow(2, this.reconnectAttempts);
+		this.reconnectAttempts++;
+
+		this.reconnectTimer = setTimeout(() => {
+			if (this.isIntentionalDisconnect) return;
+
+			// Remove old listeners from the old socket before creating a new one
+			this.socket.removeEventListener("message", this.messageHandler);
+			this.socket.close();
+
+			this.socket = this.createSocket();
+
+			// Re-send join message so the server knows the player is back
+			if (this.lastJoinArgs) {
+				// Wait for the socket to open before re-joining
+				const rejoin = () => {
+					if (this.lastJoinArgs) {
+						this.send({ type: "join", payload: this.lastJoinArgs });
+					}
+				};
+				this.socket.addEventListener("open", rejoin, { once: true });
+			}
+		}, delay);
 	}
 
 	// ── Public API: sending messages ──
 
 	/** Send a join message with username and equipped skin */
 	join(username: string, skinId: string): void {
+		this.lastJoinArgs = { username, skinId };
 		this.send({ type: "join", payload: { username, skinId } });
 	}
 
@@ -68,8 +138,24 @@ export class RaceConnection {
 		this.send({ type: "ready" });
 	}
 
+	/** Kick a player from the room (host only) */
+	sendKick(playerId: string): void {
+		this.send({ type: "kick", payload: { playerId } });
+	}
+
+	/** Request a rematch after the race ends (host only) */
+	sendRematch(): void {
+		this.send({ type: "rematch" });
+	}
+
 	/** Close the WebSocket connection */
 	disconnect(): void {
+		this.isIntentionalDisconnect = true;
+		if (this.reconnectTimer !== null) {
+			clearTimeout(this.reconnectTimer);
+			this.reconnectTimer = null;
+		}
+		this.socket.removeEventListener("message", this.messageHandler);
 		this.socket.close();
 	}
 
@@ -109,9 +195,24 @@ export class RaceConnection {
 
 	// ── Connection state ──
 
+	/** Current connection state */
+	get state(): ConnectionState {
+		return this.connectionState;
+	}
+
+	/** Number of reconnect attempts made so far */
+	get reconnectCount(): number {
+		return this.reconnectAttempts;
+	}
+
 	/** Expose the underlying socket's readyState for connection-status checks */
 	get readyState(): number {
 		return this.socket.readyState;
+	}
+
+	/** Expose the underlying socket's connection id */
+	get id(): string {
+		return this.socket.id;
 	}
 
 	// ── Internals ──

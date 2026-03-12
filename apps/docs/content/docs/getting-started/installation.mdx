@@ -3,15 +3,29 @@ title: Developer Setup
 description: Set up FangDash for local development.
 ---
 
+<Callout type="info">
+**TL;DR**
+- Requires Bun, a Cloudflare account, and a Twitch app
+- Clone → install → create D1 database → copy env files → `bun dev`
+- Web runs at `localhost:3000`, API at `localhost:8787`
+</Callout>
+
 This guide is for developers who want to run FangDash locally or contribute to the project.
 
 ## Prerequisites
 
-- Node.js 20 or higher
-- bun 10.x (run `corepack enable` to install)
-- A Cloudflare account (for D1 database)
-- A Twitch Developer application (for OAuth)
+<Callout type="warn">
+You need a **Cloudflare account** (for the D1 database) and a **Twitch Developer application** (for OAuth) before you can run FangDash locally.
+</Callout>
 
+| Requirement | Version |
+| --- | --- |
+| Bun | Latest (`curl -fsSL https://bun.sh/install \| bash`) |
+| Cloudflare account | Free tier works |
+| Twitch Developer app | [dev.twitch.tv/console](https://dev.twitch.tv/console) |
+
+<Steps>
+<Step>
 ## Clone and Install
 
 ```bash
@@ -19,7 +33,9 @@ git clone https://github.com/MrDemonWolf/fangdash.git
 cd fangdash
 bun install
 ```
+</Step>
 
+<Step>
 ## Set Up the Database
 
 Create a Cloudflare D1 database:
@@ -28,22 +44,26 @@ Create a Cloudflare D1 database:
 bunx wrangler d1 create fangdash-db
 ```
 
-Copy the database ID from the output and update `apps/api/wrangler.toml`.
-
-Run migrations:
+Copy the database ID from the output and update `apps/api/wrangler.toml`. Then run migrations:
 
 ```bash
 bunx wrangler d1 migrations apply fangdash-db --local
 ```
+</Step>
 
+<Step>
 ## Configure Environment Variables
 
-Copy the example files (run from the repo root):
+Copy the example files from the repo root:
 
 ```bash
 cp apps/api/.dev.vars.example apps/api/.dev.vars
-cp apps/web/.env.local.example apps/web/.env.local
+cp apps/web/.env.example apps/web/.env.local
 ```
+
+<Callout type="warn">
+Never commit `.dev.vars` or `.env.local` — they contain secrets. Both files are already in `.gitignore`.
+</Callout>
 
 Fill in `apps/api/.dev.vars`:
 
@@ -59,7 +79,9 @@ Fill in `apps/web/.env.local`:
 ```
 NEXT_PUBLIC_API_URL=http://localhost:8787
 ```
+</Step>
 
+<Step>
 ## Start Development
 
 ```bash
@@ -67,6 +89,8 @@ bun dev
 ```
 
 The web app runs at `http://localhost:3000` and the API at `http://localhost:8787`.
+</Step>
+</Steps>
 
 ## Available Scripts
 

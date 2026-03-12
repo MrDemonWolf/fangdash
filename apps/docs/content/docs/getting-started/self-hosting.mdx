@@ -3,17 +3,28 @@ title: Self-Hosting
 description: Deploy your own instance of FangDash.
 ---
 
+<Callout type="info">
+**TL;DR**
+- FangDash runs entirely on Cloudflare infrastructure (Workers + D1)
+- Three services to deploy: API, Web, and PartyKit (multiplayer)
+- `pnpm ship` deploys all three at once
+</Callout>
+
 FangDash is designed to run on Cloudflare's infrastructure. Here's how to deploy your own instance.
 
 ## What You Need
 
-- A Cloudflare account (free tier works)
-- A Twitch Developer application
-- A PartyKit account (for multiplayer)
+| Requirement | Notes |
+| --- | --- |
+| Cloudflare account | Free tier works |
+| Twitch Developer application | For OAuth sign-in |
+| PartyKit account | For real-time multiplayer |
 
+<Steps>
+<Step>
 ## Deploy the API
 
-The API runs on Cloudflare Workers with a D1 database.
+The **API** runs on Cloudflare Workers with a D1 database.
 
 1. Create a D1 database in the Cloudflare dashboard
 2. Update `apps/api/wrangler.toml` with your database ID
@@ -25,15 +36,17 @@ bunx wrangler secret put TWITCH_CLIENT_ID --config apps/api/wrangler.toml
 bunx wrangler secret put TWITCH_CLIENT_SECRET --config apps/api/wrangler.toml
 ```
 
-4. Deploy (from the repo root):
+4. Deploy from the repo root:
 
 ```bash
 bun ship:api
 ```
+</Step>
 
+<Step>
 ## Deploy the Web App
 
-The web app deploys to Cloudflare Workers using OpenNext.
+The **web app** deploys to Cloudflare Workers using OpenNext.
 
 1. Update `apps/web/.env.local` with your API URL
 2. Deploy:
@@ -41,10 +54,12 @@ The web app deploys to Cloudflare Workers using OpenNext.
 ```bash
 bun ship:web
 ```
+</Step>
 
+<Step>
 ## Deploy PartyKit
 
-PartyKit handles multiplayer WebSocket connections.
+**PartyKit** handles real-time multiplayer WebSocket connections.
 
 1. Set your PartyKit token:
 
@@ -57,6 +72,8 @@ export PARTYKIT_TOKEN=your-token
 ```bash
 bun ship:party
 ```
+</Step>
+</Steps>
 
 ## Deploy Everything at Once
 
@@ -68,7 +85,13 @@ This runs all three deploy commands in parallel.
 
 ## Setting Up Twitch OAuth
 
-1. Go to the [Twitch Developer Console](https://dev.twitch.tv/console)
-2. Create a new application
-3. Set the OAuth Redirect URL to `https://your-api-domain/api/auth/callback/twitch`
-4. Copy the Client ID and Client Secret to your environment variables
+<Steps>
+<Step>Go to the [Twitch Developer Console](https://dev.twitch.tv/console)</Step>
+<Step>Create a new application</Step>
+<Step>Set the OAuth Redirect URL to `https://your-api-domain/api/auth/callback/twitch`</Step>
+<Step>Copy the Client ID and Client Secret to your environment variables</Step>
+</Steps>
+
+<Callout type="warn">
+The Twitch OAuth redirect URL must match your deployed API domain exactly — including the path `/api/auth/callback/twitch`.
+</Callout>

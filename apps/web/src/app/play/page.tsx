@@ -5,6 +5,7 @@ import type { DebugCommand, DebugState, GameState } from "@fangdash/shared";
 import { getSkinById } from "@fangdash/shared/skins";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 import { CountdownOverlay } from "@/components/game/CountdownOverlay.tsx";
 import DebugPanel from "@/components/game/DebugPanel.tsx";
 import { GameHUD } from "@/components/game/GameHUD.tsx";
@@ -31,6 +32,7 @@ export default function PlayPage() {
 	const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 	const countdownTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 	const startTimeRef = useRef<number>(0);
+	const retrySubmitRef = useRef<(() => void) | null>(null);
 
 	const [gameState, setGameState] = useState<GameState>({
 		score: 0,
@@ -53,6 +55,7 @@ export default function PlayPage() {
 	const [showMenu, setShowMenu] = useState(true);
 	const [selectedDifficulty, setSelectedDifficulty] = useState("easy");
 	const selectedDifficultyRef = useRef("easy");
+	const [gameError, setGameError] = useState<string | null>(null);
 
 	// Keep ref in sync so countdown callback reads latest value
 	selectedDifficultyRef.current = selectedDifficulty;
@@ -89,8 +92,14 @@ export default function PlayPage() {
 		error: submitError,
 	} = useMutation(
 		trpc.score.submit.mutationOptions({
+			onSuccess: () => {
+				toast.success("Score saved!");
+			},
 			onError: (err) => {
 				console.error("Failed to submit score:", err);
+				toast.error("Failed to save score.", {
+					action: { label: "Retry", onClick: () => retrySubmitRef.current?.() },
+				});
 			},
 		}),
 	);
@@ -175,6 +184,7 @@ export default function PlayPage() {
 		setGameOver(false);
 		setFinalState(null);
 		setFinalElapsedTime(0);
+		setGameError(null);
 		setGameState({
 			score: 0,
 			distance: 0,
@@ -186,6 +196,7 @@ export default function PlayPage() {
 		const { game, debug, audio, gameChannel } = createGame({
 			parent: containerRef.current,
 			skinKey: equippedSkinKey,
+			startDifficulty: selectedDifficulty,
 			onStateUpdate: (state) => {
 				setGameState(state);
 			},
@@ -193,6 +204,7 @@ export default function PlayPage() {
 			onDebugUpdate: (state: DebugState) => {
 				setDebugState(state);
 			},
+			onError: (msg) => setGameError(msg),
 		});
 
 		gameRef.current = game;
@@ -203,7 +215,7 @@ export default function PlayPage() {
 		setAudioVolume(audio.getVolume());
 		// Start in preview mode (background scrolls, no gameplay)
 		gameChannel.preview();
-	}, [equippedSkinKey, handleGameOver]);
+	}, [equippedSkinKey, selectedDifficulty, handleGameOver]);
 
 	// Check onboarding status on mount
 	useEffect(() => {
@@ -326,6 +338,9 @@ export default function PlayPage() {
 		});
 	}, [finalState, finalElapsedTime, submitScore]);
 
+	// Keep ref in sync so the toast action callback always has the latest version
+	retrySubmitRef.current = handleRetrySubmit;
+
 	const handleSignIn = useCallback(() => {
 		signIn.social({ provider: "twitch", callbackURL: window.location.href });
 	}, []);
@@ -367,7 +382,26 @@ export default function PlayPage() {
 				<div
 					ref={containerRef}
 					className="w-full h-full overflow-hidden bg-[#0f0f1a]"
+					style={{ touchAction: "none" }}
 				/>
+
+				{/* Game load error overlay */}
+				{gameError && (
+					<div className="absolute inset-0 flex items-center justify-center bg-[#091533]/90 z-50">
+						<div className="w-full max-w-sm rounded-xl border border-red-500/30 bg-[#091533] p-8 text-center shadow-2xl mx-4">
+							<div className="mb-4 text-4xl">⚠</div>
+							<h2 className="mb-2 text-xl font-bold text-white">Failed to load game</h2>
+							<p className="mb-6 text-sm text-white/50">{gameError}</p>
+							<button
+								type="button"
+								onClick={() => window.location.reload()}
+								className="rounded-lg bg-[#0FACED] px-6 py-3 text-sm font-bold text-[#091533] transition-colors hover:bg-[#0FACED]/80"
+							>
+								Reload Page
+							</button>
+						</div>
+					</div>
+				)}
 
 				{/* Countdown overlay */}
 				{countdown !== null && <CountdownOverlay seconds={countdown} />}

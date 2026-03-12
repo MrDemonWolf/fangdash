@@ -49,12 +49,19 @@ export class BootScene extends Phaser.Scene {
 		this.load.image("bg-trees", "/backgrounds/bg-trees.png");
 		this.load.image("ground", "/backgrounds/ground.png");
 
+		// Critical assets — if any fail, the game cannot run
+		const criticalAssets = ["wolf-gray", "obstacle-rock", "obstacle-log", "bg-sky", "ground"];
+
 		// Silently ignore missing audio files so the game works without audio assets
 		this.load.on("loaderror", (file: Phaser.Loader.File) => {
-			if (file.type === "audio") {
-				return;
-			}
+			if (file.type === "audio") return; // Audio is optional; continue without it
 			console.error(`Failed to load asset: ${file.key} (${file.url})`);
+			if (criticalAssets.includes(file.key as string)) {
+				this.game.events.emit("boot-error", {
+					key: file.key,
+					message: "Failed to load game assets. Please check your connection and reload.",
+				});
+			}
 		});
 
 		for (const key of Object.values(AUDIO_KEYS)) {

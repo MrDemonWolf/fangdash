@@ -99,8 +99,9 @@ export interface RaceRoom {
 	status: RaceStatus;
 	seed: string;
 	players: RacePlayer[];
-	startedAt?: string;
-	finishedAt?: string;
+	hostId: string | null;
+	startedAt?: string | undefined;
+	finishedAt?: string | undefined;
 }
 
 export interface RacePlayer {
@@ -110,7 +111,9 @@ export interface RacePlayer {
 	distance: number;
 	score: number;
 	alive: boolean;
-	finishTime?: number;
+	ready: boolean;
+	isHost: boolean;
+	finishTime?: number | undefined;
 }
 
 export interface RaceResult {
@@ -126,7 +129,9 @@ export type ClientMessage =
 	| { type: "join"; payload: { username: string; skinId: string } }
 	| { type: "update"; payload: { distance: number; score: number } }
 	| { type: "died" }
-	| { type: "ready" };
+	| { type: "ready" }
+	| { type: "kick"; payload: { playerId: string } }
+	| { type: "rematch" };
 
 export type ServerMessage =
 	| { type: "room_state"; payload: RaceRoom }
@@ -139,7 +144,11 @@ export type ServerMessage =
 	| { type: "player_died"; payload: { id: string } }
 	| { type: "countdown"; payload: { seconds: number } }
 	| { type: "race_start"; payload: { seed: string } }
-	| { type: "race_end"; payload: { results: RaceResult[] } };
+	| { type: "race_end"; payload: { results: RaceResult[] } }
+	| { type: "host_changed"; payload: { hostId: string } }
+	| { type: "player_ready"; payload: { id: string; ready: boolean } }
+	| { type: "player_kicked"; payload: { id: string } }
+	| { type: "room_reset"; payload: RaceRoom };
 
 // ── Game State ──
 export interface GameState {

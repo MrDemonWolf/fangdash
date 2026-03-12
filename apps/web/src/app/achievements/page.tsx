@@ -6,7 +6,8 @@ import type {
 } from "@fangdash/shared";
 import { getSkinById } from "@fangdash/shared";
 import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import { useSession } from "@/lib/auth-client.ts";
 import { useTRPC } from "@/lib/trpc.ts";
 
@@ -185,6 +186,12 @@ export default function AchievementsPage() {
 	const isLoading = isSignedIn ? isLoadingAuth : isLoadingPublic;
 	const isError = isSignedIn ? isErrorAuth : isErrorPublic;
 
+	useEffect(() => {
+		if (isError) {
+			toast.error("Failed to load achievements.");
+		}
+	}, [isError]);
+
 	const achievements = isSignedIn
 		? (authenticatedAchievements ?? [])
 		: (publicAchievements ?? []).map((a) => ({
@@ -238,13 +245,6 @@ export default function AchievementsPage() {
 						</button>
 					))}
 				</div>
-
-				{/* Error state */}
-				{isError && (
-					<div className="rounded-lg border border-red-500/20 bg-red-500/10 p-4 text-center text-red-400">
-						Something went wrong. Please try again later.
-					</div>
-				)}
 
 				{/* Loading state */}
 				{isLoading ? (

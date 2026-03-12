@@ -1,7 +1,8 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import { useSession } from "@/lib/auth-client.ts";
 import { useTRPC } from "@/lib/trpc.ts";
 
@@ -107,6 +108,12 @@ export default function LeaderboardPage() {
 	const entries = leaderboardQuery.data ?? [];
 	const currentUsername = session?.user?.name;
 
+	useEffect(() => {
+		if (leaderboardQuery.isError) {
+			toast.error("Failed to load leaderboard.");
+		}
+	}, [leaderboardQuery.isError]);
+
 	return (
 		<main className="min-h-screen bg-[#091533] px-4 py-8 sm:px-6 lg:px-8">
 			<div className="mx-auto max-w-4xl">
@@ -133,13 +140,6 @@ export default function LeaderboardPage() {
 						</button>
 					))}
 				</div>
-
-				{/* Error state */}
-				{leaderboardQuery.isError && (
-					<div className="mt-6 rounded-lg border border-red-500/20 bg-red-500/10 p-4 text-center text-red-400">
-						Something went wrong. Please try again later.
-					</div>
-				)}
 
 				{/* Desktop Table */}
 				<div className="mt-6 hidden sm:block overflow-x-auto rounded-lg border border-white/10 bg-white/[0.03]">

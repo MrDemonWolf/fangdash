@@ -15,9 +15,9 @@ import { ParallaxBackground } from "../systems/ParallaxBackground.ts";
 import { ScoreManager } from "../systems/ScoreManager.ts";
 
 export type GameEventCallback = {
-	onStateUpdate?: (state: GameState) => void;
-	onGameOver?: (state: GameState) => void;
-	onDebugUpdate?: (state: DebugState) => void;
+	onStateUpdate?: ((state: GameState) => void) | undefined;
+	onGameOver?: ((state: GameState) => void) | undefined;
+	onDebugUpdate?: ((state: DebugState) => void) | undefined;
 };
 
 export class GameScene extends Phaser.Scene {
@@ -30,10 +30,10 @@ export class GameScene extends Phaser.Scene {
 	protected jumpKey!: Phaser.Input.Keyboard.Key;
 	protected callbacks: GameEventCallback = {};
 	protected skinKey = "wolf-gray";
-	protected seed?: string;
+	protected seed: string | undefined;
 	protected running = false;
 	private previewing = false;
-	private startDifficulty?: string;
+	private startDifficulty: string | undefined;
 	audioManager!: AudioManager;
 
 	// Debug state
@@ -64,7 +64,7 @@ export class GameScene extends Phaser.Scene {
 		// Background
 		this.background = new ParallaxBackground(this);
 
-		// Ground
+		// Ground — depth 2 so it renders over the embedded bottom half of obstacles
 		this.ground = this.add.tileSprite(
 			0,
 			GAME_HEIGHT - GROUND_HEIGHT,
@@ -73,10 +73,11 @@ export class GameScene extends Phaser.Scene {
 			"ground",
 		);
 		this.ground.setOrigin(0, 0);
-		this.ground.setDepth(0);
+		this.ground.setDepth(2);
 
-		// Player
+		// Player — depth 3 (always in front)
 		this.player = new Player(this, this.skinKey);
+		this.player.sprite.setDepth(3);
 
 		// Obstacles
 		this.spawner = new ObstacleSpawner(this, 10, this.seed);
@@ -86,9 +87,13 @@ export class GameScene extends Phaser.Scene {
 		this.scoreManager = new ScoreManager();
 		this.audioManager = new AudioManager(this);
 
-		// Clean up BGM on scene shutdown
+		// Clean up on scene shutdown
 		this.events.on("shutdown", () => {
 			this.audioManager.stopBGM();
+			if (this.input.keyboard) {
+				this.input.keyboard.off("keydown-SPACE");
+			}
+			this.input.off("pointerdown");
 		});
 
 		// Input

@@ -25,9 +25,11 @@ export interface GameChannel {
 export interface GameCanvasOptions {
 	parent: HTMLElement;
 	skinKey?: string;
+	startDifficulty?: string;
 	onStateUpdate?: (state: GameState) => void;
 	onGameOver?: (state: GameState) => void;
 	onDebugUpdate?: (state: DebugState) => void;
+	onError?: (message: string) => void;
 }
 
 export interface AudioChannel {
@@ -54,6 +56,7 @@ export interface RaceCanvasOptions {
 	onPositionUpdate?: (distance: number, score: number) => void;
 	onPlayerDied?: () => void;
 	onDebugUpdate?: (state: DebugState) => void;
+	onError?: (message: string) => void;
 }
 
 export interface RaceCanvasResult {
@@ -83,6 +86,8 @@ function createPhaserConfig(
 		scale: {
 			mode: Phaser.Scale.FIT,
 			autoCenter: Phaser.Scale.CENTER_BOTH,
+			width: GAME_WIDTH,
+			height: GAME_HEIGHT,
 		},
 		input: {
 			keyboard: true,
@@ -92,21 +97,28 @@ function createPhaserConfig(
 }
 
 export function createGame(options: GameCanvasOptions): GameCanvasResult {
-	const callbacks: GameEventCallback = {
+	const callbacks = {
 		onStateUpdate: options.onStateUpdate,
 		onGameOver: options.onGameOver,
 		onDebugUpdate: options.onDebugUpdate,
-	};
+	} satisfies GameEventCallback;
 
 	const game = new Phaser.Game(
 		createPhaserConfig(options.parent, [BootScene, GameScene]),
 	);
 
+	// Surface critical asset load failures to the React layer
+	if (options.onError) {
+		game.events.on("boot-error", ({ message }: { key: string; message: string }) => {
+			options.onError!(message);
+		});
+	}
+
 	// Pass callbacks to GameScene when it starts
 	game.events.on("ready", () => {
 		const gameScene = game.scene.getScene("GameScene") as GameScene;
 		if (gameScene) {
-			gameScene.scene.restart({ callbacks, skinKey: options.skinKey });
+			gameScene.scene.restart({ callbacks, skinKey: options.skinKey, startDifficulty: options.startDifficulty });
 		}
 	});
 
@@ -189,17 +201,24 @@ export function createGame(options: GameCanvasOptions): GameCanvasResult {
 }
 
 export function createRaceGame(options: RaceCanvasOptions): RaceCanvasResult {
-	const callbacks: RaceCallbacks = {
+	const callbacks = {
 		onStateUpdate: options.onStateUpdate,
 		onGameOver: options.onGameOver,
 		onPositionUpdate: options.onPositionUpdate,
 		onPlayerDied: options.onPlayerDied,
 		onDebugUpdate: options.onDebugUpdate,
-	};
+	} satisfies RaceCallbacks;
 
 	const game = new Phaser.Game(
 		createPhaserConfig(options.parent, [BootScene, RaceScene]),
 	);
+
+	// Surface critical asset load failures to the React layer
+	if (options.onError) {
+		game.events.on("boot-error", ({ message }: { key: string; message: string }) => {
+			options.onError!(message);
+		});
+	}
 
 	// Pass race data to RaceScene when it starts
 	game.events.on("ready", () => {

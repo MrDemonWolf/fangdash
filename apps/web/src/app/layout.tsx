@@ -1,4 +1,6 @@
 import type { Metadata, Viewport } from "next";
+import { Toaster } from "sonner";
+import { PWAInstallBanner } from "@/components/PWAInstallBanner.tsx";
 import { ServiceWorkerRegistration } from "@/components/ServiceWorkerRegistration.tsx";
 import { Navbar } from "@/components/ui/Navbar.tsx";
 import { SITE_URL } from "@/lib/site-config.ts";
@@ -58,7 +60,9 @@ export default function RootLayout({
 			<body className="bg-[var(--color-fang-darker)] text-white min-h-screen">
 				<Providers>
 					<ServiceWorkerRegistration />
+					<Toaster position="top-right" theme="dark" richColors />
 					<Navbar />
+					<PWAInstallBanner />
 					{children}
 				</Providers>
 			</body>

@@ -12,7 +12,8 @@
     "deploy": "wrangler deploy",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "clean": "rm -rf dist .wrangler"
+    "clean": "rm -rf dist .wrangler",
+    "promote-admin": "bash scripts/promote-admin.sh"
   },
   "dependencies": {
     "@fangdash/shared": "workspace:*",

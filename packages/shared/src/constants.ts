@@ -33,7 +33,11 @@ export type ObstacleType = (typeof OBSTACLE_TYPES)[number];
 export const GAME_WIDTH = 800;
 export const GAME_HEIGHT = 600;
 export const GROUND_HEIGHT = 100;
+export const GROUND_VISUAL_Y = GAME_HEIGHT - GROUND_HEIGHT; // 500 — top edge of the dirt strip
 export const PLAYER_START_X = 150;
+
+// ── Obstacle embedding ──
+export const OBSTACLE_EMBED_RATIO = 0.5; // fraction of obstacle height below GROUND_VISUAL_Y
 
 // ── Multiplayer ──
 export const MAX_PLAYERS_PER_RACE = 4;

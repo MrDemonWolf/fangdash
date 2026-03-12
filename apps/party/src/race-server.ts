@@ -15,6 +15,7 @@ import type * as Party from "partykit/server";
 // biome-ignore lint/style/noDefaultExport: required by PartyKit
 export default class RaceServer implements Party.Server {
 	room: RaceRoom;
+	private countdownInProgress = false;
 
 	// biome-ignore lint/style/noParameterProperties: PartyKit convention
 	constructor(readonly party: Party.Party) {
@@ -23,6 +24,7 @@ export default class RaceServer implements Party.Server {
 			status: "waiting",
 			seed: crypto.randomUUID(),
 			players: [],
+			hostId: null,
 		};
 	}
 
@@ -52,12 +54,32 @@ export default class RaceServer implements Party.Server {
 			case "ready":
 				this.handleReady(sender);
 				break;
+			case "kick":
+				this.handleKick(sender, msg.payload);
+				break;
+			case "rematch":
+				this.handleRematch(sender);
+				break;
 		}
 	}
 
 	onClose(conn: Party.Connection) {
+		const wasHost = conn.id === this.room.hostId;
 		this.room.players = this.room.players.filter((p) => p.id !== conn.id);
 		this.broadcast({ type: "player_left", payload: { id: conn.id } });
+
+		// Host migration
+		if (wasHost && this.room.players.length > 0) {
+			const newHost = this.room.players[0]!;
+			this.room.hostId = newHost.id;
+			this.room.players = this.room.players.map((p) => ({
+				...p,
+				isHost: p.id === newHost.id,
+			}));
+			this.broadcast({ type: "host_changed", payload: { hostId: newHost.id } });
+		} else if (this.room.players.length === 0) {
+			this.room.hostId = null;
+		}
 
 		if (
 			this.room.status === "racing" &&
@@ -81,6 +103,8 @@ export default class RaceServer implements Party.Server {
 			return;
 		}
 
+		const isFirstPlayer = this.room.players.length === 0;
+
 		const player: RacePlayer = {
 			id: conn.id,
 			username: payload.username,
@@ -88,24 +112,37 @@ export default class RaceServer implements Party.Server {
 			distance: 0,
 			score: 0,
 			alive: true,
+			ready: false,
+			isHost: isFirstPlayer,
 		};
+
+		if (isFirstPlayer) {
+			this.room.hostId = conn.id;
+		}
 
 		this.room.players.push(player);
 		this.broadcast({ type: "player_joined", payload: player });
 	}
 
-	private handleReady(_conn: Party.Connection) {
-		if (this.room.status !== "waiting") {
-			return;
-		}
-		if (this.room.players.length < MIN_PLAYERS_TO_START) {
-			return;
-		}
+	private handleReady(conn: Party.Connection) {
+		if (this.room.status !== "waiting") return;
 
-		this.startCountdown();
+		const player = this.room.players.find((p) => p.id === conn.id);
+		if (!player) return;
+
+		player.ready = true;
+		this.broadcast({ type: "player_ready", payload: { id: conn.id, ready: true } });
+
+		const isHost = conn.id === this.room.hostId;
+		if (!isHost && this.room.players.length < MIN_PLAYERS_TO_START) return;
+		if (isHost) {
+			this.startCountdown();
+		}
 	}
 
 	private async startCountdown() {
+		if (this.countdownInProgress) return;
+		this.countdownInProgress = true;
 		this.room.status = "countdown";
 
 		for (let i = RACE_COUNTDOWN_SECONDS; i > 0; i--) {
@@ -160,6 +197,46 @@ export default class RaceServer implements Party.Server {
 		if (this.room.players.every((p) => !p.alive)) {
 			this.endRace();
 		}
+	}
+
+	private handleKick(conn: Party.Connection, payload: { playerId: string }) {
+		if (conn.id !== this.room.hostId) return;
+		if (this.room.status !== "waiting") return;
+
+		this.room.players = this.room.players.filter((p) => p.id !== payload.playerId);
+		this.broadcast({ type: "player_kicked", payload: { id: payload.playerId } });
+
+		// Close the kicked player's connection
+		for (const connection of this.party.getConnections()) {
+			if (connection.id === payload.playerId) {
+				connection.close();
+				break;
+			}
+		}
+	}
+
+	private handleRematch(conn: Party.Connection) {
+		if (this.room.status !== "finished") return;
+		if (conn.id !== this.room.hostId) return;
+
+		// Reset room state
+		this.room.status = "waiting";
+		this.room.seed = crypto.randomUUID();
+		this.room.startedAt = undefined;
+		this.room.finishedAt = undefined;
+		this.countdownInProgress = false;
+
+		// Reset all players
+		this.room.players = this.room.players.map((p) => ({
+			...p,
+			distance: 0,
+			score: 0,
+			alive: true,
+			ready: false,
+			finishTime: undefined,
+		}));
+
+		this.broadcast({ type: "room_reset", payload: this.room });
 	}
 
 	private endRace() {

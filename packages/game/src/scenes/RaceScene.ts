@@ -9,8 +9,8 @@ export interface RaceOpponent {
 }
 
 export interface RaceCallbacks extends GameEventCallback {
-	onPositionUpdate?: (distance: number, score: number) => void;
-	onPlayerDied?: () => void;
+	onPositionUpdate?: ((distance: number, score: number) => void) | undefined;
+	onPlayerDied?: (() => void) | undefined;
 }
 
 export interface RaceInitData {

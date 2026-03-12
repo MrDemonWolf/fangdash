@@ -6,7 +6,8 @@
     "jsx": "react-jsx",
     "composite": false,
     "declaration": false,
-    "declarationMap": false
+    "declarationMap": false,
+    "lib": ["ESNext", "DOM"]
   },
   "include": ["src"]
 }

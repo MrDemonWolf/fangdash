@@ -8,6 +8,7 @@ import type {
 import { SKINS } from "@fangdash/shared";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import Image from "next/image";
+import { toast } from "sonner";
 import { useSession } from "@/lib/auth-client.ts";
 import { useTRPC } from "@/lib/trpc.ts";
 
@@ -78,14 +79,12 @@ function SkinCard({
 	onEquip,
 	isEquipping,
 	signedIn,
-	equipError,
 }: {
 	skin: GallerySkin;
 	equipped: boolean;
 	onEquip: (skinId: string) => void;
 	isEquipping: boolean;
 	signedIn: boolean;
-	equipError?: boolean;
 }) {
 	const rarity = RARITY_COLORS[skin.rarity];
 
@@ -154,21 +153,14 @@ function SkinCard({
 			<div className="mt-auto pt-4">
 				{skin.unlocked ? (
 					signedIn && !equipped ? (
-						<>
-							{equipError && (
-								<p className="mb-2 text-center text-xs text-red-400">
-									Failed to equip skin. Please try again.
-								</p>
-							)}
-							<button
-								type="button"
-								onClick={() => onEquip(skin.id)}
-								disabled={isEquipping}
-								className="rounded-lg bg-[#0FACED] px-5 py-2 text-sm font-bold text-[#091533] transition-colors hover:bg-[#0FACED]/80 disabled:cursor-not-allowed disabled:opacity-50"
-							>
-								{isEquipping ? "Equipping..." : "Equip"}
-							</button>
-						</>
+						<button
+							type="button"
+							onClick={() => onEquip(skin.id)}
+							disabled={isEquipping}
+							className="rounded-lg bg-[#0FACED] px-5 py-2 text-sm font-bold text-[#091533] transition-colors hover:bg-[#0FACED]/80 disabled:cursor-not-allowed disabled:opacity-50"
+						>
+							{isEquipping ? "Equipping..." : "Equip"}
+						</button>
 					) : equipped ? (
 						<span className="text-sm font-medium text-[#0FACED]">
 							Currently Equipped
@@ -213,6 +205,10 @@ export default function SkinsPage() {
 		trpc.skin.equipSkin.mutationOptions({
 			onSuccess: () => {
 				queryClient.invalidateQueries({ queryKey: equippedQueryKey });
+				toast.success("Skin equipped!");
+			},
+			onError: () => {
+				toast.error("Failed to equip skin.");
 			},
 		}),
 	);
@@ -286,7 +282,6 @@ export default function SkinsPage() {
 							onEquip={handleEquip}
 							isEquipping={equipMutation.isPending}
 							signedIn={signedIn}
-							equipError={equipMutation.isError}
 						/>
 					))}
 				</div>

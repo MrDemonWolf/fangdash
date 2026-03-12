@@ -35,7 +35,6 @@ export class Player {
 	gravityMultiplier = 1.0;
 
 	constructor(scene: Phaser.Scene, skinKey = "wolf-gray") {
-		this.scene = scene;
 		this.sprite = scene.add.sprite(PLAYER_START_X, GROUND_Y, skinKey);
 		this.sprite.setOrigin(0.5, 1);
 		this.sprite.setScale(3);

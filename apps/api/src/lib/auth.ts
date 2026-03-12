@@ -2,6 +2,7 @@ import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { admin } from "better-auth/plugins";
 import { drizzle } from "drizzle-orm/d1";
+import { and, eq } from "drizzle-orm";
 // biome-ignore lint/performance/noNamespaceImport: drizzle requires namespace import for schema
 import * as schema from "../db/schema.ts";
 
@@ -12,6 +13,7 @@ type AuthBindings = {
 	TWITCH_CLIENT_ID: string;
 	TWITCH_CLIENT_SECRET: string;
 	ENVIRONMENT?: string;
+	ADMIN_TWITCH_ID?: string;
 };
 
 const REQUIRED_AUTH_KEYS = [
@@ -86,6 +88,32 @@ export function createAuth(env: AuthBindings) {
 				defaultRole: "user",
 			}),
 		],
+		databaseHooks: {
+			user: {
+				create: {
+					after: async (user) => {
+						if (!env.ADMIN_TWITCH_ID) return;
+						const adminIds = env.ADMIN_TWITCH_ID.split(",").map((id) => id.trim());
+						const acct = await db
+							.select()
+							.from(schema.account)
+							.where(
+								and(
+									eq(schema.account.userId, user.id),
+									eq(schema.account.providerId, "twitch"),
+								),
+							)
+							.get();
+						if (acct && adminIds.includes(acct.accountId)) {
+							await db
+								.update(schema.user)
+								.set({ role: "admin" })
+								.where(eq(schema.user.id, user.id));
+						}
+					},
+				},
+			},
+		},
 	});
 }
 
