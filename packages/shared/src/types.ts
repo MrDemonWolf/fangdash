@@ -19,6 +19,7 @@ export interface Score {
 	score: number;
 	distance: number;
 	obstaclesCleared: number;
+	difficulty: string;
 	seed: string;
 	createdAt: string;
 }
@@ -28,6 +29,7 @@ export interface LeaderboardEntry {
 	playerId: string;
 	username: string;
 	score: number;
+	difficulty: string;
 	skinId: string;
 }
 

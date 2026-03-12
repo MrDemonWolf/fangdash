@@ -1,7 +1,7 @@
 "use client";
 
 import type { AudioChannel, DebugChannel, GameChannel } from "@fangdash/game";
-import type { DebugCommand, DebugState, GameState } from "@fangdash/shared";
+import type { DebugCommand, DebugState, DifficultyName, GameState } from "@fangdash/shared";
 import { getSkinById } from "@fangdash/shared/skins";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -60,6 +60,11 @@ export default function PlayPage() {
 	selectedDifficultyRef.current = selectedDifficulty;
 
 	const { data: session, isPending: sessionPending } = useSession();
+	// Prevent hydration mismatch: useSession returns isPending=false on the server
+	// but isPending=true on the client's first render. Force pending until mounted.
+	const [hasMounted, setHasMounted] = useState(false);
+	useEffect(() => setHasMounted(true), []);
+	const isPending = !hasMounted || sessionPending;
 	const isSignedIn = !!session?.user;
 	const isDevOrAdmin = useIsDevOrAdmin();
 
@@ -158,6 +163,7 @@ export default function PlayPage() {
 					obstaclesCleared: state.obstaclesCleared,
 					duration,
 					seed: Date.now().toString(),
+					difficulty: selectedDifficultyRef.current as DifficultyName,
 				});
 			}
 		},
@@ -174,6 +180,17 @@ export default function PlayPage() {
 		try {
 			// Dynamically import Phaser game (not available during SSR)
 			const { createGame, destroyGame } = await import("@fangdash/game");
+
+			// Cancel any pending countdown timers before destroying the game
+			if (countdownTimerRef.current) {
+				clearInterval(countdownTimerRef.current);
+				countdownTimerRef.current = null;
+			}
+			if (goTimeoutRef.current) {
+				clearTimeout(goTimeoutRef.current);
+				goTimeoutRef.current = null;
+			}
+			setCountdown(null);
 
 			// Clean up previous game
 			if (gameRef.current) {
@@ -347,6 +364,7 @@ export default function PlayPage() {
 			obstaclesCleared: finalState.obstaclesCleared,
 			duration: finalElapsedTime,
 			seed: Date.now().toString(),
+			difficulty: selectedDifficultyRef.current as DifficultyName,
 		});
 	}, [finalState, finalElapsedTime, submitScore]);
 
@@ -427,7 +445,7 @@ export default function PlayPage() {
 						onSelectDifficulty={setSelectedDifficulty}
 						userName={session?.user?.name ?? undefined}
 						userImage={session?.user?.image ?? undefined}
-						isPending={sessionPending}
+						isPending={isPending}
 						onSignIn={handleSignIn}
 						onSignOut={handleSignOut}
 					/>

@@ -3,6 +3,9 @@ BETTER_AUTH_SECRET=change-me-to-a-long-random-string-32-chars
 BETTER_AUTH_URL=http://localhost:8787
 TWITCH_CLIENT_ID=your_twitch_client_id_here
 TWITCH_CLIENT_SECRET=your_twitch_client_secret_here
+# NOTE: You must add http://localhost:8787/api/auth/callback/twitch
+# as an OAuth Redirect URL in your Twitch Developer Console app settings
+# (https://dev.twitch.tv/console/apps) for local login to work.
 
 # ── Optional ──────────────────────────────────────────────
 # Comma-separated Twitch numeric user IDs to auto-promote to admin on first login

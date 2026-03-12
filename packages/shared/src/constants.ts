@@ -23,7 +23,7 @@ export const SCORE_PER_OBSTACLE = 50;
 export const DISTANCE_MULTIPLIER = 0.1;
 
 // ── Obstacles ──
-export const OBSTACLE_GROUND_Y = 518; // grass top (500) + 18px embed so logs sit in grass
+export const OBSTACLE_GROUND_Y = 536; // fixed Y for obstacle anchors — accounts for transparent sprite padding
 export const MIN_OBSTACLE_GAP_MS = 800;
 export const MAX_OBSTACLE_GAP_MS = 2500;
 export const OBSTACLE_TYPES = ["rock", "log", "bush", "spike"] as const;
@@ -36,17 +36,19 @@ export const GROUND_HEIGHT = 100;
 export const GROUND_VISUAL_Y = GAME_HEIGHT - GROUND_HEIGHT; // 500 — top edge of the dirt strip
 export const PLAYER_START_X = 150;
 
-// ── Obstacle embedding ──
-export const OBSTACLE_EMBED_RATIO = 0.5; // fraction of obstacle height below GROUND_VISUAL_Y
-
 // ── Multiplayer ──
 export const MAX_PLAYERS_PER_RACE = 4;
 export const RACE_COUNTDOWN_SECONDS = 3;
 export const MIN_PLAYERS_TO_START = 2;
 
 // ── Difficulty Scaling ──
+export const DIFFICULTY_NAMES = ["easy", "medium", "hard", "insane", "nightmare"] as const;
+export type DifficultyName = (typeof DIFFICULTY_NAMES)[number];
+
 export interface DifficultyLevel {
-	name: string;
+	name: DifficultyName;
+	label: string;
+	color: string;
 	startDistance: number;
 	speedMultiplier: number;
 	spawnRateMultiplier: number;
@@ -58,6 +60,8 @@ export interface DifficultyLevel {
 export const DIFFICULTY_LEVELS: readonly DifficultyLevel[] = [
 	{
 		name: "easy",
+		label: "Easy",
+		color: "#22c55e",
 		startDistance: 0,
 		speedMultiplier: 1.0,
 		spawnRateMultiplier: 1.0,
@@ -67,6 +71,8 @@ export const DIFFICULTY_LEVELS: readonly DifficultyLevel[] = [
 	},
 	{
 		name: "medium",
+		label: "Medium",
+		color: "#eab308",
 		startDistance: 500,
 		speedMultiplier: 1.3,
 		spawnRateMultiplier: 1.2,
@@ -76,6 +82,8 @@ export const DIFFICULTY_LEVELS: readonly DifficultyLevel[] = [
 	},
 	{
 		name: "hard",
+		label: "Hard",
+		color: "#f97316",
 		startDistance: 1500,
 		speedMultiplier: 1.6,
 		spawnRateMultiplier: 1.5,
@@ -85,6 +93,8 @@ export const DIFFICULTY_LEVELS: readonly DifficultyLevel[] = [
 	},
 	{
 		name: "insane",
+		label: "Insane",
+		color: "#ef4444",
 		startDistance: 3000,
 		speedMultiplier: 2.0,
 		spawnRateMultiplier: 1.8,
@@ -94,6 +104,8 @@ export const DIFFICULTY_LEVELS: readonly DifficultyLevel[] = [
 	},
 	{
 		name: "nightmare",
+		label: "Nightmare",
+		color: "#a855f7",
 		startDistance: 5000,
 		speedMultiplier: 2.5,
 		spawnRateMultiplier: 2.2,

@@ -1,5 +1,7 @@
 "use client";
 
+import type { DifficultyName } from "@fangdash/shared";
+import { DIFFICULTY_LEVELS } from "@fangdash/shared";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -39,6 +41,20 @@ function RankBadge({ rank }: { rank: number }) {
 	return (
 		<span className="inline-flex items-center justify-center w-8 h-8 text-gray-400 font-medium text-sm">
 			{rank}
+		</span>
+	);
+}
+
+function DifficultyBadge({ difficulty }: { difficulty: string }) {
+	const level = DIFFICULTY_LEVELS.find((l) => l.name === difficulty);
+	if (!level) return null;
+	return (
+		<span className="inline-flex items-center gap-1 text-xs text-gray-400">
+			<span
+				className="inline-block w-2 h-2 rounded-full"
+				style={{ backgroundColor: level.color }}
+			/>
+			<span className="hidden sm:inline">{level.label}</span>
 		</span>
 	);
 }
@@ -95,12 +111,19 @@ function formatNumber(n: number) {
 
 export default function LeaderboardPage() {
 	const [activeTab, setActiveTab] = useState<Tab>("all-time");
+	const [activeDifficulty, setActiveDifficulty] = useState<DifficultyName | "all">("all");
 	const trpc = useTRPC();
 	const { data: session } = useSession();
 
 	const period = activeTab === "all-time" ? ("all" as const) : activeTab;
 
-	const leaderboardQuery = useQuery(trpc.score.leaderboard.queryOptions({ limit: 50, period }));
+	const leaderboardQuery = useQuery(
+		trpc.score.leaderboard.queryOptions({
+			limit: 50,
+			period,
+			difficulty: activeDifficulty === "all" ? undefined : activeDifficulty,
+		}),
+	);
 
 	const entries = leaderboardQuery.data ?? [];
 	const currentUsername = session?.user?.name;
@@ -117,7 +140,7 @@ export default function LeaderboardPage() {
 				<h1 className="text-3xl font-bold text-white sm:text-4xl">Leaderboard</h1>
 				<p className="mt-2 text-gray-400">Top runners in FangDash</p>
 
-				{/* Tabs */}
+				{/* Period Tabs */}
 				<div className="mt-6 flex gap-1 rounded-lg bg-white/5 p-1">
 					{TABS.map((tab) => (
 						<button
@@ -136,6 +159,41 @@ export default function LeaderboardPage() {
 					))}
 				</div>
 
+				{/* Difficulty Filter */}
+				<div className="mt-3 flex gap-1 rounded-lg bg-white/5 p-1">
+					<button
+						type="button"
+						onClick={() => setActiveDifficulty("all")}
+						aria-pressed={activeDifficulty === "all"}
+						className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+							activeDifficulty === "all"
+								? "bg-[#0FACED]/20 text-[#0FACED]"
+								: "text-gray-400 hover:text-white hover:bg-white/5"
+						}`}
+					>
+						All
+					</button>
+					{DIFFICULTY_LEVELS.map((level) => (
+						<button
+							type="button"
+							key={level.name}
+							onClick={() => setActiveDifficulty(level.name)}
+							aria-pressed={activeDifficulty === level.name}
+							className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+								activeDifficulty === level.name
+									? "bg-white/10 text-white"
+									: "text-gray-400 hover:text-white hover:bg-white/5"
+							}`}
+						>
+							<span
+								className="inline-block w-2 h-2 rounded-full"
+								style={{ backgroundColor: level.color }}
+							/>
+							<span className="hidden sm:inline">{level.label}</span>
+						</button>
+					))}
+				</div>
+
 				{/* Desktop Table */}
 				<div className="mt-6 hidden sm:block overflow-x-auto rounded-lg border border-white/10 bg-white/[0.03]">
 					<table className="w-full text-left text-sm">
@@ -145,6 +203,9 @@ export default function LeaderboardPage() {
 								<th className="px-4 py-3 font-medium">Username</th>
 								<th className="px-4 py-3 font-medium">Score</th>
 								<th className="px-4 py-3 font-medium">Distance</th>
+								{activeDifficulty === "all" && (
+									<th className="px-4 py-3 font-medium">Difficulty</th>
+								)}
 								<th className="px-4 py-3 font-medium">Date</th>
 							</tr>
 						</thead>
@@ -160,7 +221,10 @@ export default function LeaderboardPage() {
 							)}
 							{!leaderboardQuery.isLoading && entries.length === 0 && (
 								<tr>
-									<td colSpan={5} className="px-4 py-12 text-center text-gray-500">
+									<td
+										colSpan={activeDifficulty === "all" ? 6 : 5}
+										className="px-4 py-12 text-center text-gray-500"
+									>
 										No scores yet. Be the first to play!
 									</td>
 								</tr>
@@ -189,6 +253,11 @@ export default function LeaderboardPage() {
 										<td className="px-4 py-3 text-gray-300 tabular-nums">
 											{formatNumber(Math.round(entry.distance))}m
 										</td>
+										{activeDifficulty === "all" && (
+											<td className="px-4 py-3">
+												<DifficultyBadge difficulty={entry.difficulty} />
+											</td>
+										)}
 										<td className="px-4 py-3 text-gray-400">{formatDate(entry.createdAt)}</td>
 									</tr>
 								);
@@ -228,6 +297,7 @@ export default function LeaderboardPage() {
 										{entry.username}
 										{isCurrentUser && <span className="ml-2 text-xs text-[#0FACED]">(you)</span>}
 									</span>
+									{activeDifficulty === "all" && <DifficultyBadge difficulty={entry.difficulty} />}
 								</div>
 								<div className="mt-3 flex items-center gap-4 text-sm">
 									<div>

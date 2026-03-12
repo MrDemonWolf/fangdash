@@ -92,10 +92,14 @@ export const score = sqliteTable(
 		distance: real("distance").notNull(),
 		obstaclesCleared: integer("obstacles_cleared").notNull(),
 		duration: integer("duration").notNull(),
+		difficulty: text("difficulty").notNull().default("easy"),
 		seed: text("seed").notNull(),
 		createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
 	},
-	(table) => [index("score_player_id_idx").on(table.playerId)],
+	(table) => [
+		index("score_player_id_idx").on(table.playerId),
+		index("score_difficulty_idx").on(table.difficulty),
+	],
 );
 
 export const playerSkin = sqliteTable(

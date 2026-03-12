@@ -1,4 +1,4 @@
-import { SCORE_PER_OBSTACLE, SCORE_PER_SECOND } from "@fangdash/shared";
+import { DIFFICULTY_NAMES, SCORE_PER_OBSTACLE, SCORE_PER_SECOND } from "@fangdash/shared";
 import { TRPCError } from "@trpc/server";
 import { count, desc, eq, sql } from "drizzle-orm";
 import { z } from "zod";
@@ -17,6 +17,7 @@ export const scoreRouter = router({
 				obstaclesCleared: z.number().int().min(0),
 				duration: z.number().int().min(0),
 				seed: z.string().min(1),
+				difficulty: z.enum(DIFFICULTY_NAMES).default("easy"),
 			}),
 		)
 		.mutation(async ({ ctx, input }) => {
@@ -45,6 +46,7 @@ export const scoreRouter = router({
 				distance: input.distance,
 				obstaclesCleared: input.obstaclesCleared,
 				duration: input.duration,
+				difficulty: input.difficulty,
 				seed: input.seed,
 				createdAt: now,
 			});
@@ -86,12 +88,14 @@ export const scoreRouter = router({
 				.object({
 					limit: z.number().int().min(1).max(100).default(50),
 					period: z.enum(["daily", "weekly", "all"]).default("all"),
+					difficulty: z.enum(DIFFICULTY_NAMES).optional(),
 				})
 				.optional(),
 		)
 		.query(async ({ ctx, input }) => {
 			const limit = input?.limit ?? 50;
 			const period = input?.period ?? "all";
+			const difficulty = input?.difficulty;
 
 			const cutoff =
 				period === "daily"
@@ -100,11 +104,15 @@ export const scoreRouter = router({
 						? new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
 						: null;
 
+			const diffFilter = difficulty ? sql` AND s2.difficulty = ${difficulty}` : sql``;
+			const outerDiffFilter = difficulty ? sql` AND ${score.difficulty} = ${difficulty}` : sql``;
+
 			const rows = await ctx.db
 				.select({
 					scoreId: score.id,
 					score: score.score,
 					distance: score.distance,
+					difficulty: score.difficulty,
 					playerId: player.id,
 					username: user.name,
 					skinId: player.equippedSkinId,
@@ -115,15 +123,15 @@ export const scoreRouter = router({
 				.innerJoin(user, eq(player.userId, user.id))
 				.where(
 					cutoff
-						? sql`${score.createdAt} >= ${cutoff} AND ${score.score} = (
+						? sql`${score.createdAt} >= ${cutoff}${outerDiffFilter} AND ${score.score} = (
                 SELECT MAX(s2.score) FROM score s2
                 WHERE s2.player_id = ${score.playerId}
-                AND s2.created_at >= ${cutoff}
+                AND s2.created_at >= ${cutoff}${diffFilter}
               )`
 						: sql`${score.score} = (
                 SELECT MAX(s2.score) FROM score s2
-                WHERE s2.player_id = ${score.playerId}
-              )`,
+                WHERE s2.player_id = ${score.playerId}${diffFilter}
+              )${outerDiffFilter}`,
 				)
 				.orderBy(desc(score.score))
 				.limit(limit);
