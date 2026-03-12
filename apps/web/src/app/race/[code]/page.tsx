@@ -209,14 +209,16 @@ export default function RaceRoomPage() {
 				debugRef.current = debug;
 				startTimer();
 
-				// Wait for the scene to initialize, then start the race
-				// The Phaser scene needs a frame to be fully ready
-				setTimeout(() => {
-					const raceScene = game.scene.getScene("RaceScene");
-					if (raceScene && "beginRace" in raceScene) {
-						(raceScene as { beginRace: () => void }).beginRace();
+				// Start the race once the scene is active
+				const raceScene = game.scene.getScene("RaceScene");
+				if (raceScene && "beginRace" in raceScene) {
+					const start = () => (raceScene as { beginRace: () => void }).beginRace();
+					if (raceScene.scene.isActive()) {
+						start();
+					} else {
+						raceScene.events.once("create", start);
 					}
-				}, 100);
+				}
 			} catch (err) {
 				console.error("Failed to start race game:", err);
 				setGameError("Failed to start game. Please reload and try again.");

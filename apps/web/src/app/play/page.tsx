@@ -173,50 +173,59 @@ export default function PlayPage() {
 		setGameKey((k) => k + 1);
 		setDebugState(null);
 
-		// Dynamically import Phaser game (not available during SSR)
-		const { createGame, destroyGame } = await import("@fangdash/game");
+		try {
+			// Dynamically import Phaser game (not available during SSR)
+			const { createGame, destroyGame } = await import("@fangdash/game");
 
-		// Clean up previous game
-		if (gameRef.current) {
-			destroyGame(gameRef.current);
+			// Clean up previous game
+			if (gameRef.current) {
+				destroyGame(gameRef.current);
+				gameRef.current = null;
+			}
+
+			// Reset state
+			setGameOver(false);
+			setFinalState(null);
+			setFinalElapsedTime(0);
+			setGameError(null);
+			setGameState({
+				score: 0,
+				distance: 0,
+				obstaclesCleared: 0,
+				alive: true,
+				speed: 0,
+			});
+
+			const { game, debug, audio, gameChannel } = createGame({
+				parent: containerRef.current,
+				skinKey: equippedSkinKey,
+				startDifficulty: selectedDifficulty,
+				onStateUpdate: (state) => {
+					setGameState(state);
+				},
+				onGameOver: handleGameOver,
+				onDebugUpdate: (state: DebugState) => {
+					setDebugState(state);
+				},
+				onError: (msg) => setGameError(msg),
+			});
+
+			gameRef.current = game;
+			debugRef.current = debug;
+			audioRef.current = audio;
+			gameChannelRef.current = gameChannel;
+			setAudioMuted(audio.getMuted());
+			setAudioVolume(audio.getVolume());
+			// Start in preview mode (background scrolls, no gameplay)
+			gameChannel.preview();
+		} catch (err) {
+			console.error("Failed to start game:", err);
+			setGameError("Failed to start game. Please reload and try again.");
 			gameRef.current = null;
+			debugRef.current = null;
+			audioRef.current = null;
+			gameChannelRef.current = null;
 		}
-
-		// Reset state
-		setGameOver(false);
-		setFinalState(null);
-		setFinalElapsedTime(0);
-		setGameError(null);
-		setGameState({
-			score: 0,
-			distance: 0,
-			obstaclesCleared: 0,
-			alive: true,
-			speed: 0,
-		});
-
-		const { game, debug, audio, gameChannel } = createGame({
-			parent: containerRef.current,
-			skinKey: equippedSkinKey,
-			startDifficulty: selectedDifficulty,
-			onStateUpdate: (state) => {
-				setGameState(state);
-			},
-			onGameOver: handleGameOver,
-			onDebugUpdate: (state: DebugState) => {
-				setDebugState(state);
-			},
-			onError: (msg) => setGameError(msg),
-		});
-
-		gameRef.current = game;
-		debugRef.current = debug;
-		audioRef.current = audio;
-		gameChannelRef.current = gameChannel;
-		setAudioMuted(audio.getMuted());
-		setAudioVolume(audio.getVolume());
-		// Start in preview mode (background scrolls, no gameplay)
-		gameChannel.preview();
 	}, [equippedSkinKey, selectedDifficulty, handleGameOver]);
 
 	// Check onboarding status on mount
