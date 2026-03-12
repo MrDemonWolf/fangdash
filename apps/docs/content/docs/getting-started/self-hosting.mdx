@@ -115,21 +115,21 @@ This runs all three deploy commands in parallel.
 
 ### API (`apps/api`)
 
-| Variable            | Type      | Where set                    | Description                                        |
-| ------------------- | --------- | ---------------------------- | -------------------------------------------------- |
-| `BETTER_AUTH_SECRET` | Secret   | `wrangler secret put`        | Long random string for signing sessions            |
-| `TWITCH_CLIENT_ID`  | Secret    | `wrangler secret put`        | Twitch OAuth app client ID                         |
-| `TWITCH_CLIENT_SECRET` | Secret | `wrangler secret put`        | Twitch OAuth app client secret                     |
-| `ADMIN_TWITCH_ID`   | Secret    | `wrangler secret put` (optional) | Comma-separated Twitch user IDs to auto-admin  |
-| `BETTER_AUTH_URL`   | Plaintext | `wrangler.toml`              | Public URL of the API worker                       |
-| `WEB_URL`           | Plaintext | `wrangler.toml`              | Public URL of the web worker (for CORS + redirects)|
-| `ENVIRONMENT`       | Plaintext | `wrangler.toml`              | `"development"` or `"production"`                  |
+| Variable               | Type      | Where set                        | Description                                         |
+| ---------------------- | --------- | -------------------------------- | --------------------------------------------------- |
+| `BETTER_AUTH_SECRET`   | Secret    | `wrangler secret put`            | Long random string for signing sessions             |
+| `TWITCH_CLIENT_ID`     | Secret    | `wrangler secret put`            | Twitch OAuth app client ID                          |
+| `TWITCH_CLIENT_SECRET` | Secret    | `wrangler secret put`            | Twitch OAuth app client secret                      |
+| `ADMIN_TWITCH_ID`      | Secret    | `wrangler secret put` (optional) | Comma-separated Twitch user IDs to auto-admin       |
+| `BETTER_AUTH_URL`      | Plaintext | `wrangler.toml`                  | Public URL of the API worker                        |
+| `WEB_URL`              | Plaintext | `wrangler.toml`                  | Public URL of the web worker (for CORS + redirects) |
+| `ENVIRONMENT`          | Plaintext | `wrangler.toml`                  | `"development"` or `"production"`                   |
 
 ### Web (`apps/web`)
 
-| Variable                  | Type      | Where set              | Description                                  |
-| ------------------------- | --------- | ---------------------- | -------------------------------------------- |
-| `NEXT_PUBLIC_API_URL`     | Plaintext | `.env.local` / CI env  | Public URL of the API worker                 |
+| Variable                    | Type      | Where set             | Description                                       |
+| --------------------------- | --------- | --------------------- | ------------------------------------------------- |
+| `NEXT_PUBLIC_API_URL`       | Plaintext | `.env.local` / CI env | Public URL of the API worker                      |
 | `NEXT_PUBLIC_PARTYKIT_HOST` | Plaintext | `.env.local` / CI env | PartyKit host (e.g. `fangdash.user.partykit.dev`) |
 
 ### Local Development

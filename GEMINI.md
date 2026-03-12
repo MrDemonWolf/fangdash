@@ -18,6 +18,7 @@ FangDash is a Turborepo monorepo using Bun workspaces. It features real-time rac
 - **Database:** Cloudflare D1 (SQLite) managed via Drizzle.
 
 ### Data Flow
+
 1. **Web → tRPC → API:** Type-safe requests for scores, skins, and auth.
 2. **Web → PartySocket → PartyKit:** Low-latency WebSocket communication for races.
 3. **API → Drizzle → D1:** Persistent storage for users, players, and achievements.
@@ -25,11 +26,13 @@ FangDash is a Turborepo monorepo using Bun workspaces. It features real-time rac
 ## Building and Running
 
 ### Prerequisites
+
 - Bun >= 1.0 (Primary package manager and runner)
 - Node.js >= 24
 - Wrangler (for Cloudflare Workers/D1)
 
 ### Key Commands
+
 - `bun dev`: Starts all applications in development mode.
 - `bun build`: Builds all packages and apps using Turbo.
 - `bun test`: Runs Vitest across the monorepo.
@@ -39,18 +42,21 @@ FangDash is a Turborepo monorepo using Bun workspaces. It features real-time rac
 - `bun clean`: Removes all build artifacts (`.next`, `.turbo`, `dist`, etc.).
 
 ### Database Operations (from `apps/api`)
+
 - `bunx wrangler d1 migrations apply fangdash-db --local`: Apply local migrations.
 - `bunx drizzle-kit generate`: Generate new migrations from schema changes in `src/db/schema.ts`.
 
 ## Development Conventions
 
 ### Coding Style
+
 - **File Naming:** Use `kebab-case` for files/directories; `PascalCase` for React components and classes.
 - **TypeScript:** Strict mode enabled. Always prefer explicit types over `any`.
 - **Exports:** Use barrel exports (`index.ts`) for packages to expose their API.
 - **Commits:** Follow Conventional Commits (e.g., `feat:`, `fix:`, `docs:`).
 
 ### Workspace Packages
+
 - `@fangdash/api`: API service and database schema.
 - `@fangdash/web`: Main game frontend.
 - `@fangdash/party`: WebSocket race server.
@@ -58,6 +64,7 @@ FangDash is a Turborepo monorepo using Bun workspaces. It features real-time rac
 - `@fangdash/shared`: Constants and types shared between all apps.
 
 ### Key Files to Reference
+
 - `apps/api/src/db/schema.ts`: Database structure.
 - `packages/shared/src/constants.ts`: Physics, speeds, and game tuning.
 - `apps/api/src/trpc/router.ts`: API endpoints.
@@ -65,4 +72,5 @@ FangDash is a Turborepo monorepo using Bun workspaces. It features real-time rac
 - `CLAUDE.md`: Additional specific guidance for LLM interactions.
 
 ## Deployment
+
 - `bun run ship`: Deploys API, Web, and Party servers to their respective production environments (Cloudflare/PartyKit).
