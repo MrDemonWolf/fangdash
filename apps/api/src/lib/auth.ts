@@ -35,12 +35,12 @@ export function createAuth(env: AuthBindings) {
 
   const isDev = env.ENVIRONMENT !== "production";
   const trustedOrigins = isDev
-    ? ["http://localhost:3000", "https://fangdash.pages.dev"]
-    : ["https://fangdash.pages.dev"];
+    ? ["http://localhost:3000", "https://fangdash.mrdemonwolf.workers.dev"]
+    : ["https://fangdash.mrdemonwolf.workers.dev"];
 
   const webURL = isDev
     ? "http://localhost:3000"
-    : "https://fangdash.pages.dev";
+    : "https://fangdash.mrdemonwolf.workers.dev";
 
   return betterAuth({
     database: drizzleAdapter(db, {

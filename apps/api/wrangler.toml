@@ -1,4 +1,4 @@
-name = "fangdash"
+name = "fangdash-api"
 main = "src/index.ts"
 compatibility_date = "2025-02-24"
 compatibility_flags = ["nodejs_compat"]
@@ -13,7 +13,7 @@ migrations_dir = "drizzle"
 ENVIRONMENT = "development"
 
 [env.production]
-name = "fangdash"
+name = "fangdash-api"
 
 [env.production.vars]
 ENVIRONMENT = "production"
