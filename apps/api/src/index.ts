@@ -19,8 +19,8 @@ const app = new Hono<{ Bindings: Bindings }>();
 app.use("*", async (c, next) => {
   const isDev = c.env.ENVIRONMENT !== "production";
   const origins = isDev
-    ? ["http://localhost:3000", "https://fangdash.mrdemonwolf.workers.dev"]
-    : ["https://fangdash.mrdemonwolf.workers.dev"];
+    ? ["http://localhost:3000", "https://fangdash.pages.dev"]
+    : ["https://fangdash.pages.dev"];
 
   return cors({ origin: origins, credentials: true })(c, next);
 });
