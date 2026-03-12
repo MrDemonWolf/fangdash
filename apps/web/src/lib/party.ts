@@ -16,7 +16,11 @@ type EventHandler<T extends ServerMessageType> = (
 
 // ── Connection state ──
 
-export type ConnectionState = "connecting" | "connected" | "disconnected" | "error";
+export type ConnectionState =
+	| "connecting"
+	| "connected"
+	| "disconnected"
+	| "error";
 
 // ── Connection options ──
 
@@ -68,7 +72,10 @@ export class RaceConnection {
 		});
 
 		socket.addEventListener("message", this.messageHandler);
-		socket.addEventListener("open", () => this.emitState("connected"));
+		socket.addEventListener("open", () => {
+			this.reconnectAttempts = 0;
+			this.emitState("connected");
+		});
 		socket.addEventListener("close", () => {
 			if (!this.isIntentionalDisconnect) {
 				this.emitState("disconnected");
@@ -90,7 +97,7 @@ export class RaceConnection {
 	private scheduleReconnect(): void {
 		if (this.reconnectAttempts >= MAX_RECONNECT_ATTEMPTS) return;
 
-		const delay = RECONNECT_BASE_DELAY_MS * Math.pow(2, this.reconnectAttempts);
+		const delay = RECONNECT_BASE_DELAY_MS * 2 ** this.reconnectAttempts;
 		this.reconnectAttempts++;
 
 		this.reconnectTimer = setTimeout(() => {

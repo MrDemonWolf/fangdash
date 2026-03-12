@@ -18,7 +18,7 @@ const app = new Hono<{ Bindings: Bindings }>();
 
 // biome-ignore lint/suspicious/useAwait: Hono middleware returns promise-like
 app.use("*", async (c, next) => {
-	const isDev = c.env.ENVIRONMENT !== "production";
+	const isDev = c.env.ENVIRONMENT === "development";
 	const origins = isDev
 		? ["http://localhost:3000", "https://fangdash.mrdemonwolf.workers.dev"]
 		: ["https://fangdash.mrdemonwolf.workers.dev"];
