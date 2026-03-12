@@ -84,7 +84,7 @@ export default function Home() {
 			<footer className="border-t border-white/10 bg-[#091533] px-4 py-8">
 				<div className="mx-auto grid max-w-5xl grid-cols-1 gap-4 text-center text-sm text-gray-400 sm:grid-cols-3 sm:text-left">
 					<p className="sm:text-left">
-						© {new Date().getFullYear()} FangDash by{" "}
+						© 2025 FangDash by{" "}
 						<Link
 							href="https://mrdemonwolf.com"
 							target="_blank"

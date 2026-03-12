@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
 import { signIn, useSession } from "@/lib/auth-client.ts";
 
 function TwitchIcon({ className }: { className?: string }) {
@@ -13,12 +12,7 @@ function TwitchIcon({ className }: { className?: string }) {
 }
 
 export function HeroCTA() {
-	const { data: session } = useSession();
-	const [mounted, setMounted] = useState(false);
-
-	useEffect(() => {
-		setMounted(true);
-	}, []);
+	const { data: session, isPending } = useSession();
 
 	const handleSignIn = () => {
 		signIn.social({ provider: "twitch", callbackURL: window.location.origin });
@@ -32,7 +26,7 @@ export function HeroCTA() {
 			>
 				Play Now
 			</Link>
-			{mounted && !session && (
+			{!isPending && !session && (
 				<button
 					type="button"
 					onClick={handleSignIn}
