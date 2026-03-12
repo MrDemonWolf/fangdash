@@ -2,26 +2,24 @@
 
 ## Current State
 
-The game uses **programmatically generated placeholder assets** (colored shapes drawn with Phaser's Graphics API in `BootScene.ts`). The game is fully playable without any image files. Swap in real art when ready.
+The game uses **real pixel-art assets** for all wolves, obstacles, backgrounds, and audio. Assets are stored in `apps/web/public/` and served statically.
 
-## Assets Needed
+## Wolf Sprites (40x40px, PNG with transparency)
 
-### Wolf Sprites (40x40px, PNG with transparency)
+Located in `apps/web/public/wolves/`:
 
-| Filename              | Description                |
-| --------------------- | -------------------------- |
-| `wolf-gray.png`       | Default gray wolf          |
-| `wolf-arctic.png`     | Arctic wolf (white)        |
-| `wolf-shadow.png`     | Shadow wolf (dark)         |
-| `wolf-fire.png`       | Fire wolf (orange/red)     |
-| `wolf-frost.png`      | Frost wolf (ice blue)      |
-| `wolf-golden.png`     | Golden wolf                |
-| `wolf-storm.png`      | Storm wolf (electric)      |
-| `wolf-blood-moon.png` | Blood moon wolf (crimson)  |
-| `wolf-spirit.png`     | Spirit wolf (ethereal)     |
-| `wolf-phantom.png`    | Phantom wolf (translucent) |
+| Filename               | Description               |
+| ---------------------- | ------------------------- |
+| `wolf-gray.png`        | Default gray wolf         |
+| `wolf-shadow.png`      | Shadow wolf (dark)        |
+| `wolf-fire.png`        | Fire wolf (orange/red)    |
+| `wolf-storm.png`       | Storm wolf (electric)     |
+| `wolf-blood-moon.png`  | Blood moon wolf (crimson) |
+| `wolf-mrdemonwolf.png` | MrDemonWolf (legendary)   |
 
-### Obstacles (PNG with transparency)
+## Obstacles (PNG with transparency)
+
+Located in `apps/web/public/obstacles/`:
 
 | Filename             | Size  | Description |
 | -------------------- | ----- | ----------- |
@@ -30,7 +28,9 @@ The game uses **programmatically generated placeholder assets** (colored shapes 
 | `obstacle-bush.png`  | 35x28 | Bush        |
 | `obstacle-spike.png` | 20x40 | Spike trap  |
 
-### Backgrounds (PNG)
+## Backgrounds (PNG)
+
+Located in `apps/web/public/backgrounds/`:
 
 | Filename       | Size     | Description                                     |
 | -------------- | -------- | ----------------------------------------------- |
@@ -39,35 +39,31 @@ The game uses **programmatically generated placeholder assets** (colored shapes 
 | `bg-trees.png` | 1600x600 | Tree silhouettes (near layer, transparent bg)   |
 | `ground.png`   | 800x100  | Ground tile (seamlessly repeating horizontally) |
 
-## Where to Put Them
+## Audio
 
-```text
-apps/web/public/assets/
-├── sprites/
-│   ├── wolf-gray.png
-│   ├── wolf-arctic.png
-│   └── ...
-├── obstacles/
-│   ├── obstacle-rock.png
-│   ├── obstacle-log.png
-│   ├── obstacle-bush.png
-│   └── obstacle-spike.png
-└── backgrounds/
-    ├── bg-sky.png
-    ├── bg-hills.png
-    ├── bg-trees.png
-    └── ground.png
-```
+Located in `apps/web/public/audio/`:
 
-## Recommended Tools
+### BGM (Background Music)
 
-| Tool                                                                                       | Best For                       | Cost        |
-| ------------------------------------------------------------------------------------------ | ------------------------------ | ----------- |
-| [Aseprite](https://www.aseprite.org/)                                                      | Pixel art sprites & animations | ~$20        |
-| [Piskel](https://www.piskelapp.com/)                                                       | Pixel art (browser-based)      | Free        |
-| [Photoshop](https://www.adobe.com/products/photoshop.html) / [GIMP](https://www.gimp.org/) | Background art & compositing   | Paid / Free |
-| [Figma](https://www.figma.com/)                                                            | Flat/geometric game art        | Free tier   |
-| AI generators (Midjourney, DALL-E)                                                         | Base art to clean up           | Varies      |
+| Filename       | Description            |
+| -------------- | ---------------------- |
+| `bgm-menu.mp3` | Menu/lobby music       |
+| `bgm-game.mp3` | Solo gameplay music    |
+| `bgm-race.mp3` | Multiplayer race music |
+
+### SFX (Sound Effects)
+
+| Filename              | Description        |
+| --------------------- | ------------------ |
+| `sfx-jump.mp3`        | Jump               |
+| `sfx-double-jump.mp3` | Double jump        |
+| `sfx-hit.mp3`         | Obstacle collision |
+| `sfx-game-over.mp3`   | Game over          |
+| `sfx-milestone.mp3`   | Distance milestone |
+| `sfx-countdown.mp3`   | Race countdown     |
+| `sfx-achievement.mp3` | Achievement earned |
+| `sfx-skin-equip.mp3`  | Skin equipped      |
+| `sfx-victory.mp3`     | Race victory       |
 
 ## Notes
 
@@ -75,7 +71,6 @@ apps/web/public/assets/
 - Background layers (`bg-hills`, `bg-trees`) need transparent backgrounds so they layer properly
 - `ground.png` should tile seamlessly when repeated horizontally
 - Wolf sprites will eventually support animation (sprite sheets), but single frames work for MVP
-- Placeholder graphics are fine until the polish phase (Day 6)
 
 ---
 
@@ -94,21 +89,24 @@ A stylized wolf fang/tooth combined with a speed/dash element. The wolf theme sh
 | Fang Orange | `#FF6B2B` | Wolf fang, CTA elements    |
 | Gold        | `#FFD700` | Achievements, premium feel |
 
-### Required Icon Assets
+### Icon Assets
 
-#### Favicon
+Icons are generated via `apps/web/scripts/generate-icons.mjs`, which crops the wolf head from `public/wolves/wolf-mrdemonwolf.png`, centres it on a white circle, and outputs PNGs to `apps/web/public/icons/` and `apps/docs/public/icons/`.
 
-- `favicon.ico` — multi-resolution (16x16, 32x32, 48x48)
+Generated icons in `apps/web/public/icons/`:
 
-#### PWA Icons
+| Filename                | Size    | Description       |
+| ----------------------- | ------- | ----------------- |
+| `icon-32.png`           | 32x32   | Favicon           |
+| `icon-192.png`          | 192x192 | PWA icon          |
+| `icon-512.png`          | 512x512 | PWA icon (large)  |
+| `icon-512-maskable.png` | 512x512 | PWA maskable icon |
+| `icon.svg`              | —       | SVG favicon       |
+| `icon-head.svg`         | —       | Wolf head SVG     |
 
-- `apps/web/public/icon-192.png` — 192x192 PNG
-- `apps/web/public/icon-512.png` — 512x512 PNG
+### Open Graph Image
 
-#### Open Graph Image
-
-- `apps/web/public/og-image.png` — 1200x630 PNG
-- Should include the FangDash logo, tagline ("Multiplayer Wolf Runner"), and brand colors
+The OG image is dynamically generated via Satori at `/api/og` — no static `og-image.png` file is needed.
 
 ### Style Direction
 
@@ -118,12 +116,3 @@ A stylized wolf fang/tooth combined with a speed/dash element. The wolf theme sh
 - Negative space tricks are welcome (e.g., wolf silhouette formed by fang shapes)
 - Should be recognizable at small sizes (favicon) and large sizes (OG image)
 - Consider how the icon looks on both dark and light OS backgrounds
-
-### Placeholder Status
-
-The following files are currently **placeholders** and need real artwork:
-
-- `apps/web/public/favicon.ico`
-- `apps/web/public/icon-192.png`
-- `apps/web/public/icon-512.png`
-- `apps/web/public/og-image.png`

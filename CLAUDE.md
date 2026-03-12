@@ -51,7 +51,7 @@ bunx drizzle-kit generate   # Generate new migration from schema changes
 - `apps/web` — Next.js 15 (App Router, Turbopack), React 19, Tailwind v4, tRPC client via React Query
 - `apps/party` — PartyKit WebSocket server for real-time multiplayer race rooms
 - `apps/docs` — Fumadocs documentation site
-- `packages/game` — Phaser 3 game engine: scenes (Boot, Game, Race), entities (Player, GhostPlayer, Obstacle), systems (parallax, difficulty, scoring)
+- `packages/game` — Phaser 3 game engine: scenes (Boot, Game, Race), entities (Player, GhostPlayer, Obstacle), systems (parallax, difficulty, scoring, audio)
 - `packages/shared` — Domain types, game constants, skin/achievement definitions, seeded PRNG
 
 **Data flow:** Web → tRPC → Hono API → Drizzle → D1 (SQLite). Real-time multiplayer: Web → PartySocket → PartyKit race-server.
@@ -62,11 +62,14 @@ bunx drizzle-kit generate   # Generate new migration from schema changes
 - Deterministic multiplayer via seeded PRNG in `packages/shared/src/seeded-random.ts` — all players see identical obstacle layouts
 - Game constants (physics, speeds, scoring, difficulty levels) live in `packages/shared/src/constants.ts`
 - Database schema at `apps/api/src/db/schema.ts` — includes Better Auth tables (user, session, account) and game tables (player, score, playerSkin, playerAchievement, raceHistory)
-- tRPC routers at `apps/api/src/trpc/routers/` — score, skin, achievement, race
+- tRPC routers at `apps/api/src/trpc/routers/` — score, skin, achievement, race, admin
 - Auth at `apps/api/src/lib/auth.ts` — Better Auth with Twitch OAuth, cookie-based sessions
 - Game scenes: `BootScene` (asset loading) → `GameScene` (solo) or `RaceScene` (multiplayer)
 - OG image route: `apps/web/src/app/api/og/route.tsx` — uses base64 `<img>` (not `dangerouslySetInnerHTML`) so Satori renders correctly; layout metadata explicitly sets `openGraph.images` and `twitter.images` to `/api/og`
 - Icon generation: `apps/web/scripts/generate-icons.mjs` — crops wolf head from `public/wolves/wolf-mrdemonwolf.png`, centres on white circle, outputs PNGs to `apps/web/public/icons/` and `apps/docs/public/icons/`
+- Audio system: `packages/game/src/systems/AudioManager.ts` — BGM crossfade and SFX playback with volume controls
+- PWA: service worker at `apps/web/public/sw.js` for offline support
+- Leaderboard supports per-difficulty filtering and time-period filters (daily/weekly/all-time)
 
 ## Tech Stack
 
