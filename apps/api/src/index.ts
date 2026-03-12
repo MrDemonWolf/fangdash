@@ -12,15 +12,14 @@ type Bindings = {
 	TWITCH_CLIENT_ID: string;
 	TWITCH_CLIENT_SECRET: string;
 	ENVIRONMENT: string;
+	WEB_URL: string;
 };
 
 const app = new Hono<{ Bindings: Bindings }>();
 
 app.use("*", async (c, next) => {
 	const isDev = c.env.ENVIRONMENT === "development";
-	const origins = isDev
-		? ["http://localhost:3000", "https://fangdash.mrdemonwolf.workers.dev"]
-		: ["https://fangdash.mrdemonwolf.workers.dev"];
+	const origins = isDev ? ["http://localhost:3000", c.env.WEB_URL] : [c.env.WEB_URL];
 
 	return cors({ origin: origins, credentials: true })(c, next);
 });

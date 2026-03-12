@@ -7,6 +7,9 @@ TWITCH_CLIENT_SECRET=your_twitch_client_secret_here
 # as an OAuth Redirect URL in your Twitch Developer Console app settings
 # (https://dev.twitch.tv/console/apps) for local login to work.
 
+# ── Set in wrangler.toml [vars] ───────────────────────────
+# WEB_URL — defaults to http://localhost:3000 for local dev (see wrangler.toml)
+
 # ── Optional ──────────────────────────────────────────────
 # Comma-separated Twitch numeric user IDs to auto-promote to admin on first login
 # ADMIN_TWITCH_ID=123456789,987654321
