@@ -5,13 +5,14 @@ const isProd = process.env.NODE_ENV === "production";
 
 /** @type {import('next').NextConfig} */
 const config = {
-  reactStrictMode: true,
-  output: "export",
-  trailingSlash: true,
-  images: { unoptimized: true },
-  basePath: isProd ? `/${repoName}` : "",
+	reactStrictMode: true,
+	output: "export",
+	trailingSlash: true,
+	images: { unoptimized: true },
+	basePath: isProd ? `/${repoName}` : "",
 };
 
 const withMDX = createMDX();
 
+// biome-ignore lint/style/noDefaultExport: required by framework config
 export default withMDX(config);
