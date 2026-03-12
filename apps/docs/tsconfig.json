@@ -30,7 +30,8 @@
         "name": "next"
       }
     ],
-    "isolatedModules": true
+    "isolatedModules": true,
+    "exactOptionalPropertyTypes": false
   },
   "include": [
     "**/*.mjs",
@@ -40,6 +41,7 @@
     "lib/**/*.tsx",
     "mdx-components.tsx",
     "next-env.d.ts",
+    "global.d.ts",
     "source.config.ts",
     ".next/types/**/*.ts"
   ],
