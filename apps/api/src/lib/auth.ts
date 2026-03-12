@@ -11,6 +11,7 @@ type AuthBindings = {
 	BETTER_AUTH_URL: string;
 	TWITCH_CLIENT_ID: string;
 	TWITCH_CLIENT_SECRET: string;
+	WEB_URL: string;
 	ENVIRONMENT?: string;
 	ADMIN_TWITCH_ID?: string;
 };
@@ -20,6 +21,7 @@ const REQUIRED_AUTH_KEYS = [
 	"BETTER_AUTH_URL",
 	"TWITCH_CLIENT_ID",
 	"TWITCH_CLIENT_SECRET",
+	"WEB_URL",
 ] as const;
 
 let didWarnMissingAuth = false;
@@ -40,11 +42,8 @@ export function createAuth(env: AuthBindings) {
 	const db = drizzle(env.DB, { schema });
 
 	const isDev = env.ENVIRONMENT === "development";
-	const trustedOrigins = isDev
-		? ["http://localhost:3000", "https://fangdash.mrdemonwolf.workers.dev"]
-		: ["https://fangdash.mrdemonwolf.workers.dev"];
-
-	const webURL = isDev ? "http://localhost:3000" : "https://fangdash.mrdemonwolf.workers.dev";
+	const webURL = env.WEB_URL;
+	const trustedOrigins = isDev ? ["http://localhost:3000", webURL] : [webURL];
 
 	return betterAuth({
 		database: drizzleAdapter(db, {
