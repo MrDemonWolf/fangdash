@@ -1,10 +1,5 @@
-// biome-ignore lint/correctness/noUndeclaredDependencies: vitest is a workspace root dependency
 import { describe, expect, it } from "vitest";
-import {
-	ACHIEVEMENTS,
-	getAchievementById,
-	getAchievementsByCategory,
-} from "../achievements.ts";
+import { ACHIEVEMENTS, getAchievementById, getAchievementsByCategory } from "../achievements.ts";
 import { SKINS } from "../skins.ts";
 
 describe("Achievements", () => {
@@ -30,13 +25,7 @@ describe("Achievements", () => {
 	});
 
 	it("covers all categories", () => {
-		const categories = [
-			"score",
-			"distance",
-			"games",
-			"skill",
-			"social",
-		] as const;
+		const categories = ["score", "distance", "games", "skill", "social"] as const;
 		for (const cat of categories) {
 			expect(getAchievementsByCategory(cat).length).toBeGreaterThan(0);
 		}

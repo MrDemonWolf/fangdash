@@ -40,7 +40,6 @@ export const metadata = {
 	},
 };
 
-// biome-ignore lint/style/noDefaultExport: required by Next.js
 export default function RootLayout({ children }: { children: ReactNode }) {
 	return (
 		<html lang="en" suppressHydrationWarning={true}>

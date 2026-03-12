@@ -3,7 +3,6 @@ import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { admin } from "better-auth/plugins";
 import { eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/d1";
-// biome-ignore lint/performance/noNamespaceImport: drizzle requires namespace import for schema
 import * as schema from "../db/schema.ts";
 
 type AuthBindings = {
@@ -39,9 +38,7 @@ export function createAuth(env: AuthBindings) {
 		? ["http://localhost:3000", "https://fangdash.mrdemonwolf.workers.dev"]
 		: ["https://fangdash.mrdemonwolf.workers.dev"];
 
-	const webURL = isDev
-		? "http://localhost:3000"
-		: "https://fangdash.mrdemonwolf.workers.dev";
+	const webURL = isDev ? "http://localhost:3000" : "https://fangdash.mrdemonwolf.workers.dev";
 
 	return betterAuth({
 		database: drizzleAdapter(db, {
@@ -98,9 +95,7 @@ export function createAuth(env: AuthBindings) {
 						if (account.providerId !== "twitch") {
 							return;
 						}
-						const adminIds = env.ADMIN_TWITCH_ID.split(",").map((id) =>
-							id.trim(),
-						);
+						const adminIds = env.ADMIN_TWITCH_ID.split(",").map((id) => id.trim());
 						if (adminIds.includes(account.accountId)) {
 							await db
 								.update(schema.user)

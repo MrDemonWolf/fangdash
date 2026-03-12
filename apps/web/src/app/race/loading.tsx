@@ -1,4 +1,3 @@
-// biome-ignore lint/style/noDefaultExport: required by Next.js
 export default function RaceLoading() {
 	return (
 		<main className="flex min-h-screen flex-col items-center justify-center bg-[#091533] px-4">

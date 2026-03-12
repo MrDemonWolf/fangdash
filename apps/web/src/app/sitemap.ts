@@ -1,7 +1,6 @@
 import type { MetadataRoute } from "next";
 import { SITE_URL } from "@/lib/site-config.ts";
 
-// biome-ignore lint/style/noDefaultExport: required by Next.js
 export default function sitemap(): MetadataRoute.Sitemap {
 	return [
 		{

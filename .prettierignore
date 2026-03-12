@@ -1,0 +1,11 @@
+node_modules/
+dist/
+.next/
+.turbo/
+.open-next/
+.wrangler/
+.partykit/
+.source/
+out/
+bun.lock
+*.lock

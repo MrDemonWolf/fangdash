@@ -20,11 +20,9 @@ import { useIsDevOrAdmin } from "@/lib/use-role.ts";
 // ---------------------------------------------------------------------------
 // Main Play Page
 // ---------------------------------------------------------------------------
-// biome-ignore lint/style/noDefaultExport: required by Next.js
-// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: complex page component
 export default function PlayPage() {
 	const containerRef = useRef<HTMLDivElement>(null);
-	// biome-ignore lint/suspicious/noExplicitAny: Phaser game instance ref
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	const gameRef = useRef<any>(null);
 	const debugRef = useRef<DebugChannel | null>(null);
 	const audioRef = useRef<AudioChannel | null>(null);
@@ -131,7 +129,7 @@ export default function PlayPage() {
 			remaining -= 1;
 			setCountdown(remaining);
 			if (remaining <= 0) {
-				// biome-ignore lint/style/noNonNullAssertion: ref is set before use
+				// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 				clearInterval(countdownTimerRef.current!);
 				countdownTimerRef.current = null;
 				// Show "GO!" briefly then launch
@@ -402,9 +400,7 @@ export default function PlayPage() {
 					<div className="absolute inset-0 flex items-center justify-center bg-[#091533]/90 z-50">
 						<div className="w-full max-w-sm rounded-xl border border-red-500/30 bg-[#091533] p-8 text-center shadow-2xl mx-4">
 							<div className="mb-4 text-4xl">⚠</div>
-							<h2 className="mb-2 text-xl font-bold text-white">
-								Failed to load game
-							</h2>
+							<h2 className="mb-2 text-xl font-bold text-white">Failed to load game</h2>
 							<p className="mb-6 text-sm text-white/50">{gameError}</p>
 							<button
 								type="button"
@@ -450,9 +446,7 @@ export default function PlayPage() {
 				)}
 
 				{/* Onboarding overlay */}
-				{showOnboarding && (
-					<OnboardingOverlay onComplete={handleOnboardingComplete} />
-				)}
+				{showOnboarding && <OnboardingOverlay onComplete={handleOnboardingComplete} />}
 
 				{/* Game Over modal */}
 				{gameOver && finalState && (
@@ -471,11 +465,7 @@ export default function PlayPage() {
 
 			{/* Debug Panel (dev/admin only, Ctrl+Shift+D) */}
 			{isDevOrAdmin && (
-				<DebugPanel
-					debugState={debugState}
-					onSendCommand={handleDebugCommand}
-					gameKey={gameKey}
-				/>
+				<DebugPanel debugState={debugState} onSendCommand={handleDebugCommand} gameKey={gameKey} />
 			)}
 		</main>
 	);

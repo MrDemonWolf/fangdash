@@ -9,12 +9,7 @@ import { signIn, signOut, useSession } from "@/lib/auth-client.ts";
 
 function TwitchIcon({ className }: { className?: string }) {
 	return (
-		<svg
-			viewBox="0 0 24 24"
-			fill="currentColor"
-			className={className}
-			aria-hidden="true"
-		>
+		<svg viewBox="0 0 24 24" fill="currentColor" className={className} aria-hidden="true">
 			<path d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714z" />
 		</svg>
 	);
@@ -48,10 +43,7 @@ export function Navbar() {
 
 	useEffect(() => {
 		const handleOutsideClick = (e: MouseEvent) => {
-			if (
-				dropdownRef.current &&
-				!dropdownRef.current.contains(e.target as Node)
-			) {
+			if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
 				setDropdownOpen(false);
 			}
 		};
@@ -117,16 +109,13 @@ export function Navbar() {
 										className="flex items-center gap-2 rounded-full px-3 py-1.5 border border-white/10 hover:border-white/20 hover:bg-white/5 transition-colors cursor-pointer"
 									>
 										{session.user.image && (
-											// biome-ignore lint/performance/noImgElement: dynamic avatar URL
 											<img
 												src={session.user.image}
 												alt={session.user.name ?? "User avatar"}
 												className="h-6 w-6 rounded-full border border-[#0FACED]/50"
 											/>
 										)}
-										<span className="text-sm font-medium text-gray-200">
-											{session.user.name}
-										</span>
+										<span className="text-sm font-medium text-gray-200">{session.user.name}</span>
 									</button>
 
 									{dropdownOpen && (
@@ -170,11 +159,7 @@ export function Navbar() {
 							className="md:hidden p-2 rounded-md text-gray-300 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
 							aria-label={mobileOpen ? "Close menu" : "Open menu"}
 						>
-							{mobileOpen ? (
-								<X className="h-6 w-6" />
-							) : (
-								<Menu className="h-6 w-6" />
-							)}
+							{mobileOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
 						</button>
 					</div>
 
@@ -206,16 +191,13 @@ export function Navbar() {
 									<div className="flex items-center justify-between">
 										<div className="flex items-center gap-2.5">
 											{session.user.image && (
-												// biome-ignore lint/performance/noImgElement: dynamic avatar URL
 												<img
 													src={session.user.image}
 													alt={session.user.name ?? "User avatar"}
 													className="h-8 w-8 rounded-full border border-[#0FACED]/50"
 												/>
 											)}
-											<span className="text-sm font-medium text-gray-200">
-												{session.user.name}
-											</span>
+											<span className="text-sm font-medium text-gray-200">{session.user.name}</span>
 										</div>
 										<div className="flex items-center gap-1">
 											<Link

@@ -1,13 +1,13 @@
 {
-  "extends": "../../tsconfig.base.json",
-  "compilerOptions": {
-    "outDir": "./dist",
-    "rootDir": "./src",
-    "jsx": "react-jsx",
-    "composite": false,
-    "declaration": false,
-    "declarationMap": false,
-    "lib": ["ESNext", "DOM"]
-  },
-  "include": ["src"]
+	"extends": "../../tsconfig.base.json",
+	"compilerOptions": {
+		"outDir": "./dist",
+		"rootDir": "./src",
+		"jsx": "react-jsx",
+		"composite": false,
+		"declaration": false,
+		"declarationMap": false,
+		"lib": ["ESNext", "DOM"]
+	},
+	"include": ["src"]
 }

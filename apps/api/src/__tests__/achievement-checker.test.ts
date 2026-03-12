@@ -1,13 +1,6 @@
-import {
-	ACHIEVEMENTS,
-	getAchievementById,
-} from "@fangdash/shared/achievements";
-// biome-ignore lint/correctness/noUndeclaredDependencies: vitest is a workspace root dependency
+import { ACHIEVEMENTS, getAchievementById } from "@fangdash/shared/achievements";
 import { describe, expect, it } from "vitest";
-import {
-	isAchievementEarned,
-	type PlayerStats,
-} from "../lib/achievement-checker.ts";
+import { isAchievementEarned, type PlayerStats } from "../lib/achievement-checker.ts";
 
 const defaultStats: PlayerStats = {
 	highestScore: 0,
@@ -22,32 +15,22 @@ const defaultStats: PlayerStats = {
 
 describe("isAchievementEarned", () => {
 	it("grants score_single achievement when highestScore meets threshold", () => {
-		// biome-ignore lint/style/noNonNullAssertion: test assertion on known-valid data
+		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 		const achievement = getAchievementById("first-fang")!;
-		expect(
-			isAchievementEarned(achievement, { ...defaultStats, highestScore: 99 }),
-		).toBe(false);
-		expect(
-			isAchievementEarned(achievement, { ...defaultStats, highestScore: 100 }),
-		).toBe(true);
-		expect(
-			isAchievementEarned(achievement, { ...defaultStats, highestScore: 500 }),
-		).toBe(true);
+		expect(isAchievementEarned(achievement, { ...defaultStats, highestScore: 99 })).toBe(false);
+		expect(isAchievementEarned(achievement, { ...defaultStats, highestScore: 100 })).toBe(true);
+		expect(isAchievementEarned(achievement, { ...defaultStats, highestScore: 500 })).toBe(true);
 	});
 
 	it("grants score_total achievement when totalScore meets threshold", () => {
-		// biome-ignore lint/style/noNonNullAssertion: test assertion on known-valid data
+		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 		const achievement = getAchievementById("score-hoarder")!;
-		expect(
-			isAchievementEarned(achievement, { ...defaultStats, totalScore: 49999 }),
-		).toBe(false);
-		expect(
-			isAchievementEarned(achievement, { ...defaultStats, totalScore: 50000 }),
-		).toBe(true);
+		expect(isAchievementEarned(achievement, { ...defaultStats, totalScore: 49999 })).toBe(false);
+		expect(isAchievementEarned(achievement, { ...defaultStats, totalScore: 50000 })).toBe(true);
 	});
 
 	it("grants distance_single achievement when highestDistance meets threshold", () => {
-		// biome-ignore lint/style/noNonNullAssertion: test assertion on known-valid data
+		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 		const achievement = getAchievementById("first-steps")!;
 		expect(
 			isAchievementEarned(achievement, {
@@ -64,7 +47,7 @@ describe("isAchievementEarned", () => {
 	});
 
 	it("grants distance_total achievement when totalDistance meets threshold", () => {
-		// biome-ignore lint/style/noNonNullAssertion: test assertion on known-valid data
+		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 		const achievement = getAchievementById("world-traveler")!;
 		expect(
 			isAchievementEarned(achievement, {
@@ -81,18 +64,14 @@ describe("isAchievementEarned", () => {
 	});
 
 	it("grants games_played achievement when gamesPlayed meets count", () => {
-		// biome-ignore lint/style/noNonNullAssertion: test assertion on known-valid data
+		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 		const achievement = getAchievementById("pup")!;
-		expect(
-			isAchievementEarned(achievement, { ...defaultStats, gamesPlayed: 0 }),
-		).toBe(false);
-		expect(
-			isAchievementEarned(achievement, { ...defaultStats, gamesPlayed: 1 }),
-		).toBe(true);
+		expect(isAchievementEarned(achievement, { ...defaultStats, gamesPlayed: 0 })).toBe(false);
+		expect(isAchievementEarned(achievement, { ...defaultStats, gamesPlayed: 1 })).toBe(true);
 	});
 
 	it("grants obstacles_cleared achievement", () => {
-		// biome-ignore lint/style/noNonNullAssertion: test assertion on known-valid data
+		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 		const achievement = getAchievementById("obstacle-dodger")!;
 		expect(
 			isAchievementEarned(achievement, {
@@ -109,29 +88,21 @@ describe("isAchievementEarned", () => {
 	});
 
 	it("grants races_won achievement", () => {
-		// biome-ignore lint/style/noNonNullAssertion: test assertion on known-valid data
+		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 		const achievement = getAchievementById("champion")!;
-		expect(
-			isAchievementEarned(achievement, { ...defaultStats, racesWon: 9 }),
-		).toBe(false);
-		expect(
-			isAchievementEarned(achievement, { ...defaultStats, racesWon: 10 }),
-		).toBe(true);
+		expect(isAchievementEarned(achievement, { ...defaultStats, racesWon: 9 })).toBe(false);
+		expect(isAchievementEarned(achievement, { ...defaultStats, racesWon: 10 })).toBe(true);
 	});
 
 	it("grants races_played achievement", () => {
-		// biome-ignore lint/style/noNonNullAssertion: test assertion on known-valid data
+		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 		const achievement = getAchievementById("first-race")!;
-		expect(
-			isAchievementEarned(achievement, { ...defaultStats, racesPlayed: 0 }),
-		).toBe(false);
-		expect(
-			isAchievementEarned(achievement, { ...defaultStats, racesPlayed: 1 }),
-		).toBe(true);
+		expect(isAchievementEarned(achievement, { ...defaultStats, racesPlayed: 0 })).toBe(false);
+		expect(isAchievementEarned(achievement, { ...defaultStats, racesPlayed: 1 })).toBe(true);
 	});
 
 	it("does not grant perfect_run (requires client data)", () => {
-		// biome-ignore lint/style/noNonNullAssertion: test assertion on known-valid data
+		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 		const achievement = getAchievementById("perfect-dash")!;
 		expect(
 			isAchievementEarned(achievement, {

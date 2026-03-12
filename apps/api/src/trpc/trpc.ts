@@ -31,7 +31,4 @@ const roleGuard = (allowedRoles: string[], message: string) =>
 	});
 
 export const adminProcedure = roleGuard(["admin"], "Admin access required");
-export const devProcedure = roleGuard(
-	["dev", "admin"],
-	"Developer access required",
-);
+export const devProcedure = roleGuard(["dev", "admin"], "Developer access required");

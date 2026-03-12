@@ -27,10 +27,7 @@ export async function GET(_req: NextRequest) {
 		// fall through with zeroes
 	}
 
-	const svgContent = readFileSync(
-		join(process.cwd(), "public/icons/icon.svg"),
-		"utf-8",
-	);
+	const svgContent = readFileSync(join(process.cwd(), "public/icons/icon.svg"), "utf-8");
 	const svgBase64 = Buffer.from(svgContent).toString("base64");
 	const svgSrc = `data:image/svg+xml;base64,${svgBase64}`;
 
@@ -50,7 +47,6 @@ export async function GET(_req: NextRequest) {
 				gap: 24,
 			}}
 		>
-			{/* biome-ignore lint/performance/noImgElement: Satori requires img element */}
 			<img src={svgSrc} width={120} height={120} alt="" />
 			<div
 				style={{

@@ -5,11 +5,6 @@ export const metadata: Metadata = {
 	description: "Play FangDash — dodge obstacles and compete for high scores.",
 };
 
-// biome-ignore lint/style/noDefaultExport: required by Next.js
-export default function PlayLayout({
-	children,
-}: {
-	children: React.ReactNode;
-}) {
+export default function PlayLayout({ children }: { children: React.ReactNode }) {
 	return children;
 }

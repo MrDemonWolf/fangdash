@@ -26,27 +26,23 @@ export class DifficultyScaler {
 
 	get currentLevel(): DifficultyLevel {
 		if (this.forcedLevelIndex !== null) {
-			// biome-ignore lint/style/noNonNullAssertion: array index always valid
+			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 			return DIFFICULTY_LEVELS[this.forcedLevelIndex]!;
 		}
 		const distance = this.distanceFromSpeed();
 		for (let i = DIFFICULTY_LEVELS.length - 1; i >= 0; i--) {
-			// biome-ignore lint/style/noNonNullAssertion: array index always valid
+			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 			if (distance >= DIFFICULTY_LEVELS[i]!.startDistance) {
-				// biome-ignore lint/style/noNonNullAssertion: array index always valid
+				// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 				return DIFFICULTY_LEVELS[i]!;
 			}
 		}
-		// biome-ignore lint/style/noNonNullAssertion: array index always valid
+		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 		return DIFFICULTY_LEVELS[0]!;
 	}
 
 	forceDifficulty(levelIndex: number | null) {
-		if (
-			levelIndex !== null &&
-			levelIndex >= 0 &&
-			levelIndex < DIFFICULTY_LEVELS.length
-		) {
+		if (levelIndex !== null && levelIndex >= 0 && levelIndex < DIFFICULTY_LEVELS.length) {
 			this.forcedLevelIndex = levelIndex;
 		} else {
 			this.forcedLevelIndex = null;
@@ -56,16 +52,14 @@ export class DifficultyScaler {
 	get minGap(): number {
 		return Math.max(
 			400,
-			(this.overrides.minGapMs ?? MIN_OBSTACLE_GAP_MS) /
-				this.currentLevel.spawnRateMultiplier,
+			(this.overrides.minGapMs ?? MIN_OBSTACLE_GAP_MS) / this.currentLevel.spawnRateMultiplier,
 		);
 	}
 
 	get maxGap(): number {
 		return Math.max(
 			800,
-			(this.overrides.maxGapMs ?? MAX_OBSTACLE_GAP_MS) /
-				this.currentLevel.spawnRateMultiplier,
+			(this.overrides.maxGapMs ?? MAX_OBSTACLE_GAP_MS) / this.currentLevel.spawnRateMultiplier,
 		);
 	}
 
@@ -84,8 +78,7 @@ export class DifficultyScaler {
 	update(delta: number) {
 		this.timeSinceIncrease += delta;
 
-		const intervalMs =
-			this.overrides.speedIntervalMs ?? SPEED_INCREASE_INTERVAL_MS;
+		const intervalMs = this.overrides.speedIntervalMs ?? SPEED_INCREASE_INTERVAL_MS;
 		if (this.timeSinceIncrease >= intervalMs) {
 			this.timeSinceIncrease = 0;
 			const maxSpeed = this.overrides.maxSpeed ?? MAX_SPEED;

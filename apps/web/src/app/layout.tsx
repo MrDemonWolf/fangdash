@@ -16,8 +16,7 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
 	title: "FangDash",
-	description:
-		"A multiplayer endless runner where players race as wolves on Twitch.",
+	description: "A multiplayer endless runner where players race as wolves on Twitch.",
 	appleWebApp: {
 		capable: true,
 		statusBarStyle: "black-translucent",
@@ -25,8 +24,7 @@ export const metadata: Metadata = {
 	},
 	openGraph: {
 		title: "FangDash",
-		description:
-			"A multiplayer endless runner where players race as wolves on Twitch.",
+		description: "A multiplayer endless runner where players race as wolves on Twitch.",
 		type: "website",
 		siteName: "FangDash",
 		url: "/",
@@ -35,8 +33,7 @@ export const metadata: Metadata = {
 	twitter: {
 		card: "summary_large_image",
 		title: "FangDash",
-		description:
-			"A multiplayer endless runner where players race as wolves on Twitch.",
+		description: "A multiplayer endless runner where players race as wolves on Twitch.",
 		images: ["/api/og"],
 	},
 	metadataBase: new URL(SITE_URL),
@@ -49,12 +46,7 @@ export const metadata: Metadata = {
 	},
 };
 
-// biome-ignore lint/style/noDefaultExport: required by Next.js
-export default function RootLayout({
-	children,
-}: {
-	children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
 	return (
 		<html lang="en">
 			<body className="bg-[var(--color-fang-darker)] text-white min-h-screen">

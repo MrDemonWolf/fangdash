@@ -7,15 +7,8 @@ import { player } from "../db/schema.ts";
  * Gets or creates a player record for the given user.
  * Returns the player row.
  */
-export async function ensurePlayer(
-	db: DrizzleD1Database<typeof schema>,
-	userId: string,
-) {
-	const existing = await db
-		.select()
-		.from(player)
-		.where(eq(player.userId, userId))
-		.get();
+export async function ensurePlayer(db: DrizzleD1Database<typeof schema>, userId: string) {
+	const existing = await db.select().from(player).where(eq(player.userId, userId)).get();
 
 	if (existing) {
 		return existing;

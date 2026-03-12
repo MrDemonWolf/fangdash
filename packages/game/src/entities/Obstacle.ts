@@ -6,7 +6,6 @@ import {
 	type ObstacleType,
 	SeededRandom,
 } from "@fangdash/shared";
-// biome-ignore lint/performance/noNamespaceImport: Phaser requires namespace import
 import * as Phaser from "phaser";
 
 const OBSTACLE_SCALE = 2;
@@ -56,8 +55,7 @@ export class Obstacle {
 		this.sprite.setVisible(true);
 		this.sprite.x = x ?? GAME_WIDTH + 50;
 		// Push bottom half of sprite below GROUND_VISUAL_Y so the ground tile clips it
-		this.sprite.y =
-			GROUND_VISUAL_Y + this.sprite.displayHeight * OBSTACLE_EMBED_RATIO;
+		this.sprite.y = GROUND_VISUAL_Y + this.sprite.displayHeight * OBSTACLE_EMBED_RATIO;
 	}
 
 	update(speed: number, delta: number) {
@@ -94,7 +92,7 @@ export class ObstacleSpawner {
 			this.rng = new SeededRandom(seed);
 		}
 		for (let i = 0; i < poolSize; i++) {
-			// biome-ignore lint/style/noNonNullAssertion: array index always valid
+			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 			const type = OBSTACLE_TYPES[i % OBSTACLE_TYPES.length]!;
 			this.pool.push(new Obstacle(scene, type));
 		}
@@ -104,17 +102,10 @@ export class ObstacleSpawner {
 		this.allowedTypes = types;
 	}
 
-	update(
-		speed: number,
-		delta: number,
-		minGap: number,
-		maxGap: number,
-		maxOnScreen?: number,
-	) {
+	update(speed: number, delta: number, minGap: number, maxGap: number, maxOnScreen?: number) {
 		this.timeSinceLastSpawn += delta;
 
-		const atCap =
-			maxOnScreen !== undefined && this.activeObstacleCount >= maxOnScreen;
+		const atCap = maxOnScreen !== undefined && this.activeObstacleCount >= maxOnScreen;
 
 		if (!atCap && this.timeSinceLastSpawn >= this.nextSpawnTime) {
 			this.spawn();
@@ -165,7 +156,7 @@ export class ObstacleSpawner {
 		}
 		const type = this.rng
 			? this.rng.pick(types)
-			: // biome-ignore lint/style/noNonNullAssertion: array index always valid
+			: // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 				types[Phaser.Math.Between(0, types.length - 1)]!;
 		inactive.setType(type);
 		inactive.spawn();

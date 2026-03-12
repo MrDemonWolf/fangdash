@@ -57,8 +57,6 @@ export function getSkinById(id: string): SkinDefinition | undefined {
 	return SKINS.find((s) => s.id === id);
 }
 
-export function getSkinsByRarity(
-	rarity: SkinDefinition["rarity"],
-): SkinDefinition[] {
+export function getSkinsByRarity(rarity: SkinDefinition["rarity"]): SkinDefinition[] {
 	return SKINS.filter((s) => s.rarity === rarity);
 }

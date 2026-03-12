@@ -1,11 +1,5 @@
-import {
-	AUDIO_KEYS,
-	GAME_HEIGHT,
-	GAME_WIDTH,
-	OBSTACLE_TYPES,
-} from "@fangdash/shared";
+import { AUDIO_KEYS, GAME_HEIGHT, GAME_WIDTH, OBSTACLE_TYPES } from "@fangdash/shared";
 import { SKINS } from "@fangdash/shared/skins";
-// biome-ignore lint/performance/noNamespaceImport: Phaser requires namespace import
 import * as Phaser from "phaser";
 
 export class BootScene extends Phaser.Scene {
@@ -82,8 +76,7 @@ export class BootScene extends Phaser.Scene {
 			const failed = [...this.failedAssets].join(", ");
 			this.game.events.emit("boot-error", {
 				key: failed,
-				message:
-					"Failed to load game assets. Please check your connection and reload.",
+				message: "Failed to load game assets. Please check your connection and reload.",
 			});
 			return;
 		}

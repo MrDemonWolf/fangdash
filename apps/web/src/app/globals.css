@@ -1,75 +1,75 @@
 @import "tailwindcss";
 
 :root {
-  --color-fang-orange: #ff6b2b;
-  --color-fang-dark: #1a1a2e;
-  --color-fang-darker: #0f0f1a;
-  --color-fang-purple: #6c3fa0;
-  --color-fang-gold: #ffd700;
+	--color-fang-orange: #ff6b2b;
+	--color-fang-dark: #1a1a2e;
+	--color-fang-darker: #0f0f1a;
+	--color-fang-purple: #6c3fa0;
+	--color-fang-gold: #ffd700;
 }
 
 @keyframes scroll-slow {
-  from {
-    background-position-x: 0;
-  }
-  to {
-    background-position-x: -800px;
-  }
+	from {
+		background-position-x: 0;
+	}
+	to {
+		background-position-x: -800px;
+	}
 }
 
 @keyframes scroll-medium {
-  from {
-    background-position-x: 0;
-  }
-  to {
-    background-position-x: -1600px;
-  }
+	from {
+		background-position-x: 0;
+	}
+	to {
+		background-position-x: -1600px;
+	}
 }
 
 @keyframes scroll-fast {
-  from {
-    background-position-x: 0;
-  }
-  to {
-    background-position-x: -1600px;
-  }
+	from {
+		background-position-x: 0;
+	}
+	to {
+		background-position-x: -1600px;
+	}
 }
 
 @keyframes float {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-12px);
-  }
+	0%,
+	100% {
+		transform: translateY(0);
+	}
+	50% {
+		transform: translateY(-12px);
+	}
 }
 
 @utility animate-scroll-slow {
-  animation: scroll-slow 24s linear infinite;
+	animation: scroll-slow 24s linear infinite;
 }
 
 @utility animate-scroll-medium {
-  animation: scroll-medium 24s linear infinite;
+	animation: scroll-medium 24s linear infinite;
 }
 
 @utility animate-scroll-fast {
-  animation: scroll-fast 12s linear infinite;
+	animation: scroll-fast 12s linear infinite;
 }
 
 @utility animate-float {
-  animation: float 3s ease-in-out infinite;
+	animation: float 3s ease-in-out infinite;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .animate-scroll-slow,
-  .animate-scroll-medium,
-  .animate-scroll-fast {
-    animation: none;
-  }
+	.animate-scroll-slow,
+	.animate-scroll-medium,
+	.animate-scroll-fast {
+		animation: none;
+	}
 
-  .animate-float {
-    animation: none;
-    transform: none;
-  }
+	.animate-float {
+		animation: none;
+		transform: none;
+	}
 }

@@ -57,12 +57,7 @@ export interface PlayerSkin {
 }
 
 // ── Achievements ──
-export type AchievementCategory =
-	| "score"
-	| "distance"
-	| "games"
-	| "skill"
-	| "social";
+export type AchievementCategory = "score" | "distance" | "games" | "skill" | "social";
 
 export interface AchievementDefinition {
 	id: string;

@@ -6,21 +6,13 @@ import PartySocket from "partysocket";
 type ServerMessageType = ServerMessage["type"];
 
 type ServerMessagePayload<T extends ServerMessageType> =
-	Extract<ServerMessage, { type: T }> extends { payload: infer P }
-		? P
-		: undefined;
+	Extract<ServerMessage, { type: T }> extends { payload: infer P } ? P : undefined;
 
-type EventHandler<T extends ServerMessageType> = (
-	payload: ServerMessagePayload<T>,
-) => void;
+type EventHandler<T extends ServerMessageType> = (payload: ServerMessagePayload<T>) => void;
 
 // ── Connection state ──
 
-export type ConnectionState =
-	| "connecting"
-	| "connected"
-	| "disconnected"
-	| "error";
+export type ConnectionState = "connecting" | "connected" | "disconnected" | "error";
 
 // ── Connection options ──
 
@@ -54,8 +46,7 @@ export class RaceConnection {
 
 	constructor(options: RaceConnectionOptions) {
 		this.options = options;
-		this.host =
-			options.host ?? process.env["NEXT_PUBLIC_PARTYKIT_HOST"] ?? "localhost:1999";
+		this.host = options.host ?? process.env["NEXT_PUBLIC_PARTYKIT_HOST"] ?? "localhost:1999";
 
 		this.messageHandler = (event: MessageEvent) => {
 			this.handleMessage(event.data);
@@ -172,10 +163,7 @@ export class RaceConnection {
 	 * Register a typed callback for a specific server message type.
 	 * Returns an unsubscribe function.
 	 */
-	on<T extends ServerMessageType>(
-		event: T,
-		handler: EventHandler<T>,
-	): () => void {
+	on<T extends ServerMessageType>(event: T, handler: EventHandler<T>): () => void {
 		let handlers = this.listeners.get(event);
 		if (!handlers) {
 			handlers = new Set();

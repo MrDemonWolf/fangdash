@@ -43,12 +43,7 @@ export const skinRouter = router({
 				const owned = await ctx.db
 					.select()
 					.from(playerSkin)
-					.where(
-						and(
-							eq(playerSkin.playerId, playerRecord.id),
-							eq(playerSkin.skinId, input.skinId),
-						),
-					)
+					.where(and(eq(playerSkin.playerId, playerRecord.id), eq(playerSkin.skinId, input.skinId)))
 					.get();
 
 				if (!owned) {

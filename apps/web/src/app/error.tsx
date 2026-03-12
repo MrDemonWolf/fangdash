@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 
-// biome-ignore lint/style/noDefaultExport: required by Next.js
 export default function ErrorPage({
 	error: _error,
 	reset,
@@ -15,8 +14,7 @@ export default function ErrorPage({
 			<h1 className="text-6xl font-bold text-[#0FACED]">Oops!</h1>
 			<p className="mt-4 text-xl text-white">Something went wrong.</p>
 			<p className="mt-2 max-w-md text-white/50">
-				An unexpected error occurred. You can try again or head back to the home
-				page.
+				An unexpected error occurred. You can try again or head back to the home page.
 			</p>
 			<div className="mt-8 flex gap-4">
 				<button

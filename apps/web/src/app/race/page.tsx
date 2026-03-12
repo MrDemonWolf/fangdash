@@ -14,20 +14,13 @@ function generateRoomCode(): string {
 	return code;
 }
 
-function RoomCodeInput({
-	value,
-	onChange,
-}: {
-	value: string;
-	onChange: (value: string) => void;
-}) {
+function RoomCodeInput({ value, onChange }: { value: string; onChange: (value: string) => void }) {
 	return (
 		<fieldset className="border-0 p-0 m-0">
 			<legend className="sr-only">Enter 6-character room code</legend>
 			<div className="flex justify-center gap-2">
 				{Array.from({ length: 6 }).map((_, i) => (
 					<input
-						// biome-ignore lint/suspicious/noArrayIndexKey: static placeholder list
 						key={i}
 						type="text"
 						maxLength={1}
@@ -35,9 +28,7 @@ function RoomCodeInput({
 						aria-label={`Room code digit ${i + 1} of 6`}
 						className="h-14 w-12 rounded-lg border border-[#0FACED]/20 bg-white/5 text-center text-xl font-bold uppercase text-white outline-none transition-colors focus:border-[#0FACED] focus:bg-[#0FACED]/10"
 						onChange={(e) => {
-							const char = e.target.value
-								.toUpperCase()
-								.replace(/[^A-Z0-9]/g, "");
+							const char = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "");
 							if (!char) {
 								const next = value.slice(0, i) + value.slice(i + 1);
 								onChange(next);
@@ -55,8 +46,9 @@ function RoomCodeInput({
 						}}
 						onKeyDown={(e) => {
 							if (e.key === "Backspace" && !value[i] && i > 0) {
-								const prevInput = (e.target as HTMLElement).parentElement
-									?.children[i - 1] as HTMLInputElement | undefined;
+								const prevInput = (e.target as HTMLElement).parentElement?.children[i - 1] as
+									| HTMLInputElement
+									| undefined;
 								prevInput?.focus();
 							}
 						}}
@@ -81,7 +73,6 @@ function RoomCodeInput({
 	);
 }
 
-// biome-ignore lint/style/noDefaultExport: required by Next.js
 export default function RaceLobbyPage() {
 	const router = useRouter();
 	const { data: session } = useSession();
@@ -103,12 +94,8 @@ export default function RaceLobbyPage() {
 		return (
 			<main className="flex min-h-screen flex-col items-center justify-center bg-[#091533] px-4">
 				<div className="w-full max-w-md rounded-xl border border-[#0FACED]/20 bg-[#091533]/95 p-8 text-center shadow-2xl">
-					<h1 className="mb-4 text-3xl font-extrabold tracking-tight text-white">
-						Race Mode
-					</h1>
-					<p className="mb-6 text-white/50">
-						Sign in to race against other players.
-					</p>
+					<h1 className="mb-4 text-3xl font-extrabold tracking-tight text-white">Race Mode</h1>
+					<p className="mb-6 text-white/50">Sign in to race against other players.</p>
 					<Link
 						href="/"
 						className="inline-block rounded-lg border border-white/10 px-6 py-3 text-sm font-medium text-white/70 transition-colors hover:border-white/20 hover:text-white"
@@ -125,19 +112,13 @@ export default function RaceLobbyPage() {
 			<div className="w-full max-w-md space-y-8">
 				{/* Header */}
 				<div className="text-center">
-					<h1 className="mb-2 text-4xl font-extrabold tracking-tight text-white">
-						Race Mode
-					</h1>
-					<p className="text-white/50">
-						Challenge other players to a head-to-head race.
-					</p>
+					<h1 className="mb-2 text-4xl font-extrabold tracking-tight text-white">Race Mode</h1>
+					<p className="text-white/50">Challenge other players to a head-to-head race.</p>
 				</div>
 
 				{/* Create Room */}
 				<div className="rounded-xl border border-[#0FACED]/20 bg-white/5 p-6">
-					<h2 className="mb-3 text-lg font-semibold text-white">
-						Create a Room
-					</h2>
+					<h2 className="mb-3 text-lg font-semibold text-white">Create a Room</h2>
 					<p className="mb-4 text-sm text-white/50">
 						Start a new race room and share the code with friends.
 					</p>
@@ -171,10 +152,7 @@ export default function RaceLobbyPage() {
 
 				{/* Back link */}
 				<div className="text-center">
-					<Link
-						href="/"
-						className="text-sm text-white/40 transition-colors hover:text-white/70"
-					>
+					<Link href="/" className="text-sm text-white/40 transition-colors hover:text-white/70">
 						Back to Home
 					</Link>
 				</div>

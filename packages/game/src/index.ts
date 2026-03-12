@@ -1,4 +1,3 @@
-// biome-ignore lint/performance/noBarrelFile: package entry point
 export { GhostPlayer } from "./entities/GhostPlayer.ts";
 export { Obstacle, ObstacleSpawner } from "./entities/Obstacle.ts";
 export { Player } from "./entities/Player.ts";

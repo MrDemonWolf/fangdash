@@ -26,5 +26,4 @@ const nextConfig: NextConfig = {
 	},
 };
 
-// biome-ignore lint/style/noDefaultExport: required by framework config
 export default nextConfig;

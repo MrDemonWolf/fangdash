@@ -5,12 +5,10 @@ import { docs } from "@/.source/server.ts";
 // but fumadocs-core@15.x expects an array — resolve it here.
 const raw = docs.toFumadocsSource();
 const files =
-	typeof raw.files === "function"
-		? (raw.files as unknown as () => typeof raw.files)()
-		: raw.files;
+	typeof raw.files === "function" ? (raw.files as unknown as () => typeof raw.files)() : raw.files;
 
 export const source = loader({
 	baseUrl: "/docs",
-	// biome-ignore lint/suspicious/noExplicitAny: fumadocs API typing
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	source: { ...raw, files } as any,
 });
