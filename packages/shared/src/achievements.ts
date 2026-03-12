@@ -143,9 +143,7 @@ export const ACHIEVEMENTS: AchievementDefinition[] = [
 	},
 ];
 
-export function getAchievementById(
-	id: string,
-): AchievementDefinition | undefined {
+export function getAchievementById(id: string): AchievementDefinition | undefined {
 	return ACHIEVEMENTS.find((a) => a.id === id);
 }
 

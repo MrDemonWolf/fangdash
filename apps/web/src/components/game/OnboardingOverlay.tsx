@@ -9,10 +9,8 @@ interface OnboardingOverlayProps {
 const STEPS = [
 	{
 		title: "Jump!",
-		description:
-			"Press SPACE or tap the screen to jump. You can double jump too!",
+		description: "Press SPACE or tap the screen to jump. You can double jump too!",
 		icon: (
-			// biome-ignore lint/a11y/noSvgWithoutTitle: decorative icon
 			<svg
 				className="mx-auto mb-4 h-16 w-16 animate-bounce text-[#0FACED]"
 				viewBox="0 0 24 24"
@@ -31,7 +29,6 @@ const STEPS = [
 		title: "Dodge!",
 		description: "Dodge rocks, logs, and spikes. Hit one and it's game over!",
 		icon: (
-			// biome-ignore lint/a11y/noSvgWithoutTitle: decorative icon
 			<svg
 				className="mx-auto mb-4 h-16 w-16 text-[#0FACED]"
 				viewBox="0 0 24 24"
@@ -49,10 +46,8 @@ const STEPS = [
 	},
 	{
 		title: "Run far!",
-		description:
-			"The longer you survive, the higher your score. Good luck, wolf!",
+		description: "The longer you survive, the higher your score. Good luck, wolf!",
 		icon: (
-			// biome-ignore lint/a11y/noSvgWithoutTitle: decorative icon
 			<svg
 				className="mx-auto mb-4 h-16 w-16 text-[#0FACED]"
 				viewBox="0 0 24 24"
@@ -68,10 +63,7 @@ const STEPS = [
 	},
 ] as const;
 
-// biome-ignore lint/style/noDefaultExport: required by Next.js
-export default function OnboardingOverlay({
-	onComplete,
-}: OnboardingOverlayProps) {
+export default function OnboardingOverlay({ onComplete }: OnboardingOverlayProps) {
 	const [currentStep, setCurrentStep] = useState(0);
 	const [isTransitioning, setIsTransitioning] = useState(false);
 
@@ -103,20 +95,15 @@ export default function OnboardingOverlay({
 				{step.icon}
 
 				{/* Title */}
-				<h2 className="mb-3 text-3xl font-bold tracking-wide text-white">
-					{step.title}
-				</h2>
+				<h2 className="mb-3 text-3xl font-bold tracking-wide text-white">{step.title}</h2>
 
 				{/* Description */}
-				<p className="mb-8 text-lg leading-relaxed text-white/70">
-					{step.description}
-				</p>
+				<p className="mb-8 text-lg leading-relaxed text-white/70">{step.description}</p>
 
 				{/* Step indicators */}
 				<div className="mb-6 flex items-center justify-center gap-2">
 					{STEPS.map((_, i) => (
 						<div
-							// biome-ignore lint/suspicious/noArrayIndexKey: static placeholder list
 							key={i}
 							className={`h-2 rounded-full transition-all duration-300 ${
 								i === currentStep

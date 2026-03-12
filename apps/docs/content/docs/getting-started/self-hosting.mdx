@@ -4,21 +4,19 @@ description: Deploy your own instance of FangDash.
 ---
 
 <Callout type="info">
-**TL;DR**
-- FangDash runs entirely on Cloudflare infrastructure (Workers + D1)
-- Three services to deploy: API, Web, and PartyKit (multiplayer)
-- `pnpm ship` deploys all three at once
+	**TL;DR** - FangDash runs entirely on Cloudflare infrastructure (Workers + D1) - Three services to
+	deploy: API, Web, and PartyKit (multiplayer) - `pnpm ship` deploys all three at once
 </Callout>
 
 FangDash is designed to run on Cloudflare's infrastructure. Here's how to deploy your own instance.
 
 ## What You Need
 
-| Requirement | Notes |
-| --- | --- |
-| Cloudflare account | Free tier works |
-| Twitch Developer application | For OAuth sign-in |
-| PartyKit account | For real-time multiplayer |
+| Requirement                  | Notes                     |
+| ---------------------------- | ------------------------- |
+| Cloudflare account           | Free tier works           |
+| Twitch Developer application | For OAuth sign-in         |
+| PartyKit account             | For real-time multiplayer |
 
 <Steps>
 <Step>
@@ -41,6 +39,7 @@ bunx wrangler secret put TWITCH_CLIENT_SECRET --config apps/api/wrangler.toml
 ```bash
 bun ship:api
 ```
+
 </Step>
 
 <Step>
@@ -54,6 +53,7 @@ The **web app** deploys to Cloudflare Workers using OpenNext.
 ```bash
 bun ship:web
 ```
+
 </Step>
 
 <Step>
@@ -72,6 +72,7 @@ export PARTYKIT_TOKEN=your-token
 ```bash
 bun ship:party
 ```
+
 </Step>
 </Steps>
 
@@ -86,12 +87,13 @@ This runs all three deploy commands in parallel.
 ## Setting Up Twitch OAuth
 
 <Steps>
-<Step>Go to the [Twitch Developer Console](https://dev.twitch.tv/console)</Step>
-<Step>Create a new application</Step>
-<Step>Set the OAuth Redirect URL to `https://your-api-domain/api/auth/callback/twitch`</Step>
-<Step>Copy the Client ID and Client Secret to your environment variables</Step>
+	<Step>Go to the [Twitch Developer Console](https://dev.twitch.tv/console)</Step>
+	<Step>Create a new application</Step>
+	<Step>Set the OAuth Redirect URL to `https://your-api-domain/api/auth/callback/twitch`</Step>
+	<Step>Copy the Client ID and Client Secret to your environment variables</Step>
 </Steps>
 
 <Callout type="warn">
-The Twitch OAuth redirect URL must match your deployed API domain exactly — including the path `/api/auth/callback/twitch`.
+	The Twitch OAuth redirect URL must match your deployed API domain exactly — including the path
+	`/api/auth/callback/twitch`.
 </Callout>

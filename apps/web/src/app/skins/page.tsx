@@ -1,10 +1,6 @@
 "use client";
 
-import type {
-	SkinDefinition,
-	SkinRarity,
-	SkinUnlockCondition,
-} from "@fangdash/shared";
+import type { SkinDefinition, SkinRarity, SkinUnlockCondition } from "@fangdash/shared";
 import { SKINS } from "@fangdash/shared";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import Image from "next/image";
@@ -15,10 +11,7 @@ import { useTRPC } from "@/lib/trpc.ts";
 /* ------------------------------------------------------------------ */
 /*  Rarity colour map                                                  */
 /* ------------------------------------------------------------------ */
-const RARITY_COLORS: Record<
-	SkinRarity,
-	{ badge: string; border: string; text: string }
-> = {
+const RARITY_COLORS: Record<SkinRarity, { badge: string; border: string; text: string }> = {
 	common: {
 		badge: "bg-gray-600",
 		border: "border-gray-500",
@@ -50,7 +43,6 @@ const RARITY_COLORS: Record<
 /*  Helpers                                                            */
 /* ------------------------------------------------------------------ */
 function unlockConditionText(condition: SkinUnlockCondition): string {
-	// biome-ignore lint/style/useDefaultSwitchClause: exhaustive cases
 	switch (condition.type) {
 		case "default":
 			return "Unlocked by default";
@@ -72,7 +64,6 @@ interface GallerySkin extends SkinDefinition {
 	unlocked: boolean;
 }
 
-// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: complex component
 function SkinCard({
 	skin,
 	equipped,
@@ -116,7 +107,6 @@ function SkinCard({
 				/>
 				{!skin.unlocked && (
 					<div className="absolute inset-0 flex items-center justify-center">
-						{/* biome-ignore lint/a11y/noSvgWithoutTitle: decorative icon */}
 						<svg
 							xmlns="http://www.w3.org/2000/svg"
 							className="h-8 w-8 text-gray-400"
@@ -145,9 +135,7 @@ function SkinCard({
 			</span>
 
 			{/* Description */}
-			<p className="mt-2 text-center text-sm text-gray-400">
-				{skin.description}
-			</p>
+			<p className="mt-2 text-center text-sm text-gray-400">{skin.description}</p>
 
 			{/* Unlock condition or equip button */}
 			<div className="mt-auto pt-4">
@@ -162,9 +150,7 @@ function SkinCard({
 							{isEquipping ? "Equipping..." : "Equip"}
 						</button>
 					) : equipped ? (
-						<span className="text-sm font-medium text-[#0FACED]">
-							Currently Equipped
-						</span>
+						<span className="text-sm font-medium text-[#0FACED]">Currently Equipped</span>
 					) : null
 				) : (
 					<p className="text-center text-xs text-gray-500">
@@ -179,7 +165,6 @@ function SkinCard({
 /* ------------------------------------------------------------------ */
 /*  Page                                                               */
 /* ------------------------------------------------------------------ */
-// biome-ignore lint/style/noDefaultExport: required by Next.js
 export default function SkinsPage() {
 	const { data: session } = useSession();
 	const signedIn = !!session?.user;
@@ -215,9 +200,7 @@ export default function SkinsPage() {
 
 	function handleEquip(skinId: string) {
 		// Optimistically update before the mutation fires
-		const previousEquipped = queryClient.getQueryData<{ skinId: string }>(
-			equippedQueryKey,
-		);
+		const previousEquipped = queryClient.getQueryData<{ skinId: string }>(equippedQueryKey);
 		queryClient.setQueryData(equippedQueryKey, { skinId });
 		equipMutation.mutate(
 			{ skinId },
@@ -243,14 +226,11 @@ export default function SkinsPage() {
 				unlocked: s.unlockCondition.type === "default",
 			}));
 
-	const isLoading =
-		signedIn && (galleryQuery.isLoading || equippedQuery.isLoading);
+	const isLoading = signedIn && (galleryQuery.isLoading || equippedQuery.isLoading);
 
 	return (
 		<main className="mx-auto min-h-screen max-w-6xl px-4 py-12">
-			<h1 className="mb-2 text-center text-4xl font-extrabold text-white">
-				Skins Gallery
-			</h1>
+			<h1 className="mb-2 text-center text-4xl font-extrabold text-white">Skins Gallery</h1>
 			<p className="mb-10 text-center text-gray-400">
 				Collect and equip wolf skins by playing the game
 			</p>
@@ -258,9 +238,7 @@ export default function SkinsPage() {
 			{/* Sign-in notice */}
 			{!signedIn && (
 				<div className="mb-8 rounded-lg border border-[#0FACED]/30 bg-[#0FACED]/10 px-6 py-4 text-center">
-					<p className="text-sm text-[#0FACED]">
-						Sign in to track progress and equip skins
-					</p>
+					<p className="text-sm text-[#0FACED]">Sign in to track progress and equip skins</p>
 				</div>
 			)}
 

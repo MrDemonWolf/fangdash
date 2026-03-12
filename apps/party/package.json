@@ -1,19 +1,19 @@
 {
-  "name": "@fangdash/party",
-  "version": "0.0.0",
-  "private": true,
-  "scripts": {
-    "dev": "partykit dev",
-    "deploy": "partykit deploy",
-    "typecheck": "tsc --noEmit",
-    "clean": "rm -rf dist"
-  },
-  "dependencies": {
-    "@fangdash/shared": "workspace:*",
-    "partysocket": "^1.1.16"
-  },
-  "devDependencies": {
-    "partykit": "^0.0.115",
-    "typescript": "^5.9.3"
-  }
+	"name": "@fangdash/party",
+	"version": "0.0.0",
+	"private": true,
+	"scripts": {
+		"dev": "partykit dev",
+		"deploy": "partykit deploy",
+		"typecheck": "tsc --noEmit",
+		"clean": "rm -rf dist"
+	},
+	"dependencies": {
+		"@fangdash/shared": "workspace:*",
+		"partysocket": "^1.1.16"
+	},
+	"devDependencies": {
+		"partykit": "^0.0.115",
+		"typescript": "^5.9.3"
+	}
 }

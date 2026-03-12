@@ -23,10 +23,7 @@ export async function createContext(c: Context) {
 					body: { userId: string; banReason?: string; banExpiresIn?: number };
 					headers: Headers;
 				}): Promise<unknown>;
-				unbanUser(opts: {
-					body: { userId: string };
-					headers: Headers;
-				}): Promise<unknown>;
+				unbanUser(opts: { body: { userId: string }; headers: Headers }): Promise<unknown>;
 			};
 		},
 		headers: c.req.raw.headers,

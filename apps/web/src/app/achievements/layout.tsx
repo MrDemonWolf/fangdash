@@ -5,11 +5,6 @@ export const metadata: Metadata = {
 	description: "Track your FangDash achievements and unlock rewards.",
 };
 
-// biome-ignore lint/style/noDefaultExport: required by Next.js
-export default function AchievementsLayout({
-	children,
-}: {
-	children: React.ReactNode;
-}) {
+export default function AchievementsLayout({ children }: { children: React.ReactNode }) {
 	return children;
 }

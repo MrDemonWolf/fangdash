@@ -14,7 +14,6 @@ interface GameHUDProps {
 function SpeakerIcon({ muted }: { muted: boolean }) {
 	if (muted) {
 		return (
-			// biome-ignore lint/a11y/noSvgWithoutTitle: decorative icon
 			<svg
 				xmlns="http://www.w3.org/2000/svg"
 				width="16"
@@ -33,7 +32,6 @@ function SpeakerIcon({ muted }: { muted: boolean }) {
 		);
 	}
 	return (
-		// biome-ignore lint/a11y/noSvgWithoutTitle: decorative icon
 		<svg
 			xmlns="http://www.w3.org/2000/svg"
 			width="16"

@@ -22,8 +22,7 @@ export const scoreRouter = router({
 		.mutation(async ({ ctx, input }) => {
 			// Anti-cheat: reject impossible scores
 			const maxAllowedScore =
-				(input.duration / 1000) * SCORE_PER_SECOND +
-				input.obstaclesCleared * SCORE_PER_OBSTACLE;
+				(input.duration / 1000) * SCORE_PER_SECOND + input.obstaclesCleared * SCORE_PER_OBSTACLE;
 			if (input.score > maxAllowedScore) {
 				throw new TRPCError({
 					code: "BAD_REQUEST",
@@ -63,15 +62,11 @@ export const scoreRouter = router({
 				.where(eq(player.id, playerRecord.id));
 
 			// Check achievements and skin unlocks after score submission
-			const achievementResult = await checkAchievements(
-				ctx.db,
-				playerRecord.id,
-				{
-					score: input.score,
-					distance: input.distance,
-					obstaclesCleared: input.obstaclesCleared,
-				},
-			);
+			const achievementResult = await checkAchievements(ctx.db, playerRecord.id, {
+				score: input.score,
+				distance: input.distance,
+				obstaclesCleared: input.obstaclesCleared,
+			});
 			const newSkinUnlocks = await checkSkinUnlocks(
 				ctx.db,
 				playerRecord.id,

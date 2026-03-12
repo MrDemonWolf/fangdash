@@ -1,11 +1,4 @@
-import {
-	index,
-	integer,
-	real,
-	sqliteTable,
-	text,
-	uniqueIndex,
-} from "drizzle-orm/sqlite-core";
+import { index, integer, real, sqliteTable, text, uniqueIndex } from "drizzle-orm/sqlite-core";
 
 // ── Better Auth Core Tables ──
 
@@ -13,9 +6,7 @@ export const user = sqliteTable("user", {
 	id: text("id").primaryKey(),
 	name: text("name").notNull(),
 	email: text("email").notNull().unique(),
-	emailVerified: integer("email_verified", { mode: "boolean" })
-		.notNull()
-		.default(false),
+	emailVerified: integer("email_verified", { mode: "boolean" }).notNull().default(false),
 	image: text("image"),
 	twitchId: text("twitch_id").unique(),
 	twitchAvatar: text("twitch_avatar"),
@@ -82,9 +73,7 @@ export const player = sqliteTable("player", {
 	equippedSkinId: text("equipped_skin_id").notNull().default("gray-wolf"),
 	totalScore: integer("total_score").notNull().default(0),
 	totalDistance: real("total_distance").notNull().default(0),
-	totalObstaclesCleared: integer("total_obstacles_cleared")
-		.notNull()
-		.default(0),
+	totalObstaclesCleared: integer("total_obstacles_cleared").notNull().default(0),
 	gamesPlayed: integer("games_played").notNull().default(0),
 	racesPlayed: integer("races_played").notNull().default(0),
 	racesWon: integer("races_won").notNull().default(0),
@@ -119,9 +108,7 @@ export const playerSkin = sqliteTable(
 		skinId: text("skin_id").notNull(),
 		unlockedAt: integer("unlocked_at", { mode: "timestamp" }).notNull(),
 	},
-	(table) => [
-		uniqueIndex("player_skin_unique").on(table.playerId, table.skinId),
-	],
+	(table) => [uniqueIndex("player_skin_unique").on(table.playerId, table.skinId)],
 );
 
 export const playerAchievement = sqliteTable(
@@ -134,12 +121,7 @@ export const playerAchievement = sqliteTable(
 		achievementId: text("achievement_id").notNull(),
 		unlockedAt: integer("unlocked_at", { mode: "timestamp" }).notNull(),
 	},
-	(table) => [
-		uniqueIndex("player_achievement_unique").on(
-			table.playerId,
-			table.achievementId,
-		),
-	],
+	(table) => [uniqueIndex("player_achievement_unique").on(table.playerId, table.achievementId)],
 );
 
 export const raceHistory = sqliteTable(

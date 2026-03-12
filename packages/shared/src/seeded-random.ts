@@ -6,8 +6,7 @@ export class SeededRandom {
 	private state: number;
 
 	constructor(seed: string | number) {
-		this.state =
-			typeof seed === "string" ? SeededRandom.hashString(seed) : seed;
+		this.state = typeof seed === "string" ? SeededRandom.hashString(seed) : seed;
 	}
 
 	/** Returns a float in [0, 1) */
@@ -32,7 +31,7 @@ export class SeededRandom {
 	/** Picks a random element from the array */
 	pick<T>(array: readonly T[]): T {
 		// Index is always valid: next() returns [0, 1), so floor(next() * length) is in [0, length-1]
-		// biome-ignore lint/style/noNonNullAssertion: array index always valid
+		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 		return array[Math.floor(this.next() * array.length)]!;
 	}
 

@@ -32,10 +32,7 @@ function UserPill({
 
 	useEffect(() => {
 		const handleOutsideClick = (e: MouseEvent) => {
-			if (
-				dropdownRef.current &&
-				!dropdownRef.current.contains(e.target as Node)
-			) {
+			if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
 				setDropdownOpen(false);
 			}
 		};
@@ -53,7 +50,6 @@ function UserPill({
 				className="flex items-center gap-2 bg-[#0a1628]/80 border border-white/10 backdrop-blur-xl rounded-full px-3 py-1.5 hover:border-white/20 hover:bg-white/5 transition-colors cursor-pointer"
 			>
 				{userImage && (
-					// biome-ignore lint/performance/noImgElement: game canvas context
 					<img
 						src={userImage}
 						alt={userName ?? "User avatar"}
@@ -114,11 +110,7 @@ export function PlayMainMenu({
 				{isPending ? (
 					<div className="h-8 w-24 animate-pulse rounded-full bg-white/10" />
 				) : isSignedIn ? (
-					<UserPill
-						userName={userName}
-						userImage={userImage}
-						onSignOut={onSignOut}
-					/>
+					<UserPill userName={userName} userImage={userImage} onSignOut={onSignOut} />
 				) : (
 					<button
 						type="button"
@@ -132,7 +124,6 @@ export function PlayMainMenu({
 
 			<div className="relative z-10 flex flex-col items-center gap-6 text-center px-6 max-w-sm w-full">
 				{/* Wolf skin */}
-				{/* biome-ignore lint/performance/noImgElement: game canvas context */}
 				<img
 					src={`/wolves/${skinKey}.png`}
 					alt=""
@@ -145,9 +136,7 @@ export function PlayMainMenu({
 
 				{/* Title */}
 				<div>
-					<h1 className="text-5xl font-extrabold uppercase tracking-tight text-white">
-						FangDash
-					</h1>
+					<h1 className="text-5xl font-extrabold uppercase tracking-tight text-white">FangDash</h1>
 					<p className="text-xs font-semibold uppercase tracking-widest text-[#0FACED]/60 mt-1">
 						Endless Runner
 					</p>
@@ -199,10 +188,7 @@ export function PlayMainMenu({
 
 				{/* Nav links */}
 				<div className="flex gap-6 text-xs font-semibold uppercase tracking-widest text-white/40">
-					<Link
-						href="/leaderboard"
-						className="hover:text-white transition-colors"
-					>
+					<Link href="/leaderboard" className="hover:text-white transition-colors">
 						Leaderboard
 					</Link>
 					<Link href="/skins" className="hover:text-white transition-colors">

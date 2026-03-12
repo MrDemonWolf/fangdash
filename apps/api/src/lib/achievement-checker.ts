@@ -37,11 +37,7 @@ export async function checkAchievements(
 	latestScore?: { score: number; distance: number; obstaclesCleared: number },
 ): Promise<CheckResult> {
 	// Get player stats
-	const playerRecord = await db
-		.select()
-		.from(player)
-		.where(eq(player.id, playerId))
-		.get();
+	const playerRecord = await db.select().from(player).where(eq(player.id, playerId)).get();
 
 	const emptyStats: CheckStats = { highestScore: 0, highestDistance: 0 };
 	if (!playerRecord) {
@@ -74,14 +70,8 @@ export async function checkAchievements(
 		.get();
 
 	const stats: PlayerStats = {
-		highestScore: Math.max(
-			highestScoreRow?.value ?? 0,
-			latestScore?.score ?? 0,
-		),
-		highestDistance: Math.max(
-			highestDistanceRow?.value ?? 0,
-			latestScore?.distance ?? 0,
-		),
+		highestScore: Math.max(highestScoreRow?.value ?? 0, latestScore?.score ?? 0),
+		highestDistance: Math.max(highestDistanceRow?.value ?? 0, latestScore?.distance ?? 0),
 		totalScore: playerRecord.totalScore,
 		totalDistance: playerRecord.totalDistance,
 		totalObstaclesCleared: playerRecord.totalObstaclesCleared,

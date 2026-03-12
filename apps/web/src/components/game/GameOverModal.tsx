@@ -54,9 +54,7 @@ export function GameOverModal({
 	onRetrySubmit,
 }: GameOverModalProps) {
 	const hasUnlocks =
-		submitResult &&
-		(submitResult.newAchievements.length > 0 ||
-			submitResult.newSkins.length > 0);
+		submitResult && (submitResult.newAchievements.length > 0 || submitResult.newSkins.length > 0);
 
 	return (
 		<div className="absolute inset-0 z-20 flex items-center justify-center bg-black/80 backdrop-blur-sm">
@@ -82,8 +80,7 @@ export function GameOverModal({
 				<div
 					className="h-px w-full"
 					style={{
-						background:
-							"linear-gradient(90deg, transparent, #0FACED, transparent)",
+						background: "linear-gradient(90deg, transparent, #0FACED, transparent)",
 					}}
 				/>
 
@@ -94,15 +91,12 @@ export function GameOverModal({
 							className="text-5xl font-black font-mono uppercase tracking-tight leading-none mb-2"
 							style={{
 								color: "#ff6b2b",
-								textShadow:
-									"0 0 20px rgba(255,107,43,0.6), 0 0 40px rgba(255,107,43,0.25)",
+								textShadow: "0 0 20px rgba(255,107,43,0.6), 0 0 40px rgba(255,107,43,0.25)",
 							}}
 						>
 							Game Over
 						</h2>
-						<p className="text-sm font-mono text-white/50">
-							{subtitle(state.score)}
-						</p>
+						<p className="text-sm font-mono text-white/50">{subtitle(state.score)}</p>
 					</div>
 
 					{/* Stats — 2×2 grid */}
@@ -169,9 +163,7 @@ export function GameOverModal({
 
 					{/* Saving indicator */}
 					{isSignedIn && submitting && (
-						<p className="mb-4 text-sm text-center font-mono text-white/40">
-							Saving score...
-						</p>
+						<p className="mb-4 text-sm text-center font-mono text-white/40">Saving score...</p>
 					)}
 
 					{/* Unlocks — horizontal pill badges */}
@@ -230,8 +222,7 @@ export function GameOverModal({
 							className="w-full cursor-pointer rounded px-6 py-3 text-sm font-black font-mono uppercase tracking-widest text-[#091533] transition-all hover:brightness-110 active:scale-95"
 							style={{
 								background: "#0FACED",
-								boxShadow:
-									"0 0 20px rgba(15,172,237,0.35), 0 0 40px rgba(15,172,237,0.12)",
+								boxShadow: "0 0 20px rgba(15,172,237,0.35), 0 0 40px rgba(15,172,237,0.12)",
 							}}
 						>
 							PLAY AGAIN
@@ -250,8 +241,7 @@ export function GameOverModal({
 				<div
 					className="h-px w-full"
 					style={{
-						background:
-							"linear-gradient(90deg, transparent, rgba(15,172,237,0.3), transparent)",
+						background: "linear-gradient(90deg, transparent, rgba(15,172,237,0.3), transparent)",
 					}}
 				/>
 			</div>

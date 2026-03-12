@@ -1,12 +1,12 @@
 {
-  "title": "FangDash",
-  "pages": [
-    "index",
-    "getting-started",
-    "gameplay",
-    "multiplayer",
-    "customization",
-    "---Legal---",
-    "legal"
-  ]
+	"title": "FangDash",
+	"pages": [
+		"index",
+		"getting-started",
+		"gameplay",
+		"multiplayer",
+		"customization",
+		"---Legal---",
+		"legal"
+	]
 }

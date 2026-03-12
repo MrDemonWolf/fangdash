@@ -5,11 +5,6 @@ export const metadata: Metadata = {
 	description: "View your FangDash stats, scores, and race history.",
 };
 
-// biome-ignore lint/style/noDefaultExport: required by Next.js
-export default function ProfileLayout({
-	children,
-}: {
-	children: React.ReactNode;
-}) {
+export default function ProfileLayout({ children }: { children: React.ReactNode }) {
 	return children;
 }

@@ -12,12 +12,10 @@ import {
 } from "@fangdash/shared";
 import type * as Party from "partykit/server";
 
-// biome-ignore lint/style/noDefaultExport: required by PartyKit
 export default class RaceServer implements Party.Server {
 	room: RaceRoom;
 	private countdownInProgress = false;
 
-	// biome-ignore lint/style/noParameterProperties: PartyKit convention
 	constructor(readonly party: Party.Party) {
 		this.room = {
 			id: party.id,
@@ -40,7 +38,6 @@ export default class RaceServer implements Party.Server {
 			return;
 		}
 
-		// biome-ignore lint/style/useDefaultSwitchClause: exhaustive cases
 		switch (msg.type) {
 			case "join":
 				this.handleJoin(sender, msg.payload);
@@ -81,18 +78,12 @@ export default class RaceServer implements Party.Server {
 			this.room.hostId = null;
 		}
 
-		if (
-			this.room.status === "racing" &&
-			this.room.players.every((p) => !p.alive)
-		) {
+		if (this.room.status === "racing" && this.room.players.every((p) => !p.alive)) {
 			this.endRace();
 		}
 	}
 
-	private handleJoin(
-		conn: Party.Connection,
-		payload: { username: string; skinId: string },
-	) {
+	private handleJoin(conn: Party.Connection, payload: { username: string; skinId: string }) {
 		if (this.room.players.some((p) => p.id === conn.id)) {
 			return;
 		}
@@ -156,10 +147,7 @@ export default class RaceServer implements Party.Server {
 		this.broadcast({ type: "race_start", payload: { seed: this.room.seed } });
 	}
 
-	private handleUpdate(
-		conn: Party.Connection,
-		payload: { distance: number; score: number },
-	) {
+	private handleUpdate(conn: Party.Connection, payload: { distance: number; score: number }) {
 		if (this.room.status !== "racing") {
 			return;
 		}

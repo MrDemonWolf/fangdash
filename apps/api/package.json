@@ -1,34 +1,34 @@
 {
-  "name": "@fangdash/api",
-  "version": "0.0.0",
-  "private": true,
-  "exports": {
-    "./trpc": "./src/trpc/router.ts",
-    "./db/schema": "./src/db/schema.ts"
-  },
-  "scripts": {
-    "dev": "wrangler dev",
-    "build": "wrangler deploy --dry-run",
-    "deploy": "wrangler deploy",
-    "typecheck": "tsc --noEmit",
-    "test": "vitest run",
-    "clean": "rm -rf dist .wrangler",
-    "promote-admin": "bash scripts/promote-admin.sh"
-  },
-  "dependencies": {
-    "@fangdash/shared": "workspace:*",
-    "better-auth": "^1.5.5",
-    "@hono/trpc-server": "^0.4.2",
-    "@trpc/server": "^11.12.0",
-    "drizzle-orm": "^0.45.1",
-    "hono": "^4.12.7",
-    "superjson": "^2.2.6",
-    "zod": "^4.3.6"
-  },
-  "devDependencies": {
-    "@cloudflare/workers-types": "^4.20260312.1",
-    "drizzle-kit": "^0.31.9",
-    "typescript": "^5.9.3",
-    "wrangler": "^4.72.0"
-  }
+	"name": "@fangdash/api",
+	"version": "0.0.0",
+	"private": true,
+	"exports": {
+		"./trpc": "./src/trpc/router.ts",
+		"./db/schema": "./src/db/schema.ts"
+	},
+	"scripts": {
+		"dev": "wrangler dev",
+		"build": "wrangler deploy --dry-run",
+		"deploy": "wrangler deploy",
+		"typecheck": "tsc --noEmit",
+		"test": "vitest run",
+		"clean": "rm -rf dist .wrangler",
+		"promote-admin": "bash scripts/promote-admin.sh"
+	},
+	"dependencies": {
+		"@fangdash/shared": "workspace:*",
+		"better-auth": "^1.5.5",
+		"@hono/trpc-server": "^0.4.2",
+		"@trpc/server": "^11.12.0",
+		"drizzle-orm": "^0.45.1",
+		"hono": "^4.12.7",
+		"superjson": "^2.2.6",
+		"zod": "^4.3.6"
+	},
+	"devDependencies": {
+		"@cloudflare/workers-types": "^4.20260312.1",
+		"drizzle-kit": "^0.31.9",
+		"typescript": "^5.9.3",
+		"wrangler": "^4.72.0"
+	}
 }

@@ -1,9 +1,4 @@
-import {
-	DocsBody,
-	DocsDescription,
-	DocsPage,
-	DocsTitle,
-} from "fumadocs-ui/page";
+import { DocsBody, DocsDescription, DocsPage, DocsTitle } from "fumadocs-ui/page";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { source } from "@/lib/source.ts";
@@ -13,7 +8,6 @@ interface Props {
 	params: Promise<{ slug?: string[] }>;
 }
 
-// biome-ignore lint/style/noDefaultExport: required by Next.js
 export default async function Page({ params }: Props) {
 	const { slug } = await params;
 	const page = source.getPage(slug);
@@ -23,7 +17,7 @@ export default async function Page({ params }: Props) {
 
 	// fumadocs-mdx adds body/toc/full at runtime but the type is lost
 	// due to the files-function compatibility shim in lib/source.ts
-	// biome-ignore lint/suspicious/noExplicitAny: fumadocs API typing
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	const data = page.data as any;
 	const MDX = data.body;
 
@@ -38,7 +32,6 @@ export default async function Page({ params }: Props) {
 	);
 }
 
-// biome-ignore lint/suspicious/useAwait: Next.js static params generation
 export async function generateStaticParams() {
 	return source.generateParams();
 }

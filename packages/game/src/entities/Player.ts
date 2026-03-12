@@ -9,7 +9,6 @@ import {
 	MAX_JUMPS,
 	PLAYER_START_X,
 } from "@fangdash/shared";
-// biome-ignore lint/performance/noNamespaceImport: Phaser requires namespace import
 import * as Phaser from "phaser";
 
 export class Player {
@@ -100,10 +99,8 @@ export class Player {
 		}
 
 		const dt = delta / 1000;
-		const riseGravity =
-			(this.overrides.gravity ?? GRAVITY) * this.gravityMultiplier;
-		const fallGravity =
-			(this.overrides.fallGravity ?? FALL_GRAVITY) * this.gravityMultiplier;
+		const riseGravity = (this.overrides.gravity ?? GRAVITY) * this.gravityMultiplier;
+		const fallGravity = (this.overrides.fallGravity ?? FALL_GRAVITY) * this.gravityMultiplier;
 		const maxFallVelocity = this.overrides.maxFallVelocity ?? MAX_FALL_VELOCITY;
 		const groundY = this.overrides.groundY ?? GROUND_Y;
 		const maxJumps = this.overrides.maxJumps ?? MAX_JUMPS;

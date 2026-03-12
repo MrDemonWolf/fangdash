@@ -17,11 +17,7 @@ export async function checkSkinUnlocks(
 	prefetchedStats?: CheckStats,
 ): Promise<string[]> {
 	// Get player stats
-	const playerRecord = await db
-		.select()
-		.from(player)
-		.where(eq(player.id, playerId))
-		.get();
+	const playerRecord = await db.select().from(player).where(eq(player.id, playerId)).get();
 
 	if (!playerRecord) {
 		return [];
@@ -41,9 +37,7 @@ export async function checkSkinUnlocks(
 		.from(playerAchievement)
 		.where(eq(playerAchievement.playerId, playerId));
 
-	const achievementIds = new Set(
-		unlockedAchievements.map((a) => a.achievementId),
-	);
+	const achievementIds = new Set(unlockedAchievements.map((a) => a.achievementId));
 
 	const now = new Date();
 

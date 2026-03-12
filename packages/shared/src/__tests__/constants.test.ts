@@ -1,4 +1,3 @@
-// biome-ignore lint/correctness/noUndeclaredDependencies: vitest is a workspace root dependency
 import { describe, expect, it } from "vitest";
 import {
 	BASE_SPEED,
@@ -41,9 +40,9 @@ describe("Constants", () => {
 
 	it("difficulty levels are sorted by startDistance", () => {
 		for (let i = 1; i < DIFFICULTY_LEVELS.length; i++) {
-			// biome-ignore lint/style/noNonNullAssertion: test assertion on known-valid data
+			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 			expect(DIFFICULTY_LEVELS[i]!.startDistance).toBeGreaterThan(
-				// biome-ignore lint/style/noNonNullAssertion: test assertion on known-valid data
+				// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 				DIFFICULTY_LEVELS[i - 1]!.startDistance,
 			);
 		}
@@ -51,9 +50,9 @@ describe("Constants", () => {
 
 	it("difficulty speed multipliers increase", () => {
 		for (let i = 1; i < DIFFICULTY_LEVELS.length; i++) {
-			// biome-ignore lint/style/noNonNullAssertion: test assertion on known-valid data
+			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 			expect(DIFFICULTY_LEVELS[i]!.speedMultiplier).toBeGreaterThanOrEqual(
-				// biome-ignore lint/style/noNonNullAssertion: test assertion on known-valid data
+				// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 				DIFFICULTY_LEVELS[i - 1]!.speedMultiplier,
 			);
 		}

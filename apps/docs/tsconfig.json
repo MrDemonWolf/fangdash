@@ -1,53 +1,41 @@
 {
-  "extends": "../../tsconfig.base.json",
-  "compilerOptions": {
-    "baseUrl": ".",
-    "jsx": "preserve",
-    "module": "ESNext",
-    "moduleResolution": "Bundler",
-    "noEmit": true,
-    "composite": false,
-    "declaration": false,
-    "declarationMap": false,
-    "skipLibCheck": true,
-    "paths": {
-      "@/*": [
-        "./*"
-      ],
-      "@/.source": [
-        "./.source"
-      ]
-    },
-    "lib": [
-      "dom",
-      "dom.iterable",
-      "esnext"
-    ],
-    "allowJs": true,
-    "incremental": true,
-    "plugins": [
-      {
-        "name": "next"
-      }
-    ],
-    "isolatedModules": true,
-    "exactOptionalPropertyTypes": false
-  },
-  "include": [
-    "**/*.mjs",
-    "app/**/*.ts",
-    "app/**/*.tsx",
-    "lib/**/*.ts",
-    "lib/**/*.tsx",
-    "mdx-components.tsx",
-    "next-env.d.ts",
-    "global.d.ts",
-    "source.config.ts",
-    ".next/types/**/*.ts"
-  ],
-  "exclude": [
-    "node_modules",
-    ".next",
-    "out"
-  ]
+	"extends": "../../tsconfig.base.json",
+	"compilerOptions": {
+		"baseUrl": ".",
+		"jsx": "preserve",
+		"module": "ESNext",
+		"moduleResolution": "Bundler",
+		"noEmit": true,
+		"composite": false,
+		"declaration": false,
+		"declarationMap": false,
+		"skipLibCheck": true,
+		"paths": {
+			"@/*": ["./*"],
+			"@/.source": ["./.source"]
+		},
+		"lib": ["dom", "dom.iterable", "esnext"],
+		"allowJs": true,
+		"incremental": true,
+		"plugins": [
+			{
+				"name": "next"
+			}
+		],
+		"isolatedModules": true,
+		"exactOptionalPropertyTypes": false
+	},
+	"include": [
+		"**/*.mjs",
+		"app/**/*.ts",
+		"app/**/*.tsx",
+		"lib/**/*.ts",
+		"lib/**/*.tsx",
+		"mdx-components.tsx",
+		"next-env.d.ts",
+		"global.d.ts",
+		"source.config.ts",
+		".next/types/**/*.ts"
+	],
+	"exclude": ["node_modules", ".next", "out"]
 }

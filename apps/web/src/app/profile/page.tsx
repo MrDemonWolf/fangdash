@@ -86,11 +86,7 @@ function ProfileHeader({
 								@{userName.toLowerCase().replace(/\s+/g, "")}
 							</span>
 						</div>
-						{skinName && (
-							<p className="mt-1 text-xs text-[#0FACED]/70">
-								Equipped: {skinName}
-							</p>
-						)}
+						{skinName && <p className="mt-1 text-xs text-[#0FACED]/70">Equipped: {skinName}</p>}
 					</div>
 
 					{/* Right-side badges */}
@@ -139,9 +135,7 @@ function PerformanceMatrix({ tiles }: { tiles: MetricTile[] }) {
 						<p className="mb-1 text-xs font-bold uppercase tracking-widest text-gray-500">
 							{tile.label}
 						</p>
-						<p className={`font-mono text-2xl font-bold ${tile.accent}`}>
-							{tile.value}
-						</p>
+						<p className={`font-mono text-2xl font-bold ${tile.accent}`}>{tile.value}</p>
 					</div>
 				))}
 			</div>
@@ -172,9 +166,7 @@ function HonorBadges({
 	return (
 		<div className="rounded-2xl border border-white/10 bg-[#0a1628]/60 backdrop-blur-xl">
 			<div className="flex items-center justify-between border-b border-white/10 px-5 py-3">
-				<h2 className="text-xs font-bold uppercase tracking-widest text-gray-400">
-					Honor Badges
-				</h2>
+				<h2 className="text-xs font-bold uppercase tracking-widest text-gray-400">Honor Badges</h2>
 				<span className="font-mono text-xs text-[#0FACED]">
 					{unlockedCount} / {totalCount}
 				</span>
@@ -182,7 +174,6 @@ function HonorBadges({
 			<div className="flex flex-wrap gap-3 p-5">
 				{badges.map((badge, i) => (
 					<div
-						// biome-ignore lint/suspicious/noArrayIndexKey: static placeholder list
 						key={i}
 						title={`${badge.name}: ${badge.description}`}
 						className={`flex h-12 w-12 items-center justify-center rounded-full border-2 transition-all ${
@@ -215,9 +206,7 @@ interface ScoreEntry {
 
 function TrendArrow({ trend }: { trend: "up" | "down" | "same" }) {
 	if (trend === "up") {
-		return (
-			<span className="font-mono text-xl font-bold text-emerald-400">↑</span>
-		);
+		return <span className="font-mono text-xl font-bold text-emerald-400">↑</span>;
 	}
 	if (trend === "down") {
 		return <span className="font-mono text-xl font-bold text-red-400">↓</span>;
@@ -237,9 +226,7 @@ function RecentScorelines({ scores }: { scores: ScoreEntry[] }) {
 			</div>
 
 			{top8.length === 0 ? (
-				<p className="px-5 py-8 text-center text-sm text-gray-500">
-					No scores yet. Play a game!
-				</p>
+				<p className="px-5 py-8 text-center text-sm text-gray-500">No scores yet. Play a game!</p>
 			) : (
 				<ul className="divide-y divide-white/5">
 					{top8.map((entry, i) => {
@@ -289,8 +276,6 @@ function RecentScorelines({ scores }: { scores: ScoreEntry[] }) {
 /*  Page                                                               */
 /* ------------------------------------------------------------------ */
 
-// biome-ignore lint/style/noDefaultExport: required by Next.js
-// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: complex page component
 export default function ProfilePage() {
 	const router = useRouter();
 	const { data: session, isPending: sessionLoading } = useSession();
@@ -319,11 +304,7 @@ export default function ProfilePage() {
 	);
 
 	const isDataLoading =
-		scoresLoading ||
-		skinLoading ||
-		achievementsLoading ||
-		raceStatsLoading ||
-		playerStatsLoading;
+		scoresLoading || skinLoading || achievementsLoading || raceStatsLoading || playerStatsLoading;
 
 	/* ---- Redirect unauthenticated users ---- */
 	useEffect(() => {
@@ -350,8 +331,7 @@ export default function ProfilePage() {
 	/* ---- Derived values ---- */
 	const skinDef = equippedSkin ? getSkinById(equippedSkin.skinId) : null;
 
-	const highScore =
-		scores && scores.length > 0 ? Math.max(...scores.map((s) => s.score)) : 0;
+	const highScore = scores && scores.length > 0 ? Math.max(...scores.map((s) => s.score)) : 0;
 
 	const gamesPlayed = playerStats?.gamesPlayed ?? 0;
 	const totalDistance = playerStats?.totalDistance ?? 0;
@@ -360,8 +340,7 @@ export default function ProfilePage() {
 
 	const racesPlayed = raceStats?.racesPlayed ?? 0;
 	const racesWon = raceStats?.racesWon ?? 0;
-	const winRate =
-		racesPlayed > 0 ? `${((racesWon / racesPlayed) * 100).toFixed(0)}%` : "N/A";
+	const winRate = racesPlayed > 0 ? `${((racesWon / racesPlayed) * 100).toFixed(0)}%` : "N/A";
 
 	/* ---- Performance tiles ---- */
 	const performanceTiles: MetricTile[] = [

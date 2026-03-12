@@ -40,10 +40,7 @@ export function RaceResultModal({ results, onRematch }: RaceResultModalProps) {
 				</h2>
 				{winner && (
 					<p className="mb-6 text-center text-sm text-white/50">
-						<span className="font-semibold text-[#0FACED]">
-							{winner.username}
-						</span>{" "}
-						wins the race!
+						<span className="font-semibold text-[#0FACED]">{winner.username}</span> wins the race!
 					</p>
 				)}
 
@@ -54,9 +51,7 @@ export function RaceResultModal({ results, onRematch }: RaceResultModalProps) {
 							<div
 								key={entry.playerId}
 								className={`flex items-center gap-3 rounded-lg px-4 py-3 ${
-									isWinner
-										? "bg-[#0FACED]/10 border border-[#0FACED]/30"
-										: "bg-white/5"
+									isWinner ? "bg-[#0FACED]/10 border border-[#0FACED]/30" : "bg-white/5"
 								}`}
 							>
 								<span

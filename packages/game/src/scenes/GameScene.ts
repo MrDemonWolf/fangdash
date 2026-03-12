@@ -1,11 +1,5 @@
 import type { DebugCommand, DebugState, GameState } from "@fangdash/shared";
-import {
-	AUDIO_KEYS,
-	GAME_HEIGHT,
-	GAME_WIDTH,
-	GROUND_HEIGHT,
-} from "@fangdash/shared";
-// biome-ignore lint/performance/noNamespaceImport: Phaser requires namespace import
+import { AUDIO_KEYS, GAME_HEIGHT, GAME_WIDTH, GROUND_HEIGHT } from "@fangdash/shared";
 import * as Phaser from "phaser";
 import { ObstacleSpawner } from "../entities/Obstacle.ts";
 import { Player } from "../entities/Player.ts";
@@ -98,9 +92,7 @@ export class GameScene extends Phaser.Scene {
 
 		// Input
 		if (this.input.keyboard) {
-			this.jumpKey = this.input.keyboard.addKey(
-				Phaser.Input.Keyboard.KeyCodes.SPACE,
-			);
+			this.jumpKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
 
 			this.input.keyboard.on("keydown-SPACE", () => {
 				if (this.running) {
@@ -170,11 +162,7 @@ export class GameScene extends Phaser.Scene {
 			level.maxObstaclesOnScreen,
 		);
 		this.background.update(speed, adjustedDelta);
-		this.scoreManager.update(
-			adjustedDelta,
-			speed,
-			this.spawner.obstaclesCleared,
-		);
+		this.scoreManager.update(adjustedDelta, speed, this.spawner.obstaclesCleared);
 
 		// Scroll ground
 		this.ground.tilePositionX += speed * (adjustedDelta / 1000);
@@ -227,10 +215,7 @@ export class GameScene extends Phaser.Scene {
 		this.audioManager.playSFX(AUDIO_KEYS.SFX_HIT);
 		this.audioManager.playSFX(AUDIO_KEYS.SFX_GAME_OVER);
 
-		const finalState = this.scoreManager.getState(
-			false,
-			this.difficulty.currentSpeed,
-		);
+		const finalState = this.scoreManager.getState(false, this.difficulty.currentSpeed);
 		this.callbacks.onGameOver?.(finalState);
 	}
 
@@ -363,7 +348,6 @@ export class GameScene extends Phaser.Scene {
 	}
 
 	sendDebugCommand(command: DebugCommand) {
-		// biome-ignore lint/style/useDefaultSwitchClause: exhaustive cases
 		switch (command.type) {
 			case "set-constant": {
 				const { key, value } = command.payload as {
@@ -426,7 +410,6 @@ export class GameScene extends Phaser.Scene {
 	}
 
 	private applyConstantOverride(key: string, value: number) {
-		// biome-ignore lint/style/useDefaultSwitchClause: exhaustive cases
 		switch (key) {
 			// Physics → Player
 			case "GRAVITY":
