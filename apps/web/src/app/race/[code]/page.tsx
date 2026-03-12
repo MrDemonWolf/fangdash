@@ -248,7 +248,6 @@ export default function RaceRoomPage() {
       connection.disconnect();
       connectionRef.current = null;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isSignedIn, roomCode]);
 
   // ── Join once skin data has resolved ──

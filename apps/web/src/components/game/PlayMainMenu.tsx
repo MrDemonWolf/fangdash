@@ -49,7 +49,6 @@ function UserPill({
         className="flex items-center gap-2 bg-[#0a1628]/80 border border-white/10 backdrop-blur-xl rounded-full px-3 py-1.5 hover:border-white/20 hover:bg-white/5 transition-colors cursor-pointer"
       >
         {userImage && (
-          // eslint-disable-next-line @next/next/no-img-element
           <img
             src={userImage}
             alt={userName ?? "User avatar"}
@@ -122,7 +121,6 @@ export function PlayMainMenu({
 
       <div className="relative z-10 flex flex-col items-center gap-6 text-center px-6 max-w-sm w-full">
         {/* Wolf skin */}
-        {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={`/wolves/${skinKey}.png`}
           alt=""

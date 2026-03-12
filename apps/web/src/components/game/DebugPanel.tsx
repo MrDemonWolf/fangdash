@@ -698,7 +698,6 @@ export default function DebugPanel({ debugState, onSendCommand, gameKey }: Debug
       x: e.clientX - position.x,
       y: e.clientY - position.y,
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [position]);
 
   useEffect(() => {

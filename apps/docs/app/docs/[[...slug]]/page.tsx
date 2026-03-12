@@ -20,7 +20,6 @@ export default async function Page({ params }: Props) {
 
   // fumadocs-mdx adds body/toc/full at runtime but the type is lost
   // due to the files-function compatibility shim in lib/source.ts
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const data = page.data as any;
   const MDX = data.body;
 

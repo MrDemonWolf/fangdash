@@ -11,6 +11,5 @@ const files =
 
 export const source = loader({
   baseUrl: "/docs",
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   source: { ...raw, files } as any,
 });
