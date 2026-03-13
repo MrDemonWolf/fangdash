@@ -55,8 +55,6 @@ jobs:
         with:
           path: apps/web/.next/cache
           key: nextjs-${{ runner.os }}-${{ hashFiles('bun.lock') }}-${{ hashFiles('apps/web/.env.production') }}
-          restore-keys: |
-            nextjs-${{ runner.os }}-
 
       - name: Deploy Web to Cloudflare Workers
         run: bun run --filter @fangdash/web deploy
