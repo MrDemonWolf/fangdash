@@ -11,6 +11,7 @@ migrations_dir = "drizzle"
 
 [vars]
 ENVIRONMENT = "development"
+BETTER_AUTH_URL = "http://localhost:8787"
 WEB_URL = "http://localhost:3000"
 
 [env.production]
