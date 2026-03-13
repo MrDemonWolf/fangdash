@@ -102,6 +102,7 @@ export const score = sqliteTable(
 	(table) => [
 		index("score_player_id_idx").on(table.playerId),
 		index("score_difficulty_idx").on(table.difficulty),
+		index("score_created_at_idx").on(table.createdAt),
 	],
 );
 

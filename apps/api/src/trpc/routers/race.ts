@@ -173,7 +173,12 @@ export const raceRouter = router({
 			let achievementError = false;
 
 			try {
-				const achievementResult = await checkAchievements(ctx.db, playerRecord.id);
+				const achievementResult = await checkAchievements(ctx.db, playerRecord.id, {
+					score: input.score,
+					distance: input.distance,
+					obstaclesCleared: 0,
+					longestCleanRun: 0,
+				});
 				const newSkinUnlocks = await checkSkinUnlocks(
 					ctx.db,
 					playerRecord.id,

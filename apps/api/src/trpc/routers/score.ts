@@ -30,7 +30,7 @@ export const scoreRouter = router({
 			// Anti-cheat: reject impossible scores
 			const maxAllowedScore =
 				(input.duration / 1000) * SCORE_PER_SECOND + input.obstaclesCleared * SCORE_PER_OBSTACLE;
-			if (input.score > maxAllowedScore) {
+			if (input.score > maxAllowedScore * 1.05 + 10) {
 				throw new TRPCError({
 					code: "BAD_REQUEST",
 					message: "Score exceeds maximum allowed rate",
@@ -140,6 +140,9 @@ export const scoreRouter = router({
 
 			const diffFilter = difficulty ? sql` AND s2.difficulty = ${difficulty}` : sql``;
 			const outerDiffFilter = difficulty ? sql` AND ${score.difficulty} = ${difficulty}` : sql``;
+			const cutoffFilter = cutoffTs !== null ? sql` AND s2.created_at >= ${cutoffTs}` : sql``;
+			const outerCutoffFilter =
+				cutoffTs !== null ? sql` AND ${score.createdAt} >= ${cutoffTs}` : sql``;
 
 			const rows = await ctx.db
 				.select({
@@ -157,16 +160,12 @@ export const scoreRouter = router({
 				.innerJoin(player, eq(score.playerId, player.id))
 				.innerJoin(user, eq(player.userId, user.id))
 				.where(
-					cutoffTs !== null
-						? sql`${score.createdAt} >= ${cutoffTs}${outerDiffFilter} AND ${score.score} = (
-                SELECT MAX(s2.score) FROM score s2
-                WHERE s2.player_id = ${score.playerId}
-                AND s2.created_at >= ${cutoffTs}${diffFilter}
-              )`
-						: sql`${score.score} = (
-                SELECT MAX(s2.score) FROM score s2
-                WHERE s2.player_id = ${score.playerId}${diffFilter}
-              )${outerDiffFilter}`,
+					sql`${score.id} = (
+						SELECT s2.id FROM score s2
+						WHERE s2.player_id = ${score.playerId}${diffFilter}${cutoffFilter}
+						ORDER BY s2.score DESC, s2.created_at DESC
+						LIMIT 1
+					)${outerDiffFilter}${outerCutoffFilter}`,
 				)
 				.orderBy(desc(score.score))
 				.limit(limit);
