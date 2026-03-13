@@ -38,7 +38,7 @@ export async function ensurePlayer(db: DrizzleD1Database<typeof schema>, userId:
 
 		return newPlayer;
 	} catch (err) {
-		// Handle race condition: if another request inserted a player record for this user 
+		// Handle race condition: if another request inserted a player record for this user
 		// concurrently, the insert above will fail with a unique constraint violation.
 		// In that case, we simply fetch and return the existing player record.
 		const raceExisting = await db.select().from(player).where(eq(player.userId, userId)).get();
