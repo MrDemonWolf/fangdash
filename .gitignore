@@ -1,43 +1,34 @@
-# Dependencies
+# ── Dependencies ────────────────────────────────────────────────────────────
 node_modules/
 
-# Build outputs
+# ── Build Outputs ────────────────────────────────────────────────────────────
 dist/
 .next/
+.open-next/
 .turbo/
 tsconfig.tsbuildinfo
 
-# Environment
+# ── Environment (never commit .env files — use .env.example as reference) ───
 .env
 .env.*
-!.env.production
 .dev.vars
 
-# IDE
+# ── Tooling State ────────────────────────────────────────────────────────────
+.wrangler/
+.partykit/
+.source/
+.claude/worktrees/
+
+# ── Generated / Build Artifacts ──────────────────────────────────────────────
+out/
+apps/web/public/workbox-*.js
+
+# ── IDE & Editor ─────────────────────────────────────────────────────────────
 .vscode/
 .idea/
 *.swp
 *.swo
 
-# OS
+# ── OS ───────────────────────────────────────────────────────────────────────
 .DS_Store
 Thumbs.db
-
-# OpenNext
-.open-next/
-
-# Wrangler
-.wrangler/
-
-# PartyKit
-.partykit/
-
-# Fumadocs
-.source/
-out/
-
-# PWA (generated at build time)
-apps/web/public/workbox-*.js
-
-# Claude Code
-.claude/worktrees/
