@@ -20,19 +20,20 @@ The admin panel lives at [/admin](/admin) and gives you full control over your F
 
 The top of the admin panel shows five key stats:
 
-| Stat               | Description                             |
-| ------------------ | --------------------------------------- |
-| **Total Players**  | Number of registered player accounts    |
-| **Games Played**   | Total games completed across all players|
-| **Meters Run**     | Combined distance run by everyone       |
-| **Distinct Races** | Number of unique multiplayer races held |
-| **Race Entries**   | Total individual race participations    |
+| Stat               | Description                              |
+| ------------------ | ---------------------------------------- |
+| **Total Players**  | Number of registered player accounts     |
+| **Games Played**   | Total games completed across all players |
+| **Meters Run**     | Combined distance run by everyone        |
+| **Distinct Races** | Number of unique multiplayer races held  |
+| **Race Entries**   | Total individual race participations     |
 
 ## Players Tab
 
 A paginated, searchable list of all players.
 
 You can:
+
 - **Search** by username
 - **Ban** a player with a reason and optional duration
 - **Unban** a previously banned player
@@ -42,6 +43,7 @@ You can:
 A paginated list of all submitted scores.
 
 The admin panel **highlights suspicious scores** that look abnormally high for their run duration. You can:
+
 - Review flagged scores
 - **Delete** a score — the player's aggregate stats (total score, distance, etc.) are automatically rolled back
 
@@ -65,6 +67,6 @@ bunx wrangler secret put ADMIN_TWITCH_ID --env production
 ```
 
 <Callout type="info">
-	You can find your Twitch numeric user ID by using the Twitch API or third-party lookup tools.
-	It's the numeric ID, not your username.
+	You can find your Twitch numeric user ID by using the Twitch API or third-party lookup tools. It's
+	the numeric ID, not your username.
 </Callout>
