@@ -16,22 +16,31 @@ export async function ensurePlayer(db: DrizzleD1Database<typeof schema>, userId:
 
 	const now = new Date();
 
-	const [newPlayer] = await db
-		.insert(player)
-		.values({
-			id: crypto.randomUUID(),
-			userId,
-			equippedSkinId: "gray-wolf",
-			totalScore: 0,
-			totalDistance: 0,
-			totalObstaclesCleared: 0,
-			gamesPlayed: 0,
-			racesPlayed: 0,
-			racesWon: 0,
-			createdAt: now,
-			updatedAt: now,
-		})
-		.returning();
+	try {
+		const [newPlayer] = await db
+			.insert(player)
+			.values({
+				id: crypto.randomUUID(),
+				userId,
+				equippedSkinId: "gray-wolf",
+				totalScore: 0,
+				totalDistance: 0,
+				totalObstaclesCleared: 0,
+				gamesPlayed: 0,
+				racesPlayed: 0,
+				racesWon: 0,
+				createdAt: now,
+				updatedAt: now,
+			})
+			.returning();
 
-	return newPlayer;
+		return newPlayer;
+	} catch (err) {
+		// Handle race condition: another request may have inserted concurrently
+		const raceExisting = await db.select().from(player).where(eq(player.userId, userId)).get();
+		if (raceExisting) {
+			return raceExisting;
+		}
+		throw err;
+	}
 }
