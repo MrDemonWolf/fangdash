@@ -43,6 +43,13 @@
 			"when": 1774616798510,
 			"tag": "0005_add_longest_clean_run",
 			"breakpoints": true
+		},
+		{
+			"idx": 6,
+			"version": "6",
+			"when": 1773423320154,
+			"tag": "0006_fearless_hannibal_king",
+			"breakpoints": true
 		}
 	]
 }
