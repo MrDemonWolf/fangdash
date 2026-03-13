@@ -1,3 +1,4 @@
+import { getLevelFromXp } from "@fangdash/shared";
 import { TRPCError } from "@trpc/server";
 import { count, desc, eq, like, sql } from "drizzle-orm";
 import { z } from "zod";
@@ -170,6 +171,15 @@ export const adminRouter = router({
 				throw new TRPCError({ code: "NOT_FOUND", message: "Score not found" });
 			}
 
+			const playerRecord = await ctx.db
+				.select({ totalXp: player.totalXp })
+				.from(player)
+				.where(eq(player.id, existing.playerId))
+				.get();
+
+			const newTotalXp = Math.max(0, (playerRecord?.totalXp ?? 0) - existing.score);
+			const newLevel = getLevelFromXp(newTotalXp).level;
+
 			await ctx.db.batch([
 				ctx.db
 					.update(player)
@@ -177,7 +187,9 @@ export const adminRouter = router({
 						totalScore: sql`${player.totalScore} - ${existing.score}`,
 						totalDistance: sql`${player.totalDistance} - ${existing.distance}`,
 						totalObstaclesCleared: sql`${player.totalObstaclesCleared} - ${existing.obstaclesCleared}`,
-						gamesPlayed: sql`${player.gamesPlayed} - 1`,
+						gamesPlayed: sql`MAX(0, ${player.gamesPlayed} - 1)`,
+						totalXp: newTotalXp,
+						level: newLevel,
 						updatedAt: new Date(),
 					})
 					.where(eq(player.id, existing.playerId)),
