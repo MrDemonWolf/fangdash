@@ -1,6 +1,7 @@
 import { TRPCError } from "@trpc/server";
-import { getLevelFromXp } from "@fangdash/shared";
-import { count, desc, eq, sql } from "drizzle-orm";
+import { getLevelFromXp, getPlacementBonus } from "@fangdash/shared";
+import { count, desc, eq, inArray, sql } from "drizzle-orm";
+import type { BatchItem } from "drizzle-orm/batch";
 import { z } from "zod";
 import { player, raceHistory } from "../../db/schema.ts";
 import { checkAchievements } from "../../lib/achievement-checker.ts";
@@ -45,34 +46,109 @@ export const raceRouter = router({
 				createdAt: now,
 			});
 
-			// Determine authoritative placement by score ranking
+			// Phase 1: Compute authoritative placements for ALL rows in this race
 			const allResults = await ctx.db
-				.select({ id: raceHistory.id })
+				.select({
+					id: raceHistory.id,
+					playerId: raceHistory.playerId,
+					placement: raceHistory.placement,
+					score: raceHistory.score,
+				})
 				.from(raceHistory)
 				.where(eq(raceHistory.raceId, input.raceId))
 				.orderBy(desc(raceHistory.score));
 
-			const placement =
-				allResults.findIndex((r) => r.id === raceHistoryId) + 1 || provisionalPlacement;
+			let placement = provisionalPlacement;
+			const placementChanges: {
+				id: string;
+				playerId: string;
+				oldPlacement: number;
+				newPlacement: number;
+			}[] = [];
 
-			// Correct stored placement if it differs
-			if (placement !== provisionalPlacement) {
-				await ctx.db
-					.update(raceHistory)
-					.set({ placement })
-					.where(eq(raceHistory.id, raceHistoryId));
+			for (let i = 0; i < allResults.length; i++) {
+				const row = allResults[i];
+				if (!row) continue;
+				const newPlacement = i + 1;
+				if (row.id === raceHistoryId) {
+					placement = newPlacement;
+				}
+				if (row.placement !== newPlacement) {
+					placementChanges.push({
+						id: row.id,
+						playerId: row.playerId,
+						oldPlacement: row.placement,
+						newPlacement,
+					});
+				}
 			}
 
-			// Award XP: score + placement bonus
-			const placementBonus =
-				placement === 1 ? 500 : placement === 2 ? 250 : placement === 3 ? 100 : 0;
+			// Phase 2: Fetch affected OTHER players and compute XP/racesWon deltas
+			const otherAffected = placementChanges.filter((c) => c.playerId !== playerRecord.id);
+			let otherPlayerRecords: { id: string; totalXp: number; racesWon: number }[] = [];
+
+			if (otherAffected.length > 0) {
+				const affectedPlayerIds = [...new Set(otherAffected.map((c) => c.playerId))];
+				otherPlayerRecords = await ctx.db
+					.select({
+						id: player.id,
+						totalXp: player.totalXp,
+						racesWon: player.racesWon,
+					})
+					.from(player)
+					.where(inArray(player.id, affectedPlayerIds));
+			}
+
+			// Phase 3: Compute current player's XP
+			const placementBonus = getPlacementBonus(placement);
 			const xpGained = input.score + placementBonus;
 			const newTotalXp = playerRecord.totalXp + xpGained;
 			const levelInfo = getLevelFromXp(newTotalXp);
 			const previousLevel = playerRecord.level;
 
-			// Atomic update: race stats + XP/level
-			const updateSet: Record<string, unknown> = {
+			// Phase 4: Build batch writes
+			const batchStatements: BatchItem<"sqlite">[] = [];
+
+			// 4a: Update changed raceHistory placements
+			for (const change of placementChanges) {
+				batchStatements.push(
+					ctx.db
+						.update(raceHistory)
+						.set({ placement: change.newPlacement })
+						.where(eq(raceHistory.id, change.id)),
+				);
+			}
+
+			// 4b: Update affected OTHER players' XP, level, racesWon
+			for (const other of otherAffected) {
+				const record = otherPlayerRecords.find((r) => r.id === other.playerId);
+				if (!record) continue;
+
+				const xpDelta =
+					getPlacementBonus(other.newPlacement) - getPlacementBonus(other.oldPlacement);
+				const adjustedTotalXp = Math.max(0, record.totalXp + xpDelta);
+				const adjustedLevel = getLevelFromXp(adjustedTotalXp).level;
+				const racesWonDelta =
+					(other.oldPlacement === 1 ? -1 : 0) + (other.newPlacement === 1 ? 1 : 0);
+
+				batchStatements.push(
+					ctx.db
+						.update(player)
+						.set({
+							totalXp: adjustedTotalXp,
+							level: adjustedLevel,
+							racesWon:
+								racesWonDelta !== 0
+									? sql`MAX(0, ${player.racesWon} + ${racesWonDelta})`
+									: record.racesWon,
+							updatedAt: now,
+						})
+						.where(eq(player.id, other.playerId)),
+				);
+			}
+
+			// 4c: Update current player
+			const currentPlayerUpdate: Record<string, unknown> = {
 				racesPlayed: sql`${player.racesPlayed} + 1`,
 				totalXp: sql`${player.totalXp} + ${xpGained}`,
 				level: levelInfo.level,
@@ -80,10 +156,17 @@ export const raceRouter = router({
 			};
 
 			if (placement === 1) {
-				updateSet["racesWon"] = sql`${player.racesWon} + 1`;
+				currentPlayerUpdate["racesWon"] = sql`${player.racesWon} + 1`;
 			}
 
-			await ctx.db.update(player).set(updateSet).where(eq(player.id, playerRecord.id));
+			batchStatements.push(
+				ctx.db.update(player).set(currentPlayerUpdate).where(eq(player.id, playerRecord.id)),
+			);
+
+			// Phase 5: Execute atomically
+			await ctx.db.batch(
+				batchStatements as unknown as [BatchItem<"sqlite">, ...BatchItem<"sqlite">[]],
+			);
 
 			let newAchievements: string[] = [];
 			let newSkins: string[] = [];

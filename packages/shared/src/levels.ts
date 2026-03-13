@@ -16,6 +16,13 @@ export function getXpForLevel(level: number): number {
 	return totalXpForLevel(level) - totalXpForLevel(level - 1);
 }
 
+export function getPlacementBonus(placement: number): number {
+	if (placement === 1) return 500;
+	if (placement === 2) return 250;
+	if (placement === 3) return 100;
+	return 0;
+}
+
 export function getLevelFromXp(xp: number): LevelInfo {
 	if (xp < 0) {
 		return {
