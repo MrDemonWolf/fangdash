@@ -77,6 +77,8 @@ export const player = sqliteTable("player", {
 	gamesPlayed: integer("games_played").notNull().default(0),
 	racesPlayed: integer("races_played").notNull().default(0),
 	racesWon: integer("races_won").notNull().default(0),
+	totalXp: integer("total_xp").notNull().default(0),
+	level: integer("level").notNull().default(1),
 	createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
 	updatedAt: integer("updated_at", { mode: "timestamp" }).notNull(),
 });
@@ -93,6 +95,7 @@ export const score = sqliteTable(
 		obstaclesCleared: integer("obstacles_cleared").notNull(),
 		duration: integer("duration").notNull(),
 		difficulty: text("difficulty").notNull().default("easy"),
+		longestCleanRun: integer("longest_clean_run").notNull().default(0),
 		seed: text("seed").notNull(),
 		createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
 	},

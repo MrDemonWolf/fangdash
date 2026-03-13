@@ -5,6 +5,7 @@ export class ScoreManager {
 	score = 0;
 	distance = 0;
 	obstaclesCleared = 0;
+	longestCleanRun = 0;
 	private lastObstacleCount = 0;
 
 	// Runtime-overridable constants (for debug menu)
@@ -20,6 +21,9 @@ export class ScoreManager {
 		// Distance-based score
 		this.distance += speed * dt * (this.overrides.distanceMultiplier ?? DISTANCE_MULTIPLIER);
 		this.score += (this.overrides.scorePerSecond ?? SCORE_PER_SECOND) * dt;
+
+		// Track longest clean run (max distance without collision)
+		this.longestCleanRun = Math.max(this.longestCleanRun, this.distance);
 
 		// Obstacle clear bonus
 		const newClears = currentObstaclesCleared - this.lastObstacleCount;
@@ -37,6 +41,7 @@ export class ScoreManager {
 			obstaclesCleared: this.obstaclesCleared,
 			alive,
 			speed,
+			longestCleanRun: Math.floor(this.longestCleanRun),
 		};
 	}
 
@@ -45,5 +50,6 @@ export class ScoreManager {
 		this.distance = 0;
 		this.obstaclesCleared = 0;
 		this.lastObstacleCount = 0;
+		this.longestCleanRun = 0;
 	}
 }

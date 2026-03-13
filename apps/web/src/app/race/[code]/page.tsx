@@ -72,6 +72,7 @@ export default function RaceRoomPage() {
 		obstaclesCleared: 0,
 		alive: true,
 		speed: 0,
+		longestCleanRun: 0,
 	});
 	const [elapsedTime, setElapsedTime] = useState(0);
 	const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -172,6 +173,7 @@ export default function RaceRoomPage() {
 					obstaclesCleared: 0,
 					alive: true,
 					speed: 0,
+					longestCleanRun: 0,
 				});
 				setGameError(null);
 
@@ -318,6 +320,7 @@ export default function RaceRoomPage() {
 				obstaclesCleared: 0,
 				alive: true,
 				speed: 0,
+				longestCleanRun: 0,
 			});
 			setElapsedTime(0);
 		});

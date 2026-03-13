@@ -244,8 +244,15 @@ export default function LeaderboardPage() {
 											<RankBadge rank={entry.rank} />
 										</td>
 										<td className="px-4 py-3 font-medium text-white">
-											{entry.username}
-											{isCurrentUser && <span className="ml-2 text-xs text-[#0FACED]">(you)</span>}
+											<span className="inline-flex items-center gap-2">
+												{entry.username}
+												{"level" in entry && (
+													<span className="rounded-full bg-[#0FACED]/10 px-1.5 py-0.5 font-mono text-[10px] text-[#0FACED]">
+														Lv.{entry.level}
+													</span>
+												)}
+												{isCurrentUser && <span className="text-xs text-[#0FACED]">(you)</span>}
+											</span>
 										</td>
 										<td className="px-4 py-3 text-white tabular-nums">
 											{formatNumber(entry.score)}
@@ -293,9 +300,14 @@ export default function LeaderboardPage() {
 							>
 								<div className="flex items-center gap-3">
 									<RankBadge rank={entry.rank} />
-									<span className="font-medium text-white">
+									<span className="inline-flex items-center gap-2 font-medium text-white">
 										{entry.username}
-										{isCurrentUser && <span className="ml-2 text-xs text-[#0FACED]">(you)</span>}
+										{"level" in entry && (
+											<span className="rounded-full bg-[#0FACED]/10 px-1.5 py-0.5 font-mono text-[10px] text-[#0FACED]">
+												Lv.{entry.level}
+											</span>
+										)}
+										{isCurrentUser && <span className="text-xs text-[#0FACED]">(you)</span>}
 									</span>
 									{activeDifficulty === "all" && <DifficultyBadge difficulty={entry.difficulty} />}
 								</div>

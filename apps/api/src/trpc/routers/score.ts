@@ -1,4 +1,9 @@
-import { DIFFICULTY_NAMES, SCORE_PER_OBSTACLE, SCORE_PER_SECOND } from "@fangdash/shared";
+import {
+	DIFFICULTY_NAMES,
+	SCORE_PER_OBSTACLE,
+	SCORE_PER_SECOND,
+	getLevelFromXp,
+} from "@fangdash/shared";
 import { TRPCError } from "@trpc/server";
 import { count, desc, eq, sql } from "drizzle-orm";
 import { z } from "zod";
@@ -15,6 +20,7 @@ export const scoreRouter = router({
 				score: z.number().int().min(0),
 				distance: z.number().min(0),
 				obstaclesCleared: z.number().int().min(0),
+				longestCleanRun: z.number().min(0).default(0),
 				duration: z.number().int().min(0),
 				seed: z.string().min(1),
 				difficulty: z.enum(DIFFICULTY_NAMES).default("easy"),
@@ -33,7 +39,7 @@ export const scoreRouter = router({
 
 			const playerRecord = await ensurePlayer(ctx.db, ctx.user.id);
 			if (!playerRecord) {
-				throw new Error("Failed to create player");
+				throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Failed to create player" });
 			}
 
 			const now = new Date();
@@ -45,13 +51,18 @@ export const scoreRouter = router({
 				score: input.score,
 				distance: input.distance,
 				obstaclesCleared: input.obstaclesCleared,
+				longestCleanRun: input.longestCleanRun,
 				duration: input.duration,
 				difficulty: input.difficulty,
 				seed: input.seed,
 				createdAt: now,
 			});
 
-			// Update player aggregate stats
+			// Update player aggregate stats, XP, and level atomically
+			const newTotalXp = playerRecord.totalXp + input.score;
+			const levelInfo = getLevelFromXp(newTotalXp);
+			const previousLevel = playerRecord.level;
+
 			await ctx.db
 				.update(player)
 				.set({
@@ -59,26 +70,47 @@ export const scoreRouter = router({
 					totalDistance: sql`${player.totalDistance} + ${input.distance}`,
 					totalObstaclesCleared: sql`${player.totalObstaclesCleared} + ${input.obstaclesCleared}`,
 					gamesPlayed: sql`${player.gamesPlayed} + 1`,
+					totalXp: sql`${player.totalXp} + ${input.score}`,
+					level: levelInfo.level,
 					updatedAt: now,
 				})
 				.where(eq(player.id, playerRecord.id));
 
-			// Check achievements and skin unlocks after score submission
-			const achievementResult = await checkAchievements(ctx.db, playerRecord.id, {
-				score: input.score,
-				distance: input.distance,
-				obstaclesCleared: input.obstaclesCleared,
-			});
-			const newSkinUnlocks = await checkSkinUnlocks(
-				ctx.db,
-				playerRecord.id,
-				achievementResult.stats,
-			);
+			let newAchievements: string[] = [];
+			let newSkins: string[] = [];
+			let achievementError = false;
+
+			try {
+				const achievementResult = await checkAchievements(ctx.db, playerRecord.id, {
+					score: input.score,
+					distance: input.distance,
+					obstaclesCleared: input.obstaclesCleared,
+					longestCleanRun: input.longestCleanRun,
+				});
+				const newSkinUnlocks = await checkSkinUnlocks(
+					ctx.db,
+					playerRecord.id,
+					achievementResult.stats,
+				);
+				newAchievements = achievementResult.newAchievements;
+				newSkins = [...achievementResult.newSkins, ...newSkinUnlocks];
+			} catch (err) {
+				console.error("[score.submit] Achievement/skin check failed", {
+					playerId: playerRecord.id,
+					scoreId,
+					error: err,
+				});
+				achievementError = true;
+			}
 
 			return {
 				scoreId,
-				newAchievements: achievementResult.newAchievements,
-				newSkins: [...achievementResult.newSkins, ...newSkinUnlocks],
+				newAchievements,
+				newSkins,
+				achievementError,
+				xpGained: input.score,
+				levelUp: levelInfo.level > previousLevel,
+				newLevel: levelInfo.level,
 			};
 		}),
 
@@ -104,6 +136,8 @@ export const scoreRouter = router({
 						? new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
 						: null;
 
+			const cutoffTs = cutoff ? Math.floor(cutoff.getTime() / 1000) : null;
+
 			const diffFilter = difficulty ? sql` AND s2.difficulty = ${difficulty}` : sql``;
 			const outerDiffFilter = difficulty ? sql` AND ${score.difficulty} = ${difficulty}` : sql``;
 
@@ -116,17 +150,18 @@ export const scoreRouter = router({
 					playerId: player.id,
 					username: user.name,
 					skinId: player.equippedSkinId,
+					level: player.level,
 					createdAt: score.createdAt,
 				})
 				.from(score)
 				.innerJoin(player, eq(score.playerId, player.id))
 				.innerJoin(user, eq(player.userId, user.id))
 				.where(
-					cutoff
-						? sql`${score.createdAt} >= ${cutoff}${outerDiffFilter} AND ${score.score} = (
+					cutoffTs !== null
+						? sql`${score.createdAt} >= ${cutoffTs}${outerDiffFilter} AND ${score.score} = (
                 SELECT MAX(s2.score) FROM score s2
                 WHERE s2.player_id = ${score.playerId}
-                AND s2.created_at >= ${cutoff}${diffFilter}
+                AND s2.created_at >= ${cutoffTs}${diffFilter}
               )`
 						: sql`${score.score} = (
                 SELECT MAX(s2.score) FROM score s2
@@ -153,6 +188,8 @@ export const scoreRouter = router({
 			totalScore: playerRecord.totalScore,
 			totalDistance: playerRecord.totalDistance,
 			totalObstaclesCleared: playerRecord.totalObstaclesCleared,
+			totalXp: playerRecord.totalXp,
+			level: playerRecord.level,
 		};
 	}),
 

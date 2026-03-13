@@ -1,6 +1,6 @@
 "use client";
 
-import { ACHIEVEMENTS, getSkinById } from "@fangdash/shared";
+import { ACHIEVEMENTS, getLevelFromXp, getSkinById } from "@fangdash/shared";
 import { useQuery } from "@tanstack/react-query";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -337,6 +337,9 @@ export default function ProfilePage() {
 	const totalDistance = playerStats?.totalDistance ?? 0;
 	const totalObstacles = playerStats?.totalObstaclesCleared ?? 0;
 	const totalScore = playerStats?.totalScore ?? 0;
+	const totalXp = playerStats?.totalXp ?? 0;
+	const levelInfo = getLevelFromXp(totalXp);
+	const playerLevel = levelInfo.level;
 
 	const racesPlayed = raceStats?.racesPlayed ?? 0;
 	const racesWon = raceStats?.racesWon ?? 0;
@@ -426,6 +429,31 @@ export default function ProfilePage() {
 					highScore={highScore}
 					gamesPlayed={gamesPlayed}
 				/>
+
+				{/* Level & XP Progress */}
+				<div className="rounded-2xl border border-white/10 bg-[#0a1628]/60 p-5 backdrop-blur-xl">
+					<div className="flex items-center justify-between mb-3">
+						<div className="flex items-center gap-3">
+							<span className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-[#0FACED]/40 bg-[#0FACED]/10 font-mono text-lg font-bold text-[#0FACED]">
+								{playerLevel}
+							</span>
+							<div>
+								<p className="text-sm font-bold text-white">Level {playerLevel}</p>
+								<p className="text-xs text-gray-400">{totalXp.toLocaleString()} XP total</p>
+							</div>
+						</div>
+						<p className="text-xs text-gray-500">
+							{levelInfo.xpForCurrentLevel.toLocaleString()} /{" "}
+							{levelInfo.xpForNextLevel.toLocaleString()} XP
+						</p>
+					</div>
+					<div className="h-3 w-full overflow-hidden rounded-full bg-white/10">
+						<div
+							className="h-full rounded-full bg-gradient-to-r from-[#0FACED] to-purple-500 transition-all duration-500"
+							style={{ width: `${Math.round(levelInfo.progress * 100)}%` }}
+						/>
+					</div>
+				</div>
 
 				{/* Main two-column grid */}
 				<div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_340px]">

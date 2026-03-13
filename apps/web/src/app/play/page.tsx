@@ -39,6 +39,7 @@ export default function PlayPage() {
 		obstaclesCleared: 0,
 		alive: true,
 		speed: 0,
+		longestCleanRun: 0,
 	});
 	const [elapsedTime, setElapsedTime] = useState(0);
 	const [gameOver, setGameOver] = useState(false);
@@ -96,8 +97,11 @@ export default function PlayPage() {
 		error: submitError,
 	} = useMutation(
 		trpc.score.submit.mutationOptions({
-			onSuccess: () => {
+			onSuccess: (data) => {
 				toast.success("Score saved!");
+				if (data.levelUp) {
+					toast.success(`Level up! You are now level ${data.newLevel}!`);
+				}
 			},
 			onError: (err) => {
 				console.error("Failed to submit score:", err);
@@ -161,6 +165,7 @@ export default function PlayPage() {
 					score: state.score,
 					distance: state.distance,
 					obstaclesCleared: state.obstaclesCleared,
+					longestCleanRun: state.longestCleanRun,
 					duration,
 					seed: Date.now().toString(),
 					difficulty: selectedDifficultyRef.current as DifficultyName,
@@ -209,6 +214,7 @@ export default function PlayPage() {
 				obstaclesCleared: 0,
 				alive: true,
 				speed: 0,
+				longestCleanRun: 0,
 			});
 
 			const { game, debug, audio, gameChannel } = createGame({
@@ -362,6 +368,7 @@ export default function PlayPage() {
 			score: finalState.score,
 			distance: finalState.distance,
 			obstaclesCleared: finalState.obstaclesCleared,
+			longestCleanRun: finalState.longestCleanRun,
 			duration: finalElapsedTime,
 			seed: Date.now().toString(),
 			difficulty: selectedDifficultyRef.current as DifficultyName,

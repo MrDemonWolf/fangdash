@@ -1,6 +1,6 @@
 import { ACHIEVEMENTS } from "@fangdash/shared/achievements";
 import type { AchievementDefinition } from "@fangdash/shared/types";
-import { desc, eq } from "drizzle-orm";
+import { eq, max } from "drizzle-orm";
 import type { DrizzleD1Database } from "drizzle-orm/d1";
 import type * as schema from "../db/schema.ts";
 import { player, playerAchievement, playerSkin, score } from "../db/schema.ts";
@@ -14,6 +14,7 @@ export interface PlayerStats {
 	gamesPlayed: number;
 	racesPlayed: number;
 	racesWon: number;
+	longestCleanRun: number;
 }
 
 export interface CheckStats {
@@ -34,7 +35,12 @@ interface CheckResult {
 export async function checkAchievements(
 	db: DrizzleD1Database<typeof schema>,
 	playerId: string,
-	latestScore?: { score: number; distance: number; obstaclesCleared: number },
+	latestScore?: {
+		score: number;
+		distance: number;
+		obstaclesCleared: number;
+		longestCleanRun?: number;
+	},
 ): Promise<CheckResult> {
 	// Get player stats
 	const playerRecord = await db.select().from(player).where(eq(player.id, playerId)).get();
@@ -52,32 +58,27 @@ export async function checkAchievements(
 
 	const unlockedIds = new Set(existing.map((e) => e.achievementId));
 
-	// Get highest single-run score and distance from score history
-	const highestScoreRow = await db
-		.select({ value: score.score })
+	// Get highest single-run score, distance, and clean run from score history
+	const maxStats = await db
+		.select({
+			highestScore: max(score.score),
+			highestDistance: max(score.distance),
+			highestCleanRun: max(score.longestCleanRun),
+		})
 		.from(score)
 		.where(eq(score.playerId, playerId))
-		.orderBy(desc(score.score))
-		.limit(1)
-		.get();
-
-	const highestDistanceRow = await db
-		.select({ value: score.distance })
-		.from(score)
-		.where(eq(score.playerId, playerId))
-		.orderBy(desc(score.distance))
-		.limit(1)
 		.get();
 
 	const stats: PlayerStats = {
-		highestScore: Math.max(highestScoreRow?.value ?? 0, latestScore?.score ?? 0),
-		highestDistance: Math.max(highestDistanceRow?.value ?? 0, latestScore?.distance ?? 0),
+		highestScore: Math.max(maxStats?.highestScore ?? 0, latestScore?.score ?? 0),
+		highestDistance: Math.max(maxStats?.highestDistance ?? 0, latestScore?.distance ?? 0),
 		totalScore: playerRecord.totalScore,
 		totalDistance: playerRecord.totalDistance,
 		totalObstaclesCleared: playerRecord.totalObstaclesCleared,
 		gamesPlayed: playerRecord.gamesPlayed,
 		racesPlayed: playerRecord.racesPlayed,
 		racesWon: playerRecord.racesWon,
+		longestCleanRun: Math.max(maxStats?.highestCleanRun ?? 0, latestScore?.longestCleanRun ?? 0),
 	};
 
 	const checkStats: CheckStats = {
@@ -164,9 +165,7 @@ export function isAchievementEarned(
 		case "races_played":
 			return stats.racesPlayed >= condition.count;
 		case "perfect_run":
-			// This requires special tracking from the game client.
-			// For now, we can't check this server-side without additional data.
-			return false;
+			return stats.longestCleanRun >= condition.distance;
 		default:
 			return false;
 	}

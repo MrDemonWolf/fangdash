@@ -154,6 +154,7 @@ export interface GameState {
 	obstaclesCleared: number;
 	alive: boolean;
 	speed: number;
+	longestCleanRun: number;
 }
 
 // ── Debug ──

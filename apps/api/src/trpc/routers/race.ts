@@ -1,4 +1,7 @@
-import { count, desc, eq, sql } from "drizzle-orm";
+import { TRPCError } from "@trpc/server";
+import { getLevelFromXp, getPlacementBonus } from "@fangdash/shared";
+import { count, desc, eq, inArray, sql } from "drizzle-orm";
+import type { BatchItem } from "drizzle-orm/batch";
 import { z } from "zod";
 import { player, raceHistory } from "../../db/schema.ts";
 import { checkAchievements } from "../../lib/achievement-checker.ts";
@@ -19,54 +22,183 @@ export const raceRouter = router({
 		.mutation(async ({ ctx, input }) => {
 			const playerRecord = await ensurePlayer(ctx.db, ctx.user.id);
 			if (!playerRecord) {
-				throw new Error("Failed to create player");
+				throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Failed to create player" });
 			}
 
-			// Compute placement server-side
+			const now = new Date();
+			const raceHistoryId = crypto.randomUUID();
+
+			// Insert with provisional placement
 			const countRows = await ctx.db
 				.select({ total: count() })
 				.from(raceHistory)
 				.where(eq(raceHistory.raceId, input.raceId));
-			const placement = (countRows[0]?.total ?? 0) + 1;
-
-			const now = new Date();
-			const raceHistoryId = crypto.randomUUID();
+			const provisionalPlacement = (countRows[0]?.total ?? 0) + 1;
 
 			await ctx.db.insert(raceHistory).values({
 				id: raceHistoryId,
 				raceId: input.raceId,
 				playerId: playerRecord.id,
-				placement,
+				placement: provisionalPlacement,
 				score: input.score,
 				distance: input.distance,
 				seed: input.seed,
 				createdAt: now,
 			});
 
-			// Update player race stats
-			const updateSet: Record<string, unknown> = {
+			// Phase 1: Compute authoritative placements for ALL rows in this race
+			const allResults = await ctx.db
+				.select({
+					id: raceHistory.id,
+					playerId: raceHistory.playerId,
+					placement: raceHistory.placement,
+					score: raceHistory.score,
+				})
+				.from(raceHistory)
+				.where(eq(raceHistory.raceId, input.raceId))
+				.orderBy(desc(raceHistory.score));
+
+			let placement = provisionalPlacement;
+			const placementChanges: {
+				id: string;
+				playerId: string;
+				oldPlacement: number;
+				newPlacement: number;
+			}[] = [];
+
+			for (let i = 0; i < allResults.length; i++) {
+				const row = allResults[i];
+				if (!row) continue;
+				const newPlacement = i + 1;
+				if (row.id === raceHistoryId) {
+					placement = newPlacement;
+				}
+				if (row.placement !== newPlacement) {
+					placementChanges.push({
+						id: row.id,
+						playerId: row.playerId,
+						oldPlacement: row.placement,
+						newPlacement,
+					});
+				}
+			}
+
+			// Phase 2: Fetch affected OTHER players and compute XP/racesWon deltas
+			const otherAffected = placementChanges.filter((c) => c.playerId !== playerRecord.id);
+			let otherPlayerRecords: { id: string; totalXp: number; racesWon: number }[] = [];
+
+			if (otherAffected.length > 0) {
+				const affectedPlayerIds = [...new Set(otherAffected.map((c) => c.playerId))];
+				otherPlayerRecords = await ctx.db
+					.select({
+						id: player.id,
+						totalXp: player.totalXp,
+						racesWon: player.racesWon,
+					})
+					.from(player)
+					.where(inArray(player.id, affectedPlayerIds));
+			}
+
+			// Phase 3: Compute current player's XP
+			const placementBonus = getPlacementBonus(placement);
+			const xpGained = input.score + placementBonus;
+			const newTotalXp = playerRecord.totalXp + xpGained;
+			const levelInfo = getLevelFromXp(newTotalXp);
+			const previousLevel = playerRecord.level;
+
+			// Phase 4: Build batch writes
+			const batchStatements: BatchItem<"sqlite">[] = [];
+
+			// 4a: Update changed raceHistory placements
+			for (const change of placementChanges) {
+				batchStatements.push(
+					ctx.db
+						.update(raceHistory)
+						.set({ placement: change.newPlacement })
+						.where(eq(raceHistory.id, change.id)),
+				);
+			}
+
+			// 4b: Update affected OTHER players' XP, level, racesWon
+			for (const other of otherAffected) {
+				const record = otherPlayerRecords.find((r) => r.id === other.playerId);
+				if (!record) continue;
+
+				const xpDelta =
+					getPlacementBonus(other.newPlacement) - getPlacementBonus(other.oldPlacement);
+				const adjustedTotalXp = Math.max(0, record.totalXp + xpDelta);
+				const adjustedLevel = getLevelFromXp(adjustedTotalXp).level;
+				const racesWonDelta =
+					(other.oldPlacement === 1 ? -1 : 0) + (other.newPlacement === 1 ? 1 : 0);
+
+				batchStatements.push(
+					ctx.db
+						.update(player)
+						.set({
+							totalXp: adjustedTotalXp,
+							level: adjustedLevel,
+							racesWon:
+								racesWonDelta !== 0
+									? sql`MAX(0, ${player.racesWon} + ${racesWonDelta})`
+									: record.racesWon,
+							updatedAt: now,
+						})
+						.where(eq(player.id, other.playerId)),
+				);
+			}
+
+			// 4c: Update current player
+			const currentPlayerUpdate: Record<string, unknown> = {
 				racesPlayed: sql`${player.racesPlayed} + 1`,
+				totalXp: sql`${player.totalXp} + ${xpGained}`,
+				level: levelInfo.level,
 				updatedAt: now,
 			};
 
 			if (placement === 1) {
-				updateSet["racesWon"] = sql`${player.racesWon} + 1`;
+				currentPlayerUpdate["racesWon"] = sql`${player.racesWon} + 1`;
 			}
 
-			await ctx.db.update(player).set(updateSet).where(eq(player.id, playerRecord.id));
-
-			// Check achievements and skin unlocks after race submission
-			const achievementResult = await checkAchievements(ctx.db, playerRecord.id);
-			const newSkinUnlocks = await checkSkinUnlocks(
-				ctx.db,
-				playerRecord.id,
-				achievementResult.stats,
+			batchStatements.push(
+				ctx.db.update(player).set(currentPlayerUpdate).where(eq(player.id, playerRecord.id)),
 			);
+
+			// Phase 5: Execute atomically
+			await ctx.db.batch(
+				batchStatements as unknown as [BatchItem<"sqlite">, ...BatchItem<"sqlite">[]],
+			);
+
+			let newAchievements: string[] = [];
+			let newSkins: string[] = [];
+			let achievementError = false;
+
+			try {
+				const achievementResult = await checkAchievements(ctx.db, playerRecord.id);
+				const newSkinUnlocks = await checkSkinUnlocks(
+					ctx.db,
+					playerRecord.id,
+					achievementResult.stats,
+				);
+				newAchievements = achievementResult.newAchievements;
+				newSkins = [...achievementResult.newSkins, ...newSkinUnlocks];
+			} catch (err) {
+				console.error("[race.submitResult] Achievement/skin check failed", {
+					playerId: playerRecord.id,
+					raceHistoryId,
+					error: err,
+				});
+				achievementError = true;
+			}
 
 			return {
 				raceHistoryId,
-				newAchievements: achievementResult.newAchievements,
-				newSkins: [...achievementResult.newSkins, ...newSkinUnlocks],
+				placement,
+				newAchievements,
+				newSkins,
+				achievementError,
+				xpGained,
+				levelUp: levelInfo.level > previousLevel,
+				newLevel: levelInfo.level,
 			};
 		}),
 
