@@ -48,11 +48,41 @@ Create a Cloudflare D1 database:
 bunx wrangler d1 create fangdash-db
 ```
 
-Copy the database ID from the output and update `apps/api/wrangler.toml`. Then run migrations:
+The output will look something like this:
+
+```
+✅ Successfully created DB 'fangdash-db'
+
+[[d1_databases]]
+binding = "DB"
+database_name = "fangdash-db"
+database_id = "abc12345-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+```
+
+Copy the `database_id` value and paste it into the `[[d1_databases]]` block in `apps/api/wrangler.toml`:
+
+```toml
+[[d1_databases]]
+binding = "DB"
+database_name = "fangdash-db"
+database_id = "abc12345-xxxx-xxxx-xxxx-xxxxxxxxxxxx"  # ← replace this
+migrations_dir = "drizzle/"
+```
+
+<Callout type="info">
+	FangDash uses `drizzle/` as the migrations directory (not `migrations/`). This is already
+	configured in `wrangler.toml` — you only need to update the `database_id`.
+</Callout>
+
+Then run migrations:
 
 ```bash
 bunx wrangler d1 migrations apply fangdash-db --local
 ```
+
+<Callout type="warn">
+	If migrations fail, make sure you've logged into Cloudflare first with `bunx wrangler login`.
+</Callout>
 
 </Step>
 
@@ -79,6 +109,24 @@ BETTER_AUTH_URL=http://localhost:8787
 TWITCH_CLIENT_ID=your-twitch-client-id
 TWITCH_CLIENT_SECRET=your-twitch-client-secret
 ```
+
+<Callout type="info">
+	**Generate a strong secret** with: `openssl rand -base64 32` — paste the output as your
+	`BETTER_AUTH_SECRET`.
+</Callout>
+
+<Callout type="warn">
+	**Twitch OAuth Redirect URL** — In your [Twitch Developer Console](https://dev.twitch.tv/console)
+	app settings, add `http://localhost:8787/api/auth/callback/twitch` as an OAuth Redirect URL.
+	Without this, sign-in will fail with a redirect error.
+</Callout>
+
+To find your Twitch Client ID and Client Secret:
+
+1. Go to the [Twitch Developer Console](https://dev.twitch.tv/console)
+2. Click on your application (or create one)
+3. The **Client ID** is shown on the app overview page
+4. Click **New Secret** to generate a **Client Secret** (it's only shown once — copy it immediately)
 
 Fill in `apps/web/.env.local`:
 
@@ -120,3 +168,13 @@ The web app runs at `http://localhost:3000` and the API at `http://localhost:878
 | `bun format`        | Format all files with Prettier     |
 | `bun format:check`  | Check formatting without writing   |
 | `bun clean`         | Remove all build artifacts         |
+
+## Troubleshooting
+
+| Error / Symptom                          | Likely Cause                                                                                    | Fix                                                                                                                     |
+| ---------------------------------------- | ----------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| `D1_ERROR` or "database not found"       | `database_id` in `wrangler.toml` doesn't match your D1 database, or migrations haven't been run | Double-check the ID from `bunx wrangler d1 list` and re-run `bunx wrangler d1 migrations apply fangdash-db --local`     |
+| "Auth not configured" or 503 from API    | Missing or incorrect values in `apps/api/.dev.vars`                                             | Ensure all four variables (`BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `TWITCH_CLIENT_ID`, `TWITCH_CLIENT_SECRET`) are set |
+| CORS errors in the browser console       | `NEXT_PUBLIC_API_URL` in `apps/web/.env.local` doesn't match the actual API URL                 | Verify the URL is `http://localhost:8787` (no trailing slash) and restart `bun dev` after changing env files            |
+| Blank page or error after Twitch sign-in | OAuth Redirect URL not registered in Twitch Developer Console                                   | Add `http://localhost:8787/api/auth/callback/twitch` as a redirect URL in your Twitch app settings                      |
+| "Cannot find module" on `bun dev`        | Dependencies not installed                                                                      | Run `bun install` from the repo root                                                                                    |
