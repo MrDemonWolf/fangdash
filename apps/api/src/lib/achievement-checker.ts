@@ -117,25 +117,29 @@ export async function checkAchievements(
 
 	// Batch insert achievements
 	if (achievementRows.length > 0) {
-		await db.insert(playerAchievement).values(achievementRows);
+		await db.insert(playerAchievement).values(achievementRows).onConflictDoNothing();
 	}
 
 	// Batch insert reward skins (skip conflicts — player may already own them)
 	let newSkins: string[] = [];
 	if (rewardSkinIds.length > 0) {
-		const inserted = await db
-			.insert(playerSkin)
-			.values(
-				rewardSkinIds.map((skinId) => ({
-					id: crypto.randomUUID(),
-					playerId,
-					skinId,
-					unlockedAt: now,
-				})),
-			)
-			.onConflictDoNothing()
-			.returning({ skinId: playerSkin.skinId });
-		newSkins = inserted.map((r) => r.skinId);
+		try {
+			const inserted = await db
+				.insert(playerSkin)
+				.values(
+					rewardSkinIds.map((skinId) => ({
+						id: crypto.randomUUID(),
+						playerId,
+						skinId,
+						unlockedAt: now,
+					})),
+				)
+				.onConflictDoNothing()
+				.returning({ skinId: playerSkin.skinId });
+			newSkins = (inserted ?? []).map((r) => r.skinId);
+		} catch (err) {
+			console.error("[checkAchievements] Reward skin insert failed", { playerId, error: err });
+		}
 	}
 
 	return { newAchievements, newSkins, stats: checkStats };
