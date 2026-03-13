@@ -1,0 +1,52 @@
+---
+title: Level System
+description: How XP and levels work in FangDash.
+---
+
+<Callout type="info">
+	**TL;DR** - Every point you score = 1 XP - Race bonuses: 1st place = 500 XP, 2nd = 250 XP, 3rd =
+	100 XP - Levels follow a cubic curve — early levels are fast, later ones take real dedication
+</Callout>
+
+FangDash has a **level system** that tracks your overall progress. The higher your level, the more experienced you are.
+
+## How You Earn XP
+
+| Source             | XP Earned             |
+| ------------------ | --------------------- |
+| **Score points**   | 1 XP per point scored |
+| **1st place race** | 500 bonus XP          |
+| **2nd place race** | 250 bonus XP          |
+| **3rd place race** | 100 bonus XP          |
+| **4th place race** | No bonus XP           |
+
+Every point you score in a game — whether solo or multiplayer — counts as 1 XP. Race placements give you a bonus on top of that.
+
+## Level Curve
+
+Levels use a **cubic formula**: `totalXpForLevel(n) = 5 × (n - 1)³`
+
+Early levels come quickly. Higher levels take significantly more XP.
+
+| Level | Total XP Needed | XP for This Level |
+| ----- | --------------- | ----------------- |
+| 1     | 0               | —                 |
+| 2     | 5               | 5                 |
+| 3     | 40              | 35                |
+| 5     | 320             | 185               |
+| 10    | 3,645           | 1,085             |
+| 15    | 13,720          | 2,735             |
+| 20    | 34,295          | 5,135             |
+| 30    | 121,945         | 12,185            |
+| 50    | 588,245         | 35,285            |
+
+## Your Progress Bar
+
+Your current level and XP progress are visible on your **Profile** page. The progress bar shows how far you are toward the next level.
+
+Check your profile anytime at [/profile](/profile).
+
+<Callout type="info">
+	XP is calculated from your **total score** plus any race placement bonuses. It updates
+	automatically after every game.
+</Callout>

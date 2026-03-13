@@ -1,0 +1,72 @@
+---
+title: Admin Panel
+description: Managing players, scores, and races from the FangDash admin panel.
+---
+
+<Callout type="warn">
+	The admin panel is only accessible to users with **`admin`** or **`dev`** roles. Regular players
+	will not see the Admin link.
+</Callout>
+
+<Callout type="info">
+	**TL;DR** - Dashboard with player count, games played, total meters, and race stats - Manage
+	players (search, ban/unban) and scores (flag suspicious, delete) - Set `ADMIN_TWITCH_ID` env var
+	to auto-promote yourself on first login
+</Callout>
+
+The admin panel lives at [/admin](/admin) and gives you full control over your FangDash instance.
+
+## Dashboard Overview
+
+The top of the admin panel shows five key stats:
+
+| Stat               | Description                              |
+| ------------------ | ---------------------------------------- |
+| **Total Players**  | Number of registered player accounts     |
+| **Games Played**   | Total games completed across all players |
+| **Meters Run**     | Combined distance run by everyone        |
+| **Distinct Races** | Number of unique multiplayer races held  |
+| **Race Entries**   | Total individual race participations     |
+
+## Players Tab
+
+A paginated, searchable list of all players.
+
+You can:
+
+- **Search** by username
+- **Ban** a player with a reason and optional duration
+- **Unban** a previously banned player
+
+## Scores Tab
+
+A paginated list of all submitted scores.
+
+The admin panel **highlights suspicious scores** that look abnormally high for their run duration. You can:
+
+- Review flagged scores
+- **Delete** a score — the player's aggregate stats (total score, distance, etc.) are automatically rolled back
+
+## Races Tab
+
+Race history grouped by race, showing all participants and their placements. Top 3 placements get gold, silver, and bronze badges.
+
+## Getting Admin Access
+
+### Auto-Promotion (Recommended)
+
+Set the `ADMIN_TWITCH_ID` environment variable to a comma-separated list of Twitch numeric user IDs. Those users will be automatically promoted to `admin` on their first login.
+
+```bash
+# For local development
+# Add to apps/api/.dev.vars:
+ADMIN_TWITCH_ID=123456789,987654321
+
+# For production (Cloudflare Workers)
+bunx wrangler secret put ADMIN_TWITCH_ID --env production
+```
+
+<Callout type="info">
+	You can find your Twitch numeric user ID by using the Twitch API or third-party lookup tools. It's
+	the numeric ID, not your username.
+</Callout>

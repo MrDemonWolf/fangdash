@@ -8,19 +8,21 @@ description: Deploy your own instance of FangDash.
 	deploy: API, Web, and PartyKit (multiplayer) - `bun run ship` deploys all three at once
 </Callout>
 
+<Callout type="info">**Estimated time:** ~30 minutes</Callout>
+
 FangDash is designed to run on Cloudflare's infrastructure. Here's how to deploy your own instance.
 
-## What You Need
+## What You'll Need
 
-| Requirement                  | Notes                     |
-| ---------------------------- | ------------------------- |
-| Cloudflare account           | Free tier works           |
-| Twitch Developer application | For OAuth sign-in         |
-| PartyKit account             | For real-time multiplayer |
+- [ ] **Node.js** >= 24
+- [ ] **Bun** 1.3.10
+- [ ] **Cloudflare account** (free tier works)
+- [ ] **Twitch Developer application** (for OAuth sign-in)
+- [ ] **PartyKit account** (for real-time multiplayer)
 
 <Steps>
 <Step>
-## Deploy the API
+## Step 1 of 3 — Deploy the API
 
 The **API** runs on Cloudflare Workers with a D1 database.
 
@@ -58,7 +60,7 @@ bun run ship:api
 </Step>
 
 <Step>
-## Deploy the Web App
+## Step 2 of 3 — Deploy the Web App
 
 The **web app** deploys to Cloudflare Workers using OpenNext.
 
@@ -84,7 +86,7 @@ bun run ship:web
 </Step>
 
 <Step>
-## Deploy PartyKit
+## Step 3 of 3 — Deploy PartyKit
 
 **PartyKit** handles real-time multiplayer WebSocket connections.
 
@@ -100,6 +102,11 @@ export PARTYKIT_TOKEN=your-token
 bun run ship:party
 ```
 
+<Callout type="info">
+	All three services are deployed! Your FangDash instance should now be live. Visit your web domain
+	to verify everything works.
+</Callout>
+
 </Step>
 </Steps>
 
@@ -109,7 +116,7 @@ bun run ship:party
 bun run ship
 ```
 
-This runs all three deploy commands in parallel.
+This runs all three deploy commands in sequence.
 
 ## Environment Variables Reference
 

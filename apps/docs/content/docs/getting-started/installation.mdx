@@ -4,9 +4,12 @@ description: Set up FangDash for local development.
 ---
 
 <Callout type="info">
-	**TL;DR** - Requires Bun, a Cloudflare account, and a Twitch app - Clone → install → create D1
-	database → copy env files → `bun dev` - Web runs at `localhost:3000`, API at `localhost:8787`
+	**TL;DR** - Requires Node.js >= 24, Bun 1.3.10, a Cloudflare account, and a Twitch app - Clone →
+	install → create D1 database → copy env files → `bun dev` - Web runs at `localhost:3000`, API at
+	`localhost:8787`
 </Callout>
+
+<Callout type="info">**Estimated time:** ~10 minutes</Callout>
 
 This guide is for developers who want to run FangDash locally or contribute to the project.
 
@@ -19,13 +22,14 @@ This guide is for developers who want to run FangDash locally or contribute to t
 
 | Requirement          | Version                                                |
 | -------------------- | ------------------------------------------------------ |
-| Bun                  | Latest (`curl -fsSL https://bun.sh/install \| bash`)   |
+| Node.js              | >= 24                                                  |
+| Bun                  | 1.3.10 (`curl -fsSL https://bun.sh/install \| bash`)   |
 | Cloudflare account   | Free tier works                                        |
 | Twitch Developer app | [dev.twitch.tv/console](https://dev.twitch.tv/console) |
 
 <Steps>
 <Step>
-## Clone and Install
+## Step 1 of 4 — Clone and Install
 
 ```bash
 git clone https://github.com/MrDemonWolf/fangdash.git
@@ -36,7 +40,7 @@ bun install
 </Step>
 
 <Step>
-## Set Up the Database
+## Step 2 of 4 — Set Up the Database
 
 Create a Cloudflare D1 database:
 
@@ -53,7 +57,7 @@ bunx wrangler d1 migrations apply fangdash-db --local
 </Step>
 
 <Step>
-## Configure Environment Variables
+## Step 3 of 4 — Configure Environment Variables
 
 Copy the example files from the repo root:
 
@@ -85,13 +89,18 @@ NEXT_PUBLIC_API_URL=http://localhost:8787
 </Step>
 
 <Step>
-## Start Development
+## Step 4 of 4 — Start Development
 
 ```bash
 bun dev
 ```
 
 The web app runs at `http://localhost:3000` and the API at `http://localhost:8787`.
+
+<Callout type="info">
+	You're all set! Your local FangDash instance is running. Head to `localhost:3000` and sign in with
+	Twitch to start playing.
+</Callout>
 
 </Step>
 </Steps>
@@ -106,4 +115,8 @@ The web app runs at `http://localhost:3000` and the API at `http://localhost:878
 | `bun test:coverage` | Run tests with coverage report     |
 | `bun typecheck`     | Type-check all packages            |
 | `bun lint`          | Lint all packages                  |
+| `bun lint:fix`      | Lint with auto-fix                 |
+| `bun check`         | Run ESLint + Prettier check        |
+| `bun format`        | Format all files with Prettier     |
+| `bun format:check`  | Check formatting without writing   |
 | `bun clean`         | Remove all build artifacts         |

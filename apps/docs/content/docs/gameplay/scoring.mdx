@@ -4,8 +4,8 @@ description: How scores are calculated and validated in FangDash.
 ---
 
 <Callout type="info">
-	**TL;DR** - Earn 10 pts/sec for surviving + 50 pts per obstacle cleared - All scores are validated
-	server-side against the theoretical maximum - Invalid scores are automatically rejected
+	**TL;DR** - Earn 10 pts/sec for surviving + 50 pts per obstacle cleared - Scores are saved **per
+	difficulty level** - Every point you score = 1 XP toward your [level](/docs/gameplay/levels)
 </Callout>
 
 ## Score Formula
@@ -18,6 +18,28 @@ Your score comes from two sources:
 | **Obstacles cleared** | 50 points per obstacle dodged |
 
 Your total score is the sum of both. Distance is tracked separately for achievements and leaderboard stats.
+
+## Per-Difficulty Scoring
+
+Scores are saved with the **difficulty level** you reached during that run. This means the [leaderboard](/docs/gameplay/leaderboard) can filter scores by difficulty, so you can compare your Easy runs against other Easy runs.
+
+## XP Earning
+
+Every point you score counts as **1 XP** toward your player level. Race placements give bonus XP on top of that (1st = 500 XP, 2nd = 250 XP, 3rd = 100 XP).
+
+See [Level System](/docs/gameplay/levels) for the full breakdown.
+
+## Tracked Stats
+
+Each score submission records:
+
+| Stat                  | Description                                                                      |
+| --------------------- | -------------------------------------------------------------------------------- |
+| **Score**             | Your total points                                                                |
+| **Distance**          | How far you ran (meters)                                                         |
+| **Duration**          | How long the run lasted (seconds)                                                |
+| **Difficulty**        | The difficulty tier you reached                                                  |
+| **Longest Clean Run** | Longest distance without hitting an obstacle (used for Perfect Dash achievement) |
 
 ## Score Validation
 
@@ -37,12 +59,12 @@ FangDash uses **server-side anti-cheat validation**. When you submit a score:
 </Steps>
 
 <Callout type="warn">
-	Submitted scores that exceed the theoretical maximum for your run duration and obstacle count will
-	be silently rejected. No error is shown — the score simply won't appear on the leaderboard.
+	Submitted scores that exceed the theoretical maximum for your run duration and obstacle count are
+	rejected with a BAD_REQUEST error. The score will not be saved or appear on the leaderboard.
 </Callout>
 
 ## Leaderboards
 
-The **global leaderboard** shows the top scores across all players. Your personal best scores are tracked on your profile.
+The **global leaderboard** supports filtering by time period (Daily / Weekly / All Time) and by difficulty level. Only your personal best per filter combination is shown.
 
-Leaderboard rankings update in real-time as new scores are submitted.
+See [Leaderboard](/docs/gameplay/leaderboard) for full details.

@@ -1,4 +1,14 @@
 {
 	"title": "Gameplay",
-	"pages": ["index", "controls", "scoring", "difficulty", "audio", "debug"]
+	"pages": [
+		"index",
+		"controls",
+		"scoring",
+		"levels",
+		"leaderboard",
+		"difficulty",
+		"profile",
+		"audio",
+		"debug"
+	]
 }
