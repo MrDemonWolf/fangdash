@@ -25,6 +25,7 @@ export class GameScene extends Phaser.Scene {
 	protected callbacks: GameEventCallback = {};
 	protected skinKey = "wolf-gray";
 	protected seed: string | undefined;
+	private externalSeed = false;
 	protected running = false;
 	private previewing = false;
 	private startDifficulty: string | undefined;
@@ -52,6 +53,7 @@ export class GameScene extends Phaser.Scene {
 		this.callbacks = data.callbacks ?? this.game.registry.get("callbacks") ?? {};
 		this.skinKey = data.skinKey ?? this.game.registry.get("skinKey") ?? "wolf-gray";
 		this.seed = data.seed ?? this.game.registry.get("seed");
+		this.externalSeed = this.seed !== undefined;
 		this.startDifficulty = data.startDifficulty ?? this.game.registry.get("startDifficulty");
 	}
 
@@ -200,6 +202,8 @@ export class GameScene extends Phaser.Scene {
 		this.debugElapsedMs = 0;
 		this.player.reset();
 		this.spawner.reset();
+		this.seed = this.seed ?? crypto.randomUUID();
+		this.spawner.setSeed(this.seed);
 		this.difficulty.reset();
 		if (this.startDifficulty) {
 			this.difficulty.setStartLevel(this.startDifficulty);
