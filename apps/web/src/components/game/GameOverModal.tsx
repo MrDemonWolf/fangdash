@@ -209,11 +209,11 @@ export function GameOverModal({
 					)}
 
 					{/* Achievement sync warning */}
-				{submitResult?.achievementError && (
-					<p className="mb-4 text-xs text-center font-mono text-yellow-400/60">
-						Some achievements may not have been recorded. They&apos;ll sync next game.
-					</p>
-				)}
+					{submitResult?.achievementError && (
+						<p className="mb-4 text-xs text-center font-mono text-yellow-400/60">
+							Some achievements may not have been recorded. They&apos;ll sync next game.
+						</p>
+					)}
 
 				{/* Sign-in nudge */}
 					{isSignedIn === false && (

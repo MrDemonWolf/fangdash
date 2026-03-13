@@ -77,7 +77,7 @@ export const scoreRouter = router({
 				.where(eq(player.id, playerRecord.id));
 
 			let newAchievements: string[] = [];
-			let newSkins: string[] = [];
+			const newSkins: string[] = [];
 			let achievementError = false;
 
 			// Block 1: achievements
