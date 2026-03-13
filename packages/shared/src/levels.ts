@@ -24,7 +24,7 @@ export function getPlacementBonus(placement: number): number {
 }
 
 export function getLevelFromXp(xp: number): LevelInfo {
-	if (xp < 0) {
+	if (!Number.isFinite(xp) || xp < 0) {
 		return {
 			level: 1,
 			currentXp: 0,

@@ -337,7 +337,7 @@ export default function ProfilePage() {
 	const totalDistance = playerStats?.totalDistance ?? 0;
 	const totalObstacles = playerStats?.totalObstaclesCleared ?? 0;
 	const totalScore = playerStats?.totalScore ?? 0;
-	const totalXp = playerStats?.totalXp ?? 0;
+	const totalXp = Number(playerStats?.totalXp) || 0;
 	const levelInfo = getLevelFromXp(totalXp);
 	const playerLevel = levelInfo.level;
 

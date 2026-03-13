@@ -29,6 +29,8 @@ export async function ensurePlayer(db: DrizzleD1Database<typeof schema>, userId:
 				gamesPlayed: 0,
 				racesPlayed: 0,
 				racesWon: 0,
+				totalXp: 0,
+				level: 1,
 				createdAt: now,
 				updatedAt: now,
 			})

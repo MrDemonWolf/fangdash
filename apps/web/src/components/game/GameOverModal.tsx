@@ -14,6 +14,7 @@ interface GameOverModalProps {
 		scoreId: string;
 		newAchievements: string[];
 		newSkins: string[];
+		achievementError?: boolean;
 	} | null;
 	submitError?: unknown;
 	isSignedIn?: boolean;
@@ -205,6 +206,13 @@ export function GameOverModal({
 								})}
 							</div>
 						</div>
+					)}
+
+					{/* Achievement sync warning */}
+					{submitResult?.achievementError && (
+						<p className="mb-4 text-xs text-center font-mono text-yellow-400/60">
+							Some achievements may not have been recorded. They&apos;ll sync next game.
+						</p>
 					)}
 
 					{/* Sign-in nudge */}

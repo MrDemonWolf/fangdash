@@ -74,6 +74,9 @@ export async function checkSkinUnlocks(
 		if (ownedSkinIds.has(skin.id)) {
 			continue;
 		}
+		if (skin.unlockCondition.type === "default") {
+			continue;
+		}
 		if (
 			isSkinUnlocked(skin, {
 				highestScore,
@@ -104,7 +107,7 @@ export async function checkSkinUnlocks(
 		.onConflictDoNothing()
 		.returning({ skinId: playerSkin.skinId });
 
-	return inserted.map((r) => r.skinId);
+	return (inserted ?? []).map((r) => r.skinId);
 }
 
 export function isSkinUnlocked(

@@ -169,9 +169,11 @@ export const raceRouter = router({
 			);
 
 			let newAchievements: string[] = [];
-			let newSkins: string[] = [];
+			const newSkins: string[] = [];
 			let achievementError = false;
 
+			// Block 1: achievements
+			let checkStats: import("../../lib/achievement-checker.ts").CheckStats | undefined;
 			try {
 				const achievementResult = await checkAchievements(ctx.db, playerRecord.id, {
 					score: input.score,
@@ -179,15 +181,24 @@ export const raceRouter = router({
 					obstaclesCleared: 0,
 					longestCleanRun: 0,
 				});
-				const newSkinUnlocks = await checkSkinUnlocks(
-					ctx.db,
-					playerRecord.id,
-					achievementResult.stats,
-				);
 				newAchievements = achievementResult.newAchievements;
-				newSkins = [...achievementResult.newSkins, ...newSkinUnlocks];
+				newSkins.push(...achievementResult.newSkins);
+				checkStats = achievementResult.stats;
 			} catch (err) {
-				console.error("[race.submitResult] Achievement/skin check failed", {
+				console.error("[race.submitResult] Achievement check failed", {
+					playerId: playerRecord.id,
+					raceHistoryId,
+					error: err,
+				});
+				achievementError = true;
+			}
+
+			// Block 2: skins (independent — achievement failure doesn't block this)
+			try {
+				const skinUnlocks = await checkSkinUnlocks(ctx.db, playerRecord.id, checkStats);
+				newSkins.push(...skinUnlocks);
+			} catch (err) {
+				console.error("[race.submitResult] Skin unlock check failed", {
 					playerId: playerRecord.id,
 					raceHistoryId,
 					error: err,
