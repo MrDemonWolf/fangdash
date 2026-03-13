@@ -59,8 +59,8 @@ FangDash uses **server-side anti-cheat validation**. When you submit a score:
 </Steps>
 
 <Callout type="warn">
-	Submitted scores that exceed the theoretical maximum for your run duration and obstacle count will
-	be silently rejected. No error is shown — the score simply won't appear on the leaderboard.
+	Submitted scores that exceed the theoretical maximum for your run duration and obstacle count are
+	rejected with a BAD_REQUEST error. The score will not be saved or appear on the leaderboard.
 </Callout>
 
 ## Leaderboards
