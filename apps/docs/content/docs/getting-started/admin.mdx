@@ -55,7 +55,7 @@ Race history grouped by race, showing all participants and their placements. Top
 
 ### Auto-Promotion (Recommended)
 
-Set the `ADMIN_TWITCH_ID` environment variable to a comma-separated list of Twitch numeric user IDs. Those users will be automatically promoted to `admin` on their first login.
+Set the `ADMIN_TWITCH_ID` environment variable to a comma-separated list of Twitch **numeric** user IDs. Those users will be automatically promoted to `admin` on their **first login**.
 
 ```bash
 # For local development
@@ -66,7 +66,35 @@ ADMIN_TWITCH_ID=123456789,987654321
 bunx wrangler secret put ADMIN_TWITCH_ID --env production
 ```
 
-<Callout type="info">
-	You can find your Twitch numeric user ID by using the Twitch API or third-party lookup tools. It's
-	the numeric ID, not your username.
+<Callout type="warn">
+	Use your **numeric Twitch user ID** (e.g. `123456789`), **not** your username. To find it, use a
+	lookup tool like [streamscharts.com/tools/convert-username](https://streamscharts.com/tools/convert-username)
+	or query the Twitch API directly:
+
+```bash
+curl -s -H "Client-ID: YOUR_CLIENT_ID" \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  "https://api.twitch.tv/helix/users?login=YOUR_USERNAME" | jq '.data[0].id'
+```
+
 </Callout>
+
+<Callout type="warn">
+	`ADMIN_TWITCH_ID` only takes effect on **first login**. If you already signed in before setting
+	this variable, your user record already exists without the admin role. You'll need to either
+	delete the user row from D1 and sign in again, or manually promote yourself (see below).
+</Callout>
+
+### Manual Promotion
+
+If you need to grant admin access to a user who has already signed in, you can update the role directly in the D1 database:
+
+```bash
+# Local development
+bunx wrangler d1 execute fangdash-db --local \
+  --command "UPDATE user SET role = 'admin' WHERE name = 'YourTwitchUsername';"
+
+# Production
+bunx wrangler d1 execute fangdash-db --remote \
+  --command "UPDATE user SET role = 'admin' WHERE name = 'YourTwitchUsername';"
+```
