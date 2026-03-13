@@ -84,6 +84,26 @@ bun ship
 
 This runs all three deploy commands in parallel.
 
+## CI/CD Secrets
+
+If you're using the included GitHub Actions workflow (`.github/workflows/deploy.yml`), you need to add these secrets to your repository under **Settings → Secrets and variables → Actions**:
+
+| Secret                   | Description                                  |
+| ------------------------ | -------------------------------------------- |
+| `CLOUDFLARE_API_TOKEN`   | Cloudflare API token with Workers permission |
+| `BETTER_AUTH_SECRET`     | Random string used to sign auth tokens       |
+| `TWITCH_CLIENT_ID`       | From your Twitch Developer application       |
+| `TWITCH_CLIENT_SECRET`   | From your Twitch Developer application       |
+| `PARTYKIT_LOGIN`         | PartyKit account login                       |
+| `PARTYKIT_TOKEN`         | PartyKit deploy token                        |
+| `PARTYKIT_HOST`          | Your PartyKit server host                    |
+
+The deploy workflow automatically injects `BETTER_AUTH_SECRET`, `TWITCH_CLIENT_ID`, and `TWITCH_CLIENT_SECRET` as Cloudflare Worker secrets on every API deploy. The other auth-related environment variables (`BETTER_AUTH_URL`, `WEB_URL`) are plain-text vars configured in `apps/api/wrangler.toml`.
+
+<Callout type="warn">
+	If any auth secret is missing, the API will silently disable authentication — sign-in attempts will return a 503 "Auth not configured" response.
+</Callout>
+
 ## Setting Up Twitch OAuth
 
 <Steps>
