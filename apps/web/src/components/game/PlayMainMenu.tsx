@@ -159,21 +159,39 @@ export function PlayMainMenu({
 					<span className="text-[10px] font-mono uppercase tracking-widest text-white/40">
 						Difficulty
 					</span>
-					<div className="flex gap-1.5 flex-wrap justify-center">
-						{DIFFICULTY_LEVELS.map((level) => (
-							<button
-								type="button"
-								key={level.name}
-								onClick={() => onSelectDifficulty(level.name)}
-								className={`px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-widest transition-all cursor-pointer ${
-									selectedDifficulty === level.name
-										? "bg-[#0FACED] text-[#091533]"
-										: "border border-white/20 text-white/50 hover:border-white/40 hover:text-white"
-								}`}
-							>
-								{level.name}
-							</button>
-						))}
+					<div className="grid grid-cols-2 gap-2 w-full sm:grid-cols-3">
+						{DIFFICULTY_LEVELS.map((level) => {
+							const isSelected = selectedDifficulty === level.name;
+							return (
+								<button
+									type="button"
+									key={level.name}
+									onClick={() => onSelectDifficulty(level.name)}
+									aria-pressed={isSelected}
+									className={`relative rounded-lg border-l-[3px] px-3 py-2.5 text-left transition-all cursor-pointer ${
+										isSelected
+											? "bg-white/10 border-white/20"
+											: "bg-white/5 border-white/10 hover:bg-white/[0.07] hover:border-white/15"
+									}`}
+									style={{
+										borderLeftColor: level.color,
+										boxShadow: isSelected ? `0 0 16px ${level.color}30` : undefined,
+									}}
+								>
+									<span
+										className="block text-xs font-bold uppercase tracking-wide"
+										style={{ color: level.color }}
+									>
+										{level.label}
+									</span>
+									<div className="mt-1 flex items-center gap-2 text-[10px] font-mono text-white/40">
+										<span>{level.speedMultiplier}x</span>
+										<span className="text-white/20">|</span>
+										<span>{level.maxObstaclesOnScreen} obs</span>
+									</div>
+								</button>
+							);
+						})}
 					</div>
 				</div>
 
