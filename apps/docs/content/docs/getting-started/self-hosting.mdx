@@ -26,8 +26,23 @@ FangDash is designed to run on Cloudflare's infrastructure. Here's how to deploy
 
 The **API** runs on Cloudflare Workers with a D1 database.
 
-1. Create a D1 database in the Cloudflare dashboard
-2. Update `apps/api/wrangler.toml` with your database ID and your production domains:
+1. Create a D1 database via the Cloudflare dashboard (Workers & Pages → D1) or CLI:
+
+```bash
+bunx wrangler d1 create fangdash-db
+```
+
+2. Update `apps/api/wrangler.toml` with your database ID and production domains. The `[[d1_databases]]` block should look like:
+
+```toml
+[[d1_databases]]
+binding = "DB"
+database_name = "fangdash-db"
+database_id = "your-database-id-here"
+migrations_dir = "drizzle/"
+```
+
+And the production environment variables:
 
 ```toml
 [env.production.vars]
@@ -36,13 +51,24 @@ BETTER_AUTH_URL = "https://your-api-domain.workers.dev"
 WEB_URL = "https://your-web-domain.workers.dev"
 ```
 
-3. Set your secrets:
+3. Run migrations against the remote database:
+
+```bash
+bunx wrangler d1 migrations apply fangdash-db --remote
+```
+
+4. Set your secrets:
 
 ```bash
 bunx wrangler secret put BETTER_AUTH_SECRET --env production
 bunx wrangler secret put TWITCH_CLIENT_ID --env production
 bunx wrangler secret put TWITCH_CLIENT_SECRET --env production
 ```
+
+<Callout type="info">
+	**Generate a strong secret** with: `openssl rand -base64 32` — paste the output when prompted for
+	`BETTER_AUTH_SECRET`.
+</Callout>
 
 4. Optionally, auto-promote specific Twitch users to admin on first login:
 
@@ -153,11 +179,16 @@ cp apps/web/.env.example apps/web/.env.local
 <Steps>
 	<Step>Go to the [Twitch Developer Console](https://dev.twitch.tv/console)</Step>
 	<Step>Create a new application</Step>
-	<Step>Set the OAuth Redirect URL to `https://your-api-domain/api/auth/callback/twitch`</Step>
+	<Step>
+		Add **both** OAuth Redirect URLs: - Local development:
+		`http://localhost:8787/api/auth/callback/twitch` - Production:
+		`https://your-api-domain.workers.dev/api/auth/callback/twitch`
+	</Step>
 	<Step>Copy the Client ID and Client Secret to your environment variables</Step>
 </Steps>
 
 <Callout type="warn">
-	The Twitch OAuth redirect URL must match your deployed API domain exactly — including the path
-	`/api/auth/callback/twitch`.
+	The Twitch OAuth redirect URL must match your deployed API domain **exactly** — including the
+	protocol (`https://`) and the path `/api/auth/callback/twitch`. If sign-in redirects to a blank
+	page or error, this is almost always the cause.
 </Callout>
