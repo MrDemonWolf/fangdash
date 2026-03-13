@@ -171,15 +171,6 @@ export const adminRouter = router({
 				throw new TRPCError({ code: "NOT_FOUND", message: "Score not found" });
 			}
 
-			const playerRecord = await ctx.db
-				.select({ totalXp: player.totalXp })
-				.from(player)
-				.where(eq(player.id, existing.playerId))
-				.get();
-
-			const newTotalXp = Math.max(0, (playerRecord?.totalXp ?? 0) - existing.score);
-			const newLevel = getLevelFromXp(newTotalXp).level;
-
 			await ctx.db.batch([
 				ctx.db
 					.update(player)
@@ -188,13 +179,27 @@ export const adminRouter = router({
 						totalDistance: sql`${player.totalDistance} - ${existing.distance}`,
 						totalObstaclesCleared: sql`${player.totalObstaclesCleared} - ${existing.obstaclesCleared}`,
 						gamesPlayed: sql`MAX(0, ${player.gamesPlayed} - 1)`,
-						totalXp: newTotalXp,
-						level: newLevel,
+						totalXp: sql`MAX(0, ${player.totalXp} - ${existing.score})`,
 						updatedAt: new Date(),
 					})
 					.where(eq(player.id, existing.playerId)),
 				ctx.db.delete(score).where(eq(score.id, input.scoreId)),
 			]);
+
+			// Reconcile level from the atomically-updated XP
+			const updated = await ctx.db
+				.select({ totalXp: player.totalXp })
+				.from(player)
+				.where(eq(player.id, existing.playerId))
+				.get();
+
+			if (updated) {
+				const newLevel = getLevelFromXp(updated.totalXp).level;
+				await ctx.db
+					.update(player)
+					.set({ level: newLevel })
+					.where(eq(player.id, existing.playerId));
+			}
 
 			return { success: true };
 		}),
