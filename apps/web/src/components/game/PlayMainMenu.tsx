@@ -167,6 +167,7 @@ export function PlayMainMenu({
 									type="button"
 									key={level.name}
 									onClick={() => onSelectDifficulty(level.name)}
+									aria-pressed={isSelected}
 									className={`relative rounded-lg border-l-[3px] px-3 py-2.5 text-left transition-all cursor-pointer ${
 										isSelected
 											? "bg-white/10 border-white/20"
