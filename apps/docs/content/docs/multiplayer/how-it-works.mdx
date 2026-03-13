@@ -68,9 +68,21 @@ The PRNG is a **mulberry32** generator — a fast, 32-bit algorithm that produce
 | `intBetween(min, max)` | Integer in `[min, max]` | Selecting obstacle variants |
 | `pick(array)`          | Random element          | Choosing obstacle types     |
 
+### Solo mode
+
+Solo mode uses the same seeded PRNG system. The difference is where the seed comes from:
+
+| Mode            | Seed source                               | When generated                          |
+| --------------- | ----------------------------------------- | --------------------------------------- |
+| **Multiplayer** | PartyKit server via `crypto.randomUUID()` | Once per race, broadcast to all players |
+| **Solo**        | Client-side via `crypto.randomUUID()`     | Once per run (new seed on each restart) |
+
+This means both modes run through the same `SeededRandom` code path — the only difference is that multiplayer seeds are shared, while solo seeds are local.
+
 ### Why this matters
 
 - **Fair races** — Every player faces identical obstacles, so skill is the only differentiator
+- **Consistent code path** — Both solo and multiplayer use `SeededRandom`, reducing the chance of mode-specific bugs
 - **No server simulation** — The server only manages connections and broadcasts events, not the game world. This keeps latency low and server costs minimal
 - **Reproducible** — A race can be fully reconstructed from its seed alone, which is useful for replays or verifying scores
 - **Bandwidth-efficient** — Only a single UUID needs to be sent to synchronise the entire obstacle course across all players
