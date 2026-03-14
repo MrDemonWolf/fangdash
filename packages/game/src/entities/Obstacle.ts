@@ -163,6 +163,10 @@ export class ObstacleSpawner {
 		inactive.spawn();
 	}
 
+	setSeed(seed: string) {
+		this.rng = new SeededRandom(seed);
+	}
+
 	reset() {
 		this.timeSinceLastSpawn = 0;
 		this.nextSpawnTime = 1500;
