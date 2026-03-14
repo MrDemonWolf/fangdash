@@ -38,20 +38,51 @@ FangDash uses WebSockets for real-time multiplayer communication, powered by **P
 
 Other players appear as **semi-transparent "ghost" wolves** on your screen. Their positions update in real-time via WebSocket messages. You can see them running, jumping, and hitting obstacles.
 
-## Deterministic Obstacles
+## Deterministic Obstacles (Seeded Play)
 
 <Callout type="info">
-	FangDash uses a **mulberry32 seeded PRNG** algorithm. Obstacle layouts are computed locally by
-	each client from a shared seed — no server needs to simulate the game.
+	FangDash uses a **seeded PRNG** so every player in a race faces the exact same obstacle course —
+	without the server needing to simulate the game world.
 </Callout>
 
-When a race starts:
+### How it works
 
-1. The server generates a random seed using `crypto.randomUUID()` and broadcasts it to all players
-2. Each client computes obstacle placements locally using that shared seed
-3. Every player sees the exact same obstacle layout
+In a typical multiplayer game, a central server runs the game simulation and streams the world state to every client. FangDash takes a different approach: **deterministic generation from a shared seed**. Instead of syncing obstacle positions over the network, each client generates them independently — and because they all start from the same seed, they all produce the identical sequence.
 
-This means:
+### Step by step
 
-- The game is **fair** — no player gets easier or harder obstacles
-- The obstacle layout can be reconstructed from the seed alone
+1. **Seed creation** — When a race starts, the PartyKit server generates a random seed with `crypto.randomUUID()` (e.g. `"a3f1b2c4-..."`)
+2. **Broadcast** — The server sends a `race_start` message containing the seed to every connected player
+3. **Local generation** — Each client creates a `SeededRandom` instance from that seed. The seed string is hashed (djb2) into a 32-bit integer, which initialises the PRNG state
+4. **Obstacle spawning** — As the game runs, the `ObstacleSpawner` calls `rng.next()`, `rng.between()`, and `rng.pick()` to decide obstacle type, position, and spacing. Because every client calls these methods in the same order with the same initial state, every client sees the same obstacles at the same positions
+5. **Race reset** — When a new race begins, the server generates a fresh `crypto.randomUUID()` seed, so every race has a unique obstacle layout
+
+### The algorithm: mulberry32
+
+The PRNG is a **mulberry32** generator — a fast, 32-bit algorithm that produces well-distributed numbers. It lives in `packages/shared/src/seeded-random.ts` and exposes:
+
+| Method                 | Returns                 | Used for                    |
+| ---------------------- | ----------------------- | --------------------------- |
+| `next()`               | Float in `[0, 1)`       | Raw random value            |
+| `between(min, max)`    | Float in `[min, max)`   | Obstacle spacing, positions |
+| `intBetween(min, max)` | Integer in `[min, max]` | Selecting obstacle variants |
+| `pick(array)`          | Random element          | Choosing obstacle types     |
+
+### Solo mode
+
+Solo mode uses the same seeded PRNG system. The difference is where the seed comes from:
+
+| Mode            | Seed source                               | When generated                          |
+| --------------- | ----------------------------------------- | --------------------------------------- |
+| **Multiplayer** | PartyKit server via `crypto.randomUUID()` | Once per race, broadcast to all players |
+| **Solo**        | Client-side via `crypto.randomUUID()`     | Once per run (new seed on each restart) |
+
+This means both modes run through the same `SeededRandom` code path — the only difference is that multiplayer seeds are shared, while solo seeds are local.
+
+### Why this matters
+
+- **Fair races** — Every player faces identical obstacles, so skill is the only differentiator
+- **Consistent code path** — Both solo and multiplayer use `SeededRandom`, reducing the chance of mode-specific bugs
+- **No server simulation** — The server only manages connections and broadcasts events, not the game world. This keeps latency low and server costs minimal
+- **Reproducible** — A race can be fully reconstructed from its seed alone, which is useful for replays or verifying scores
+- **Bandwidth-efficient** — Only a single UUID needs to be sent to synchronise the entire obstacle course across all players
