@@ -202,10 +202,9 @@ export class GameScene extends Phaser.Scene {
 		this.debugElapsedMs = 0;
 		this.player.reset();
 		this.spawner.reset();
-		if (!this.externalSeed) {
-			this.seed = crypto.randomUUID();
-		}
-		this.spawner.setSeed(this.seed!);
+		const seed = this.externalSeed ?? crypto.randomUUID();
+		this.seed = seed;
+		this.spawner.setSeed(seed);
 		this.difficulty.reset();
 		if (this.startDifficulty) {
 			this.difficulty.setStartLevel(this.startDifficulty);

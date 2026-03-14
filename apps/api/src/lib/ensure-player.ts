@@ -3,6 +3,14 @@ import type { DrizzleD1Database } from "drizzle-orm/d1";
 import type * as schema from "../db/schema.ts";
 import { player } from "../db/schema.ts";
 
+function isUniqueConstraintViolation(err: unknown): boolean {
+	if (err instanceof Error) {
+		// D1/SQLite: "UNIQUE constraint failed: ..."
+		return err.message.includes("UNIQUE constraint failed");
+	}
+	return false;
+}
+
 /**
  * Gets or creates a player record for the given user.
  * Returns the player row.
@@ -38,9 +46,11 @@ export async function ensurePlayer(db: DrizzleD1Database<typeof schema>, userId:
 
 		return newPlayer;
 	} catch (err) {
-		// Handle race condition: if another request inserted a player record for this user
-		// concurrently, the insert above will fail with a unique constraint violation.
-		// In that case, we simply fetch and return the existing player record.
+		if (!isUniqueConstraintViolation(err)) {
+			throw err;
+		}
+		// Another request inserted a player record for this user concurrently.
+		// Fetch and return the existing record.
 		const raceExisting = await db.select().from(player).where(eq(player.userId, userId)).get();
 		if (raceExisting) {
 			return raceExisting;
