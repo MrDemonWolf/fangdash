@@ -20,7 +20,8 @@
 		"ship": "bun run ship:api && bun run ship:web && bun run ship:party",
 		"ship:api": "bun run --filter @fangdash/api deploy",
 		"ship:web": "bun run --filter @fangdash/web deploy",
-		"ship:party": "bun run --filter @fangdash/party deploy"
+		"ship:party": "bun run --filter @fangdash/party deploy",
+		"promote-admin": "bun run --filter @fangdash/api promote-admin"
 	},
 	"devDependencies": {
 		"@eslint/js": "^10.0.1",
