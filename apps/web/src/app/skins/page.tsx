@@ -2,9 +2,9 @@
 
 import type { SkinDefinition, SkinRarity, SkinUnlockCondition } from "@fangdash/shared";
 import { SKINS } from "@fangdash/shared";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import Image from "next/image";
-import { toast } from "sonner";
+import Link from "next/link";
 import { useSession } from "@/lib/auth-client.ts";
 import { useTRPC } from "@/lib/trpc.ts";
 
@@ -67,15 +67,9 @@ interface GallerySkin extends SkinDefinition {
 function SkinCard({
 	skin,
 	equipped,
-	onEquip,
-	isEquipping,
-	signedIn,
 }: {
 	skin: GallerySkin;
 	equipped: boolean;
-	onEquip: (skinId: string) => void;
-	isEquipping: boolean;
-	signedIn: boolean;
 }) {
 	const rarity = RARITY_COLORS[skin.rarity];
 
@@ -137,21 +131,14 @@ function SkinCard({
 			{/* Description */}
 			<p className="mt-2 text-center text-sm text-gray-400">{skin.description}</p>
 
-			{/* Unlock condition or equip button */}
+			{/* Unlock condition or equipped badge */}
 			<div className="mt-auto pt-4">
 				{skin.unlocked ? (
-					signedIn && !equipped ? (
-						<button
-							type="button"
-							onClick={() => onEquip(skin.id)}
-							disabled={isEquipping}
-							className="rounded-lg bg-[#0FACED] px-5 py-2 text-sm font-bold text-[#091533] transition-colors hover:bg-[#0FACED]/80 disabled:cursor-not-allowed disabled:opacity-50"
-						>
-							{isEquipping ? "Equipping..." : "Equip"}
-						</button>
-					) : equipped ? (
+					equipped ? (
 						<span className="text-sm font-medium text-[#0FACED]">Currently Equipped</span>
-					) : null
+					) : (
+						<span className="text-sm font-medium text-green-400">Unlocked</span>
+					)
 				) : (
 					<p className="text-center text-xs text-gray-500">
 						{unlockConditionText(skin.unlockCondition)}
@@ -170,7 +157,6 @@ export default function SkinsPage() {
 	const signedIn = !!session?.user;
 
 	const trpc = useTRPC();
-	const queryClient = useQueryClient();
 
 	/* ---- Queries (only when signed in) ---- */
 	const galleryQuery = useQuery({
@@ -182,38 +168,6 @@ export default function SkinsPage() {
 		...trpc.skin.getEquippedSkin.queryOptions(),
 		enabled: signedIn,
 	});
-
-	/* ---- Equip mutation with optimistic update ---- */
-	const equippedQueryKey = trpc.skin.getEquippedSkin.queryOptions().queryKey;
-
-	const equipMutation = useMutation(
-		trpc.skin.equipSkin.mutationOptions({
-			onSuccess: () => {
-				queryClient.invalidateQueries({ queryKey: equippedQueryKey });
-				toast.success("Skin equipped!");
-			},
-			onError: () => {
-				toast.error("Failed to equip skin.");
-			},
-		}),
-	);
-
-	function handleEquip(skinId: string) {
-		// Optimistically update before the mutation fires
-		const previousEquipped = queryClient.getQueryData<{ skinId: string }>(equippedQueryKey);
-		queryClient.setQueryData(equippedQueryKey, { skinId });
-		equipMutation.mutate(
-			{ skinId },
-			{
-				onError: () => {
-					// Roll back on error
-					if (previousEquipped) {
-						queryClient.setQueryData(equippedQueryKey, previousEquipped);
-					}
-				},
-			},
-		);
-	}
 
 	/* ---- Derive display data ---- */
 	const equippedSkinId = equippedQuery.data?.skinId ?? "gray-wolf";
@@ -231,9 +185,16 @@ export default function SkinsPage() {
 	return (
 		<main className="mx-auto min-h-screen max-w-6xl px-4 py-12">
 			<h1 className="mb-2 text-center text-4xl font-extrabold text-white">Skins Gallery</h1>
-			<p className="mb-10 text-center text-gray-400">
-				Collect and equip wolf skins by playing the game
+			<p className="mb-4 text-center text-gray-400">
+				Collect wolf skins by playing the game
 			</p>
+			{signedIn && (
+				<p className="mb-10 text-center">
+					<Link href="/settings" className="text-sm text-[#0FACED] hover:underline">
+						Go to Settings to change your equipped skin
+					</Link>
+				</p>
+			)}
 
 			{/* Sign-in notice */}
 			{!signedIn && (
@@ -257,9 +218,6 @@ export default function SkinsPage() {
 							key={skin.id}
 							skin={skin}
 							equipped={signedIn && equippedSkinId === skin.id}
-							onEquip={handleEquip}
-							isEquipping={equipMutation.isPending}
-							signedIn={signedIn}
 						/>
 					))}
 				</div>

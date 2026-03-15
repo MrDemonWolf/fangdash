@@ -5,7 +5,7 @@ import type { DebugCommand, DebugState, DifficultyName, GameState } from "@fangd
 import { getSkinById } from "@fangdash/shared/skins";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { toast } from "sonner";
+
 import { CountdownOverlay } from "@/components/game/CountdownOverlay.tsx";
 import DebugPanel from "@/components/game/DebugPanel.tsx";
 import { GameHUD } from "@/components/game/GameHUD.tsx";
@@ -31,7 +31,6 @@ export default function PlayPage() {
 	const countdownTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 	const goTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 	const startTimeRef = useRef<number>(0);
-	const retrySubmitRef = useRef<(() => void) | null>(null);
 
 	const [gameState, setGameState] = useState<GameState>({
 		score: 0,
@@ -97,20 +96,8 @@ export default function PlayPage() {
 		error: submitError,
 	} = useMutation(
 		trpc.score.submit.mutationOptions({
-			onSuccess: (data) => {
-				toast.success("Score saved!");
-				if (data.levelUp) {
-					toast.success(`Level up! You are now level ${data.newLevel}!`);
-				}
-				if (data.achievementError) {
-					toast.warning("Some achievements may not have been recorded. They'll sync next game.");
-				}
-			},
 			onError: (err) => {
 				console.error("Failed to submit score:", err);
-				toast.error("Failed to save score.", {
-					action: { label: "Retry", onClick: () => retrySubmitRef.current?.() },
-				});
 			},
 		}),
 	);
@@ -377,9 +364,6 @@ export default function PlayPage() {
 			difficulty: selectedDifficultyRef.current as DifficultyName,
 		});
 	}, [finalState, finalElapsedTime, submitScore]);
-
-	// Keep ref in sync so the toast action callback always has the latest version
-	retrySubmitRef.current = handleRetrySubmit;
 
 	const handleSignIn = useCallback(() => {
 		signIn.social({ provider: "twitch", callbackURL: window.location.href });

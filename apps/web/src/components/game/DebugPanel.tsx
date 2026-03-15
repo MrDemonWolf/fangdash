@@ -1,7 +1,9 @@
 "use client";
 
 import type { DebugCommand, DebugState } from "@fangdash/shared";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useTRPC } from "@/lib/trpc.ts";
 
 // ---------------------------------------------------------------------------
 // localStorage persistence helpers
@@ -630,6 +632,22 @@ function CheatsTab({
 	onSendCommand: (cmd: DebugCommand) => void;
 	gameKey: number;
 }) {
+	const trpc = useTRPC();
+	const queryClient = useQueryClient();
+	const [skinUnlockStatus, setSkinUnlockStatus] = useState<string | null>(null);
+	const unlockAllSkins = useMutation(
+		trpc.admin.unlockAllSkins.mutationOptions({
+			onSuccess: (data) => {
+				setSkinUnlockStatus(`Unlocked ${data.unlockedCount} skins!`);
+				queryClient.invalidateQueries({ queryKey: trpc.skin.gallery.queryOptions().queryKey });
+				queryClient.invalidateQueries({ queryKey: trpc.skin.getUnlockedSkins.queryOptions().queryKey });
+			},
+			onError: (err) => {
+				setSkinUnlockStatus(`Error: ${err.message}`);
+			},
+		}),
+	);
+
 	const [localFlags, setLocalFlags] = useState<StoredDebugFlags>(loadDebugFlags);
 	const [difficulty, setDifficulty] = useState(() => loadDebugFlags().difficulty);
 	const prevGameKeyRef = useRef(-1);
@@ -794,6 +812,24 @@ function CheatsTab({
 			>
 				FORCE GAME OVER
 			</button>
+
+			<div className="debug-section-header">{"// SKINS"}</div>
+			<button
+				type="button"
+				className="debug-btn w-full mb-1"
+				onClick={() => {
+					setSkinUnlockStatus(null);
+					unlockAllSkins.mutate();
+				}}
+				disabled={unlockAllSkins.isPending}
+			>
+				{unlockAllSkins.isPending ? "UNLOCKING..." : "UNLOCK ALL SKINS"}
+			</button>
+			{skinUnlockStatus && (
+				<div className="debug-label mb-2" style={{ fontSize: "6px" }}>
+					{skinUnlockStatus}
+				</div>
+			)}
 
 			<div className="debug-section-header">{"// RESET"}</div>
 			<button type="button" className="debug-btn debug-btn w-full" onClick={handleReset}>
