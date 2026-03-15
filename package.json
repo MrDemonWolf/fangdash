@@ -21,8 +21,12 @@
 		"ship:api": "bun run --filter @fangdash/api deploy",
 		"ship:web": "bun run --filter @fangdash/web deploy",
 		"ship:party": "bun run --filter @fangdash/party deploy",
+<<<<<<< HEAD
 		"promote-admin": "bun run --filter @fangdash/api promote-admin",
 		"reconcile-stats": "bun run --filter @fangdash/api reconcile-stats"
+=======
+		"promote-admin": "bun run --filter @fangdash/api promote-admin"
+>>>>>>> origin/main
 	},
 	"devDependencies": {
 		"@eslint/js": "^10.0.1",
