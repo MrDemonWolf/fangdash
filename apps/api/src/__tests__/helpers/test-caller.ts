@@ -13,7 +13,9 @@ interface TestCallerOptions {
 }
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
-export function createTestCaller(opts: TestCallerOptions): ReturnType<(typeof appRouter)["createCaller"]> {
+export function createTestCaller(
+	opts: TestCallerOptions,
+): ReturnType<(typeof appRouter)["createCaller"]> {
 	const ctx: TRPCContext = {
 		// The test DB is better-sqlite3 drizzle, but the router uses DrizzleD1Database.
 		// They share the same query API for our purposes.

@@ -80,9 +80,9 @@ curl -s -H "Client-ID: YOUR_CLIENT_ID" \
 </Callout>
 
 <Callout type="info">
-	`ADMIN_TWITCH_ID` is checked on **every login session**. If you set this variable after a user
-	has already signed in, they will be promoted to admin on their next login. No need to delete
-	the user record.
+	`ADMIN_TWITCH_ID` is checked on **every login session**. If you set this variable after a user has
+	already signed in, they will be promoted to admin on their next login. No need to delete the user
+	record.
 </Callout>
 
 ### Manual Promotion
@@ -104,10 +104,12 @@ bunx wrangler d1 execute fangdash-db --remote \
 ### "Forbidden" when accessing admin panel
 
 - Verify your user has the `admin` or `dev` role. Check with:
+
 ```bash
 bunx wrangler d1 execute fangdash-db --remote \
   --command "SELECT id, name, role FROM user WHERE name = 'YourTwitchUsername';"
 ```
+
 - If the role is `user`, either set `ADMIN_TWITCH_ID` and log in again, or manually promote using the SQL above.
 
 ### Can't ban or unban users
@@ -122,6 +124,7 @@ bunx wrangler d1 execute fangdash-db --remote \
 ### Deleted score didn't update player stats
 
 - Score deletion automatically rolls back the player's aggregate stats (total score, distance, obstacles, games played, XP, and level). If stats look wrong, check the D1 database directly:
+
 ```bash
 bunx wrangler d1 execute fangdash-db --remote \
   --command "SELECT total_score, games_played, total_xp, level FROM player WHERE id = 'PLAYER_ID';"

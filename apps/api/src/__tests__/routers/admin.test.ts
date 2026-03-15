@@ -100,9 +100,9 @@ describe("admin router", () => {
 			const targetUser = createTestUser(db);
 			const caller = createTestCaller({ db, userId, userRole: "user" });
 
-			await expect(
-				caller.admin.banUser({ userId: targetUser, reason: "test" }),
-			).rejects.toThrow("Developer access required");
+			await expect(caller.admin.banUser({ userId: targetUser, reason: "test" })).rejects.toThrow(
+				"Developer access required",
+			);
 		});
 	});
 

@@ -69,9 +69,7 @@ describe("skin router", () => {
 
 		it("should require authentication", async () => {
 			const caller = createTestCaller({ db });
-			await expect(caller.skin.equipSkin({ skinId: "gray-wolf" })).rejects.toThrow(
-				"UNAUTHORIZED",
-			);
+			await expect(caller.skin.equipSkin({ skinId: "gray-wolf" })).rejects.toThrow("UNAUTHORIZED");
 		});
 	});
 

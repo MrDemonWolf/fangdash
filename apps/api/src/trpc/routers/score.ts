@@ -31,14 +31,14 @@ export const scoreRouter = router({
 			const maxAllowedScore =
 				(input.duration / 1000) * SCORE_PER_SECOND + input.obstaclesCleared * SCORE_PER_OBSTACLE;
 			// Reject sessions longer than 30 minutes (1,800,000ms)
-		if (input.duration > 1_800_000) {
-			throw new TRPCError({
-				code: "BAD_REQUEST",
-				message: "Game session exceeds maximum allowed duration",
-			});
-		}
+			if (input.duration > 1_800_000) {
+				throw new TRPCError({
+					code: "BAD_REQUEST",
+					message: "Game session exceeds maximum allowed duration",
+				});
+			}
 
-		if (input.score > maxAllowedScore * 1.02) {
+			if (input.score > maxAllowedScore * 1.02) {
 				throw new TRPCError({
 					code: "BAD_REQUEST",
 					message: "Score exceeds maximum allowed rate",

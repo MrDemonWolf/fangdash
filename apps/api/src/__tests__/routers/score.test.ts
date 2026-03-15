@@ -37,7 +37,8 @@ describe("score router", () => {
 
 			const duration = 10000;
 			const obstaclesCleared = 2;
-			const maxAllowed = (duration / 1000) * SCORE_PER_SECOND + obstaclesCleared * SCORE_PER_OBSTACLE;
+			const maxAllowed =
+				(duration / 1000) * SCORE_PER_SECOND + obstaclesCleared * SCORE_PER_OBSTACLE;
 			const cheatedScore = Math.ceil(maxAllowed * 1.5);
 
 			await expect(
@@ -125,7 +126,8 @@ describe("score router", () => {
 
 			const duration = 10000;
 			const obstaclesCleared = 2;
-			const maxAllowed = (duration / 1000) * SCORE_PER_SECOND + obstaclesCleared * SCORE_PER_OBSTACLE;
+			const maxAllowed =
+				(duration / 1000) * SCORE_PER_SECOND + obstaclesCleared * SCORE_PER_OBSTACLE;
 			const borderlineScore = Math.floor(maxAllowed * 1.02);
 
 			const result = await caller.score.submit({

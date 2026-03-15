@@ -15,6 +15,7 @@ description: Reference guide for common FangDash errors and how to fix them.
 **Cause:** The Twitch OAuth redirect URL doesn't match the configured callback.
 
 **Fix:** In the [Twitch Developer Console](https://dev.twitch.tv/console), ensure the redirect URL is:
+
 - Local: `http://localhost:8787/api/auth/callback/twitch`
 - Production: `https://your-api-domain.workers.dev/api/auth/callback/twitch`
 
@@ -25,6 +26,7 @@ The URL must match **exactly**, including protocol and path.
 **Cause:** One or more required auth environment variables are missing.
 
 **Fix:** Set all required secrets:
+
 ```bash
 bunx wrangler secret put BETTER_AUTH_SECRET --env production
 bunx wrangler secret put TWITCH_CLIENT_ID --env production
@@ -48,11 +50,13 @@ bunx wrangler secret put TWITCH_CLIENT_SECRET --env production
 ### 403 Forbidden
 
 **Cause:** One of:
+
 - Your account is **banned**
 - You're accessing an admin/dev-only endpoint without the right role
 - Your ban hasn't expired yet
 
 **Fix:**
+
 - If banned: contact the server admin or wait for the ban to expire
 - If accessing admin panel: ensure your user has `admin` or `dev` role (see [Admin docs](/docs/getting-started/admin))
 
@@ -67,6 +71,7 @@ bunx wrangler secret put TWITCH_CLIENT_SECRET --env production
 **Cause:** An unexpected server error, usually a database issue or unhandled exception.
 
 **Fix:**
+
 - Check the Cloudflare Workers logs: `bunx wrangler tail` (for real-time) or the Cloudflare dashboard
 - Common causes: missing D1 binding, unmigrated database, network issues
 
@@ -77,6 +82,7 @@ bunx wrangler secret put TWITCH_CLIENT_SECRET --env production
 **Cause:** Migrations haven't been applied to the database.
 
 **Fix:**
+
 ```bash
 bunx wrangler d1 migrations apply fangdash-db --remote
 ```
@@ -100,6 +106,7 @@ bunx wrangler d1 migrations apply fangdash-db --remote
 **Cause:** PartyKit server isn't running or the host URL is wrong.
 
 **Fix:**
+
 - Verify PartyKit is deployed: `bun run ship:party`
 - Check `NEXT_PUBLIC_PARTYKIT_HOST` matches your PartyKit deployment URL
 - The host should look like `fangdash.your-username.partykit.dev` (no `https://` prefix)
@@ -115,6 +122,7 @@ bunx wrangler d1 migrations apply fangdash-db --remote
 **Cause:** Network instability or PartyKit connection timeout.
 
 **Fix:**
+
 - The game handles disconnections gracefully — disconnected players are removed and the host migrates if needed
 - If all players disconnect, the race ends automatically
 - Check browser console for WebSocket error messages
@@ -130,6 +138,7 @@ bunx wrangler d1 migrations apply fangdash-db --remote
 ### Type errors after pulling changes
 
 **Fix:**
+
 ```bash
 bun install
 bun run typecheck
@@ -140,6 +149,7 @@ bun run typecheck
 **Cause:** Build artifacts are stale.
 
 **Fix:**
+
 ```bash
 bun run clean
 bun run build
@@ -151,6 +161,7 @@ bun run ship
 **Cause:** Missing or expired `PARTYKIT_TOKEN`.
 
 **Fix:**
+
 ```bash
 export PARTYKIT_TOKEN=your-token-here
 bun run ship:party

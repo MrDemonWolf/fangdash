@@ -116,7 +116,10 @@ CREATE TABLE IF NOT EXISTS race_history (
 CREATE INDEX IF NOT EXISTS race_history_player_id_idx ON race_history(player_id);
 `;
 
-export function createTestDb(): { db: ReturnType<typeof drizzle>; sqlite: InstanceType<typeof Database> } {
+export function createTestDb(): {
+	db: ReturnType<typeof drizzle>;
+	sqlite: InstanceType<typeof Database>;
+} {
 	const sqlite = new Database(":memory:");
 	sqlite.exec(CREATE_TABLES_SQL);
 	const db = drizzle(sqlite, { schema });

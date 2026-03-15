@@ -12,16 +12,16 @@ description: Managing the FangDash D1 database — migrations, backups, and trou
 
 The database stores:
 
-| Table | Purpose |
-| --- | --- |
-| `user` | Accounts from Better Auth (Twitch OAuth) |
-| `session` | Active login sessions |
-| `account` | OAuth provider links |
-| `player` | Game stats, XP, level, equipped skin |
-| `score` | Individual game scores |
-| `player_skin` | Unlocked skins per player |
-| `player_achievement` | Unlocked achievements per player |
-| `race_history` | Multiplayer race results |
+| Table                | Purpose                                  |
+| -------------------- | ---------------------------------------- |
+| `user`               | Accounts from Better Auth (Twitch OAuth) |
+| `session`            | Active login sessions                    |
+| `account`            | OAuth provider links                     |
+| `player`             | Game stats, XP, level, equipped skin     |
+| `score`              | Individual game scores                   |
+| `player_skin`        | Unlocked skins per player                |
+| `player_achievement` | Unlocked achievements per player         |
+| `race_history`       | Multiplayer race results                 |
 
 The schema is defined in `apps/api/src/db/schema.ts`.
 
@@ -79,8 +79,8 @@ bunx wrangler d1 execute fangdash-db --local --file backup.sql
 ```
 
 <Callout type="warn">
-	Always test migrations locally before applying to production. There is no automatic rollback
-	for D1 migrations.
+	Always test migrations locally before applying to production. There is no automatic rollback for
+	D1 migrations.
 </Callout>
 
 ## Troubleshooting
@@ -88,6 +88,7 @@ bunx wrangler d1 execute fangdash-db --local --file backup.sql
 ### "table not found" errors
 
 Migrations haven't been applied. Run:
+
 ```bash
 bunx wrangler d1 migrations apply fangdash-db --remote
 ```
@@ -95,6 +96,7 @@ bunx wrangler d1 migrations apply fangdash-db --remote
 ### Migration fails with "already exists"
 
 The migration was partially applied. Check which migrations have run:
+
 ```bash
 bunx wrangler d1 migrations list fangdash-db --remote
 ```
@@ -104,12 +106,14 @@ If a migration is stuck, you may need to manually mark it as applied or fix the 
 ### Schema drift between local and remote
 
 If your local database has different tables than remote:
+
 1. Drop and recreate local: delete `.wrangler/state/` in the api directory
 2. Re-apply all migrations: `bunx wrangler d1 migrations apply fangdash-db --local`
 
 ### UNIQUE constraint violations
 
 These usually mean a race condition in player creation (handled automatically) or duplicate data. Check the specific table and constraint in the error message:
+
 ```bash
 bunx wrangler d1 execute fangdash-db --remote \
   --command "SELECT * FROM player WHERE user_id = 'USER_ID';"
@@ -118,6 +122,7 @@ bunx wrangler d1 execute fangdash-db --remote \
 ### Database is locked / timeout errors
 
 D1 has concurrency limits. If you see timeout errors under load:
+
 - Ensure you're not running expensive queries (full table scans)
 - Check that indexes exist for frequently queried columns
 - Consider batching writes where possible (FangDash already does this for race results)
