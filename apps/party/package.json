@@ -6,6 +6,7 @@
 		"dev": "partykit dev",
 		"deploy": "partykit deploy",
 		"typecheck": "tsc --noEmit",
+		"test": "vitest run",
 		"clean": "rm -rf dist"
 	},
 	"dependencies": {
@@ -14,6 +15,7 @@
 	},
 	"devDependencies": {
 		"partykit": "^0.0.115",
-		"typescript": "^5.9.3"
+		"typescript": "^5.9.3",
+		"vitest": "^4.1.0"
 	}
 }
