@@ -1,0 +1,128 @@
+---
+title: Database
+description: Managing the FangDash D1 database — migrations, backups, and troubleshooting.
+---
+
+<Callout type="info">
+	FangDash uses **Cloudflare D1** (SQLite) for all persistent data. The ORM is **Drizzle**, and
+	migrations are SQL files in `apps/api/drizzle/`.
+</Callout>
+
+## Overview
+
+The database stores:
+
+| Table                | Purpose                                  |
+| -------------------- | ---------------------------------------- |
+| `user`               | Accounts from Better Auth (Twitch OAuth) |
+| `session`            | Active login sessions                    |
+| `account`            | OAuth provider links                     |
+| `player`             | Game stats, XP, level, equipped skin     |
+| `score`              | Individual game scores                   |
+| `player_skin`        | Unlocked skins per player                |
+| `player_achievement` | Unlocked achievements per player         |
+| `race_history`       | Multiplayer race results                 |
+
+The schema is defined in `apps/api/src/db/schema.ts`.
+
+## Local vs Remote
+
+D1 has two modes:
+
+- **Local** — an SQLite file on your machine, used during `bun run dev`
+- **Remote** — the production D1 database on Cloudflare
+
+All migration commands accept `--local` or `--remote` to target the right database.
+
+## Running Migrations
+
+### Apply existing migrations
+
+```bash
+# Local development
+bunx wrangler d1 migrations apply fangdash-db --local
+
+# Production
+bunx wrangler d1 migrations apply fangdash-db --remote
+```
+
+### Generate a new migration from schema changes
+
+After modifying `apps/api/src/db/schema.ts`:
+
+```bash
+cd apps/api
+bunx drizzle-kit generate
+```
+
+This creates a new SQL migration file in `apps/api/drizzle/`. Review it, then apply:
+
+```bash
+bunx wrangler d1 migrations apply fangdash-db --local   # test locally first
+bunx wrangler d1 migrations apply fangdash-db --remote  # then deploy
+```
+
+## Backup and Restore
+
+### Export (backup)
+
+```bash
+# Export the remote database to a SQL file
+bunx wrangler d1 export fangdash-db --remote --output backup.sql
+```
+
+### Restore
+
+```bash
+# Import a SQL backup into the local database
+bunx wrangler d1 execute fangdash-db --local --file backup.sql
+```
+
+<Callout type="warn">
+	Always test migrations locally before applying to production. There is no automatic rollback for
+	D1 migrations.
+</Callout>
+
+## Troubleshooting
+
+### "table not found" errors
+
+Migrations haven't been applied. Run:
+
+```bash
+bunx wrangler d1 migrations apply fangdash-db --remote
+```
+
+### Migration fails with "already exists"
+
+The migration was partially applied. Check which migrations have run:
+
+```bash
+bunx wrangler d1 migrations list fangdash-db --remote
+```
+
+If a migration is stuck, you may need to manually mark it as applied or fix the conflicting state in the database.
+
+### Schema drift between local and remote
+
+If your local database has different tables than remote:
+
+1. Drop and recreate local: delete `.wrangler/state/` in the api directory
+2. Re-apply all migrations: `bunx wrangler d1 migrations apply fangdash-db --local`
+
+### UNIQUE constraint violations
+
+These usually mean a race condition in player creation (handled automatically) or duplicate data. Check the specific table and constraint in the error message:
+
+```bash
+bunx wrangler d1 execute fangdash-db --remote \
+  --command "SELECT * FROM player WHERE user_id = 'USER_ID';"
+```
+
+### Database is locked / timeout errors
+
+D1 has concurrency limits. If you see timeout errors under load:
+
+- Ensure you're not running expensive queries (full table scans)
+- Check that indexes exist for frequently queried columns
+- Consider batching writes where possible (FangDash already does this for race results)

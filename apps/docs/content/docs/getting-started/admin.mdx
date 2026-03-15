@@ -79,10 +79,10 @@ curl -s -H "Client-ID: YOUR_CLIENT_ID" \
 
 </Callout>
 
-<Callout type="warn">
-	`ADMIN_TWITCH_ID` only takes effect on **first login**. If you already signed in before setting
-	this variable, your user record already exists without the admin role. You'll need to either
-	delete the user row from D1 and sign in again, or manually promote yourself (see below).
+<Callout type="info">
+	`ADMIN_TWITCH_ID` is checked on **every login session**. If you set this variable after a user has
+	already signed in, they will be promoted to admin on their next login. No need to delete the user
+	record.
 </Callout>
 
 ### Manual Promotion
@@ -97,4 +97,35 @@ bunx wrangler d1 execute fangdash-db --local \
 # Production
 bunx wrangler d1 execute fangdash-db --remote \
   --command "UPDATE user SET role = 'admin' WHERE name = 'YourTwitchUsername';"
+```
+
+## Troubleshooting
+
+### "Forbidden" when accessing admin panel
+
+- Verify your user has the `admin` or `dev` role. Check with:
+
+```bash
+bunx wrangler d1 execute fangdash-db --remote \
+  --command "SELECT id, name, role FROM user WHERE name = 'YourTwitchUsername';"
+```
+
+- If the role is `user`, either set `ADMIN_TWITCH_ID` and log in again, or manually promote using the SQL above.
+
+### Can't ban or unban users
+
+- The ban/unban actions require Better Auth to be fully configured. If you see "Auth not configured", ensure all required secrets (`BETTER_AUTH_SECRET`, `TWITCH_CLIENT_ID`, `TWITCH_CLIENT_SECRET`) are set.
+
+### Banned user can still play
+
+- After banning a user, their active sessions continue until they expire (up to 30 minutes with cookie caching). The ban is enforced on the next API request after session refresh.
+- All protected API routes (score submission, race results, skin equipping) check ban status and return `FORBIDDEN` for banned users.
+
+### Deleted score didn't update player stats
+
+- Score deletion automatically rolls back the player's aggregate stats (total score, distance, obstacles, games played, XP, and level). If stats look wrong, check the D1 database directly:
+
+```bash
+bunx wrangler d1 execute fangdash-db --remote \
+  --command "SELECT total_score, games_played, total_xp, level FROM player WHERE id = 'PLAYER_ID';"
 ```

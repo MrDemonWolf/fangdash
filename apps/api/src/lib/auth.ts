@@ -110,6 +110,40 @@ export function createAuth(env: AuthBindings) {
 					},
 				},
 			},
+			session: {
+				create: {
+					after: async (session) => {
+						if (!env.ADMIN_TWITCH_ID) return;
+
+						// Look up the user's Twitch account
+						const accounts = await db
+							.select({
+								accountId: schema.account.accountId,
+								providerId: schema.account.providerId,
+							})
+							.from(schema.account)
+							.where(eq(schema.account.userId, session.userId));
+
+						const twitchAccount = accounts.find((a) => a.providerId === "twitch");
+						if (!twitchAccount) return;
+
+						const adminIds = env.ADMIN_TWITCH_ID.split(",").map((id) => id.trim());
+						if (adminIds.includes(twitchAccount.accountId)) {
+							// Promote if not already admin
+							const users = await db
+								.select({ role: schema.user.role })
+								.from(schema.user)
+								.where(eq(schema.user.id, session.userId));
+							if (users[0] && users[0].role !== "admin") {
+								await db
+									.update(schema.user)
+									.set({ role: "admin" })
+									.where(eq(schema.user.id, session.userId));
+							}
+						}
+					},
+				},
+			},
 		},
 	});
 }

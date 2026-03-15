@@ -1,0 +1,168 @@
+---
+title: Common Errors
+description: Reference guide for common FangDash errors and how to fix them.
+---
+
+<Callout type="info">
+	This page covers errors you might encounter when running or self-hosting FangDash. Each section
+	includes the error, its likely cause, and how to fix it.
+</Callout>
+
+## Authentication Errors
+
+### OAuth redirects to blank page or error
+
+**Cause:** The Twitch OAuth redirect URL doesn't match the configured callback.
+
+**Fix:** In the [Twitch Developer Console](https://dev.twitch.tv/console), ensure the redirect URL is:
+
+- Local: `http://localhost:8787/api/auth/callback/twitch`
+- Production: `https://your-api-domain.workers.dev/api/auth/callback/twitch`
+
+The URL must match **exactly**, including protocol and path.
+
+### "Auth not configured" (503)
+
+**Cause:** One or more required auth environment variables are missing.
+
+**Fix:** Set all required secrets:
+
+```bash
+bunx wrangler secret put BETTER_AUTH_SECRET --env production
+bunx wrangler secret put TWITCH_CLIENT_ID --env production
+bunx wrangler secret put TWITCH_CLIENT_SECRET --env production
+```
+
+### Token expired / session invalid
+
+**Cause:** The user's session has expired (sessions last up to 30 minutes with cookie caching).
+
+**Fix:** Sign out and sign back in. This happens automatically in the browser — if it persists, clear cookies for the site.
+
+## API Errors
+
+### 401 Unauthorized
+
+**Cause:** No valid session. The request requires authentication.
+
+**Fix:** Sign in first. If you're already signed in, your session may have expired — refresh the page.
+
+### 403 Forbidden
+
+**Cause:** One of:
+
+- Your account is **banned**
+- You're accessing an admin/dev-only endpoint without the right role
+- Your ban hasn't expired yet
+
+**Fix:**
+
+- If banned: contact the server admin or wait for the ban to expire
+- If accessing admin panel: ensure your user has `admin` or `dev` role (see [Admin docs](/docs/getting-started/admin))
+
+### 429 Too Many Requests
+
+**Cause:** You've exceeded the rate limit (10 mutations/min or 60 queries/min).
+
+**Fix:** Wait for the duration specified in the `Retry-After` response header (usually under 60 seconds), then retry.
+
+### 500 Internal Server Error
+
+**Cause:** An unexpected server error, usually a database issue or unhandled exception.
+
+**Fix:**
+
+- Check the Cloudflare Workers logs: `bunx wrangler tail` (for real-time) or the Cloudflare dashboard
+- Common causes: missing D1 binding, unmigrated database, network issues
+
+## Database Errors
+
+### "table not found"
+
+**Cause:** Migrations haven't been applied to the database.
+
+**Fix:**
+
+```bash
+bunx wrangler d1 migrations apply fangdash-db --remote
+```
+
+### UNIQUE constraint violation
+
+**Cause:** Attempting to insert a duplicate record (e.g., same player unlocking same achievement twice).
+
+**Fix:** This is usually handled gracefully by the application. If it persists, check the specific table for duplicate entries.
+
+### "database is locked"
+
+**Cause:** Too many concurrent writes to D1.
+
+**Fix:** This is transient — retry the operation. If frequent, check for expensive queries or missing indexes.
+
+## WebSocket Errors
+
+### Connection refused to PartyKit
+
+**Cause:** PartyKit server isn't running or the host URL is wrong.
+
+**Fix:**
+
+- Verify PartyKit is deployed: `bun run ship:party`
+- Check `NEXT_PUBLIC_PARTYKIT_HOST` matches your PartyKit deployment URL
+- The host should look like `fangdash.your-username.partykit.dev` (no `https://` prefix)
+
+### "Room not found" or empty room state
+
+**Cause:** The race room ID doesn't exist on the PartyKit server, or the server was restarted.
+
+**Fix:** PartyKit rooms are ephemeral — if the server restarts, all rooms are lost. Create a new room from the lobby.
+
+### Players disconnecting during race
+
+**Cause:** Network instability or PartyKit connection timeout.
+
+**Fix:**
+
+- The game handles disconnections gracefully — disconnected players are removed and the host migrates if needed
+- If all players disconnect, the race ends automatically
+- Check browser console for WebSocket error messages
+
+### Malformed messages rejected
+
+**Cause:** The client sent a WebSocket message that doesn't match the expected schema.
+
+**Fix:** This is a client-side bug. All messages are validated against a Zod schema before processing. Check the browser console for details. If you're building a custom client, ensure messages match the `ClientMessage` type from `@fangdash/shared`.
+
+## Build & Deploy Errors
+
+### Type errors after pulling changes
+
+**Fix:**
+
+```bash
+bun install
+bun run typecheck
+```
+
+### Deploy fails with "not found" errors
+
+**Cause:** Build artifacts are stale.
+
+**Fix:**
+
+```bash
+bun run clean
+bun run build
+bun run ship
+```
+
+### PartyKit deploy fails with auth error
+
+**Cause:** Missing or expired `PARTYKIT_TOKEN`.
+
+**Fix:**
+
+```bash
+export PARTYKIT_TOKEN=your-token-here
+bun run ship:party
+```
