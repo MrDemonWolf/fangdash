@@ -13,7 +13,8 @@
 		"typecheck": "tsc --noEmit",
 		"test": "vitest run",
 		"clean": "rm -rf dist .wrangler",
-		"promote-admin": "bash scripts/promote-admin.sh"
+		"promote-admin": "bash scripts/promote-admin.sh",
+		"reconcile-stats": "bash scripts/reconcile-stats.sh"
 	},
 	"dependencies": {
 		"@fangdash/shared": "workspace:*",
