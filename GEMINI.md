@@ -4,7 +4,7 @@ This document provides essential context for Gemini CLI when working in the Fang
 
 ## Project Overview
 
-FangDash is a Turborepo monorepo using Bun workspaces. It features real-time racing, unlockable skins, achievements, and Twitch integration.
+FangDash is a Turborepo monorepo using Bun workspaces. It features real-time racing, unlockable skins, achievements, a progression system (XP and levels), and Twitch integration.
 
 ### Architecture & Tech Stack
 
@@ -13,15 +13,16 @@ FangDash is a Turborepo monorepo using Bun workspaces. It features real-time rac
 - **API (`apps/api`):** Hono on Cloudflare Workers, tRPC v11, Better Auth (Twitch OAuth), Drizzle ORM.
 - **Multiplayer (`apps/party`):** PartyKit (WebSockets) for real-time race synchronization.
 - **Documentation (`apps/docs`):** Fumadocs + Next.js.
-- **Game Engine (`packages/game`):** Phaser 3, integrated into the Next.js frontend.
-- **Shared Logic (`packages/shared`):** Game constants, domain types, seeded PRNG for deterministic racing.
+- **Game Engine (`packages/game`):** Phaser 3, integrated into the Next.js frontend via `GameCanvas`.
+- **Shared Logic (`packages/shared`):** Game constants, domain types, seeded PRNG for deterministic racing, and progression logic.
 - **Database:** Cloudflare D1 (SQLite) managed via Drizzle.
 
 ### Data Flow
 
-1. **Web → tRPC → API:** Type-safe requests for scores, skins, and auth.
-2. **Web → PartySocket → PartyKit:** Low-latency WebSocket communication for races.
-3. **API → Drizzle → D1:** Persistent storage for users, players, and achievements.
+1. **Web → tRPC → API:** Type-safe requests for scores, skins, progression, and auth.
+2. **Web → PartySocket → PartyKit:** Low-latency WebSocket communication for real-time races.
+3. **API → Drizzle → D1:** Persistent storage for users, players, scores, and achievements.
+4. **Shared → (Web/API/Party/Game):** Unified constants and logic ensuring consistency across all services.
 
 ## Building and Running
 
@@ -36,15 +37,19 @@ FangDash is a Turborepo monorepo using Bun workspaces. It features real-time rac
 - `bun dev`: Starts all applications in development mode.
 - `bun build`: Builds all packages and apps using Turbo.
 - `bun test`: Runs Vitest across the monorepo.
+- `bun test:coverage`: Runs tests with coverage reports.
 - `bun lint`: Runs ESLint on the entire repository.
-- `bun typecheck`: Runs `tsc` across all workspaces.
+- `bun lint:fix`: Automatically fixes ESLint issues where possible.
 - `bun format`: Formats code using Prettier.
+- `bun format:check`: Verifies code formatting.
+- `bun typecheck`: Runs `tsc` across all workspaces.
 - `bun clean`: Removes all build artifacts (`.next`, `.turbo`, `dist`, etc.).
 
 ### Database Operations (from `apps/api`)
 
 - `bunx wrangler d1 migrations apply fangdash-db --local`: Apply local migrations.
 - `bunx drizzle-kit generate`: Generate new migrations from schema changes in `src/db/schema.ts`.
+- `bunx drizzle-kit studio`: Open the Drizzle Studio database explorer.
 
 ## Development Conventions
 
@@ -57,16 +62,17 @@ FangDash is a Turborepo monorepo using Bun workspaces. It features real-time rac
 
 ### Workspace Packages
 
-- `@fangdash/api`: API service and database schema.
-- `@fangdash/web`: Main game frontend.
-- `@fangdash/party`: WebSocket race server.
+- `@fangdash/api`: API service, database schema, and tRPC router.
+- `@fangdash/web`: Main game frontend, UI components, and client-side logic.
+- `@fangdash/party`: WebSocket race server using PartyKit.
 - `@fangdash/game`: Phaser 3 implementation (entities, scenes, systems).
-- `@fangdash/shared`: Constants and types shared between all apps.
+- `@fangdash/shared`: Constants, types, and logic shared between all apps (e.g., physics, levels).
 
 ### Key Files to Reference
 
 - `apps/api/src/db/schema.ts`: Database structure.
 - `packages/shared/src/constants.ts`: Physics, speeds, and game tuning.
+- `packages/shared/src/levels.ts`: XP and level calculation logic.
 - `apps/api/src/trpc/router.ts`: API endpoints.
 - `packages/game/src/GameCanvas.ts`: Entry point for Phaser integration.
 - `CLAUDE.md`: Additional specific guidance for LLM interactions.
