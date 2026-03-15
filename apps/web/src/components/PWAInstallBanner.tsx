@@ -19,6 +19,10 @@ export function PWAInstallBanner() {
 		if (typeof window === "undefined") return;
 		if (localStorage.getItem(STORAGE_KEY) === "true") return;
 
+		// Only show on mobile/tablet devices
+		const isMobileOrTablet = /android|iphone|ipad|ipod|mobile|tablet/i.test(navigator.userAgent);
+		if (!isMobileOrTablet) return;
+
 		// Detect iOS (no beforeinstallprompt support)
 		const ua = navigator.userAgent;
 		const ios =
