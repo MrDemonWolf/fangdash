@@ -70,14 +70,7 @@ bunx wrangler secret put TWITCH_CLIENT_SECRET --env production
 	`BETTER_AUTH_SECRET`.
 </Callout>
 
-4. Optionally, auto-promote specific Twitch users to admin on first login:
-
-```bash
-bunx wrangler secret put ADMIN_TWITCH_ID --env production
-# Value: comma-separated Twitch numeric user IDs, e.g. 123456789,987654321
-```
-
-5. Deploy:
+4. Deploy:
 
 ```bash
 bun run ship:api
@@ -153,7 +146,6 @@ This runs all three deploy commands in sequence.
 | `BETTER_AUTH_SECRET`   | Secret    | `wrangler secret put`            | Long random string for signing sessions             |
 | `TWITCH_CLIENT_ID`     | Secret    | `wrangler secret put`            | Twitch OAuth app client ID                          |
 | `TWITCH_CLIENT_SECRET` | Secret    | `wrangler secret put`            | Twitch OAuth app client secret                      |
-| `ADMIN_TWITCH_ID`      | Secret    | `wrangler secret put` (optional) | Comma-separated Twitch user IDs to auto-admin       |
 | `BETTER_AUTH_URL`      | Plaintext | `wrangler.toml`                  | Public URL of the API worker                        |
 | `WEB_URL`              | Plaintext | `wrangler.toml`                  | Public URL of the web worker (for CORS + redirects) |
 | `ENVIRONMENT`          | Plaintext | `wrangler.toml`                  | `"development"` or `"production"`                   |
@@ -202,7 +194,7 @@ cp apps/web/.env.example apps/web/.env.local
 | D1 "table not found"            | Database migrations not applied             | Run `bunx wrangler d1 migrations apply fangdash-db --remote`                                                                |
 | PartyKit connection refused     | Wrong host or missing token                 | Verify `NEXT_PUBLIC_PARTYKIT_HOST` matches your PartyKit deployment URL and `PARTYKIT_TOKEN` is set                         |
 | CORS errors in browser console  | `WEB_URL` mismatch                          | Update `WEB_URL` in `wrangler.toml` `[env.production.vars]` to match your actual web domain exactly                         |
-| Admin panel shows "Forbidden"   | User role is not `admin` or `dev`           | Set `ADMIN_TWITCH_ID` secret before first login, or manually promote via D1 (see [Admin docs](/docs/getting-started/admin)) |
+| Admin panel shows "Forbidden"   | User role is not `admin` or `dev`           | Run `bun run promote-admin YourUsername --remote` (see [Admin docs](/docs/getting-started/admin)) |
 | Multiplayer rooms won't start   | PartyKit not deployed                       | Run `bun run ship:party` and verify the deployment URL                                                                      |
 | Score submission fails silently | Rate limit hit (429)                        | Wait 60 seconds and retry, or check the response for a `429` status and `Retry-After` header                                |
 | "FORBIDDEN" on all actions      | Account is banned                           | Check the user's ban status in the admin panel or D1 database                                                               |

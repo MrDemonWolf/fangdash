@@ -10,8 +10,8 @@ description: Managing players, scores, and races from the FangDash admin panel.
 
 <Callout type="info">
 	**TL;DR** - Dashboard with player count, games played, total meters, and race stats - Manage
-	players (search, ban/unban) and scores (flag suspicious, delete) - Set `ADMIN_TWITCH_ID` env var
-	to auto-promote yourself on first login
+	players (search, ban/unban) and scores (flag suspicious, delete) - Use the `promote-admin` CLI
+	script to grant admin access by Twitch username
 </Callout>
 
 The admin panel lives at [/admin](/admin) and gives you full control over your FangDash instance.
@@ -53,51 +53,36 @@ Race history grouped by race, showing all participants and their placements. Top
 
 ## Getting Admin Access
 
-### Auto-Promotion (Recommended)
-
-Set the `ADMIN_TWITCH_ID` environment variable to a comma-separated list of Twitch **numeric** user IDs. Those users will be automatically promoted to `admin` on their **first login**.
+Use the `promote-admin` CLI script to grant roles by **Twitch username** (case-insensitive). The user must have logged in at least once.
 
 ```bash
-# For local development
-# Add to apps/api/.dev.vars:
-ADMIN_TWITCH_ID=123456789,987654321
+# Local (default) — single user
+bun run promote-admin MrDemonWolf
 
-# For production (Cloudflare Workers)
-bunx wrangler secret put ADMIN_TWITCH_ID --env production
-```
-
-<Callout type="warn">
-	Use your **numeric Twitch user ID** (e.g. `123456789`), **not** your username. To find it, use a
-	lookup tool like [streamscharts.com/tools/convert-username](https://streamscharts.com/tools/convert-username)
-	or query the Twitch API directly:
-
-```bash
-curl -s -H "Client-ID: YOUR_CLIENT_ID" \
-  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
-  "https://api.twitch.tv/helix/users?login=YOUR_USERNAME" | jq '.data[0].id'
-```
-
-</Callout>
-
-<Callout type="info">
-	`ADMIN_TWITCH_ID` is checked on **every login session**. If you set this variable after a user has
-	already signed in, they will be promoted to admin on their next login. No need to delete the user
-	record.
-</Callout>
-
-### Manual Promotion
-
-If you need to grant admin access to a user who has already signed in, you can update the role directly in the D1 database:
-
-```bash
-# Local development
-bunx wrangler d1 execute fangdash-db --local \
-  --command "UPDATE user SET role = 'admin' WHERE name = 'YourTwitchUsername';"
+# Multiple users at once
+bun run promote-admin MrDemonWolf SomeOtherUser
 
 # Production
-bunx wrangler d1 execute fangdash-db --remote \
-  --command "UPDATE user SET role = 'admin' WHERE name = 'YourTwitchUsername';"
+bun run promote-admin MrDemonWolf --remote
+
+# Set a different role (e.g. dev)
+bun run promote-admin MrDemonWolf --role dev
 ```
+
+<Callout type="info">
+	You can also run the script directly from the API workspace:
+	`bun run --filter @fangdash/api promote-admin MrDemonWolf`
+</Callout>
+
+The script looks up users by their `name` column in the database and prints success/failure for each username.
+
+## API Endpoints
+
+The admin tRPC router includes the following mutations and queries used by the admin panel:
+
+| Endpoint           | Type     | Description                                          |
+| ------------------ | -------- | ---------------------------------------------------- |
+| `unlockAllSkins`   | Mutation | Unlocks all skins for the authenticated player (dev/admin only). Also accessible from the debug panel's CHEATS tab. |
 
 ## Troubleshooting
 
@@ -110,7 +95,7 @@ bunx wrangler d1 execute fangdash-db --remote \
   --command "SELECT id, name, role FROM user WHERE name = 'YourTwitchUsername';"
 ```
 
-- If the role is `user`, either set `ADMIN_TWITCH_ID` and log in again, or manually promote using the SQL above.
+- If the role is `user`, run `bun run promote-admin YourTwitchUsername` (add `--remote` for production).
 
 ### Can't ban or unban users
 
