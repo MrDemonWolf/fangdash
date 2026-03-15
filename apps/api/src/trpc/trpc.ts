@@ -15,7 +15,7 @@ export const protectedProcedure = t.procedure.use(({ ctx, next }) => {
 	}
 
 	// Ban enforcement — blocks all protected routes
-	if (ctx.user.banned) {
+	if (ctx.user.banned === true) {
 		const banExpires = ctx.user.banExpires ? new Date(ctx.user.banExpires) : null;
 		const isPermaBan = !banExpires;
 		const isStillBanned = isPermaBan || banExpires > new Date();

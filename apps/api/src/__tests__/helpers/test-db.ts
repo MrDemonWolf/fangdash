@@ -206,4 +206,37 @@ export function createTestPlayer(
 	return id;
 }
 
+export function createTestScore(
+	db: ReturnType<typeof createTestDb>["db"],
+	playerId: string,
+	overrides: Partial<{
+		id: string;
+		score: number;
+		distance: number;
+		obstaclesCleared: number;
+		duration: number;
+		difficulty: string;
+		longestCleanRun: number;
+		seed: string;
+		createdAt: Date;
+	}> = {},
+) {
+	const id = overrides.id ?? crypto.randomUUID();
+	db.insert(schema.score)
+		.values({
+			id,
+			playerId,
+			score: overrides.score ?? 100,
+			distance: overrides.distance ?? 500,
+			obstaclesCleared: overrides.obstaclesCleared ?? 5,
+			duration: overrides.duration ?? 30000,
+			difficulty: overrides.difficulty ?? "easy",
+			longestCleanRun: overrides.longestCleanRun ?? 0,
+			seed: overrides.seed ?? "test-seed",
+			createdAt: overrides.createdAt ?? new Date(),
+		})
+		.run();
+	return id;
+}
+
 export type TestDb = ReturnType<typeof createTestDb>["db"];

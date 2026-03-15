@@ -38,7 +38,7 @@ export const scoreRouter = router({
 				});
 			}
 
-			if (input.score > maxAllowedScore * 1.02) {
+			if (input.score > maxAllowedScore * 1.05 + 10) {
 				throw new TRPCError({
 					code: "BAD_REQUEST",
 					message: "Score exceeds maximum allowed rate",
