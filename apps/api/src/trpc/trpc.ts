@@ -13,6 +13,23 @@ export const protectedProcedure = t.procedure.use(({ ctx, next }) => {
 	if (!(ctx.session && ctx.user)) {
 		throw new TRPCError({ code: "UNAUTHORIZED" });
 	}
+
+	// Ban enforcement — blocks all protected routes
+	if (ctx.user.banned) {
+		const banExpires = ctx.user.banExpires ? new Date(ctx.user.banExpires) : null;
+		const isPermaBan = !banExpires;
+		const isStillBanned = isPermaBan || banExpires > new Date();
+
+		if (isStillBanned) {
+			throw new TRPCError({
+				code: "FORBIDDEN",
+				message: ctx.user.banReason
+					? `You are banned: ${ctx.user.banReason}`
+					: "Your account has been banned",
+			});
+		}
+	}
+
 	return next({
 		ctx: {
 			...ctx,

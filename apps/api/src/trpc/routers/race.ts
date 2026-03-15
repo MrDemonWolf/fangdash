@@ -1,6 +1,6 @@
 import { TRPCError } from "@trpc/server";
 import { getLevelFromXp, getPlacementBonus } from "@fangdash/shared";
-import { count, desc, eq, inArray, sql } from "drizzle-orm";
+import { desc, eq, inArray, sql } from "drizzle-orm";
 import type { BatchItem } from "drizzle-orm/batch";
 import { z } from "zod";
 import { player, raceHistory } from "../../db/schema.ts";
@@ -28,12 +28,8 @@ export const raceRouter = router({
 			const now = new Date();
 			const raceHistoryId = crypto.randomUUID();
 
-			// Insert with provisional placement
-			const countRows = await ctx.db
-				.select({ total: count() })
-				.from(raceHistory)
-				.where(eq(raceHistory.raceId, input.raceId));
-			const provisionalPlacement = (countRows[0]?.total ?? 0) + 1;
+			// Insert with placeholder placement (recomputed below)
+			const provisionalPlacement = 0;
 
 			await ctx.db.insert(raceHistory).values({
 				id: raceHistoryId,

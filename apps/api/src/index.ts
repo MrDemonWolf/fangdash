@@ -2,6 +2,7 @@ import { trpcServer } from "@hono/trpc-server";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { createAuth } from "./lib/auth.ts";
+import { rateLimitMiddleware } from "./middleware/rate-limit.ts";
 import { createContext } from "./trpc/context.ts";
 import { appRouter } from "./trpc/router.ts";
 
@@ -29,6 +30,9 @@ app.use(
 		credentials: true,
 	}),
 );
+
+// Rate limiting
+app.use("*", rateLimitMiddleware);
 
 // Better Auth handler
 app.on(["POST", "GET"], "/api/auth/**", async (c) => {

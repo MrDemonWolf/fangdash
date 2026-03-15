@@ -1,14 +1,15 @@
 import type {
-	ClientMessage,
 	RacePlayer,
 	RaceResult,
 	RaceRoom,
 	ServerMessage,
+	ValidatedClientMessage,
 } from "@fangdash/shared";
 import {
 	MAX_PLAYERS_PER_RACE,
 	MIN_PLAYERS_TO_START,
 	RACE_COUNTDOWN_SECONDS,
+	clientMessageSchema,
 } from "@fangdash/shared";
 import type * as Party from "partykit/server";
 
@@ -31,12 +32,18 @@ export default class RaceServer implements Party.Server {
 	}
 
 	onMessage(message: string, sender: Party.Connection) {
-		let msg: ClientMessage;
+		let parsed: unknown;
 		try {
-			msg = JSON.parse(message);
+			parsed = JSON.parse(message);
 		} catch {
 			return;
 		}
+
+		const result = clientMessageSchema.safeParse(parsed);
+		if (!result.success) {
+			return;
+		}
+		const msg: ValidatedClientMessage = result.data;
 
 		switch (msg.type) {
 			case "join":
