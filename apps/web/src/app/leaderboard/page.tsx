@@ -3,6 +3,7 @@
 import type { DifficultyName } from "@fangdash/shared";
 import { DIFFICULTY_LEVELS } from "@fangdash/shared";
 import { useQuery } from "@tanstack/react-query";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useSession } from "@/lib/auth-client.ts";
@@ -245,7 +246,13 @@ export default function LeaderboardPage() {
 										</td>
 										<td className="px-4 py-3 font-medium text-white">
 											<span className="inline-flex items-center gap-2">
-												{entry.username}
+												{"profilePublic" in entry && entry.profilePublic === 1 && "userId" in entry ? (
+													<Link href={`/profile/${entry.userId}`} className="hover:text-[#0FACED] transition-colors hover:underline">
+														{entry.username}
+													</Link>
+												) : (
+													entry.username
+												)}
 												{"level" in entry && (
 													<span className="rounded-full bg-[#0FACED]/10 px-1.5 py-0.5 font-mono text-[10px] text-[#0FACED]">
 														Lv.{entry.level}
@@ -301,7 +308,13 @@ export default function LeaderboardPage() {
 								<div className="flex items-center gap-3">
 									<RankBadge rank={entry.rank} />
 									<span className="inline-flex items-center gap-2 font-medium text-white">
-										{entry.username}
+										{"profilePublic" in entry && entry.profilePublic === 1 && "userId" in entry ? (
+											<Link href={`/profile/${entry.userId}`} className="hover:text-[#0FACED] transition-colors hover:underline">
+												{entry.username}
+											</Link>
+										) : (
+											entry.username
+										)}
 										{"level" in entry && (
 											<span className="rounded-full bg-[#0FACED]/10 px-1.5 py-0.5 font-mono text-[10px] text-[#0FACED]">
 												Lv.{entry.level}

@@ -13,7 +13,6 @@ type AuthBindings = {
 	TWITCH_CLIENT_SECRET: string;
 	WEB_URL: string;
 	ENVIRONMENT?: string;
-	ADMIN_TWITCH_ID?: string;
 };
 
 const REQUIRED_AUTH_KEYS = [
@@ -91,30 +90,9 @@ export function createAuth(env: AuthBindings) {
 			}),
 		],
 		databaseHooks: {
-			account: {
-				create: {
-					after: async (account) => {
-						if (!env.ADMIN_TWITCH_ID) {
-							return;
-						}
-						if (account.providerId !== "twitch") {
-							return;
-						}
-						const adminIds = env.ADMIN_TWITCH_ID.split(",").map((id) => id.trim());
-						if (adminIds.includes(account.accountId)) {
-							await db
-								.update(schema.user)
-								.set({ role: "admin" })
-								.where(eq(schema.user.id, account.userId));
-						}
-					},
-				},
-			},
 			session: {
 				create: {
 					after: async (session) => {
-						if (!env.ADMIN_TWITCH_ID) return;
-
 						// Look up the user's Twitch account
 						const accounts = await db
 							.select({
@@ -127,20 +105,33 @@ export function createAuth(env: AuthBindings) {
 						const twitchAccount = accounts.find((a) => a.providerId === "twitch");
 						if (!twitchAccount) return;
 
-						const adminIds = env.ADMIN_TWITCH_ID.split(",").map((id) => id.trim());
-						if (adminIds.includes(twitchAccount.accountId)) {
-							// Promote if not already admin
-							const users = await db
-								.select({ role: schema.user.role })
-								.from(schema.user)
-								.where(eq(schema.user.id, session.userId));
-							if (users[0] && users[0].role !== "admin") {
+						// Backfill twitchId and twitchAvatar if missing
+						const userRecord = await db
+							.select({
+								twitchId: schema.user.twitchId,
+								twitchAvatar: schema.user.twitchAvatar,
+								image: schema.user.image,
+							})
+							.from(schema.user)
+							.where(eq(schema.user.id, session.userId))
+							.get();
+
+						if (userRecord && (!userRecord["twitchId"] || !userRecord["twitchAvatar"])) {
+							const updates: Record<string, unknown> = {};
+							if (!userRecord["twitchId"]) {
+								updates["twitchId"] = twitchAccount.accountId;
+							}
+							if (!userRecord["twitchAvatar"] && userRecord.image) {
+								updates["twitchAvatar"] = userRecord.image;
+							}
+							if (Object.keys(updates).length > 0) {
 								await db
 									.update(schema.user)
-									.set({ role: "admin" })
+									.set(updates)
 									.where(eq(schema.user.id, session.userId));
 							}
 						}
+
 					},
 				},
 			},

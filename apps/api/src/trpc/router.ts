@@ -1,3 +1,4 @@
+import { accountRouter } from "./routers/account.ts";
 import { achievementRouter } from "./routers/achievement.ts";
 import { adminRouter } from "./routers/admin.ts";
 import { raceRouter } from "./routers/race.ts";
@@ -14,6 +15,7 @@ export const appRouter = router({
 	achievement: achievementRouter,
 	race: raceRouter,
 	admin: adminRouter,
+	account: accountRouter,
 });
 
 export type AppRouter = typeof appRouter;

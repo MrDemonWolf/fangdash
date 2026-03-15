@@ -3,6 +3,59 @@ title: Changelog
 description: Release notes for every version of FangDash.
 ---
 
+# v0.2.0 — Settings, Public Profiles & Account Management
+
+**Released:** 2026-03-15
+
+<Callout type="info">
+	New Settings page, public player profiles, privacy controls, GDPR-compliant account deletion, and
+	improved in-game feedback.
+</Callout>
+
+## Settings Page
+
+- New `/settings` page for account management
+- **Skin picker** moved from the Skins gallery to Settings — the Skins page is now a view-only gallery
+- **Privacy toggle** — "Allow others to view my profile" controls public profile visibility
+- **Account deletion** — GDPR-compliant 24-hour soft delete with the ability to cancel during the grace period
+
+## Public Profiles
+
+- New `/profile/[id]` routes for viewing other players' profiles
+- Linked from the leaderboard — click a player's name to view their profile
+- Displays stats, achievements, top scores, and equipped skin
+- Respects the player's privacy setting (private profiles show a notice)
+- **Share Profile** button on your own profile to copy a direct link
+
+## Skins Page Update
+
+- The Skins gallery at `/skins` is now **view-only** — no more equip button
+- Links to Settings for equipping skins
+
+## Play Page Improvements
+
+- Removed toast notifications for score saves, level-ups, and achievement warnings
+- These messages are now shown **inline in the Game Over modal** for a cleaner experience
+
+## Debug Panel
+
+- New **"Unlock All Skins"** button in the CHEATS tab (dev/admin only)
+- Calls the new `admin.unlockAllSkins` mutation
+
+## API Changes
+
+- New `account` tRPC router with endpoints: `getAccountStatus`, `requestDeletion`, `cancelDeletion`, `getPrivacy`, `updatePrivacy`
+- New `score.getPublicProfile` query for fetching public profile data
+- New `admin.unlockAllSkins` mutation
+- Leaderboard responses now include `userId` and `profilePublic` fields for profile linking
+- Database schema: `user` table gains `deletionRequestedAt` and `deletionScheduledFor` columns; `player` table gains `profilePublic` column
+
+## Auth Improvements
+
+- Session creation hook now backfills `twitchId` and `twitchAvatar` if missing from the user record
+
+---
+
 # v0.1.0 — Alpha Release
 
 **Released:** 2026-03-11
@@ -85,7 +138,7 @@ Routes: Home, Play (solo), Race (multiplayer lobby), Leaderboard, Achievements, 
 - Players: paginated list, search, ban/unban with reason + duration
 - Scores: paginated list, suspicious score highlighting, delete with aggregate rollback
 - Races: paginated history grouped by race, placement badges
-- Bootstrap: `ADMIN_TWITCH_ID` env var for auto-promotion on first login
+- Bootstrap: `promote-admin` CLI script for granting admin/dev roles by Twitch username
 
 ## Audio
 

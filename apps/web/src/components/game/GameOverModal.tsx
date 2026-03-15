@@ -15,6 +15,8 @@ interface GameOverModalProps {
 		newAchievements: string[];
 		newSkins: string[];
 		achievementError?: boolean;
+		levelUp?: boolean;
+		newLevel?: number;
 	} | null;
 	submitError?: unknown;
 	isSignedIn?: boolean;
@@ -99,6 +101,21 @@ export function GameOverModal({
 						</h2>
 						<p className="text-sm font-mono text-white/50">{subtitle(state.score)}</p>
 					</div>
+
+					{/* Level Up banner */}
+					{submitResult?.levelUp && submitResult.newLevel && (
+						<div
+							className="mb-4 rounded-lg px-4 py-3 text-center"
+							style={{
+								background: "rgba(15,172,237,0.1)",
+								border: "1px solid rgba(15,172,237,0.3)",
+							}}
+						>
+							<p className="text-sm font-bold text-[#0FACED]">
+								Level Up! You are now level {submitResult.newLevel}!
+							</p>
+						</div>
+					)}
 
 					{/* Stats — 2×2 grid */}
 					<div className="mb-6 grid grid-cols-2 gap-px bg-[#0FACED]/10 rounded overflow-hidden">

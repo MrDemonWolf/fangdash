@@ -1,13 +1,15 @@
 import {
+	ACHIEVEMENTS,
 	DIFFICULTY_NAMES,
 	SCORE_PER_OBSTACLE,
 	SCORE_PER_SECOND,
 	getLevelFromXp,
+	getSkinById,
 } from "@fangdash/shared";
 import { TRPCError } from "@trpc/server";
 import { count, desc, eq, sql } from "drizzle-orm";
 import { z } from "zod";
-import { player, score, user } from "../../db/schema.ts";
+import { player, playerAchievement, playerSkin, score, user } from "../../db/schema.ts";
 import { checkAchievements } from "../../lib/achievement-checker.ts";
 import { ensurePlayer } from "../../lib/ensure-player.ts";
 import { checkSkinUnlocks } from "../../lib/skin-unlocker.ts";
@@ -170,9 +172,12 @@ export const scoreRouter = router({
 					distance: score.distance,
 					difficulty: score.difficulty,
 					playerId: player.id,
+					userId: user.id,
 					username: user.name,
+					userImage: user.image,
 					skinId: player.equippedSkinId,
 					level: player.level,
+					profilePublic: player.profilePublic,
 					createdAt: score.createdAt,
 				})
 				.from(score)
@@ -238,4 +243,89 @@ export const scoreRouter = router({
 			.orderBy(desc(score.createdAt))
 			.limit(20);
 	}),
+
+	getPublicProfile: publicProcedure
+		.input(z.object({ userId: z.string().min(1) }))
+		.query(async ({ ctx, input }) => {
+			const userRecord = await ctx.db
+				.select({
+					id: user.id,
+					name: user.name,
+					image: user.image,
+				})
+				.from(user)
+				.where(eq(user.id, input.userId))
+				.get();
+
+			if (!userRecord) {
+				throw new TRPCError({ code: "NOT_FOUND", message: "User not found" });
+			}
+
+			const playerRecord = await ctx.db
+				.select()
+				.from(player)
+				.where(eq(player.userId, input.userId))
+				.get();
+
+			if (!playerRecord || playerRecord.profilePublic !== 1) {
+				return { isPrivate: true as const, username: userRecord.name };
+			}
+
+			const skinDef = getSkinById(playerRecord.equippedSkinId);
+
+			const topScores = await ctx.db
+				.select({
+					id: score.id,
+					score: score.score,
+					distance: score.distance,
+					obstaclesCleared: score.obstaclesCleared,
+					difficulty: score.difficulty,
+					createdAt: score.createdAt,
+				})
+				.from(score)
+				.where(eq(score.playerId, playerRecord.id))
+				.orderBy(desc(score.score))
+				.limit(10);
+
+			const unlockedAchievements = await ctx.db
+				.select({ achievementId: playerAchievement.achievementId })
+				.from(playerAchievement)
+				.where(eq(playerAchievement.playerId, playerRecord.id));
+
+			const achievementIds = new Set(unlockedAchievements.map((a) => a.achievementId));
+			const achievements = ACHIEVEMENTS.map((a) => ({
+				id: a.id,
+				name: a.name,
+				icon: a.icon,
+				description: a.description,
+				unlocked: achievementIds.has(a.id),
+			}));
+
+			const unlockedSkins = await ctx.db
+				.select({ skinId: playerSkin.skinId })
+				.from(playerSkin)
+				.where(eq(playerSkin.playerId, playerRecord.id));
+
+			return {
+				isPrivate: false as const,
+				username: userRecord.name,
+				userImage: userRecord.image,
+				level: playerRecord.level,
+				totalXp: playerRecord.totalXp,
+				equippedSkin: skinDef
+					? { id: skinDef.id, name: skinDef.name, spriteKey: skinDef.spriteKey }
+					: null,
+				stats: {
+					totalScore: playerRecord.totalScore,
+					totalDistance: playerRecord.totalDistance,
+					gamesPlayed: playerRecord.gamesPlayed,
+					obstaclesCleared: playerRecord.totalObstaclesCleared,
+					racesPlayed: playerRecord.racesPlayed,
+					racesWon: playerRecord.racesWon,
+				},
+				topScores,
+				achievements,
+				skinsUnlocked: unlockedSkins.length + 1, // +1 for default skin
+			};
+		}),
 });

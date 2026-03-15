@@ -15,6 +15,8 @@ CREATE TABLE IF NOT EXISTS user (
 	banned INTEGER,
 	ban_reason TEXT,
 	ban_expires INTEGER,
+	deletion_requested_at INTEGER,
+	deletion_scheduled_for INTEGER,
 	created_at INTEGER NOT NULL,
 	updated_at INTEGER NOT NULL
 );
@@ -59,6 +61,7 @@ CREATE TABLE IF NOT EXISTS player (
 	id TEXT PRIMARY KEY,
 	user_id TEXT NOT NULL UNIQUE REFERENCES user(id) ON DELETE CASCADE,
 	equipped_skin_id TEXT NOT NULL DEFAULT 'gray-wolf',
+	profile_public INTEGER NOT NULL DEFAULT 1,
 	total_score INTEGER NOT NULL DEFAULT 0,
 	total_distance REAL NOT NULL DEFAULT 0,
 	total_obstacles_cleared INTEGER NOT NULL DEFAULT 0,

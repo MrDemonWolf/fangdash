@@ -1,14 +1,10 @@
 "use client";
 
-import { ACHIEVEMENTS, getLevelFromXp, getSkinById } from "@fangdash/shared";
+import { getLevelFromXp } from "@fangdash/shared";
 import { useQuery } from "@tanstack/react-query";
 import Image from "next/image";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
-import { useSession } from "@/lib/auth-client.ts";
+import { useParams } from "next/navigation";
 import { useTRPC } from "@/lib/trpc.ts";
-import { ProfileSkeleton } from "./_skeleton.tsx";
 
 /* ------------------------------------------------------------------ */
 /*  Helper: format distance as km                                      */
@@ -16,6 +12,57 @@ import { ProfileSkeleton } from "./_skeleton.tsx";
 
 function fmtKm(meters: number): string {
 	return `${(meters / 1000).toFixed(1)} km`;
+}
+
+/* ------------------------------------------------------------------ */
+/*  Loading Skeleton                                                    */
+/* ------------------------------------------------------------------ */
+
+function PublicProfileSkeleton() {
+	return (
+		<main className="mx-auto max-w-5xl px-4 py-8">
+			<div className="space-y-6">
+				{/* Header skeleton */}
+				<div className="h-32 w-full animate-pulse rounded-2xl bg-white/5" />
+
+				{/* Level bar skeleton */}
+				<div className="h-20 w-full animate-pulse rounded-2xl bg-white/5" />
+
+				<div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_340px]">
+					<div className="space-y-6">
+						{/* Performance Matrix skeleton */}
+						<div className="rounded-2xl border border-white/10 bg-[#0a1628]/60">
+							<div className="h-10 border-b border-white/10" />
+							<div className="grid grid-cols-2 gap-2 p-4">
+								{Array.from({ length: 6 }).map((_, i) => (
+									<div key={i} className="h-24 animate-pulse rounded-xl bg-white/5" />
+								))}
+							</div>
+						</div>
+						{/* Honor Badges skeleton */}
+						<div className="rounded-2xl border border-white/10 bg-[#0a1628]/60 p-5">
+							<div className="mb-4 h-4 w-32 animate-pulse rounded bg-white/5" />
+							<div className="flex flex-wrap gap-3">
+								{Array.from({ length: 12 }).map((_, i) => (
+									<div key={i} className="h-12 w-12 animate-pulse rounded-full bg-white/5" />
+								))}
+							</div>
+						</div>
+					</div>
+
+					{/* Scorelines skeleton */}
+					<div className="rounded-2xl border border-white/10 bg-[#0a1628]/60">
+						<div className="h-10 border-b border-white/10" />
+						<div className="space-y-2 p-4">
+							{Array.from({ length: 8 }).map((_, i) => (
+								<div key={i} className="h-10 animate-pulse rounded-lg bg-white/5" />
+							))}
+						</div>
+					</div>
+				</div>
+			</div>
+		</main>
+	);
 }
 
 /* ------------------------------------------------------------------ */
@@ -202,6 +249,7 @@ interface ScoreEntry {
 	score: number;
 	distance: number;
 	obstaclesCleared: number;
+	difficulty: string;
 	createdAt: string | Date;
 }
 
@@ -222,12 +270,12 @@ function RecentScorelines({ scores }: { scores: ScoreEntry[] }) {
 		<div className="rounded-2xl border border-white/10 bg-[#0a1628]/60 backdrop-blur-xl">
 			<div className="border-b border-white/10 px-5 py-3">
 				<h2 className="text-xs font-bold uppercase tracking-widest text-gray-400">
-					Recent Scorelines
+					Top Scores
 				</h2>
 			</div>
 
 			{top8.length === 0 ? (
-				<p className="px-5 py-8 text-center text-sm text-gray-500">No scores yet. Play a game!</p>
+				<p className="px-5 py-8 text-center text-sm text-gray-500">No scores yet.</p>
 			) : (
 				<ul className="divide-y divide-white/5">
 					{top8.map((entry, i) => {
@@ -252,7 +300,7 @@ function RecentScorelines({ scores }: { scores: ScoreEntry[] }) {
 										{entry.score.toLocaleString()}
 									</span>
 									<span className="text-xs text-gray-500">
-										{fmtKm(entry.distance)} ·{" "}
+										{fmtKm(entry.distance)} · {entry.difficulty} ·{" "}
 										{new Date(entry.createdAt).toLocaleDateString("en-US", {
 											month: "short",
 											day: "numeric",
@@ -277,80 +325,67 @@ function RecentScorelines({ scores }: { scores: ScoreEntry[] }) {
 /*  Page                                                               */
 /* ------------------------------------------------------------------ */
 
-export default function ProfilePage() {
-	const router = useRouter();
-	const { data: session, isPending: sessionLoading } = useSession();
+export default function PublicProfilePage() {
+	const params = useParams();
+	const id = params["id"] as string;
 	const trpc = useTRPC();
 
-	const isSignedIn = !!session?.user;
+	const {
+		data: profile,
+		isPending,
+		error,
+	} = useQuery(trpc.score.getPublicProfile.queryOptions({ userId: id }));
 
-	const { data: scores, isPending: scoresLoading } = useQuery(
-		trpc.score.myScores.queryOptions(undefined, { enabled: isSignedIn }),
-	);
-
-	const { data: equippedSkin, isPending: skinLoading } = useQuery(
-		trpc.skin.getEquippedSkin.queryOptions(undefined, { enabled: isSignedIn }),
-	);
-
-	const { data: achievements, isPending: achievementsLoading } = useQuery(
-		trpc.achievement.getMine.queryOptions(undefined, { enabled: isSignedIn }),
-	);
-
-	const { data: playerStats, isPending: playerStatsLoading } = useQuery(
-		trpc.score.getPlayerStats.queryOptions(undefined, { enabled: isSignedIn }),
-	);
-
-	const { data: raceStats, isPending: raceStatsLoading } = useQuery(
-		trpc.race.getStats.queryOptions(undefined, { enabled: isSignedIn }),
-	);
-
-	const isDataLoading =
-		scoresLoading || skinLoading || achievementsLoading || raceStatsLoading || playerStatsLoading;
-
-	/* ---- Redirect unauthenticated users ---- */
-	useEffect(() => {
-		if (!(sessionLoading || session?.user)) {
-			router.replace("/");
-		}
-	}, [sessionLoading, session, router]);
-
-	/* ---- Skeleton while session or data queries are pending ---- */
-	if (sessionLoading || (isSignedIn && isDataLoading)) {
-		return <ProfileSkeleton />;
+	/* ---- Loading ---- */
+	if (isPending) {
+		return <PublicProfileSkeleton />;
 	}
 
-	if (!session?.user) {
+	/* ---- Not found ---- */
+	if (error) {
 		return (
-			<main className="flex min-h-[60vh] items-center justify-center">
-				<p className="text-lg text-gray-400">Sign in to view your profile.</p>
+			<main className="flex min-h-[60vh] flex-col items-center justify-center gap-4">
+				<div className="flex h-20 w-20 items-center justify-center rounded-full border-2 border-white/10 bg-white/5 text-4xl">
+					🔍
+				</div>
+				<h1 className="text-xl font-bold text-white">User not found</h1>
+				<p className="text-sm text-gray-400">
+					This user does not exist or their profile is unavailable.
+				</p>
 			</main>
 		);
 	}
 
-	const user = session.user;
+	/* ---- Private profile ---- */
+	if (profile.isPrivate) {
+		return (
+			<main className="flex min-h-[60vh] flex-col items-center justify-center gap-4">
+				<div className="flex h-20 w-20 items-center justify-center rounded-full border-2 border-white/10 bg-white/5 text-4xl">
+					🔒
+				</div>
+				<h1 className="text-xl font-bold text-white">{profile.username}</h1>
+				<p className="text-sm text-gray-400">This profile is private.</p>
+			</main>
+		);
+	}
 
 	/* ---- Derived values ---- */
-	const skinDef = equippedSkin ? getSkinById(equippedSkin.skinId) : null;
+	const { username, userImage, level, totalXp, equippedSkin, stats, topScores, achievements, skinsUnlocked } =
+		profile;
 
-	const highScore = scores && scores.length > 0 ? Math.max(...scores.map((s) => s.score)) : 0;
-
-	const gamesPlayed = playerStats?.gamesPlayed ?? 0;
-	const totalDistance = playerStats?.totalDistance ?? 0;
-	const totalObstacles = playerStats?.totalObstaclesCleared ?? 0;
-	const totalScore = playerStats?.totalScore ?? 0;
-	const totalXp = Number(playerStats?.totalXp) || 0;
 	const levelInfo = getLevelFromXp(totalXp);
-	const playerLevel = levelInfo.level;
+	const highScore = topScores.length > 0 ? (topScores[0]?.score ?? 0) : 0;
 
-	const racesPlayed = raceStats?.racesPlayed ?? 0;
-	const racesWon = raceStats?.racesWon ?? 0;
-	const winRate = racesPlayed > 0 ? `${((racesWon / racesPlayed) * 100).toFixed(0)}%` : "N/A";
+	const winRate =
+		stats.racesPlayed > 0
+			? `${((stats.racesWon / stats.racesPlayed) * 100).toFixed(0)}%`
+			: "N/A";
 
 	/* ---- Performance tiles ---- */
 	const performanceTiles: MetricTile[] = [
 		{
 			label: "Total Distance",
-			value: fmtKm(totalDistance),
+			value: fmtKm(stats.totalDistance),
 			accent: "text-[#0FACED]",
 		},
 		{
@@ -365,46 +400,33 @@ export default function ProfilePage() {
 		},
 		{
 			label: "Obstacles",
-			value: totalObstacles.toLocaleString(),
+			value: stats.obstaclesCleared.toLocaleString(),
 			accent: "text-orange-400",
 		},
 		{
 			label: "Games Played",
-			value: gamesPlayed.toLocaleString(),
+			value: stats.gamesPlayed.toLocaleString(),
 			accent: "text-purple-400",
 		},
 		{
 			label: "Total Score",
-			value: totalScore.toLocaleString(),
+			value: stats.totalScore.toLocaleString(),
 			accent: "text-yellow-400",
 		},
 	];
 
 	/* ---- Honor Badges ---- */
-	const unlockedIds = new Set((achievements ?? []).map((a) => a?.id));
-	const sortedUnlocked = [...(achievements ?? [])]
-		.filter((a): a is NonNullable<typeof a> => a != null)
-		.sort((a, b) => {
-			const aT = a.unlockedAt ? new Date(a.unlockedAt).getTime() : 0;
-			const bT = b.unlockedAt ? new Date(b.unlockedAt).getTime() : 0;
-			return bT - aT;
-		});
-
-	// Build up to 12 badges: unlocked first (most recent), then locked
-	const BADGE_LIMIT = 12;
-	const unlockedBadges: Badge[] = sortedUnlocked
-		.slice(0, BADGE_LIMIT)
-		.filter((a): a is NonNullable<typeof a> => a != null)
+	const unlockedBadges: Badge[] = achievements
+		.filter((a) => a.unlocked)
 		.map((a) => ({
-			icon: a.icon ?? "default",
-			name: a.name ?? "Unnamed Badge",
-			description: a.description ?? "",
+			icon: a.icon,
+			name: a.name,
+			description: a.description,
 			unlocked: true,
 		}));
 
-	const lockedDefs = ACHIEVEMENTS.filter((a) => !unlockedIds.has(a.id));
-	const lockedBadges: Badge[] = lockedDefs
-		.slice(0, Math.max(0, BADGE_LIMIT - unlockedBadges.length))
+	const lockedBadges: Badge[] = achievements
+		.filter((a) => !a.unlocked)
 		.map((a) => ({
 			icon: a.icon,
 			name: a.name,
@@ -412,20 +434,8 @@ export default function ProfilePage() {
 			unlocked: false,
 		}));
 
-	const allBadges = [...unlockedBadges, ...lockedBadges];
-
-	/* ---- Scores for scorelines ---- */
-	const recentScores = (scores ?? []) as ScoreEntry[];
-
-	/* ---- Share profile ---- */
-	const [copied, setCopied] = useState(false);
-	const shareUrl = typeof window !== "undefined" ? `${window.location.origin}/profile/${user.id}` : "";
-	const handleShareProfile = () => {
-		navigator.clipboard.writeText(shareUrl).then(() => {
-			setCopied(true);
-			setTimeout(() => setCopied(false), 2000);
-		});
-	};
+	const BADGE_LIMIT = 12;
+	const allBadges = [...unlockedBadges, ...lockedBadges].slice(0, BADGE_LIMIT);
 
 	/* ---------------------------------------------------------------- */
 	return (
@@ -433,47 +443,39 @@ export default function ProfilePage() {
 			<div className="space-y-6">
 				{/* Header banner */}
 				<ProfileHeader
-					userName={user.name ?? "Unknown"}
-					userImage={user.image}
-					skinSpriteKey={skinDef?.spriteKey ?? null}
-					skinName={skinDef?.name ?? null}
+					userName={username}
+					userImage={userImage}
+					skinSpriteKey={equippedSkin?.spriteKey ?? null}
+					skinName={equippedSkin?.name ?? null}
 					highScore={highScore}
-					gamesPlayed={gamesPlayed}
+					gamesPlayed={stats.gamesPlayed}
 				/>
-
-				{/* Quick actions */}
-				<div className="flex items-center gap-3">
-					<button
-						type="button"
-						onClick={handleShareProfile}
-						className="rounded-lg border border-[#0FACED]/30 bg-[#0FACED]/10 px-4 py-2 text-sm font-medium text-[#0FACED] transition-colors hover:bg-[#0FACED]/20"
-					>
-						{copied ? "Link copied!" : "Share profile"}
-					</button>
-					<Link
-						href="/settings"
-						className="rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-gray-400 transition-colors hover:bg-white/10 hover:text-white"
-					>
-						Settings
-					</Link>
-				</div>
 
 				{/* Level & XP Progress */}
 				<div className="rounded-2xl border border-white/10 bg-[#0a1628]/60 p-5 backdrop-blur-xl">
-					<div className="flex items-center justify-between mb-3">
+					<div className="mb-3 flex items-center justify-between">
 						<div className="flex items-center gap-3">
 							<span className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-[#0FACED]/40 bg-[#0FACED]/10 font-mono text-lg font-bold text-[#0FACED]">
-								{playerLevel}
+								{level}
 							</span>
 							<div>
-								<p className="text-sm font-bold text-white">Level {playerLevel}</p>
+								<p className="text-sm font-bold text-white">Level {level}</p>
 								<p className="text-xs text-gray-400">{totalXp.toLocaleString()} XP total</p>
 							</div>
 						</div>
-						<p className="text-xs text-gray-500">
-							{levelInfo.xpForCurrentLevel.toLocaleString()} /{" "}
-							{levelInfo.xpForNextLevel.toLocaleString()} XP
-						</p>
+						<div className="flex items-center gap-3">
+							{skinsUnlocked > 0 && (
+								<div className="rounded-full border border-amber-400/30 bg-amber-400/10 px-3 py-1">
+									<span className="font-mono text-xs font-bold text-amber-400">
+										{skinsUnlocked} SKINS
+									</span>
+								</div>
+							)}
+							<p className="text-xs text-gray-500">
+								{levelInfo.xpForCurrentLevel.toLocaleString()} /{" "}
+								{levelInfo.xpForNextLevel.toLocaleString()} XP
+							</p>
+						</div>
 					</div>
 					<div className="h-3 w-full overflow-hidden rounded-full bg-white/10">
 						<div
@@ -490,14 +492,14 @@ export default function ProfilePage() {
 						<PerformanceMatrix tiles={performanceTiles} />
 						<HonorBadges
 							badges={allBadges}
-							unlockedCount={sortedUnlocked.length}
-							totalCount={ACHIEVEMENTS.length}
+							unlockedCount={unlockedBadges.length}
+							totalCount={achievements.length}
 						/>
 					</div>
 
-					{/* Right: Recent Scorelines (sticky on large screens) */}
+					{/* Right: Top Scores (sticky on large screens) */}
 					<div className="lg:sticky lg:top-24 lg:self-start">
-						<RecentScorelines scores={recentScores} />
+						<RecentScorelines scores={topScores} />
 					</div>
 				</div>
 			</div>

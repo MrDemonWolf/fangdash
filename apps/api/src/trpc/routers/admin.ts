@@ -1,8 +1,9 @@
-import { getLevelFromXp } from "@fangdash/shared";
+import { getLevelFromXp, SKINS } from "@fangdash/shared";
 import { TRPCError } from "@trpc/server";
 import { count, desc, eq, like, sql } from "drizzle-orm";
 import { z } from "zod";
-import { player, raceHistory, score, user } from "../../db/schema.ts";
+import { player, playerSkin, raceHistory, score, user } from "../../db/schema.ts";
+import { ensurePlayer } from "../../lib/ensure-player.ts";
 import { devProcedure, router } from "../trpc.ts";
 
 export const adminRouter = router({
@@ -268,4 +269,25 @@ export const adminRouter = router({
 				limit: input.limit,
 			};
 		}),
+
+	unlockAllSkins: devProcedure.mutation(async ({ ctx }) => {
+		const playerRecord = await ensurePlayer(ctx.db, ctx.user.id);
+		if (!playerRecord) {
+			throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Failed to find player" });
+		}
+
+		const now = new Date();
+		const values = SKINS.filter((s) => s.unlockCondition.type !== "default").map((s) => ({
+			id: crypto.randomUUID(),
+			playerId: playerRecord.id,
+			skinId: s.id,
+			unlockedAt: now,
+		}));
+
+		if (values.length > 0) {
+			await ctx.db.insert(playerSkin).values(values).onConflictDoNothing();
+		}
+
+		return { unlockedCount: values.length };
+	}),
 });

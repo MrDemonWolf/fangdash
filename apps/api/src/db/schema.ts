@@ -14,6 +14,8 @@ export const user = sqliteTable("user", {
 	banned: integer("banned", { mode: "boolean" }),
 	banReason: text("ban_reason"),
 	banExpires: integer("ban_expires", { mode: "timestamp" }),
+	deletionRequestedAt: integer("deletion_requested_at"),
+	deletionScheduledFor: integer("deletion_scheduled_for"),
 	createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
 	updatedAt: integer("updated_at", { mode: "timestamp" }).notNull(),
 });
@@ -71,6 +73,7 @@ export const player = sqliteTable("player", {
 		.unique()
 		.references(() => user.id, { onDelete: "cascade" }),
 	equippedSkinId: text("equipped_skin_id").notNull().default("gray-wolf"),
+	profilePublic: integer("profile_public").notNull().default(1),
 	totalScore: integer("total_score").notNull().default(0),
 	totalDistance: real("total_distance").notNull().default(0),
 	totalObstaclesCleared: integer("total_obstacles_cleared").notNull().default(0),

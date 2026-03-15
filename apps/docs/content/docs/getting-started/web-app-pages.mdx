@@ -4,28 +4,31 @@ description: A quick guide to every page in the FangDash web app.
 ---
 
 <Callout type="info">
-	**TL;DR** - 8 main pages: Home, Play, Race, Leaderboard, Achievements, Skins, Profile, Admin -
-	Most pages require signing in with Twitch - Admin is restricted to admin/dev roles
+	**TL;DR** - 10 main pages: Home, Play, Race, Leaderboard, Achievements, Skins, Settings, Profile,
+	Public Profiles, Admin - Most pages require signing in with Twitch - Admin is restricted to
+	admin/dev roles
 </Callout>
 
 Here's a quick tour of every page in the FangDash web app.
 
 ## Pages
 
-| Page             | Route           | Description                                                             |
-| ---------------- | --------------- | ----------------------------------------------------------------------- |
-| **Home**         | `/`             | Landing page with a quick overview and sign-in prompt                   |
-| **Play**         | `/play`         | Start a solo endless runner game                                        |
-| **Race**         | `/race`         | Create or join a multiplayer race room                                  |
-| **Leaderboard**  | `/leaderboard`  | Global rankings with time period and difficulty filters                 |
-| **Achievements** | `/achievements` | View all 16 achievements and your unlock progress                       |
-| **Skins**        | `/skins`        | Browse and equip wolf skins from the skin gallery                       |
-| **Profile**      | `/profile`      | Your stats, level, recent scores, and equipped skin                     |
-| **Admin**        | `/admin`        | Player management, score moderation, and race history (admin/dev roles) |
+| Page                | Route            | Description                                                              |
+| ------------------- | ---------------- | ------------------------------------------------------------------------ |
+| **Home**            | `/`              | Landing page with a quick overview and sign-in prompt                    |
+| **Play**            | `/play`          | Start a solo endless runner game                                         |
+| **Race**            | `/race`          | Create or join a multiplayer race room                                   |
+| **Leaderboard**     | `/leaderboard`   | Global rankings with time period and difficulty filters                  |
+| **Achievements**    | `/achievements`  | View all 16 achievements and your unlock progress                        |
+| **Skins**           | `/skins`         | View-only gallery of all wolf skins and their unlock conditions          |
+| **Settings**        | `/settings`      | Equip skins, manage privacy, and delete your account                     |
+| **Profile**         | `/profile`       | Your stats, level, recent scores, and equipped skin                      |
+| **Public Profile**  | `/profile/[id]`  | View another player's public profile (linked from leaderboard)           |
+| **Admin**           | `/admin`         | Player management, score moderation, and race history (admin/dev roles)  |
 
 ## Getting Around
 
-The main navigation bar at the top links to Play, Race, Leaderboard, Achievements, and Skins. Your profile is accessible from the user menu in the top right corner.
+The main navigation bar at the top links to Play, Race, Leaderboard, Achievements, and Skins. Your profile and settings are accessible from the user menu in the top right corner.
 
 ## What Requires Sign-In
 
@@ -33,10 +36,11 @@ You need to **sign in with Twitch** to:
 
 - Play games (scores are tied to your account)
 - Join races
-- Equip skins
+- Equip skins (via Settings)
 - View your profile
+- Manage account settings
 
-The **Leaderboard** and **Achievements** list are viewable without signing in.
+The **Leaderboard**, **Achievements** list, **Skins** gallery, and **Public Profiles** are viewable without signing in (subject to the player's privacy setting).
 
 ## Learn More
 
@@ -44,4 +48,5 @@ The **Leaderboard** and **Achievements** list are viewable without signing in.
 - [Level System](/docs/gameplay/levels) — XP and leveling
 - [Leaderboard](/docs/gameplay/leaderboard) — Filters and rankings
 - [Profile](/docs/gameplay/profile) — Your stats breakdown
+- [Settings](/docs/getting-started/settings) — Account settings, skin equipping, privacy
 - [Admin Panel](/docs/getting-started/admin) — Managing your instance

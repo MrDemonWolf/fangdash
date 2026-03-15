@@ -12,6 +12,8 @@ TWITCH_CLIENT_SECRET=your_twitch_client_secret_here
 # WEB_URL      → "http://localhost:3000" (local) / your web domain (prod)
 # These do NOT need to be set here.
 
-# ── Optional ──────────────────────────────────────────────
-# Comma-separated Twitch numeric user IDs to auto-promote to admin on first login
-# ADMIN_TWITCH_ID=123456789,987654321
+# ── Admin promotion ───────────────────────────────────────
+# Use the CLI script instead of env vars:
+#   bun run promote-admin YourTwitchUsername
+#   bun run promote-admin YourTwitchUsername --remote   (production)
+#   bun run promote-admin YourTwitchUsername --role dev  (set dev role)

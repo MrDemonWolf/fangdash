@@ -1,0 +1,69 @@
+---
+title: Settings
+description: Managing your account settings — skin equipping, privacy, and account deletion.
+---
+
+<Callout type="info">
+	**TL;DR** - Equip skins from the Settings page (moved from the Skins gallery) - Toggle profile
+	privacy to control who can see your public profile - Request account deletion with a 24-hour grace
+	period to cancel
+</Callout>
+
+The Settings page at [/settings](/settings) is your central hub for managing your FangDash account.
+
+## Skin Picker
+
+Equipping skins has moved from the Skins gallery to the Settings page. Browse your unlocked skins and select one to equip. Locked skins display their unlock conditions.
+
+Visit the [Skins gallery](/skins) to preview all available skins, then head to Settings to equip them.
+
+## Privacy Toggle
+
+Control whether other players can view your public profile.
+
+| Setting    | Behavior                                                                  |
+| ---------- | ------------------------------------------------------------------------- |
+| **Public** | Your profile is visible via `/profile/[id]` and linked from leaderboards  |
+| **Private** | Your profile page returns a "private" notice; leaderboard hides your link |
+
+The toggle is labeled **"Allow others to view my profile"** and defaults to public.
+
+## Account Deletion
+
+<Callout type="warn">
+	Account deletion is **permanent** after the grace period. All your scores, achievements, skins,
+	and race history will be removed.
+</Callout>
+
+FangDash supports GDPR-compliant account deletion with a safety net:
+
+<Steps>
+	<Step>Click **Delete Account** on the Settings page</Step>
+	<Step>Confirm the deletion request</Step>
+	<Step>
+		A **24-hour grace period** begins — your account is soft-deleted but not yet removed
+	</Step>
+	<Step>During the grace period, you can return to Settings and click **Cancel Deletion** to restore your account</Step>
+	<Step>After 24 hours, the account and all associated data are permanently deleted</Step>
+</Steps>
+
+### API Endpoints
+
+The account management endpoints live in the `account` tRPC router:
+
+| Endpoint              | Type     | Description                                    |
+| --------------------- | -------- | ---------------------------------------------- |
+| `getAccountStatus`    | Query    | Returns current deletion status and timestamps |
+| `requestDeletion`     | Mutation | Initiates the 24-hour soft delete              |
+| `cancelDeletion`      | Mutation | Cancels a pending deletion request             |
+| `getPrivacy`          | Query    | Returns current privacy setting                |
+| `updatePrivacy`       | Mutation | Toggles profile visibility on or off           |
+
+### Database Schema
+
+Two new fields on the `user` table support account deletion:
+
+- `deletionRequestedAt` — timestamp when the user requested deletion
+- `deletionScheduledFor` — timestamp when permanent deletion will occur (24 hours after request)
+
+The `player` table has a new `profilePublic` boolean field for the privacy toggle.
