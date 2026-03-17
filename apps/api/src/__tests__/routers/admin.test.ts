@@ -10,7 +10,7 @@ describe("admin router", () => {
 	});
 
 	describe("getStats", () => {
-		it("should return stats for dev/admin", async () => {
+		it("should return stats for admin", async () => {
 			const userId = createTestUser(db, { role: "admin" });
 			createTestPlayer(db, userId);
 			const caller = createTestCaller({ db, userId, userRole: "admin" });
@@ -23,26 +23,17 @@ describe("admin router", () => {
 			expect(result).toHaveProperty("totalRaceEntries");
 		});
 
-		it("should reject non-dev users", async () => {
+		it("should reject non-admin users", async () => {
 			const userId = createTestUser(db);
 			createTestPlayer(db, userId);
 			const caller = createTestCaller({ db, userId, userRole: "user" });
 
-			await expect(caller.admin.getStats()).rejects.toThrow("Developer access required");
+			await expect(caller.admin.getStats()).rejects.toThrow("Admin access required");
 		});
 
 		it("should reject unauthenticated users", async () => {
 			const caller = createTestCaller({ db });
 			await expect(caller.admin.getStats()).rejects.toThrow("UNAUTHORIZED");
-		});
-
-		it("should allow dev role", async () => {
-			const userId = createTestUser(db, { role: "dev" });
-			createTestPlayer(db, userId);
-			const caller = createTestCaller({ db, userId, userRole: "dev" });
-
-			const result = await caller.admin.getStats();
-			expect(result).toHaveProperty("totalPlayers");
 		});
 	});
 
@@ -75,7 +66,7 @@ describe("admin router", () => {
 			expect(result.items[0]!.name).toBe("SpecialPlayer");
 		});
 
-		it("should reject non-dev", async () => {
+		it("should reject non-admin", async () => {
 			const userId = createTestUser(db);
 			const caller = createTestCaller({ db, userId, userRole: "user" });
 			await expect(caller.admin.getPlayers({ limit: 10, page: 1 })).rejects.toThrow();
@@ -95,13 +86,13 @@ describe("admin router", () => {
 			).rejects.toThrow("Auth not configured");
 		});
 
-		it("should reject non-dev", async () => {
+		it("should reject non-admin", async () => {
 			const userId = createTestUser(db);
 			const targetUser = createTestUser(db);
 			const caller = createTestCaller({ db, userId, userRole: "user" });
 
 			await expect(caller.admin.banUser({ userId: targetUser, reason: "test" })).rejects.toThrow(
-				"Developer access required",
+				"Admin access required",
 			);
 		});
 	});
@@ -118,13 +109,13 @@ describe("admin router", () => {
 			);
 		});
 
-		it("should reject non-dev", async () => {
+		it("should reject non-admin", async () => {
 			const userId = createTestUser(db);
 			const targetUser = createTestUser(db);
 			const caller = createTestCaller({ db, userId, userRole: "user" });
 
 			await expect(caller.admin.unbanUser({ userId: targetUser })).rejects.toThrow(
-				"Developer access required",
+				"Admin access required",
 			);
 		});
 	});
@@ -143,11 +134,11 @@ describe("admin router", () => {
 	});
 
 	describe("deleteScore", () => {
-		it("should reject non-dev", async () => {
+		it("should reject non-admin", async () => {
 			const userId = createTestUser(db);
 			const caller = createTestCaller({ db, userId, userRole: "user" });
 			await expect(caller.admin.deleteScore({ scoreId: "fake" })).rejects.toThrow(
-				"Developer access required",
+				"Admin access required",
 			);
 		});
 

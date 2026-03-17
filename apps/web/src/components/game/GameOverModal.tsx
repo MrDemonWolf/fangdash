@@ -20,6 +20,7 @@ interface GameOverModalProps {
 	} | null;
 	submitError?: unknown;
 	isSignedIn?: boolean;
+	cheatsUsed?: boolean;
 	onRetrySubmit?: (() => void) | undefined;
 }
 
@@ -54,6 +55,7 @@ export function GameOverModal({
 	submitResult,
 	submitError,
 	isSignedIn,
+	cheatsUsed,
 	onRetrySubmit,
 }: GameOverModalProps) {
 	const hasUnlocks =
@@ -163,8 +165,23 @@ export function GameOverModal({
 						</div>
 					</div>
 
+					{/* Cheats active notice */}
+					{cheatsUsed && (
+						<div
+							className="mb-4 rounded-lg px-4 py-3 text-center"
+							style={{
+								background: "rgba(255,107,43,0.1)",
+								border: "1px solid rgba(255,107,43,0.3)",
+							}}
+						>
+							<p className="text-sm font-bold text-[#ff6b2b]">
+								Score not saved — cheats were active
+							</p>
+						</div>
+					)}
+
 					{/* Submit error */}
-					{!!submitError && (
+					{!cheatsUsed && !!submitError && (
 						<div className="mb-4 text-center">
 							<p className="text-sm text-red-400 mb-2">Failed to save score.</p>
 							{onRetrySubmit && (
@@ -180,7 +197,7 @@ export function GameOverModal({
 					)}
 
 					{/* Saving indicator */}
-					{isSignedIn && submitting && (
+					{isSignedIn && !cheatsUsed && submitting && (
 						<p className="mb-4 text-sm text-center font-mono text-white/40">Saving score...</p>
 					)}
 

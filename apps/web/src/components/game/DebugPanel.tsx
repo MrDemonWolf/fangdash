@@ -57,7 +57,7 @@ import {
 	SPEED_INCREASE_INTERVAL_MS,
 	SPEED_INCREMENT,
 } from "@fangdash/shared";
-import { useIsDevOrAdmin } from "@/lib/use-role.ts";
+import { useIsAdmin } from "@/lib/use-role.ts";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -843,7 +843,7 @@ function CheatsTab({
 // Main DebugPanel Component
 // ---------------------------------------------------------------------------
 export default function DebugPanel({ debugState, onSendCommand, gameKey }: DebugPanelProps) {
-	const isDevOrAdmin = useIsDevOrAdmin();
+	const isAdmin = useIsAdmin();
 	const [visible, setVisible] = useState(false);
 	const [mounted, setMounted] = useState(false);
 
@@ -920,7 +920,7 @@ export default function DebugPanel({ debugState, onSendCommand, gameKey }: Debug
 		};
 	}, []);
 
-	if (!(mounted && isDevOrAdmin)) {
+	if (!(mounted && isAdmin)) {
 		return null;
 	}
 
