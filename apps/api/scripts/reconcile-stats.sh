@@ -206,56 +206,34 @@ echo "=== Phase 4: Grant missing achievements ==="
 
 UUID_EXPR="lower(hex(randomblob(4)) || '-' || hex(randomblob(2)) || '-' || hex(randomblob(2)) || '-' || hex(randomblob(2)) || '-' || hex(randomblob(6)))"
 
-# Achievements based on MAX(score) from score table
-declare -A SCORE_ACHIEVEMENTS=(
-  ["first-fang"]=100
-  ["sharp-fangs"]=1000
-  ["apex-predator"]=10000
-)
-
-for ach_id in "${!SCORE_ACHIEVEMENTS[@]}"; do
-  threshold="${SCORE_ACHIEVEMENTS[$ach_id]}"
-  echo "  Checking: $ach_id (max score >= $threshold)"
+# Helper: grant achievement for players with MAX(column) >= threshold in score table
+grant_score_max_achievement() {
+  local ach_id="$1" col="$2" threshold="$3"
+  echo "  Checking: $ach_id (max $col >= $threshold)"
   run_sql "
 INSERT INTO player_achievement (id, player_id, achievement_id, unlocked_at)
 SELECT $UUID_EXPR, s.player_id, '$ach_id', strftime('%Y-%m-%dT%H:%M:%SZ', 'now')
 FROM (
-  SELECT player_id, MAX(score) AS max_score
+  SELECT player_id, MAX($col) AS max_val
   FROM score
   GROUP BY player_id
-  HAVING max_score >= $threshold
+  HAVING max_val >= $threshold
 ) s
 WHERE NOT EXISTS (
   SELECT 1 FROM player_achievement pa
   WHERE pa.player_id = s.player_id AND pa.achievement_id = '$ach_id'
 );
 "
-done
+}
+
+# Achievements based on MAX(score) from score table
+grant_score_max_achievement "first-fang" "score" 100
+grant_score_max_achievement "sharp-fangs" "score" 1000
+grant_score_max_achievement "apex-predator" "score" 10000
 
 # Achievements based on MAX(distance) from score table
-declare -A DISTANCE_ACHIEVEMENTS=(
-  ["first-steps"]=500
-  ["marathon-runner"]=5000
-)
-
-for ach_id in "${!DISTANCE_ACHIEVEMENTS[@]}"; do
-  threshold="${DISTANCE_ACHIEVEMENTS[$ach_id]}"
-  echo "  Checking: $ach_id (max distance >= $threshold)"
-  run_sql "
-INSERT INTO player_achievement (id, player_id, achievement_id, unlocked_at)
-SELECT $UUID_EXPR, s.player_id, '$ach_id', strftime('%Y-%m-%dT%H:%M:%SZ', 'now')
-FROM (
-  SELECT player_id, MAX(distance) AS max_distance
-  FROM score
-  GROUP BY player_id
-  HAVING max_distance >= $threshold
-) s
-WHERE NOT EXISTS (
-  SELECT 1 FROM player_achievement pa
-  WHERE pa.player_id = s.player_id AND pa.achievement_id = '$ach_id'
-);
-"
-done
+grant_score_max_achievement "first-steps" "distance" 500
+grant_score_max_achievement "marathon-runner" "distance" 5000
 
 # Achievement based on MAX(longest_clean_run) from score table
 echo "  Checking: perfect-dash (max longest_clean_run >= 1000)"
@@ -274,22 +252,9 @@ WHERE NOT EXISTS (
 );
 "
 
-# Achievements based on player table aggregates
-declare -A PLAYER_ACHIEVEMENTS=(
-  ["score-hoarder"]="total_score >= 50000"
-  ["world-traveler"]="total_distance >= 50000"
-  ["pup"]="games_played >= 1"
-  ["pack-member"]="games_played >= 25"
-  ["lone-wolf"]="games_played >= 100"
-  ["obstacle-dodger"]="total_obstacles_cleared >= 100"
-  ["obstacle-master"]="total_obstacles_cleared >= 1000"
-  ["first-race"]="races_played >= 1"
-  ["champion"]="races_won >= 10"
-  ["veteran-racer"]="races_played >= 50"
-)
-
-for ach_id in "${!PLAYER_ACHIEVEMENTS[@]}"; do
-  condition="${PLAYER_ACHIEVEMENTS[$ach_id]}"
+# Helper: grant achievement for players matching a condition on the player table
+grant_player_achievement() {
+  local ach_id="$1" condition="$2"
   echo "  Checking: $ach_id ($condition)"
   run_sql "
 INSERT INTO player_achievement (id, player_id, achievement_id, unlocked_at)
@@ -301,7 +266,19 @@ WHERE p.$condition
     WHERE pa.player_id = p.id AND pa.achievement_id = '$ach_id'
   );
 "
-done
+}
+
+# Achievements based on player table aggregates
+grant_player_achievement "score-hoarder" "total_score >= 50000"
+grant_player_achievement "world-traveler" "total_distance >= 50000"
+grant_player_achievement "pup" "games_played >= 1"
+grant_player_achievement "pack-member" "games_played >= 25"
+grant_player_achievement "lone-wolf" "games_played >= 100"
+grant_player_achievement "obstacle-dodger" "total_obstacles_cleared >= 100"
+grant_player_achievement "obstacle-master" "total_obstacles_cleared >= 1000"
+grant_player_achievement "first-race" "races_played >= 1"
+grant_player_achievement "champion" "races_won >= 10"
+grant_player_achievement "veteran-racer" "races_played >= 50"
 
 echo "Done."
 

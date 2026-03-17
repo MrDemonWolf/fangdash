@@ -17,6 +17,7 @@ export const raceRouter = router({
 				score: z.number().int().min(0),
 				distance: z.number().min(0),
 				seed: z.string().min(1),
+				cheated: z.boolean().default(false),
 			}),
 		)
 		.mutation(async ({ ctx, input }) => {
@@ -39,6 +40,7 @@ export const raceRouter = router({
 				score: input.score,
 				distance: input.distance,
 				seed: input.seed,
+				cheated: input.cheated ? 1 : 0,
 				createdAt: now,
 			});
 
@@ -77,6 +79,32 @@ export const raceRouter = router({
 						newPlacement,
 					});
 				}
+			}
+
+			// If cheated, only update placements (other players' ranks still matter) but skip rewards
+			if (input.cheated) {
+				// Still apply placement corrections for other players
+				if (placementChanges.length > 0) {
+					const batchStmts: BatchItem<"sqlite">[] = placementChanges.map((change) =>
+						ctx.db
+							.update(raceHistory)
+							.set({ placement: change.newPlacement })
+							.where(eq(raceHistory.id, change.id)),
+					);
+					await ctx.db.batch(
+						batchStmts as unknown as [BatchItem<"sqlite">, ...BatchItem<"sqlite">[]],
+					);
+				}
+				return {
+					raceHistoryId,
+					placement,
+					newAchievements: [],
+					newSkins: [],
+					achievementError: false,
+					xpGained: 0,
+					levelUp: false,
+					newLevel: playerRecord.level,
+				};
 			}
 
 			// Phase 2: Fetch affected OTHER players and compute XP/racesWon deltas
@@ -230,7 +258,7 @@ export const raceRouter = router({
 				createdAt: raceHistory.createdAt,
 			})
 			.from(raceHistory)
-			.where(eq(raceHistory.playerId, playerRecord.id))
+			.where(sql`${raceHistory.playerId} = ${playerRecord.id} AND ${raceHistory.cheated} = 0`)
 			.orderBy(desc(raceHistory.createdAt))
 			.limit(20);
 	}),

@@ -26,6 +26,7 @@ export const scoreRouter = router({
 				duration: z.number().int().min(0),
 				seed: z.string().min(1),
 				difficulty: z.enum(DIFFICULTY_NAMES).default("easy"),
+				cheated: z.boolean().default(false),
 			}),
 		)
 		.mutation(async ({ ctx, input }) => {
@@ -55,6 +56,8 @@ export const scoreRouter = router({
 			const now = new Date();
 			const scoreId = crypto.randomUUID();
 
+			const isCheated = input.cheated ? 1 : 0;
+
 			await ctx.db.insert(score).values({
 				id: scoreId,
 				playerId: playerRecord.id,
@@ -65,8 +68,22 @@ export const scoreRouter = router({
 				duration: input.duration,
 				difficulty: input.difficulty,
 				seed: input.seed,
+				cheated: isCheated,
 				createdAt: now,
 			});
+
+			// If cheated, skip all rewards and stat updates
+			if (input.cheated) {
+				return {
+					scoreId,
+					newAchievements: [],
+					newSkins: [],
+					achievementError: false,
+					xpGained: 0,
+					levelUp: false,
+					newLevel: playerRecord.level,
+				};
+			}
 
 			// Update player aggregate stats, XP, and level atomically
 			const newTotalXp = playerRecord.totalXp + input.score;
@@ -164,6 +181,8 @@ export const scoreRouter = router({
 			const cutoffFilter = cutoffTs !== null ? sql` AND s2.created_at >= ${cutoffTs}` : sql``;
 			const outerCutoffFilter =
 				cutoffTs !== null ? sql` AND ${score.createdAt} >= ${cutoffTs}` : sql``;
+			const cheatedFilter = sql` AND s2.cheated = 0`;
+			const outerCheatedFilter = sql` AND ${score.cheated} = 0`;
 
 			const rows = await ctx.db
 				.select({
@@ -186,10 +205,10 @@ export const scoreRouter = router({
 				.where(
 					sql`${score.id} = (
 						SELECT s2.id FROM score s2
-						WHERE s2.player_id = ${score.playerId}${diffFilter}${cutoffFilter}
+						WHERE s2.player_id = ${score.playerId}${diffFilter}${cutoffFilter}${cheatedFilter}
 						ORDER BY s2.score DESC, s2.created_at DESC
 						LIMIT 1
-					)${outerDiffFilter}${outerCutoffFilter}`,
+					)${outerDiffFilter}${outerCutoffFilter}${outerCheatedFilter}`,
 				)
 				.orderBy(desc(score.score))
 				.limit(limit);
@@ -239,7 +258,7 @@ export const scoreRouter = router({
 		return ctx.db
 			.select()
 			.from(score)
-			.where(eq(score.playerId, playerRecord.id))
+			.where(sql`${score.playerId} = ${playerRecord.id} AND ${score.cheated} = 0`)
 			.orderBy(desc(score.createdAt))
 			.limit(20);
 	}),
@@ -283,7 +302,7 @@ export const scoreRouter = router({
 					createdAt: score.createdAt,
 				})
 				.from(score)
-				.where(eq(score.playerId, playerRecord.id))
+				.where(sql`${score.playerId} = ${playerRecord.id} AND ${score.cheated} = 0`)
 				.orderBy(desc(score.score))
 				.limit(10);
 

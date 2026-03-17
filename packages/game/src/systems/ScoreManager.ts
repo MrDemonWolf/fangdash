@@ -34,7 +34,7 @@ export class ScoreManager {
 		}
 	}
 
-	getState(alive: boolean, speed: number): GameState {
+	getState(alive: boolean, speed: number, cheatsUsed = false): GameState {
 		return {
 			score: Math.floor(this.score),
 			distance: Math.floor(this.distance),
@@ -42,6 +42,7 @@ export class ScoreManager {
 			alive,
 			speed,
 			longestCleanRun: Math.floor(this.longestCleanRun),
+			cheatsUsed,
 		};
 	}
 

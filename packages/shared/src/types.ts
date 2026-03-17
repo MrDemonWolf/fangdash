@@ -1,5 +1,5 @@
 // ── Roles ──
-export type UserRole = "user" | "admin" | "dev";
+export type UserRole = "user" | "admin";
 
 // ── Player ──
 export interface Player {
@@ -155,6 +155,7 @@ export interface GameState {
 	alive: boolean;
 	speed: number;
 	longestCleanRun: number;
+	cheatsUsed: boolean;
 }
 
 // ── Debug ──

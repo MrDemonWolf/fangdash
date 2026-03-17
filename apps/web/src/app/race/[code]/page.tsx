@@ -15,7 +15,7 @@ import { RaceResultModal } from "@/components/game/RaceResultModal.tsx";
 import { useSession } from "@/lib/auth-client.ts";
 import { RaceConnection, type ConnectionState } from "@/lib/party.ts";
 import { useTRPC } from "@/lib/trpc.ts";
-import { useIsDevOrAdmin } from "@/lib/use-role.ts";
+import { useIsAdmin } from "@/lib/use-role.ts";
 
 // ---------------------------------------------------------------------------
 // Phase type
@@ -33,7 +33,7 @@ export default function RaceRoomPage() {
 	// Auth
 	const { data: session } = useSession();
 	const isSignedIn = !!session?.user;
-	const isDevOrAdmin = useIsDevOrAdmin();
+	const isAdmin = useIsAdmin();
 
 	// tRPC
 	const trpc = useTRPC();
@@ -73,6 +73,7 @@ export default function RaceRoomPage() {
 		alive: true,
 		speed: 0,
 		longestCleanRun: 0,
+		cheatsUsed: false,
 	});
 	const [elapsedTime, setElapsedTime] = useState(0);
 	const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -174,6 +175,7 @@ export default function RaceRoomPage() {
 					alive: true,
 					speed: 0,
 					longestCleanRun: 0,
+		cheatsUsed: false,
 				});
 				setGameError(null);
 
@@ -195,7 +197,7 @@ export default function RaceRoomPage() {
 						connection?.sendDied();
 					},
 					onError: (msg) => setGameError(msg),
-					...(isDevOrAdmin && {
+					...(isAdmin && {
 						onDebugUpdate: (state: DebugState) => {
 							setDebugState(state);
 						},
@@ -221,7 +223,7 @@ export default function RaceRoomPage() {
 				setGameError("Failed to start game. Please reload and try again.");
 			}
 		},
-		[equippedSkin, players, myId, handleGameOver, startTimer, isDevOrAdmin],
+		[equippedSkin, players, myId, handleGameOver, startTimer, isAdmin],
 	);
 
 	// ── Connect to PartyKit ──
@@ -321,6 +323,7 @@ export default function RaceRoomPage() {
 				alive: true,
 				speed: 0,
 				longestCleanRun: 0,
+		cheatsUsed: false,
 			});
 			setElapsedTime(0);
 		});
@@ -410,7 +413,7 @@ export default function RaceRoomPage() {
 		}
 		stopTimer();
 
-		// Submit our result
+		// Submit our result (pass cheated flag so server skips rewards)
 		const myResult = raceResults.find((r) => r.playerId === myId);
 		if (myResult && isSignedIn) {
 			submitResult({
@@ -418,9 +421,10 @@ export default function RaceRoomPage() {
 				score: myResult.score,
 				distance: myResult.distance,
 				seed: raceSeed,
+				cheated: gameState.cheatsUsed,
 			});
 		}
-	}, [phase, raceResults, myId, isSignedIn, submitResult, raceSeed, stopTimer]);
+	}, [phase, raceResults, myId, isSignedIn, submitResult, raceSeed, stopTimer, gameState.cheatsUsed]);
 
 	// ── Cleanup on unmount ──
 	useEffect(() => {
@@ -717,7 +721,7 @@ export default function RaceRoomPage() {
 				)}
 
 				{/* Debug Panel (dev/admin only, Ctrl+Shift+D) */}
-				{isDevOrAdmin && (
+				{isAdmin && (
 					<DebugPanel
 						debugState={debugState}
 						onSendCommand={handleDebugCommand}
