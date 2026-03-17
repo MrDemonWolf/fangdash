@@ -24,7 +24,7 @@ function PlacementBadge({ placement }: { placement: number }) {
 			</span>
 		);
 	return (
-		<span className="rounded-full bg-white/10 px-2 py-0.5 font-mono text-xs font-bold text-gray-500">
+		<span className="rounded-full bg-muted px-2 py-0.5 font-mono text-xs font-bold text-muted-foreground">
 			{placement}th
 		</span>
 	);
@@ -53,21 +53,21 @@ export default function AdminRacesPage() {
 	return (
 		<div>
 			<div className="mb-4 flex items-center justify-between">
-				<h2 className="text-lg font-semibold text-white">Races</h2>
-				<span className="text-sm text-gray-400">{data?.total ?? 0} entries</span>
+				<h2 className="text-lg font-semibold text-foreground">Races</h2>
+				<span className="text-sm text-muted-foreground">{data?.total ?? 0} entries</span>
 			</div>
 
 			<div className="space-y-4">
 				{isPending ? (
-					<div className="py-8 text-center text-gray-500">Loading...</div>
+					<div className="py-8 text-center text-muted-foreground">Loading...</div>
 				) : (
 					grouped.map((group) => (
 						<div
 							key={group.raceId}
-							className="overflow-hidden rounded-2xl border border-white/10 bg-[#0a1628]/60 backdrop-blur-xl"
+							className="overflow-hidden rounded-2xl border border-border bg-[#0a1628]/60 backdrop-blur-xl"
 						>
-							<div className="border-b border-white/10 px-4 py-2">
-								<span className="font-mono text-xs text-gray-500">
+							<div className="border-b border-border px-4 py-2">
+								<span className="font-mono text-xs text-muted-foreground">
 									Race: {group.raceId.slice(0, 8)}&hellip;
 								</span>
 								{group.entries[0]?.createdAt && (
@@ -77,17 +77,17 @@ export default function AdminRacesPage() {
 								)}
 							</div>
 							<table className="w-full text-sm">
-								<tbody className="divide-y divide-white/5">
+								<tbody className="divide-y divide-border/50">
 									{group.entries.map((entry) => (
-										<tr key={entry.id} className="transition hover:bg-white/5">
+										<tr key={entry.id} className="transition hover:bg-muted/50">
 											<td className="w-20 px-4 py-3">
 												<PlacementBadge placement={entry.placement} />
 											</td>
-											<td className="px-4 py-3 font-medium text-white">{entry.playerName}</td>
-											<td className="px-4 py-3 font-mono text-[#0FACED]">
+											<td className="px-4 py-3 font-medium text-foreground">{entry.playerName}</td>
+											<td className="px-4 py-3 font-mono text-primary">
 												{entry.score.toLocaleString()}
 											</td>
-											<td className="px-4 py-3 font-mono text-gray-400">
+											<td className="px-4 py-3 font-mono text-muted-foreground">
 												{(entry.distance / 1000).toFixed(1)} km
 											</td>
 										</tr>
@@ -104,17 +104,17 @@ export default function AdminRacesPage() {
 					<button
 						onClick={() => setPage((p) => Math.max(1, p - 1))}
 						disabled={page === 1}
-						className="rounded-lg border border-white/10 px-3 py-1 text-sm text-gray-400 disabled:opacity-40 hover:text-white"
+						className="rounded-lg border border-border px-3 py-1 text-sm text-muted-foreground disabled:opacity-40 hover:text-foreground"
 					>
 						Prev
 					</button>
-					<span className="text-sm text-gray-400">
+					<span className="text-sm text-muted-foreground">
 						{page} / {totalPages}
 					</span>
 					<button
 						onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
 						disabled={page === totalPages}
-						className="rounded-lg border border-white/10 px-3 py-1 text-sm text-gray-400 disabled:opacity-40 hover:text-white"
+						className="rounded-lg border border-border px-3 py-1 text-sm text-muted-foreground disabled:opacity-40 hover:text-foreground"
 					>
 						Next
 					</button>

@@ -48,7 +48,7 @@ bunx drizzle-kit generate   # Generate new migration from schema changes
 **Monorepo layout:**
 
 - `apps/api` — Hono API on Cloudflare Workers, tRPC v11 endpoints, Better Auth (Twitch OAuth), Drizzle ORM with Cloudflare D1 (SQLite)
-- `apps/web` — Next.js 15 (App Router, Turbopack), React 19, Tailwind v4, tRPC client via React Query
+- `apps/web` — Next.js 15 (App Router, Turbopack), React 19, Tailwind v4, shadcn/ui components, tRPC client via React Query
 - `apps/party` — PartyKit WebSocket server for real-time multiplayer race rooms
 - `apps/docs` — Fumadocs documentation site
 - `packages/game` — Phaser 3 game engine: scenes (Boot, Game, Race), entities (Player, GhostPlayer, Obstacle), systems (parallax, difficulty, scoring, audio)
@@ -70,12 +70,16 @@ bunx drizzle-kit generate   # Generate new migration from schema changes
 - Audio system: `packages/game/src/systems/AudioManager.ts` — BGM crossfade and SFX playback with volume controls
 - PWA: service worker at `apps/web/public/sw.js` for offline support
 - Leaderboard supports per-difficulty filtering and time-period filters (daily/weekly/all-time)
+- UI component library: shadcn/ui components in `apps/web/src/components/ui/` (Button, Card, Badge, Dialog, DropdownMenu, Tabs, Table, Input, Skeleton, Progress, Switch, Separator, Sheet, Slider, Select, Tooltip, AlertDialog); config at `apps/web/components.json`
+- Design tokens: all colors defined as CSS custom properties via Tailwind v4 `@theme inline` in `apps/web/src/app/globals.css` using OKLCH color space; FangDash palette (cyan primary, dark navy background, orange/purple/gold accents) mapped to shadcn-compatible semantic tokens (background, foreground, primary, secondary, muted, accent, destructive, border, etc.)
+- `cn()` helper at `apps/web/src/lib/utils.ts` (clsx + tailwind-merge) — used by all UI components for conditional class merging
+- Tests live in `src/__tests__/` directories (not colocated next to source files); vitest configs specify `include: ["src/__tests__/**/*.test.ts"]`
 
 ## Tech Stack
 
 - **Runtime:** Bun, Node.js >= 20
 - **Language:** TypeScript 5.7, strict mode everywhere
-- **Frontend:** Next.js 15, React 19, Tailwind CSS v4
+- **Frontend:** Next.js 15, React 19, Tailwind CSS v4, shadcn/ui (New York style) + Radix UI primitives + CVA
 - **Game:** Phaser 3
 - **API:** Hono, tRPC v11, Better Auth, Drizzle ORM
 - **Database:** Cloudflare D1 (SQLite)
@@ -91,3 +95,6 @@ bunx drizzle-kit generate   # Generate new migration from schema changes
 - Commit messages: conventional commits (feat:, fix:, docs:, etc.)
 - Barrel exports in `index.ts` files for packages
 - Web app deploys via OpenNextjs-Cloudflare adapter
+- UI components use shadcn/ui primitives and design tokens — avoid hard-coded hex colors; use semantic token classes (e.g., `bg-primary`, `text-muted-foreground`, `border-border`)
+- Use the `cn()` utility from `@/lib/utils` for conditional/merged Tailwind classes
+- Indentation: tabs (enforced by `.editorconfig`)

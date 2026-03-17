@@ -3,7 +3,7 @@ export function HeroBackground() {
 		<div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
 			{/* Sky layer — slowest */}
 			<div
-				className="absolute inset-0 animate-scroll-slow bg-repeat-x"
+				className="absolute inset-0 animate-scroll-slow bg-repeat-x opacity-60"
 				style={{
 					backgroundImage: "url(/backgrounds/bg-sky.png)",
 					backgroundSize: "800px 100%",
@@ -12,7 +12,7 @@ export function HeroBackground() {
 			/>
 			{/* Hills layer — medium */}
 			<div
-				className="absolute inset-0 animate-scroll-medium bg-repeat-x"
+				className="absolute inset-0 animate-scroll-medium bg-repeat-x opacity-50"
 				style={{
 					backgroundImage: "url(/backgrounds/bg-hills.png)",
 					backgroundSize: "1600px 100%",
@@ -21,17 +21,17 @@ export function HeroBackground() {
 			/>
 			{/* Trees layer — fastest */}
 			<div
-				className="absolute inset-0 animate-scroll-fast bg-repeat-x"
+				className="absolute inset-0 animate-scroll-fast bg-repeat-x opacity-40"
 				style={{
 					backgroundImage: "url(/backgrounds/bg-trees.png)",
 					backgroundSize: "1600px 100%",
 					imageRendering: "pixelated",
 				}}
 			/>
-			{/* Gradient overlay for text readability */}
-			<div className="absolute inset-0 bg-gradient-to-b from-[#091533]/70 via-[#091533]/60 to-[#091533]/90" />
+			{/* Heavy gradient overlay for depth and readability */}
+			<div className="absolute inset-0 bg-gradient-to-b from-background/80 via-background/70 to-background" />
 			{/* Top fade — blends into navbar */}
-			<div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-[#091533] to-transparent backdrop-blur-sm [mask-image:linear-gradient(to_bottom,black_50%,transparent)]" />
+			<div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-background to-transparent" />
 		</div>
 	);
 }

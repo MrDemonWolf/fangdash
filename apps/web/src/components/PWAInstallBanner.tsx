@@ -1,6 +1,8 @@
 "use client";
 
+import { X } from "lucide-react";
 import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
 
 const STORAGE_KEY = "pwa-banner-dismissed";
 
@@ -15,15 +17,12 @@ export function PWAInstallBanner() {
 	const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
 
 	useEffect(() => {
-		// Don't show if already dismissed
 		if (typeof window === "undefined") return;
 		if (localStorage.getItem(STORAGE_KEY) === "true") return;
 
-		// Only show on mobile/tablet devices
 		const isMobileOrTablet = /android|iphone|ipad|ipod|mobile|tablet/i.test(navigator.userAgent);
 		if (!isMobileOrTablet) return;
 
-		// Detect iOS (no beforeinstallprompt support)
 		const ua = navigator.userAgent;
 		const ios =
 			/iphone|ipad|ipod/i.test(ua) &&
@@ -35,7 +34,6 @@ export function PWAInstallBanner() {
 			return;
 		}
 
-		// Chrome/Android: listen for the install prompt
 		const handler = (e: Event) => {
 			e.preventDefault();
 			setDeferredPrompt(e as BeforeInstallPromptEvent);
@@ -73,22 +71,22 @@ export function PWAInstallBanner() {
 			role="banner"
 			aria-label="Install FangDash"
 		>
-			<div className="w-full max-w-md rounded-xl border border-[#0FACED]/30 bg-[#091533] shadow-2xl">
+			<div className="w-full max-w-md rounded-xl border border-primary/30 bg-card shadow-2xl">
 				<div className="flex items-start gap-3 p-4">
 					<span className="text-2xl" aria-hidden="true">
 						🐺
 					</span>
 					<div className="min-w-0 flex-1">
-						<p className="font-semibold text-white text-sm">
+						<p className="text-sm font-semibold text-foreground">
 							Install FangDash for the best experience
 						</p>
 						{isIOS ? (
-							<p className="mt-1 text-xs text-white/50">
-								Tap <span className="text-[#0FACED]">Share</span> →{" "}
-								<span className="text-[#0FACED]">Add to Home Screen</span>
+							<p className="mt-1 text-xs text-muted-foreground">
+								Tap <span className="text-primary">Share</span> →{" "}
+								<span className="text-primary">Add to Home Screen</span>
 							</p>
 						) : (
-							<p className="mt-1 text-xs text-white/50">
+							<p className="mt-1 text-xs text-muted-foreground">
 								Add to your home screen for the full game experience
 							</p>
 						)}
@@ -97,39 +95,19 @@ export function PWAInstallBanner() {
 						type="button"
 						onClick={dismiss}
 						aria-label="Dismiss install banner"
-						className="shrink-0 rounded p-1 text-white/40 transition-colors hover:bg-white/10 hover:text-white/70"
+						className="shrink-0 rounded p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground cursor-pointer"
 					>
-						<svg
-							xmlns="http://www.w3.org/2000/svg"
-							className="h-4 w-4"
-							viewBox="0 0 20 20"
-							fill="currentColor"
-							aria-hidden="true"
-						>
-							<path
-								fillRule="evenodd"
-								d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-								clipRule="evenodd"
-							/>
-						</svg>
+						<X className="size-4" />
 					</button>
 				</div>
 				{!isIOS && deferredPrompt && (
-					<div className="flex gap-2 border-t border-[#0FACED]/10 px-4 pb-4 pt-3">
-						<button
-							type="button"
-							onClick={dismiss}
-							className="flex-1 rounded-lg border border-white/10 px-4 py-2 text-xs font-medium text-white/50 transition-colors hover:border-white/20 hover:text-white/70"
-						>
+					<div className="flex gap-2 border-t border-border px-4 pb-4 pt-3">
+						<Button variant="secondary" size="sm" className="flex-1" onClick={dismiss}>
 							Not Now
-						</button>
-						<button
-							type="button"
-							onClick={handleInstall}
-							className="flex-1 rounded-lg bg-[#0FACED] px-4 py-2 text-xs font-bold text-[#091533] transition-colors hover:bg-[#0FACED]/80"
-						>
+						</Button>
+						<Button size="sm" className="flex-1" onClick={handleInstall}>
 							Install →
-						</button>
+						</Button>
 					</div>
 				)}
 			</div>
