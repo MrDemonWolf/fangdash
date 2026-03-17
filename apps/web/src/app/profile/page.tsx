@@ -293,6 +293,7 @@ export default function ProfilePage() {
 	const trpc = useTRPC();
 
 	const isSignedIn = !!session?.user;
+	const [copied, setCopied] = useState(false);
 
 	const { data: scores, isPending: scoresLoading } = useQuery(
 		trpc.score.myScores.queryOptions(undefined, { enabled: isSignedIn }),
@@ -396,7 +397,6 @@ export default function ProfilePage() {
 
 	const recentScores = (scores ?? []) as ScoreEntry[];
 
-	const [copied, setCopied] = useState(false);
 	const shareUrl =
 		typeof window !== "undefined" ? `${window.location.origin}/profile/${user.id}` : "";
 	const handleShareProfile = () => {
