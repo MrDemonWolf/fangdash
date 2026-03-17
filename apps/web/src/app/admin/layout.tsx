@@ -15,7 +15,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 	useEffect(() => {
 		if (!isPending) {
 			const role = session?.user?.role;
-			if (!role || (role !== "admin")) {
+			if (!role || role !== "admin") {
 				router.replace("/");
 			}
 		}
@@ -30,7 +30,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 	}
 
 	const role = session?.user?.role;
-	if (!role || (role !== "admin")) {
+	if (!role || role !== "admin") {
 		return null;
 	}
 

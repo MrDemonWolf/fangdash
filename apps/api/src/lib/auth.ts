@@ -125,13 +125,9 @@ export function createAuth(env: AuthBindings) {
 								updates["twitchAvatar"] = userRecord.image;
 							}
 							if (Object.keys(updates).length > 0) {
-								await db
-									.update(schema.user)
-									.set(updates)
-									.where(eq(schema.user.id, session.userId));
+								await db.update(schema.user).set(updates).where(eq(schema.user.id, session.userId));
 							}
 						}
-
 					},
 				},
 			},

@@ -141,14 +141,14 @@ This runs all three deploy commands in sequence.
 
 ### API (`apps/api`)
 
-| Variable               | Type      | Where set                        | Description                                         |
-| ---------------------- | --------- | -------------------------------- | --------------------------------------------------- |
-| `BETTER_AUTH_SECRET`   | Secret    | `wrangler secret put`            | Long random string for signing sessions             |
-| `TWITCH_CLIENT_ID`     | Secret    | `wrangler secret put`            | Twitch OAuth app client ID                          |
-| `TWITCH_CLIENT_SECRET` | Secret    | `wrangler secret put`            | Twitch OAuth app client secret                      |
-| `BETTER_AUTH_URL`      | Plaintext | `wrangler.toml`                  | Public URL of the API worker                        |
-| `WEB_URL`              | Plaintext | `wrangler.toml`                  | Public URL of the web worker (for CORS + redirects) |
-| `ENVIRONMENT`          | Plaintext | `wrangler.toml`                  | `"development"` or `"production"`                   |
+| Variable               | Type      | Where set             | Description                                         |
+| ---------------------- | --------- | --------------------- | --------------------------------------------------- |
+| `BETTER_AUTH_SECRET`   | Secret    | `wrangler secret put` | Long random string for signing sessions             |
+| `TWITCH_CLIENT_ID`     | Secret    | `wrangler secret put` | Twitch OAuth app client ID                          |
+| `TWITCH_CLIENT_SECRET` | Secret    | `wrangler secret put` | Twitch OAuth app client secret                      |
+| `BETTER_AUTH_URL`      | Plaintext | `wrangler.toml`       | Public URL of the API worker                        |
+| `WEB_URL`              | Plaintext | `wrangler.toml`       | Public URL of the web worker (for CORS + redirects) |
+| `ENVIRONMENT`          | Plaintext | `wrangler.toml`       | `"development"` or `"production"`                   |
 
 ### Web (`apps/web`)
 
@@ -187,18 +187,18 @@ cp apps/web/.env.example apps/web/.env.local
 
 ## Troubleshooting
 
-| Error / Symptom                 | Cause                                       | Fix                                                                                                                         |
-| ------------------------------- | ------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
-| OAuth redirects to blank page   | Redirect URL mismatch in Twitch dev console | Ensure the redirect URL matches your API domain exactly, including protocol and `/api/auth/callback/twitch` path            |
-| "Auth not configured" in prod   | Missing Cloudflare secrets                  | Run all `wrangler secret put` commands: `BETTER_AUTH_SECRET`, `TWITCH_CLIENT_ID`, `TWITCH_CLIENT_SECRET`                    |
-| D1 "table not found"            | Database migrations not applied             | Run `bunx wrangler d1 migrations apply fangdash-db --remote`                                                                |
-| PartyKit connection refused     | Wrong host or missing token                 | Verify `NEXT_PUBLIC_PARTYKIT_HOST` matches your PartyKit deployment URL and `PARTYKIT_TOKEN` is set                         |
-| CORS errors in browser console  | `WEB_URL` mismatch                          | Update `WEB_URL` in `wrangler.toml` `[env.production.vars]` to match your actual web domain exactly                         |
-| Admin panel shows "Forbidden"   | User role is not `admin` or `dev`           | Run `bun run promote-admin YourUsername --remote` (see [Admin docs](/docs/getting-started/admin)) |
-| Multiplayer rooms won't start   | PartyKit not deployed                       | Run `bun run ship:party` and verify the deployment URL                                                                      |
-| Score submission fails silently | Rate limit hit (429)                        | Wait 60 seconds and retry, or check the response for a `429` status and `Retry-After` header                                |
-| "FORBIDDEN" on all actions      | Account is banned                           | Check the user's ban status in the admin panel or D1 database                                                               |
-| Build fails with type errors    | Dependencies out of date                    | Run `bun install` then `bun run typecheck` to identify issues                                                               |
+| Error / Symptom                 | Cause                                       | Fix                                                                                                              |
+| ------------------------------- | ------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| OAuth redirects to blank page   | Redirect URL mismatch in Twitch dev console | Ensure the redirect URL matches your API domain exactly, including protocol and `/api/auth/callback/twitch` path |
+| "Auth not configured" in prod   | Missing Cloudflare secrets                  | Run all `wrangler secret put` commands: `BETTER_AUTH_SECRET`, `TWITCH_CLIENT_ID`, `TWITCH_CLIENT_SECRET`         |
+| D1 "table not found"            | Database migrations not applied             | Run `bunx wrangler d1 migrations apply fangdash-db --remote`                                                     |
+| PartyKit connection refused     | Wrong host or missing token                 | Verify `NEXT_PUBLIC_PARTYKIT_HOST` matches your PartyKit deployment URL and `PARTYKIT_TOKEN` is set              |
+| CORS errors in browser console  | `WEB_URL` mismatch                          | Update `WEB_URL` in `wrangler.toml` `[env.production.vars]` to match your actual web domain exactly              |
+| Admin panel shows "Forbidden"   | User role is not `admin` or `dev`           | Run `bun run promote-admin YourUsername --remote` (see [Admin docs](/docs/getting-started/admin))                |
+| Multiplayer rooms won't start   | PartyKit not deployed                       | Run `bun run ship:party` and verify the deployment URL                                                           |
+| Score submission fails silently | Rate limit hit (429)                        | Wait 60 seconds and retry, or check the response for a `429` status and `Retry-After` header                     |
+| "FORBIDDEN" on all actions      | Account is banned                           | Check the user's ban status in the admin panel or D1 database                                                    |
+| Build fails with type errors    | Dependencies out of date                    | Run `bun install` then `bun run typecheck` to identify issues                                                    |
 
 ### PartyKit Deployment Details
 

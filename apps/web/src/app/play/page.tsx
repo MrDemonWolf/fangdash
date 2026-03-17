@@ -206,7 +206,7 @@ export default function PlayPage() {
 				alive: true,
 				speed: 0,
 				longestCleanRun: 0,
-		cheatsUsed: false,
+				cheatsUsed: false,
 			});
 
 			const { game, debug, audio, gameChannel } = createGame({
