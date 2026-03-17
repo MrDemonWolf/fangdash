@@ -68,15 +68,15 @@ describe("DifficultyScaler", () => {
 	});
 
 	it("should expose level name", () => {
-		expect(scaler.levelName).toBe(DIFFICULTY_LEVELS[0]!.name);
+		expect(scaler.levelName).toBe(DIFFICULTY_LEVELS[0]?.name);
 	});
 
 	it("should expose speed multiplier", () => {
-		expect(scaler.speedMultiplier).toBe(DIFFICULTY_LEVELS[0]!.speedMultiplier);
+		expect(scaler.speedMultiplier).toBe(DIFFICULTY_LEVELS[0]?.speedMultiplier);
 	});
 
 	it("should expose spawn rate multiplier", () => {
-		expect(scaler.spawnRateMultiplier).toBe(DIFFICULTY_LEVELS[0]!.spawnRateMultiplier);
+		expect(scaler.spawnRateMultiplier).toBe(DIFFICULTY_LEVELS[0]?.spawnRateMultiplier);
 	});
 
 	it("should compute min gap", () => {

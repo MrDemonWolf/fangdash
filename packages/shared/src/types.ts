@@ -142,7 +142,7 @@ export type ServerMessage =
 	| { type: "countdown"; payload: { seconds: number } }
 	| { type: "race_start"; payload: { seed: string } }
 	| { type: "race_end"; payload: { results: RaceResult[] } }
-	| { type: "host_changed"; payload: { hostId: string } }
+	| { type: "host_changed"; payload: { hostId: string | null } }
 	| { type: "player_ready"; payload: { id: string; ready: boolean } }
 	| { type: "player_kicked"; payload: { id: string } }
 	| { type: "room_reset"; payload: RaceRoom };

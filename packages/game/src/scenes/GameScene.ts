@@ -1,12 +1,25 @@
 import type { DebugCommand, DebugState, GameState } from "@fangdash/shared";
-import { AUDIO_KEYS, GAME_HEIGHT, GAME_WIDTH, GROUND_HEIGHT } from "@fangdash/shared";
+import {
+	AUDIO_KEYS,
+	GAME_HEIGHT,
+	GAME_WIDTH,
+	GROUND_HEIGHT,
+	MOD_FOG,
+	MOD_HEADWIND,
+	MOD_TREMOR,
+	SeededRandom,
+	hasmod,
+} from "@fangdash/shared";
 import * as Phaser from "phaser";
 import { ObstacleSpawner } from "../entities/Obstacle.ts";
 import { Player } from "../entities/Player.ts";
 import { AudioManager } from "../systems/AudioManager.ts";
 import { DifficultyScaler } from "../systems/DifficultyScaler.ts";
+import { FogEffect } from "../systems/FogEffect.ts";
 import { ParallaxBackground } from "../systems/ParallaxBackground.ts";
 import { ScoreManager } from "../systems/ScoreManager.ts";
+import type { WeatherEffect } from "../systems/WeatherEffects.ts";
+import { TremorEffect, WindEffect } from "../systems/WeatherEffects.ts";
 
 export type GameEventCallback = {
 	onStateUpdate?: ((state: GameState) => void) | undefined;
@@ -25,9 +38,12 @@ export class GameScene extends Phaser.Scene {
 	protected callbacks: GameEventCallback = {};
 	protected skinKey = "wolf-gray";
 	protected seed: string | undefined;
+	protected mods = 0;
 	protected running = false;
 	private previewing = false;
 	private startDifficulty: string | undefined;
+	private fogEffect: FogEffect | null = null;
+	private weatherEffects: WeatherEffect[] = [];
 	audioManager!: AudioManager;
 
 	// Debug state
@@ -48,12 +64,14 @@ export class GameScene extends Phaser.Scene {
 		skinKey?: string;
 		seed?: string;
 		startDifficulty?: string;
+		mods?: number;
 	}) {
 		// When started by BootScene (no explicit data), fall back to registry values
 		this.callbacks = data.callbacks ?? this.game.registry.get("callbacks") ?? {};
 		this.skinKey = data.skinKey ?? this.game.registry.get("skinKey") ?? "wolf-gray";
 		this.seed = data.seed ?? this.game.registry.get("seed");
 		this.startDifficulty = data.startDifficulty ?? this.game.registry.get("startDifficulty");
+		this.mods = data.mods ?? this.game.registry.get("mods") ?? 0;
 	}
 
 	create() {
@@ -169,6 +187,19 @@ export class GameScene extends Phaser.Scene {
 		// Scroll ground
 		this.ground.tilePositionX += speed * (adjustedDelta / 1000);
 
+		// Update fog effect
+		if (this.fogEffect) {
+			this.fogEffect.update(this.player.sprite.x, this.player.y, this.scoreManager.distance);
+		}
+
+		// Reset per-frame accumulated forces before weather effects apply them
+		this.player.externalForceY = 0;
+
+		// Update weather effects
+		for (const fx of this.weatherEffects) {
+			fx.update(adjustedDelta, this.scoreManager.distance, this.player.sprite.x, this.player.y);
+		}
+
 		// Collision detection (skip if invincible)
 		if (!this.debugInvincible) {
 			const playerBounds = this.player.bounds;
@@ -206,9 +237,33 @@ export class GameScene extends Phaser.Scene {
 		this.seed = seed;
 		this.spawner.setSeed(seed);
 		this.difficulty.reset();
+
 		if (this.startDifficulty) {
 			this.difficulty.setStartLevel(this.startDifficulty);
 		}
+
+		// Clean up previous effects
+		if (this.fogEffect) {
+			this.fogEffect.destroy();
+			this.fogEffect = null;
+		}
+		for (const fx of this.weatherEffects) {
+			fx.destroy();
+		}
+		this.weatherEffects = [];
+
+		// Apply mods
+		if (hasmod(this.mods, MOD_FOG)) {
+			this.fogEffect = new FogEffect(this);
+		}
+		if (hasmod(this.mods, MOD_HEADWIND)) {
+			this.weatherEffects.push(new WindEffect(this, this.player));
+		}
+		if (hasmod(this.mods, MOD_TREMOR)) {
+			const tremorRng = new SeededRandom(seed + "-tremor");
+			this.weatherEffects.push(new TremorEffect(this, this.player, tremorRng));
+		}
+
 		this.scoreManager.reset();
 		this.background.reset();
 		this.audioManager.playBGM(AUDIO_KEYS.BGM_GAME);
@@ -221,6 +276,15 @@ export class GameScene extends Phaser.Scene {
 		this.audioManager.playSFX(AUDIO_KEYS.SFX_HIT);
 		this.audioManager.playSFX(AUDIO_KEYS.SFX_GAME_OVER);
 
+		if (this.fogEffect) {
+			this.fogEffect.destroy();
+			this.fogEffect = null;
+		}
+		for (const fx of this.weatherEffects) {
+			fx.destroy();
+		}
+		this.weatherEffects = [];
+
 		const finalState = this.scoreManager.getState(
 			false,
 			this.difficulty.currentSpeed,
@@ -231,6 +295,10 @@ export class GameScene extends Phaser.Scene {
 
 	public setStartDifficulty(name: string) {
 		this.startDifficulty = name;
+	}
+
+	public setMods(mods: number) {
+		this.mods = mods;
 	}
 
 	public beginRun() {

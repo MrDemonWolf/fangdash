@@ -10,7 +10,7 @@ export interface DebugChannel {
 }
 
 export interface GameChannel {
-	start: (difficulty?: string) => void;
+	start: (difficulty?: string, mods?: number) => void;
 	preview: () => void;
 	pause: () => void;
 	resume: () => void;
@@ -20,6 +20,7 @@ export interface GameCanvasOptions {
 	parent: HTMLElement;
 	skinKey?: string;
 	startDifficulty?: string;
+	mods?: number;
 	onStateUpdate?: (state: GameState) => void;
 	onGameOver?: (state: GameState) => void;
 	onDebugUpdate?: (state: DebugState) => void;
@@ -149,6 +150,7 @@ export function createGame(options: GameCanvasOptions): GameCanvasResult {
 			game.registry.set("callbacks", callbacks);
 			game.registry.set("skinKey", options.skinKey);
 			game.registry.set("startDifficulty", options.startDifficulty);
+			game.registry.set("mods", options.mods ?? 0);
 		},
 	};
 
@@ -173,12 +175,13 @@ export function createGame(options: GameCanvasOptions): GameCanvasResult {
 	const audio = createAudioChannel(game, "GameScene");
 
 	const gameChannel: GameChannel = {
-		start: (difficulty?: string) => {
+		start: (difficulty?: string, mods?: number) => {
 			const gameScene = game.scene.getScene("GameScene") as GameScene;
 			if (gameScene) {
 				if (difficulty) {
 					gameScene.setStartDifficulty(difficulty);
 				}
+				gameScene.setMods(mods ?? 0);
 				gameScene.beginRun();
 			}
 		},

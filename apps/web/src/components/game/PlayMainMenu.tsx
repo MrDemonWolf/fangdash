@@ -1,5 +1,5 @@
 "use client";
-import { DIFFICULTY_LEVELS } from "@fangdash/shared";
+import { DIFFICULTY_LEVELS, MOD_DEFINITIONS, getScoreMultiplier } from "@fangdash/shared";
 import { LogOut, User } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
@@ -11,6 +11,8 @@ interface PlayMainMenuProps {
 	bestScore: number;
 	selectedDifficulty: string;
 	onSelectDifficulty: (d: string) => void;
+	selectedMods: number;
+	onSelectMods: (mods: number) => void;
 	userName?: string | undefined;
 	userImage?: string | undefined;
 	isPending?: boolean;
@@ -94,12 +96,16 @@ export function PlayMainMenu({
 	bestScore,
 	selectedDifficulty,
 	onSelectDifficulty,
+	selectedMods,
+	onSelectMods,
 	userName,
 	userImage,
 	isPending,
 	onSignIn,
 	onSignOut,
 }: PlayMainMenuProps) {
+	const multiplier = getScoreMultiplier(selectedMods);
+
 	return (
 		<div className="absolute inset-0 z-20 flex flex-col items-center justify-center">
 			{/* Gradient backdrop — lets game canvas show through */}
@@ -193,6 +199,70 @@ export function PlayMainMenu({
 							);
 						})}
 					</div>
+				</div>
+
+				{/* Mod selector */}
+				<div className="flex flex-col gap-2 w-full">
+					<span className="text-[10px] font-mono uppercase tracking-widest text-white/40">
+						Mods
+					</span>
+					<div className="grid grid-cols-2 gap-2 w-full">
+						{MOD_DEFINITIONS.map((mod) => {
+							const isActive = (selectedMods & mod.flag) !== 0;
+							return (
+								<button
+									type="button"
+									key={mod.id}
+									onClick={() => onSelectMods(selectedMods ^ mod.flag)}
+									aria-pressed={isActive}
+									className={`relative rounded-lg border px-3 py-2.5 text-left transition-all cursor-pointer ${
+										isActive
+											? "bg-purple-500/15 border-purple-500/40"
+											: "bg-white/5 border-white/10 hover:bg-white/[0.07] hover:border-white/15"
+									}`}
+									style={{
+										boxShadow: isActive ? "0 0 16px rgba(168, 85, 247, 0.2)" : undefined,
+									}}
+								>
+									<div className="flex items-center gap-2 overflow-hidden">
+										<span className="text-base">{mod.icon}</span>
+										<span
+											className={`text-xs font-bold uppercase tracking-wide truncate ${
+												isActive ? "text-purple-300" : "text-white/60"
+											}`}
+										>
+											{mod.name}
+										</span>
+										{!mod.ready && (
+											<span className="rounded px-1 py-0.5 text-[8px] font-bold uppercase bg-yellow-500/20 text-yellow-400">
+												Beta
+											</span>
+										)}
+										<span
+											className={`ml-auto rounded-full px-1.5 py-0.5 font-mono text-[10px] ${
+												isActive ? "bg-purple-500/20 text-purple-300" : "bg-white/10 text-white/40"
+											}`}
+										>
+											{mod.multiplier}x
+										</span>
+									</div>
+									<p className="mt-1 text-[10px] text-white/30 leading-tight">
+										{mod.description}
+										{!mod.ready && isActive && (
+											<span className="block mt-0.5 text-yellow-400/60">
+												Unranked — won't appear on leaderboard
+											</span>
+										)}
+									</p>
+								</button>
+							);
+						})}
+					</div>
+					{selectedMods > 0 && (
+						<div className="text-center text-xs font-mono text-purple-300">
+							Score: {multiplier}x
+						</div>
+					)}
 				</div>
 
 				{/* PLAY button */}

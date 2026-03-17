@@ -63,7 +63,7 @@ describe("admin router", () => {
 			const result = await caller.admin.getPlayers({ limit: 10, page: 1, search: "Special" });
 
 			expect(result.items.length).toBe(1);
-			expect(result.items[0]!.name).toBe("SpecialPlayer");
+			expect(result.items[0]?.name).toBe("SpecialPlayer");
 		});
 
 		it("should reject non-admin", async () => {

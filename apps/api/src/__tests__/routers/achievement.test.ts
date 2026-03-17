@@ -27,18 +27,20 @@ describe("achievement router", () => {
 			const caller = createTestCaller({ db, userId });
 
 			// Manually unlock an achievement
+			const firstAchievement = ACHIEVEMENTS[0];
+			if (!firstAchievement) throw new Error("expected achievement");
 			const { playerAchievement } = await import("../../db/schema.ts");
 			db.insert(playerAchievement)
 				.values({
 					id: crypto.randomUUID(),
 					playerId,
-					achievementId: ACHIEVEMENTS[0]!.id,
+					achievementId: firstAchievement.id,
 					unlockedAt: new Date(),
 				})
 				.run();
 
 			const result = await caller.achievement.getAll();
-			const first = result.find((a) => a.id === ACHIEVEMENTS[0]!.id);
+			const first = result.find((a) => a.id === firstAchievement.id);
 			expect(first?.unlocked).toBe(true);
 		});
 
