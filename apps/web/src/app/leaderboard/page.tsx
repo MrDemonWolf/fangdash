@@ -8,6 +8,18 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useSession } from "@/lib/auth-client.ts";
 import { useTRPC } from "@/lib/trpc.ts";
+import { cn } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+	Table,
+	TableBody,
+	TableCell,
+	TableHead,
+	TableHeader,
+	TableRow,
+} from "@/components/ui/table";
+import { Card, CardContent } from "@/components/ui/card";
 
 type Tab = "daily" | "weekly" | "all-time";
 
@@ -20,27 +32,27 @@ const TABS: { key: Tab; label: string }[] = [
 function RankBadge({ rank }: { rank: number }) {
 	if (rank === 1) {
 		return (
-			<span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-yellow-500/20 text-yellow-400 font-bold text-sm">
+			<Badge variant="gold" className="size-8 justify-center rounded-full px-0 font-bold">
 				{rank}
-			</span>
+			</Badge>
 		);
 	}
 	if (rank === 2) {
 		return (
-			<span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-gray-300/20 text-gray-300 font-bold text-sm">
+			<Badge variant="silver" className="size-8 justify-center rounded-full px-0 font-bold">
 				{rank}
-			</span>
+			</Badge>
 		);
 	}
 	if (rank === 3) {
 		return (
-			<span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-amber-700/20 text-amber-600 font-bold text-sm">
+			<Badge variant="bronze" className="size-8 justify-center rounded-full px-0 font-bold">
 				{rank}
-			</span>
+			</Badge>
 		);
 	}
 	return (
-		<span className="inline-flex items-center justify-center w-8 h-8 text-gray-400 font-medium text-sm">
+		<span className="inline-flex items-center justify-center size-8 text-muted-foreground font-medium text-sm">
 			{rank}
 		</span>
 	);
@@ -50,51 +62,50 @@ function DifficultyBadge({ difficulty }: { difficulty: string }) {
 	const level = DIFFICULTY_LEVELS.find((l) => l.name === difficulty);
 	if (!level) return null;
 	return (
-		<span className="inline-flex items-center gap-1 text-xs text-gray-400">
-			<span
-				className="inline-block w-2 h-2 rounded-full"
-				style={{ backgroundColor: level.color }}
-			/>
+		<span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
+			<span className="inline-block size-2 rounded-full" style={{ backgroundColor: level.color }} />
 			<span className="hidden sm:inline">{level.label}</span>
 		</span>
 	);
 }
 
-function SkeletonRow() {
-	return (
-		<tr className="border-b border-white/5">
-			<td className="px-4 py-3">
-				<div className="h-8 w-8 rounded-full bg-white/10 animate-pulse" />
-			</td>
-			<td className="px-4 py-3">
-				<div className="h-4 w-24 rounded bg-white/10 animate-pulse" />
-			</td>
-			<td className="px-4 py-3">
-				<div className="h-4 w-16 rounded bg-white/10 animate-pulse" />
-			</td>
-			<td className="px-4 py-3">
-				<div className="h-4 w-16 rounded bg-white/10 animate-pulse" />
-			</td>
-			<td className="px-4 py-3 hidden sm:table-cell">
-				<div className="h-4 w-20 rounded bg-white/10 animate-pulse" />
-			</td>
-		</tr>
-	);
+function SkeletonRows() {
+	return Array.from({ length: 5 }).map((_, i) => (
+		<TableRow key={i}>
+			<TableCell>
+				<Skeleton className="size-8 rounded-full" />
+			</TableCell>
+			<TableCell>
+				<Skeleton className="h-4 w-24" />
+			</TableCell>
+			<TableCell>
+				<Skeleton className="h-4 w-16" />
+			</TableCell>
+			<TableCell>
+				<Skeleton className="h-4 w-16" />
+			</TableCell>
+			<TableCell className="hidden sm:table-cell">
+				<Skeleton className="h-4 w-20" />
+			</TableCell>
+		</TableRow>
+	));
 }
 
-function SkeletonCard() {
-	return (
-		<div className="rounded-lg bg-white/5 p-4 animate-pulse">
-			<div className="flex items-center gap-3">
-				<div className="h-8 w-8 rounded-full bg-white/10" />
-				<div className="h-4 w-24 rounded bg-white/10" />
-			</div>
-			<div className="mt-3 flex gap-4">
-				<div className="h-4 w-16 rounded bg-white/10" />
-				<div className="h-4 w-16 rounded bg-white/10" />
-			</div>
-		</div>
-	);
+function SkeletonCards() {
+	return Array.from({ length: 5 }).map((_, i) => (
+		<Card key={i} className="animate-pulse">
+			<CardContent className="p-4">
+				<div className="flex items-center gap-3">
+					<Skeleton className="size-8 rounded-full" />
+					<Skeleton className="h-4 w-24" />
+				</div>
+				<div className="mt-3 flex gap-4">
+					<Skeleton className="h-4 w-16" />
+					<Skeleton className="h-4 w-16" />
+				</div>
+			</CardContent>
+		</Card>
+	));
 }
 
 function formatDate(date: Date | string) {
@@ -136,24 +147,25 @@ export default function LeaderboardPage() {
 	}, [leaderboardQuery.isError]);
 
 	return (
-		<main className="min-h-screen bg-[#091533] px-4 py-8 sm:px-6 lg:px-8">
+		<main className="min-h-screen bg-background px-4 py-8 sm:px-6 lg:px-8">
 			<div className="mx-auto max-w-4xl">
-				<h1 className="text-3xl font-bold text-white sm:text-4xl">Leaderboard</h1>
-				<p className="mt-2 text-gray-400">Top runners in FangDash</p>
+				<h1 className="text-3xl font-bold text-foreground sm:text-4xl">Leaderboard</h1>
+				<p className="mt-2 text-muted-foreground">Top runners in FangDash</p>
 
 				{/* Period Tabs */}
-				<div className="mt-6 flex gap-1 rounded-lg bg-white/5 p-1">
+				<div className="mt-6 flex gap-1 rounded-lg bg-muted p-1">
 					{TABS.map((tab) => (
 						<button
 							type="button"
 							key={tab.key}
 							onClick={() => setActiveTab(tab.key)}
 							aria-pressed={activeTab === tab.key}
-							className={`flex-1 rounded-md px-4 py-2 text-sm font-medium transition-colors ${
+							className={cn(
+								"flex-1 rounded-md px-4 py-2 text-sm font-medium transition-colors cursor-pointer",
 								activeTab === tab.key
-									? "bg-[#0FACED]/20 text-[#0FACED]"
-									: "text-gray-400 hover:text-white hover:bg-white/5"
-							}`}
+									? "bg-secondary text-foreground"
+									: "text-muted-foreground hover:text-foreground hover:bg-muted/80",
+							)}
 						>
 							{tab.label}
 						</button>
@@ -161,16 +173,17 @@ export default function LeaderboardPage() {
 				</div>
 
 				{/* Difficulty Filter */}
-				<div className="mt-3 flex gap-1 rounded-lg bg-white/5 p-1">
+				<div className="mt-3 flex gap-1 rounded-lg bg-muted p-1">
 					<button
 						type="button"
 						onClick={() => setActiveDifficulty("all")}
 						aria-pressed={activeDifficulty === "all"}
-						className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+						className={cn(
+							"rounded-md px-3 py-1.5 text-sm font-medium transition-colors cursor-pointer",
 							activeDifficulty === "all"
-								? "bg-[#0FACED]/20 text-[#0FACED]"
-								: "text-gray-400 hover:text-white hover:bg-white/5"
-						}`}
+								? "bg-secondary text-foreground"
+								: "text-muted-foreground hover:text-foreground hover:bg-muted/80",
+						)}
 					>
 						All
 					</button>
@@ -180,14 +193,15 @@ export default function LeaderboardPage() {
 							key={level.name}
 							onClick={() => setActiveDifficulty(level.name)}
 							aria-pressed={activeDifficulty === level.name}
-							className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+							className={cn(
+								"flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors cursor-pointer",
 								activeDifficulty === level.name
-									? "bg-white/10 text-white"
-									: "text-gray-400 hover:text-white hover:bg-white/5"
-							}`}
+									? "bg-muted-foreground/10 text-foreground"
+									: "text-muted-foreground hover:text-foreground hover:bg-muted/80",
+							)}
 						>
 							<span
-								className="inline-block w-2 h-2 rounded-full"
+								className="inline-block size-2 rounded-full"
 								style={{ backgroundColor: level.color }}
 							/>
 							<span className="hidden sm:inline">{level.label}</span>
@@ -196,150 +210,141 @@ export default function LeaderboardPage() {
 				</div>
 
 				{/* Desktop Table */}
-				<div className="mt-6 hidden sm:block overflow-x-auto rounded-lg border border-white/10 bg-white/[0.03]">
-					<table className="w-full text-left text-sm">
-						<thead>
-							<tr className="border-b border-white/10 text-gray-400">
-								<th className="px-4 py-3 font-medium w-16">Rank</th>
-								<th className="px-4 py-3 font-medium">Username</th>
-								<th className="px-4 py-3 font-medium">Score</th>
-								<th className="px-4 py-3 font-medium">Distance</th>
-								{activeDifficulty === "all" && (
-									<th className="px-4 py-3 font-medium">Difficulty</th>
-								)}
-								<th className="px-4 py-3 font-medium">Date</th>
-							</tr>
-						</thead>
-						<tbody>
-							{leaderboardQuery.isLoading && (
-								<>
-									<SkeletonRow />
-									<SkeletonRow />
-									<SkeletonRow />
-									<SkeletonRow />
-									<SkeletonRow />
-								</>
-							)}
+				<div className="mt-6 hidden sm:block">
+					<Table>
+						<TableHeader>
+							<TableRow className="hover:bg-transparent">
+								<TableHead className="w-16">Rank</TableHead>
+								<TableHead>Username</TableHead>
+								<TableHead>Score</TableHead>
+								<TableHead>Distance</TableHead>
+								{activeDifficulty === "all" && <TableHead>Difficulty</TableHead>}
+								<TableHead>Date</TableHead>
+							</TableRow>
+						</TableHeader>
+						<TableBody>
+							{leaderboardQuery.isLoading && <SkeletonRows />}
 							{!leaderboardQuery.isLoading && entries.length === 0 && (
-								<tr>
-									<td
+								<TableRow className="hover:bg-transparent">
+									<TableCell
 										colSpan={activeDifficulty === "all" ? 6 : 5}
-										className="px-4 py-12 text-center text-gray-500"
+										className="py-12 text-center text-muted-foreground"
 									>
 										No scores yet. Be the first to play!
-									</td>
-								</tr>
+									</TableCell>
+								</TableRow>
 							)}
 							{entries.map((entry) => {
 								const isCurrentUser = currentUsername != null && entry.username === currentUsername;
 								return (
-									<tr
+									<TableRow
 										key={entry.scoreId}
-										className={`border-b border-white/5 transition-colors ${
-											isCurrentUser
-												? "bg-[#0FACED]/10 border-[#0FACED]/20"
-												: "hover:bg-white/[0.03]"
-										}`}
+										className={cn(isCurrentUser && "bg-primary/10 border-primary/20")}
 									>
-										<td className="px-4 py-3">
+										<TableCell>
 											<RankBadge rank={entry.rank} />
-										</td>
-										<td className="px-4 py-3 font-medium text-white">
+										</TableCell>
+										<TableCell className="font-medium text-foreground">
 											<span className="inline-flex items-center gap-2">
-												{"profilePublic" in entry && entry.profilePublic === 1 && "userId" in entry ? (
-													<Link href={`/profile/${entry.userId}`} className="hover:text-[#0FACED] transition-colors hover:underline">
+												{"profilePublic" in entry &&
+												entry.profilePublic === 1 &&
+												"userId" in entry ? (
+													<Link
+														href={`/profile/${entry.userId}`}
+														className="hover:text-primary transition-colors hover:underline"
+													>
 														{entry.username}
 													</Link>
 												) : (
 													entry.username
 												)}
-												{"level" in entry && (
-													<span className="rounded-full bg-[#0FACED]/10 px-1.5 py-0.5 font-mono text-[10px] text-[#0FACED]">
-														Lv.{entry.level}
-													</span>
-												)}
-												{isCurrentUser && <span className="text-xs text-[#0FACED]">(you)</span>}
+												{"level" in entry && <Badge variant="level">Lv.{entry.level}</Badge>}
+												{isCurrentUser && <span className="text-xs text-primary">(you)</span>}
 											</span>
-										</td>
-										<td className="px-4 py-3 text-white tabular-nums">
+										</TableCell>
+										<TableCell className="text-foreground tabular-nums">
 											{formatNumber(entry.score)}
-										</td>
-										<td className="px-4 py-3 text-gray-300 tabular-nums">
+										</TableCell>
+										<TableCell className="text-secondary-foreground tabular-nums">
 											{formatNumber(Math.round(entry.distance))}m
-										</td>
+										</TableCell>
 										{activeDifficulty === "all" && (
-											<td className="px-4 py-3">
+											<TableCell>
 												<DifficultyBadge difficulty={entry.difficulty} />
-											</td>
+											</TableCell>
 										)}
-										<td className="px-4 py-3 text-gray-400">{formatDate(entry.createdAt)}</td>
-									</tr>
+										<TableCell className="text-muted-foreground">
+											{formatDate(entry.createdAt)}
+										</TableCell>
+									</TableRow>
 								);
 							})}
-						</tbody>
-					</table>
+						</TableBody>
+					</Table>
 				</div>
 
 				{/* Mobile Card Layout */}
 				<div className="mt-6 flex flex-col gap-3 sm:hidden">
-					{leaderboardQuery.isLoading && (
-						<>
-							<SkeletonCard />
-							<SkeletonCard />
-							<SkeletonCard />
-							<SkeletonCard />
-							<SkeletonCard />
-						</>
-					)}
+					{leaderboardQuery.isLoading && <SkeletonCards />}
 					{!leaderboardQuery.isLoading && entries.length === 0 && (
-						<div className="rounded-lg bg-white/5 px-4 py-12 text-center text-gray-500">
-							No scores yet. Be the first to play!
-						</div>
+						<Card>
+							<CardContent className="px-4 py-12 text-center text-muted-foreground">
+								No scores yet. Be the first to play!
+							</CardContent>
+						</Card>
 					)}
 					{entries.map((entry) => {
 						const isCurrentUser = currentUsername != null && entry.username === currentUsername;
 						return (
-							<div
+							<Card
 								key={entry.scoreId}
-								className={`rounded-lg p-4 ${
-									isCurrentUser ? "bg-[#0FACED]/10 border border-[#0FACED]/20" : "bg-white/5"
-								}`}
+								className={cn(
+									"transition-colors",
+									isCurrentUser && "border-primary/20 bg-primary/5",
+								)}
 							>
-								<div className="flex items-center gap-3">
-									<RankBadge rank={entry.rank} />
-									<span className="inline-flex items-center gap-2 font-medium text-white">
-										{"profilePublic" in entry && entry.profilePublic === 1 && "userId" in entry ? (
-											<Link href={`/profile/${entry.userId}`} className="hover:text-[#0FACED] transition-colors hover:underline">
-												{entry.username}
-											</Link>
-										) : (
-											entry.username
+								<CardContent className="p-4">
+									<div className="flex items-center gap-3">
+										<RankBadge rank={entry.rank} />
+										<span className="inline-flex items-center gap-2 font-medium text-foreground">
+											{"profilePublic" in entry &&
+											entry.profilePublic === 1 &&
+											"userId" in entry ? (
+												<Link
+													href={`/profile/${entry.userId}`}
+													className="hover:text-primary transition-colors hover:underline"
+												>
+													{entry.username}
+												</Link>
+											) : (
+												entry.username
+											)}
+											{"level" in entry && <Badge variant="level">Lv.{entry.level}</Badge>}
+											{isCurrentUser && <span className="text-xs text-primary">(you)</span>}
+										</span>
+										{activeDifficulty === "all" && (
+											<DifficultyBadge difficulty={entry.difficulty} />
 										)}
-										{"level" in entry && (
-											<span className="rounded-full bg-[#0FACED]/10 px-1.5 py-0.5 font-mono text-[10px] text-[#0FACED]">
-												Lv.{entry.level}
+									</div>
+									<div className="mt-3 flex items-center gap-4 text-sm">
+										<div>
+											<span className="text-muted-foreground">Score </span>
+											<span className="text-foreground tabular-nums font-medium">
+												{formatNumber(entry.score)}
 											</span>
-										)}
-										{isCurrentUser && <span className="text-xs text-[#0FACED]">(you)</span>}
-									</span>
-									{activeDifficulty === "all" && <DifficultyBadge difficulty={entry.difficulty} />}
-								</div>
-								<div className="mt-3 flex items-center gap-4 text-sm">
-									<div>
-										<span className="text-gray-400">Score </span>
-										<span className="text-white tabular-nums font-medium">
-											{formatNumber(entry.score)}
-										</span>
+										</div>
+										<div>
+											<span className="text-muted-foreground">Distance </span>
+											<span className="text-secondary-foreground tabular-nums">
+												{formatNumber(Math.round(entry.distance))}m
+											</span>
+										</div>
 									</div>
-									<div>
-										<span className="text-gray-400">Distance </span>
-										<span className="text-gray-300 tabular-nums">
-											{formatNumber(Math.round(entry.distance))}m
-										</span>
+									<div className="mt-1 text-xs text-muted-foreground/60">
+										{formatDate(entry.createdAt)}
 									</div>
-								</div>
-								<div className="mt-1 text-xs text-gray-500">{formatDate(entry.createdAt)}</div>
-							</div>
+								</CardContent>
+							</Card>
 						);
 					})}
 				</div>

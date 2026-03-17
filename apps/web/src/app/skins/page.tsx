@@ -3,40 +3,25 @@
 import type { SkinDefinition, SkinRarity, SkinUnlockCondition } from "@fangdash/shared";
 import { SKINS } from "@fangdash/shared";
 import { useQuery } from "@tanstack/react-query";
+import { Lock } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useSession } from "@/lib/auth-client.ts";
 import { useTRPC } from "@/lib/trpc.ts";
+import { cn } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 
 /* ------------------------------------------------------------------ */
 /*  Rarity colour map                                                  */
 /* ------------------------------------------------------------------ */
-const RARITY_COLORS: Record<SkinRarity, { badge: string; border: string; text: string }> = {
-	common: {
-		badge: "bg-gray-600",
-		border: "border-gray-500",
-		text: "text-gray-300",
-	},
-	uncommon: {
-		badge: "bg-green-700",
-		border: "border-green-500",
-		text: "text-green-400",
-	},
-	rare: {
-		badge: "bg-blue-700",
-		border: "border-blue-500",
-		text: "text-blue-400",
-	},
-	epic: {
-		badge: "bg-purple-700",
-		border: "border-purple-500",
-		text: "text-purple-400",
-	},
-	legendary: {
-		badge: "bg-yellow-700",
-		border: "border-yellow-500",
-		text: "text-yellow-400",
-	},
+const RARITY_STYLES: Record<SkinRarity, { badge: string; border: string }> = {
+	common: { badge: "secondary", border: "border-muted-foreground/30" },
+	uncommon: { badge: "emerald", border: "border-emerald-500/40" },
+	rare: { badge: "default", border: "border-primary/40" },
+	epic: { badge: "purple", border: "border-purple-500/40" },
+	legendary: { badge: "gold", border: "border-yellow-500/40" },
 };
 
 /* ------------------------------------------------------------------ */
@@ -64,88 +49,62 @@ interface GallerySkin extends SkinDefinition {
 	unlocked: boolean;
 }
 
-function SkinCard({
-	skin,
-	equipped,
-}: {
-	skin: GallerySkin;
-	equipped: boolean;
-}) {
-	const rarity = RARITY_COLORS[skin.rarity];
+function SkinCard({ skin, equipped }: { skin: GallerySkin; equipped: boolean }) {
+	const rarity = RARITY_STYLES[skin.rarity];
 
 	return (
-		<div
-			className={`relative flex flex-col items-center rounded-xl border-2 p-4 transition-all ${
+		<Card
+			className={cn(
+				"relative flex flex-col items-center p-4 transition-all border-2",
 				equipped
-					? "border-[#0FACED] shadow-[0_0_20px_rgba(15,172,237,0.4)]"
+					? "border-primary shadow-[0_0_20px_rgba(15,172,237,0.4)]"
 					: skin.unlocked
 						? rarity.border
-						: "border-gray-700 opacity-75"
-			} bg-[#091533]`}
-		>
-			{/* Equipped indicator */}
-			{equipped && (
-				<span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-[#0FACED] px-3 py-0.5 text-xs font-bold text-[#091533]">
-					Equipped
-				</span>
+						: "border-border opacity-70",
 			)}
+		>
+			{equipped && <Badge className="absolute -top-3 left-1/2 -translate-x-1/2">Equipped</Badge>}
 
-			{/* Sprite preview */}
 			<div className="relative mb-3 mt-2 h-24 w-24">
 				<Image
 					src={`/wolves/${skin.spriteKey}.png`}
 					alt={skin.name}
 					fill={true}
-					className={`object-contain ${skin.unlocked ? "" : "grayscale"}`}
+					className={cn("object-contain", !skin.unlocked && "grayscale")}
 					sizes="96px"
 				/>
 				{!skin.unlocked && (
 					<div className="absolute inset-0 flex items-center justify-center">
-						<svg
-							xmlns="http://www.w3.org/2000/svg"
-							className="h-8 w-8 text-gray-400"
-							viewBox="0 0 24 24"
-							fill="none"
-							stroke="currentColor"
-							strokeWidth={2}
-							strokeLinecap="round"
-							strokeLinejoin="round"
-						>
-							<rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-							<path d="M7 11V7a5 5 0 0 1 10 0v4" />
-						</svg>
+						<Lock className="size-8 text-muted-foreground" />
 					</div>
 				)}
 			</div>
 
-			{/* Name */}
-			<h3 className="text-center text-lg font-bold text-white">{skin.name}</h3>
+			<h3 className="text-center text-lg font-bold text-foreground">{skin.name}</h3>
 
-			{/* Rarity badge */}
-			<span
-				className={`mt-1 rounded-full px-3 py-0.5 text-xs font-semibold uppercase tracking-wider text-white ${rarity.badge}`}
+			<Badge
+				variant={rarity.badge as "default" | "secondary" | "emerald" | "purple" | "gold"}
+				className="mt-1 uppercase tracking-wider"
 			>
 				{skin.rarity}
-			</span>
+			</Badge>
 
-			{/* Description */}
-			<p className="mt-2 text-center text-sm text-gray-400">{skin.description}</p>
+			<p className="mt-2 text-center text-sm text-muted-foreground">{skin.description}</p>
 
-			{/* Unlock condition or equipped badge */}
 			<div className="mt-auto pt-4">
 				{skin.unlocked ? (
 					equipped ? (
-						<span className="text-sm font-medium text-[#0FACED]">Currently Equipped</span>
+						<span className="text-sm font-medium text-primary">Currently Equipped</span>
 					) : (
-						<span className="text-sm font-medium text-green-400">Unlocked</span>
+						<span className="text-sm font-medium text-emerald-400">Unlocked</span>
 					)
 				) : (
-					<p className="text-center text-xs text-gray-500">
+					<p className="text-center text-xs text-muted-foreground">
 						{unlockConditionText(skin.unlockCondition)}
 					</p>
 				)}
 			</div>
-		</div>
+		</Card>
 	);
 }
 
@@ -158,7 +117,6 @@ export default function SkinsPage() {
 
 	const trpc = useTRPC();
 
-	/* ---- Queries (only when signed in) ---- */
 	const galleryQuery = useQuery({
 		...trpc.skin.gallery.queryOptions(),
 		enabled: signedIn,
@@ -169,10 +127,8 @@ export default function SkinsPage() {
 		enabled: signedIn,
 	});
 
-	/* ---- Derive display data ---- */
 	const equippedSkinId = equippedQuery.data?.skinId ?? "gray-wolf";
 
-	// When signed in, use gallery data; otherwise show all skins as locked (except default)
 	const skins: GallerySkin[] = signedIn
 		? (galleryQuery.data ?? [])
 		: SKINS.map((s) => ({
@@ -184,41 +140,38 @@ export default function SkinsPage() {
 
 	return (
 		<main className="mx-auto min-h-screen max-w-6xl px-4 py-12">
-			<h1 className="mb-2 text-center text-4xl font-extrabold text-white">Skins Gallery</h1>
-			<p className="mb-4 text-center text-gray-400">
+			<h1 className="mb-2 text-center text-4xl font-extrabold text-foreground">Skins Gallery</h1>
+			<p className="mb-4 text-center text-muted-foreground">
 				Collect wolf skins by playing the game
 			</p>
 			{signedIn && (
 				<p className="mb-10 text-center">
-					<Link href="/settings" className="text-sm text-[#0FACED] hover:underline">
+					<Link href="/settings" className="text-sm text-primary hover:underline">
 						Go to Settings to change your equipped skin
 					</Link>
 				</p>
 			)}
 
-			{/* Sign-in notice */}
 			{!signedIn && (
-				<div className="mb-8 rounded-lg border border-[#0FACED]/30 bg-[#0FACED]/10 px-6 py-4 text-center">
-					<p className="text-sm text-[#0FACED]">Sign in to track progress and equip skins</p>
-				</div>
+				<Card className="mb-8 border-primary/30 bg-primary/5">
+					<CardContent className="p-4 text-center">
+						<p className="text-sm text-primary">Sign in to track progress and equip skins</p>
+					</CardContent>
+				</Card>
 			)}
 
-			{/* Loading state */}
 			{isLoading && (
-				<div className="flex items-center justify-center py-20">
-					<div className="h-8 w-8 animate-spin rounded-full border-4 border-gray-600 border-t-[#0FACED]" />
+				<div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+					{Array.from({ length: 6 }).map((_, i) => (
+						<Skeleton key={i} className="h-72 rounded-2xl" />
+					))}
 				</div>
 			)}
 
-			{/* Grid */}
 			{!isLoading && (
 				<div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
 					{skins.map((skin) => (
-						<SkinCard
-							key={skin.id}
-							skin={skin}
-							equipped={signedIn && equippedSkinId === skin.id}
-						/>
+						<SkinCard key={skin.id} skin={skin} equipped={signedIn && equippedSkinId === skin.id} />
 					))}
 				</div>
 			)}

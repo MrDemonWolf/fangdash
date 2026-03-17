@@ -3,26 +3,24 @@
 	"compilerOptions": {
 		"baseUrl": ".",
 		"jsx": "preserve",
-		"module": "ESNext",
-		"moduleResolution": "Bundler",
+		"module": "esnext",
+		"moduleResolution": "bundler",
 		"noEmit": true,
 		"composite": false,
 		"declaration": false,
 		"declarationMap": false,
-		"skipLibCheck": true,
-		"paths": {
-			"@/*": ["./*"],
-			"@/.source": ["./.source"]
-		},
-		"lib": ["dom", "dom.iterable", "esnext"],
-		"allowJs": true,
 		"incremental": true,
+		"isolatedModules": true,
+		"lib": ["dom", "dom.iterable", "esnext"],
 		"plugins": [
 			{
 				"name": "next"
 			}
 		],
-		"isolatedModules": true,
+		"paths": {
+			"@/*": ["./*"],
+			"@/.source": ["./.source"]
+		},
 		"exactOptionalPropertyTypes": false
 	},
 	"include": [
@@ -31,6 +29,7 @@
 		"app/**/*.tsx",
 		"lib/**/*.ts",
 		"lib/**/*.tsx",
+		".source/**/*.ts",
 		"mdx-components.tsx",
 		"next-env.d.ts",
 		"global.d.ts",

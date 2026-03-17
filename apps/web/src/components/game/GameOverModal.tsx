@@ -261,18 +261,14 @@ export function GameOverModal({
 						<button
 							type="button"
 							onClick={onRestart}
-							className="w-full cursor-pointer rounded px-6 py-3 text-sm font-black font-mono uppercase tracking-widest text-[#091533] transition-all hover:brightness-110 active:scale-95"
-							style={{
-								background: "#0FACED",
-								boxShadow: "0 0 20px rgba(15,172,237,0.35), 0 0 40px rgba(15,172,237,0.12)",
-							}}
+							className="w-full cursor-pointer rounded px-6 py-3 text-sm font-black font-mono uppercase tracking-widest text-primary-foreground bg-primary transition-all hover:brightness-110 active:scale-95 shadow-[0_0_20px_rgba(15,172,237,0.35),0_0_40px_rgba(15,172,237,0.12)]"
 						>
 							PLAY AGAIN
 						</button>
 
 						<Link
 							href="/"
-							className="text-xs font-mono uppercase tracking-widest text-white/30 hover:text-white/60 transition-colors text-center block w-full py-2"
+							className="text-xs font-mono uppercase tracking-widest text-foreground/30 hover:text-foreground/60 transition-colors text-center block w-full py-2"
 						>
 							&lt; Back to Home &gt;
 						</Link>

@@ -2,11 +2,16 @@
 
 import type { AchievementCategory, AchievementCondition } from "@fangdash/shared";
 import { getSkinById } from "@fangdash/shared";
+import { Check } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useSession } from "@/lib/auth-client.ts";
 import { useTRPC } from "@/lib/trpc.ts";
+import { cn } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const CATEGORIES: Array<{ label: string; value: AchievementCategory | "all" }> = [
 	{ label: "All", value: "all" },
@@ -41,9 +46,7 @@ function formatCondition(condition: AchievementCondition): string {
 }
 
 function formatDate(date: Date | string | null): string {
-	if (!date) {
-		return "";
-	}
+	if (!date) return "";
 	const d = typeof date === "string" ? new Date(date) : date;
 	return d.toLocaleDateString("en-US", {
 		month: "short",
@@ -76,52 +79,54 @@ function AchievementCard({
 	const skin = rewardSkinId ? getSkinById(rewardSkinId) : null;
 
 	return (
-		<div
-			className={`relative rounded-xl border p-5 transition-all ${
+		<Card
+			className={cn(
+				"relative transition-all border",
 				unlocked
-					? "border-[#0FACED]/40 bg-[#091533]/80 shadow-[0_0_20px_rgba(15,172,237,0.15)]"
-					: "border-white/10 bg-[#091533]/40 opacity-60 grayscale"
-			}`}
-		>
-			<div className="flex items-start gap-4">
-				<span className="text-3xl" role="img" aria-label={name}>
-					{icon}
-				</span>
-				<div className="min-w-0 flex-1">
-					<div className="flex items-center gap-2">
-						<h3 className={`font-semibold ${unlocked ? "text-white" : "text-gray-400"}`}>{name}</h3>
-						<span
-							className={`rounded-full px-2 py-0.5 text-xs font-medium capitalize ${
-								unlocked ? "bg-[#0FACED]/20 text-[#0FACED]" : "bg-white/5 text-gray-500"
-							}`}
-						>
-							{category}
-						</span>
-					</div>
-					<p className="mt-1 text-sm text-gray-400">{description}</p>
-
-					{unlocked && unlockedAt ? (
-						<p className="mt-2 text-xs text-[#0FACED]">Unlocked {formatDate(unlockedAt)}</p>
-					) : condition ? (
-						<p className="mt-2 text-xs text-gray-500 italic">{formatCondition(condition)}</p>
-					) : null}
-
-					{skin && <p className="mt-1 text-xs text-[#0FACED]/70">Rewards: {skin.name}</p>}
-				</div>
-			</div>
-
-			{unlocked && (
-				<div className="absolute top-3 right-3 text-[#0FACED]">
-					<svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-						<path
-							fillRule="evenodd"
-							d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-							clipRule="evenodd"
-						/>
-					</svg>
-				</div>
+					? "border-primary/40 shadow-[0_0_20px_rgba(15,172,237,0.15)]"
+					: "border-border opacity-60 grayscale",
 			)}
-		</div>
+		>
+			<CardContent className="p-5">
+				<div className="flex items-start gap-4">
+					<span className="text-3xl" role="img" aria-label={name}>
+						{icon}
+					</span>
+					<div className="min-w-0 flex-1">
+						<div className="flex items-center gap-2">
+							<h3
+								className={cn(
+									"font-semibold",
+									unlocked ? "text-foreground" : "text-muted-foreground",
+								)}
+							>
+								{name}
+							</h3>
+							<Badge variant={unlocked ? "default" : "secondary"} className="capitalize">
+								{category}
+							</Badge>
+						</div>
+						<p className="mt-1 text-sm text-muted-foreground">{description}</p>
+
+						{unlocked && unlockedAt ? (
+							<p className="mt-2 text-xs text-primary">Unlocked {formatDate(unlockedAt)}</p>
+						) : condition ? (
+							<p className="mt-2 text-xs text-muted-foreground italic">
+								{formatCondition(condition)}
+							</p>
+						) : null}
+
+						{skin && <p className="mt-1 text-xs text-primary/70">Rewards: {skin.name}</p>}
+					</div>
+				</div>
+
+				{unlocked && (
+					<div className="absolute top-3 right-3 text-primary">
+						<Check className="size-5" />
+					</div>
+				)}
+			</CardContent>
+		</Card>
 	);
 }
 
@@ -181,17 +186,16 @@ export default function AchievementsPage() {
 	const unlockedCount = achievements.filter((a) => a.unlocked).length;
 
 	return (
-		<main className="min-h-screen bg-[#091533] px-4 py-12 sm:px-6 lg:px-8">
+		<main className="min-h-screen bg-background px-4 py-12 sm:px-6 lg:px-8">
 			<div className="mx-auto max-w-5xl">
-				{/* Header */}
 				<div className="mb-8">
-					<h1 className="text-3xl font-bold text-white sm:text-4xl">Achievements</h1>
+					<h1 className="text-3xl font-bold text-foreground sm:text-4xl">Achievements</h1>
 					{isSignedIn ? (
-						<p className="mt-2 text-lg text-[#0FACED]">
+						<p className="mt-2 text-lg text-primary">
 							{unlockedCount} of {totalCount} achievements unlocked
 						</p>
 					) : (
-						<p className="mt-2 text-lg text-gray-400">Sign in to track progress</p>
+						<p className="mt-2 text-lg text-muted-foreground">Sign in to track progress</p>
 					)}
 				</div>
 
@@ -202,22 +206,25 @@ export default function AchievementsPage() {
 							type="button"
 							key={cat.value}
 							onClick={() => setActiveCategory(cat.value)}
-							className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+							className={cn(
+								"rounded-lg px-4 py-2 text-sm font-medium transition-colors cursor-pointer",
 								activeCategory === cat.value
-									? "bg-[#0FACED] text-[#091533]"
-									: "bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white"
-							}`}
+									? "bg-secondary text-foreground"
+									: "bg-transparent text-muted-foreground hover:bg-secondary hover:text-foreground",
+							)}
 						>
 							{cat.label}
 						</button>
 					))}
 				</div>
 
-				{/* Loading state */}
 				{isLoading ? (
-					<div className="py-20 text-center text-gray-400">Loading achievements...</div>
+					<div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+						{Array.from({ length: 6 }).map((_, i) => (
+							<Skeleton key={i} className="h-40 rounded-2xl" />
+						))}
+					</div>
 				) : (
-					/* Achievement grid */
 					<div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
 						{filtered.map((achievement) => (
 							<AchievementCard
@@ -236,7 +243,7 @@ export default function AchievementsPage() {
 				)}
 
 				{!isLoading && filtered.length === 0 && (
-					<div className="py-20 text-center text-gray-500">
+					<div className="py-20 text-center text-muted-foreground">
 						No achievements found in this category.
 					</div>
 				)}

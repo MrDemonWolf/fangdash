@@ -4,6 +4,7 @@ dist/
 .turbo/
 .open-next/
 .wrangler/
+.localflare/
 .partykit/
 .source/
 out/

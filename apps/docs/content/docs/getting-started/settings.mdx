@@ -21,9 +21,9 @@ Visit the [Skins gallery](/skins) to preview all available skins, then head to S
 
 Control whether other players can view your public profile.
 
-| Setting    | Behavior                                                                  |
-| ---------- | ------------------------------------------------------------------------- |
-| **Public** | Your profile is visible via `/profile/[id]` and linked from leaderboards  |
+| Setting     | Behavior                                                                  |
+| ----------- | ------------------------------------------------------------------------- |
+| **Public**  | Your profile is visible via `/profile/[id]` and linked from leaderboards  |
 | **Private** | Your profile page returns a "private" notice; leaderboard hides your link |
 
 The toggle is labeled **"Allow others to view my profile"** and defaults to public.
@@ -40,10 +40,11 @@ FangDash supports GDPR-compliant account deletion with a safety net:
 <Steps>
 	<Step>Click **Delete Account** on the Settings page</Step>
 	<Step>Confirm the deletion request</Step>
+	<Step>A **24-hour grace period** begins — your account is soft-deleted but not yet removed</Step>
 	<Step>
-		A **24-hour grace period** begins — your account is soft-deleted but not yet removed
+		During the grace period, you can return to Settings and click **Cancel Deletion** to restore
+		your account
 	</Step>
-	<Step>During the grace period, you can return to Settings and click **Cancel Deletion** to restore your account</Step>
 	<Step>After 24 hours, the account and all associated data are permanently deleted</Step>
 </Steps>
 
@@ -51,13 +52,13 @@ FangDash supports GDPR-compliant account deletion with a safety net:
 
 The account management endpoints live in the `account` tRPC router:
 
-| Endpoint              | Type     | Description                                    |
-| --------------------- | -------- | ---------------------------------------------- |
-| `getAccountStatus`    | Query    | Returns current deletion status and timestamps |
-| `requestDeletion`     | Mutation | Initiates the 24-hour soft delete              |
-| `cancelDeletion`      | Mutation | Cancels a pending deletion request             |
-| `getPrivacy`          | Query    | Returns current privacy setting                |
-| `updatePrivacy`       | Mutation | Toggles profile visibility on or off           |
+| Endpoint           | Type     | Description                                    |
+| ------------------ | -------- | ---------------------------------------------- |
+| `getAccountStatus` | Query    | Returns current deletion status and timestamps |
+| `requestDeletion`  | Mutation | Initiates the 24-hour soft delete              |
+| `cancelDeletion`   | Mutation | Cancels a pending deletion request             |
+| `getPrivacy`       | Query    | Returns current privacy setting                |
+| `updatePrivacy`    | Mutation | Toggles profile visibility on or off           |
 
 ### Database Schema
 

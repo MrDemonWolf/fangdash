@@ -1,4 +1,13 @@
 {
 	"title": "Getting Started",
-	"pages": ["index", "installation", "self-hosting", "web-app-pages", "settings", "admin", "database", "errors"]
+	"pages": [
+		"index",
+		"installation",
+		"self-hosting",
+		"web-app-pages",
+		"settings",
+		"admin",
+		"database",
+		"errors"
+	]
 }

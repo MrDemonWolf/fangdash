@@ -221,7 +221,11 @@ export class GameScene extends Phaser.Scene {
 		this.audioManager.playSFX(AUDIO_KEYS.SFX_HIT);
 		this.audioManager.playSFX(AUDIO_KEYS.SFX_GAME_OVER);
 
-		const finalState = this.scoreManager.getState(false, this.difficulty.currentSpeed, this.cheatsUsed);
+		const finalState = this.scoreManager.getState(
+			false,
+			this.difficulty.currentSpeed,
+			this.cheatsUsed,
+		);
 		this.callbacks.onGameOver?.(finalState);
 	}
 

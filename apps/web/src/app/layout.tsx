@@ -1,4 +1,6 @@
 import type { Metadata, Viewport } from "next";
+import { GeistSans } from "geist/font/sans";
+import { GeistMono } from "geist/font/mono";
 import { Toaster } from "sonner";
 import { PWAInstallBanner } from "@/components/PWAInstallBanner.tsx";
 import { ServiceWorkerRegistration } from "@/components/ServiceWorkerRegistration.tsx";
@@ -11,7 +13,7 @@ export const viewport: Viewport = {
 	width: "device-width",
 	initialScale: 1,
 	viewportFit: "cover",
-	themeColor: "#091533",
+	themeColor: "#050505",
 };
 
 export const metadata: Metadata = {
@@ -48,8 +50,8 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
 	return (
-		<html lang="en">
-			<body className="bg-[var(--color-fang-darker)] text-white min-h-screen">
+		<html lang="en" className={`${GeistSans.variable} ${GeistMono.variable}`}>
+			<body className="bg-background text-foreground min-h-screen antialiased font-sans">
 				<Providers>
 					<ServiceWorkerRegistration />
 					<Toaster position="top-right" theme="dark" richColors />

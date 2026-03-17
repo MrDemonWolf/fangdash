@@ -175,7 +175,7 @@ export default function RaceRoomPage() {
 					alive: true,
 					speed: 0,
 					longestCleanRun: 0,
-		cheatsUsed: false,
+					cheatsUsed: false,
 				});
 				setGameError(null);
 
@@ -323,7 +323,7 @@ export default function RaceRoomPage() {
 				alive: true,
 				speed: 0,
 				longestCleanRun: 0,
-		cheatsUsed: false,
+				cheatsUsed: false,
 			});
 			setElapsedTime(0);
 		});
@@ -424,7 +424,16 @@ export default function RaceRoomPage() {
 				cheated: gameState.cheatsUsed,
 			});
 		}
-	}, [phase, raceResults, myId, isSignedIn, submitResult, raceSeed, stopTimer, gameState.cheatsUsed]);
+	}, [
+		phase,
+		raceResults,
+		myId,
+		isSignedIn,
+		submitResult,
+		raceSeed,
+		stopTimer,
+		gameState.cheatsUsed,
+	]);
 
 	// ── Cleanup on unmount ──
 	useEffect(() => {

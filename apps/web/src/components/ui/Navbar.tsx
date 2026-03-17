@@ -1,11 +1,23 @@
 "use client";
 
-import { LogOut, Menu, User, X } from "lucide-react";
+import { LogOut, Menu, User } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { signIn, signOut, useSession } from "@/lib/auth-client.ts";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuSeparator,
+	DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Separator } from "@/components/ui/separator";
 
 function TwitchIcon({ className }: { className?: string }) {
 	return (
@@ -27,8 +39,6 @@ export function Navbar() {
 	const pathname = usePathname();
 	const { data: session, isPending } = useSession();
 	const [mobileOpen, setMobileOpen] = useState(false);
-	const [dropdownOpen, setDropdownOpen] = useState(false);
-	const dropdownRef = useRef<HTMLDivElement>(null);
 
 	const isActive = (href: string) => pathname === href;
 
@@ -36,207 +46,182 @@ export function Navbar() {
 		signIn.social({ provider: "twitch", callbackURL: window.location.origin });
 	};
 
-	const handleSignOut = () => {
-		setDropdownOpen(false);
-		signOut();
-	};
-
-	useEffect(() => {
-		const handleOutsideClick = (e: MouseEvent) => {
-			if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
-				setDropdownOpen(false);
-			}
-		};
-		if (dropdownOpen) {
-			document.addEventListener("mousedown", handleOutsideClick);
-		}
-		return () => document.removeEventListener("mousedown", handleOutsideClick);
-	}, [dropdownOpen]);
-
-	// Hide navbar and spacer entirely on the play page
 	if (pathname === "/play") {
 		return null;
 	}
 
 	return (
 		<>
-			<header className="fixed top-0 left-0 right-0 z-50 px-4 py-3 pointer-events-none">
-				<nav className="pointer-events-auto mx-auto max-w-7xl rounded-2xl border border-white/10 bg-[#0a1628]/80 shadow-2xl shadow-black/40 backdrop-blur-xl backdrop-saturate-150 ring-1 ring-inset ring-white/5">
-					<div className="flex h-14 items-center justify-between px-5">
-						{/* Logo */}
-						<Link
-							href="/"
-							className="flex items-center gap-0 text-lg font-bold tracking-wide text-white hover:text-[#0FACED] transition-colors"
-						>
-							<Image
-								src="/wolves/wolf-mrdemonwolf.png"
-								alt=""
-								width={48}
-								height={48}
-								style={{ imageRendering: "pixelated" }}
-								aria-hidden="true"
-							/>
-							FangDash
-						</Link>
+			<header className="fixed top-0 left-0 right-0 z-50 border-b border-border bg-background/80 backdrop-blur-xl backdrop-saturate-150">
+				<nav className="mx-auto flex h-14 max-w-7xl items-center justify-between px-6">
+					{/* Logo */}
+					<Link
+						href="/"
+						className="flex items-center gap-1 text-base font-semibold tracking-tight text-foreground transition-colors hover:text-primary"
+					>
+						<Image
+							src="/wolves/wolf-mrdemonwolf.png"
+							alt=""
+							width={36}
+							height={36}
+							style={{ imageRendering: "pixelated" }}
+							aria-hidden="true"
+						/>
+						FangDash
+					</Link>
 
-						{/* Desktop nav links */}
-						<div className="hidden md:flex items-center gap-1">
-							{NAV_LINKS.map(({ href, label }) => (
-								<Link
-									key={href}
-									href={href}
-									aria-current={isActive(href) ? "page" : undefined}
-									className={`relative px-3 py-2 text-xs font-semibold tracking-widest uppercase transition-colors ${
-										isActive(href)
-											? "text-[#0FACED] after:absolute after:bottom-0 after:inset-x-2 after:h-0.5 after:bg-[#0FACED] after:rounded-full"
-											: "text-gray-400 hover:text-white"
-									}`}
-								>
-									{label}
-								</Link>
-							))}
-						</div>
+					{/* Desktop nav links */}
+					<div className="hidden md:flex items-center gap-1">
+						{NAV_LINKS.map(({ href, label }) => (
+							<Link
+								key={href}
+								href={href}
+								aria-current={isActive(href) ? "page" : undefined}
+								className={cn(
+									"px-3 py-1.5 text-[13px] font-medium transition-colors rounded-md",
+									isActive(href)
+										? "text-foreground"
+										: "text-muted-foreground hover:text-foreground",
+								)}
+							>
+								{label}
+							</Link>
+						))}
+					</div>
 
-						{/* Desktop auth section */}
-						<div className="hidden md:flex items-center gap-3">
-							{isPending ? (
-								<div className="h-8 w-20 animate-pulse rounded-md bg-white/10" />
-							) : session?.user ? (
-								<div className="relative" ref={dropdownRef}>
+					{/* Desktop auth section */}
+					<div className="hidden md:flex items-center gap-3">
+						{isPending ? (
+							<Skeleton className="h-8 w-24 rounded-full" />
+						) : session?.user ? (
+							<DropdownMenu>
+								<DropdownMenuTrigger asChild>
 									<button
 										type="button"
-										onClick={() => setDropdownOpen((prev) => !prev)}
-										className="flex items-center gap-2 rounded-full px-3 py-1.5 border border-white/10 hover:border-white/20 hover:bg-white/5 transition-colors cursor-pointer"
+										className="flex items-center gap-2 rounded-full px-3 py-1.5 border border-border hover:bg-secondary transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
 									>
 										{session.user.image && (
 											<img
 												src={session.user.image}
 												alt={session.user.name ?? "User avatar"}
-												className="h-6 w-6 rounded-full border border-[#0FACED]/50"
+												className="h-5 w-5 rounded-full"
 											/>
 										)}
-										<span className="text-sm font-medium text-gray-200">{session.user.name}</span>
+										<span className="text-[13px] font-medium text-foreground">
+											{session.user.name}
+										</span>
 									</button>
-
-									{dropdownOpen && (
-										<div className="absolute right-0 mt-2 w-44 rounded-xl border border-white/10 bg-[#0a1628]/90 backdrop-blur-xl shadow-xl overflow-hidden">
-											<Link
-												href="/profile"
-												onClick={() => setDropdownOpen(false)}
-												className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-300 hover:text-white hover:bg-white/5 transition-colors"
-											>
-												<User className="h-4 w-4" />
-												Profile
-											</Link>
-											<div className="h-px bg-white/10" />
-											<button
-												type="button"
-												onClick={handleSignOut}
-												className="flex w-full items-center gap-2.5 px-4 py-2.5 text-sm text-gray-300 hover:text-white hover:bg-white/5 transition-colors cursor-pointer"
-											>
-												<LogOut className="h-4 w-4" />
-												Sign Out
-											</button>
-										</div>
-									)}
-								</div>
-							) : (
-								<button
-									type="button"
-									onClick={handleSignIn}
-									className="inline-flex items-center gap-2 rounded-full border border-[#0FACED]/60 px-4 py-1.5 text-sm font-semibold text-[#0FACED] hover:bg-[#0FACED]/10 transition-colors cursor-pointer"
-								>
-									<TwitchIcon className="h-4 w-4" />
-									Login with Twitch
-								</button>
-							)}
-						</div>
-
-						{/* Mobile hamburger */}
-						<button
-							type="button"
-							onClick={() => setMobileOpen((prev) => !prev)}
-							className="md:hidden p-2 rounded-md text-gray-300 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
-							aria-label={mobileOpen ? "Close menu" : "Open menu"}
-						>
-							{mobileOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-						</button>
+								</DropdownMenuTrigger>
+								<DropdownMenuContent align="end">
+									<DropdownMenuItem asChild>
+										<Link href="/profile" className="cursor-pointer">
+											<User className="size-4" />
+											Profile
+										</Link>
+									</DropdownMenuItem>
+									<DropdownMenuSeparator />
+									<DropdownMenuItem onClick={() => signOut()} className="cursor-pointer">
+										<LogOut className="size-4" />
+										Sign Out
+									</DropdownMenuItem>
+								</DropdownMenuContent>
+							</DropdownMenu>
+						) : (
+							<Button
+								variant="outline"
+								size="sm"
+								onClick={handleSignIn}
+								className="h-8 text-[13px]"
+							>
+								<TwitchIcon className="size-3.5" />
+								Login with Twitch
+							</Button>
+						)}
 					</div>
 
-					{/* Mobile menu */}
-					{mobileOpen && (
-						<div className="md:hidden backdrop-blur-xl bg-[#0a1628]/90 rounded-xl mt-2 mx-2 mb-2 border border-white/10 overflow-hidden">
-							<div className="space-y-0.5 px-3 py-2">
-								{NAV_LINKS.map(({ href, label }) => (
-									<Link
-										key={href}
-										href={href}
-										onClick={() => setMobileOpen(false)}
-										aria-current={isActive(href) ? "page" : undefined}
-										className={`block rounded-lg px-3 py-2 text-xs font-semibold tracking-widest uppercase transition-colors ${
-											isActive(href)
-												? "text-[#0FACED] bg-[#0FACED]/10"
-												: "text-gray-400 hover:text-white hover:bg-white/5"
-										}`}
-									>
-										{label}
-									</Link>
-								))}
-							</div>
-
-							<div className="border-t border-white/10 px-3 py-3">
-								{isPending ? (
-									<div className="h-10 animate-pulse rounded-md bg-white/10" />
-								) : session?.user ? (
-									<div className="flex items-center justify-between">
-										<div className="flex items-center gap-2.5">
-											{session.user.image && (
-												<img
-													src={session.user.image}
-													alt={session.user.name ?? "User avatar"}
-													className="h-8 w-8 rounded-full border border-[#0FACED]/50"
-												/>
+					{/* Mobile hamburger */}
+					<Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
+						<SheetTrigger asChild>
+							<Button
+								variant="ghost"
+								size="icon"
+								className="md:hidden size-8"
+								aria-label="Open menu"
+							>
+								<Menu className="size-4" />
+							</Button>
+						</SheetTrigger>
+						<SheetContent side="right" className="w-72 p-0">
+							<SheetTitle className="sr-only">Navigation menu</SheetTitle>
+							<div className="flex flex-col h-full">
+								<div className="space-y-0.5 px-4 py-6">
+									{NAV_LINKS.map(({ href, label }) => (
+										<Link
+											key={href}
+											href={href}
+											aria-current={isActive(href) ? "page" : undefined}
+											onClick={() => setMobileOpen(false)}
+											className={cn(
+												"block rounded-md px-3 py-2 text-sm font-medium transition-colors",
+												isActive(href)
+													? "text-foreground bg-secondary"
+													: "text-muted-foreground hover:text-foreground hover:bg-secondary",
 											)}
-											<span className="text-sm font-medium text-gray-200">{session.user.name}</span>
+										>
+											{label}
+										</Link>
+									))}
+								</div>
+
+								<Separator />
+
+								<div className="px-4 py-4 mt-auto">
+									{isPending ? (
+										<Skeleton className="h-10 w-full rounded-lg" />
+									) : session?.user ? (
+										<div className="flex items-center justify-between">
+											<div className="flex items-center gap-2.5">
+												{session.user.image && (
+													<img
+														src={session.user.image}
+														alt={session.user.name ?? "User avatar"}
+														className="h-7 w-7 rounded-full"
+													/>
+												)}
+												<span className="text-sm font-medium text-foreground">
+													{session.user.name}
+												</span>
+											</div>
+											<div className="flex items-center gap-1">
+												<Button variant="ghost" size="icon" className="size-8" asChild>
+													<Link href="/profile" aria-label="Profile">
+														<User className="size-3.5" />
+													</Link>
+												</Button>
+												<Button
+													variant="ghost"
+													size="icon"
+													className="size-8"
+													onClick={() => signOut()}
+													aria-label="Sign out"
+												>
+													<LogOut className="size-3.5" />
+												</Button>
+											</div>
 										</div>
-										<div className="flex items-center gap-1">
-											<Link
-												href="/profile"
-												onClick={() => setMobileOpen(false)}
-												className="p-2 rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-colors"
-												aria-label="Profile"
-											>
-												<User className="h-4 w-4" />
-											</Link>
-											<button
-												type="button"
-												onClick={() => {
-													setMobileOpen(false);
-													handleSignOut();
-												}}
-												className="p-2 rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
-												aria-label="Sign out"
-											>
-												<LogOut className="h-4 w-4" />
-											</button>
-										</div>
-									</div>
-								) : (
-									<button
-										type="button"
-										onClick={handleSignIn}
-										className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-[#0FACED]/60 px-4 py-2 text-sm font-semibold text-[#0FACED] hover:bg-[#0FACED]/10 transition-colors cursor-pointer"
-									>
-										<TwitchIcon className="h-4 w-4" />
-										Login with Twitch
-									</button>
-								)}
+									) : (
+										<Button variant="outline" className="w-full" onClick={handleSignIn}>
+											<TwitchIcon className="size-4" />
+											Login with Twitch
+										</Button>
+									)}
+								</div>
 							</div>
-						</div>
-					)}
+						</SheetContent>
+					</Sheet>
 				</nav>
 			</header>
-			<div className="h-20" aria-hidden="true" />
+			<div className="h-14" aria-hidden="true" />
 		</>
 	);
 }

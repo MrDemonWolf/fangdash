@@ -5,6 +5,12 @@ import { useQuery } from "@tanstack/react-query";
 import Image from "next/image";
 import { useParams } from "next/navigation";
 import { useTRPC } from "@/lib/trpc.ts";
+import { cn } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 /* ------------------------------------------------------------------ */
 /*  Helper: format distance as km                                      */
@@ -22,43 +28,43 @@ function PublicProfileSkeleton() {
 	return (
 		<main className="mx-auto max-w-5xl px-4 py-8">
 			<div className="space-y-6">
-				{/* Header skeleton */}
-				<div className="h-32 w-full animate-pulse rounded-2xl bg-white/5" />
-
-				{/* Level bar skeleton */}
-				<div className="h-20 w-full animate-pulse rounded-2xl bg-white/5" />
+				<Skeleton className="h-32 w-full rounded-2xl" />
+				<Skeleton className="h-20 w-full rounded-2xl" />
 
 				<div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_340px]">
 					<div className="space-y-6">
-						{/* Performance Matrix skeleton */}
-						<div className="rounded-2xl border border-white/10 bg-[#0a1628]/60">
-							<div className="h-10 border-b border-white/10" />
+						<Card>
+							<CardHeader>
+								<Skeleton className="h-4 w-40" />
+							</CardHeader>
 							<div className="grid grid-cols-2 gap-2 p-4">
 								{Array.from({ length: 6 }).map((_, i) => (
-									<div key={i} className="h-24 animate-pulse rounded-xl bg-white/5" />
+									<Skeleton key={i} className="h-24 rounded-xl" />
 								))}
 							</div>
-						</div>
-						{/* Honor Badges skeleton */}
-						<div className="rounded-2xl border border-white/10 bg-[#0a1628]/60 p-5">
-							<div className="mb-4 h-4 w-32 animate-pulse rounded bg-white/5" />
-							<div className="flex flex-wrap gap-3">
-								{Array.from({ length: 12 }).map((_, i) => (
-									<div key={i} className="h-12 w-12 animate-pulse rounded-full bg-white/5" />
-								))}
-							</div>
-						</div>
+						</Card>
+						<Card>
+							<CardContent className="p-5">
+								<Skeleton className="mb-4 h-4 w-32" />
+								<div className="flex flex-wrap gap-3">
+									{Array.from({ length: 12 }).map((_, i) => (
+										<Skeleton key={i} className="size-12 rounded-full" />
+									))}
+								</div>
+							</CardContent>
+						</Card>
 					</div>
 
-					{/* Scorelines skeleton */}
-					<div className="rounded-2xl border border-white/10 bg-[#0a1628]/60">
-						<div className="h-10 border-b border-white/10" />
+					<Card>
+						<CardHeader>
+							<Skeleton className="h-4 w-32" />
+						</CardHeader>
 						<div className="space-y-2 p-4">
 							{Array.from({ length: 8 }).map((_, i) => (
-								<div key={i} className="h-10 animate-pulse rounded-lg bg-white/5" />
+								<Skeleton key={i} className="h-10 rounded-lg" />
 							))}
 						</div>
-					</div>
+					</Card>
 				</div>
 			</div>
 		</main>
@@ -85,19 +91,17 @@ function ProfileHeader({
 	gamesPlayed: number;
 }) {
 	return (
-		<div className="relative overflow-hidden rounded-2xl border border-white/10 bg-[#0a1628]/60 backdrop-blur-xl">
-			{/* Subtle grid overlay */}
+		<Card className="relative overflow-hidden">
 			<div
 				className="pointer-events-none absolute inset-0 opacity-5"
 				style={{
 					backgroundImage:
-						"linear-gradient(rgba(15,172,237,0.4) 1px, transparent 1px), linear-gradient(90deg, rgba(15,172,237,0.4) 1px, transparent 1px)",
+						"linear-gradient(oklch(0.72 0.15 210 / 0.4) 1px, transparent 1px), linear-gradient(90deg, oklch(0.72 0.15 210 / 0.4) 1px, transparent 1px)",
 					backgroundSize: "40px 40px",
 				}}
 			/>
 
-			<div className="relative flex flex-col items-center gap-6 p-6 sm:flex-row sm:items-center">
-				{/* Wolf sprite */}
+			<CardContent className="relative flex flex-col items-center gap-6 p-6 sm:flex-row sm:items-center">
 				<div className="shrink-0">
 					{skinSpriteKey ? (
 						<div className="relative h-32 w-32">
@@ -110,16 +114,15 @@ function ProfileHeader({
 							/>
 						</div>
 					) : (
-						<div className="flex h-32 w-32 items-center justify-center rounded-2xl border border-[#0FACED]/20 bg-[#0FACED]/5 text-6xl">
+						<div className="flex h-32 w-32 items-center justify-center rounded-2xl border border-primary/20 bg-primary/5 text-6xl">
 							🐺
 						</div>
 					)}
 				</div>
 
-				{/* Info */}
 				<div className="flex flex-1 flex-col items-center gap-4 sm:flex-row sm:items-start sm:justify-between">
 					<div className="text-center sm:text-left">
-						<h1 className="text-2xl font-bold text-white">{userName}</h1>
+						<h1 className="text-2xl font-bold text-foreground">{userName}</h1>
 						<div className="mt-1 flex items-center justify-center gap-2 sm:justify-start">
 							{userImage && (
 								<Image
@@ -130,29 +133,22 @@ function ProfileHeader({
 									className="rounded-full"
 								/>
 							)}
-							<span className="text-sm text-gray-400">
+							<span className="text-sm text-muted-foreground">
 								@{userName.toLowerCase().replace(/\s+/g, "")}
 							</span>
 						</div>
-						{skinName && <p className="mt-1 text-xs text-[#0FACED]/70">Equipped: {skinName}</p>}
+						{skinName && <p className="mt-1 text-xs text-primary/70">Equipped: {skinName}</p>}
 					</div>
 
-					{/* Right-side badges */}
 					<div className="flex flex-wrap items-center justify-center gap-3 sm:justify-end">
-						<div className="rounded-full border border-[#0FACED]/30 bg-[#0FACED]/10 px-3 py-1">
-							<span className="font-mono text-sm font-bold text-[#0FACED]">
-								HI {highScore.toLocaleString()}
-							</span>
-						</div>
-						<div className="rounded-full border border-purple-400/30 bg-purple-400/10 px-3 py-1">
-							<span className="font-mono text-sm font-bold text-purple-400">
-								{gamesPlayed} RUNS
-							</span>
-						</div>
+						<Badge className="font-mono font-bold">HI {highScore.toLocaleString()}</Badge>
+						<Badge variant="purple" className="font-mono font-bold">
+							{gamesPlayed} RUNS
+						</Badge>
 					</div>
 				</div>
-			</div>
-		</div>
+			</CardContent>
+		</Card>
 	);
 }
 
@@ -168,26 +164,24 @@ interface MetricTile {
 
 function PerformanceMatrix({ tiles }: { tiles: MetricTile[] }) {
 	return (
-		<div className="rounded-2xl border border-white/10 bg-[#0a1628]/60 backdrop-blur-xl">
-			<div className="border-b border-white/10 px-5 py-3">
-				<h2 className="text-xs font-bold uppercase tracking-widest text-gray-400">
-					Performance Matrix
-				</h2>
-			</div>
-			<div className="grid grid-cols-2 gap-px bg-white/5 p-px">
+		<Card>
+			<CardHeader>
+				<CardTitle>Performance Matrix</CardTitle>
+			</CardHeader>
+			<div className="grid grid-cols-2 gap-px bg-border/50 p-px">
 				{tiles.map((tile) => (
 					<div
 						key={tile.label}
-						className="rounded-xl border border-white/5 bg-[#0a1628] p-4 transition-all hover:border-[#0FACED]/30"
+						className="rounded-xl border border-transparent bg-card p-4 transition-all hover:border-primary/30"
 					>
-						<p className="mb-1 text-xs font-bold uppercase tracking-widest text-gray-500">
+						<p className="mb-1 text-xs font-bold uppercase tracking-widest text-muted-foreground">
 							{tile.label}
 						</p>
-						<p className={`font-mono text-2xl font-bold ${tile.accent}`}>{tile.value}</p>
+						<p className={cn("font-mono text-2xl font-bold", tile.accent)}>{tile.value}</p>
 					</div>
 				))}
 			</div>
-		</div>
+		</Card>
 	);
 }
 
@@ -195,7 +189,7 @@ function PerformanceMatrix({ tiles }: { tiles: MetricTile[] }) {
 /*  Honor Badges                                                       */
 /* ------------------------------------------------------------------ */
 
-interface Badge {
+interface HonorBadge {
 	icon: string;
 	name: string;
 	description: string;
@@ -207,36 +201,48 @@ function HonorBadges({
 	unlockedCount,
 	totalCount,
 }: {
-	badges: Badge[];
+	badges: HonorBadge[];
 	unlockedCount: number;
 	totalCount: number;
 }) {
 	return (
-		<div className="rounded-2xl border border-white/10 bg-[#0a1628]/60 backdrop-blur-xl">
-			<div className="flex items-center justify-between border-b border-white/10 px-5 py-3">
-				<h2 className="text-xs font-bold uppercase tracking-widest text-gray-400">Honor Badges</h2>
-				<span className="font-mono text-xs text-[#0FACED]">
+		<Card>
+			<CardHeader>
+				<CardTitle>Honor Badges</CardTitle>
+				<span className="font-mono text-xs text-primary">
 					{unlockedCount} / {totalCount}
 				</span>
-			</div>
-			<div className="flex flex-wrap gap-3 p-5">
-				{badges.map((badge, i) => (
-					<div
-						key={i}
-						title={`${badge.name}: ${badge.description}`}
-						className={`flex h-12 w-12 items-center justify-center rounded-full border-2 transition-all ${
-							badge.unlocked
-								? "border-[#0FACED]/40 bg-[#0FACED]/10 shadow-[0_0_12px_rgba(15,172,237,0.2)]"
-								: "border-white/10 bg-white/5 grayscale opacity-40"
-						}`}
-					>
-						<span className="text-2xl" role="img" aria-label={badge.name}>
-							{badge.unlocked ? badge.icon : "🔒"}
-						</span>
+			</CardHeader>
+			<CardContent>
+				<TooltipProvider delayDuration={200}>
+					<div className="flex flex-wrap gap-3">
+						{badges.map((badge, i) => (
+							<Tooltip key={i}>
+								<TooltipTrigger asChild>
+									<div
+										tabIndex={0}
+										className={cn(
+											"flex size-12 items-center justify-center rounded-full border-2 transition-all cursor-default",
+											badge.unlocked
+												? "border-primary/40 bg-primary/10 shadow-[0_0_12px_rgba(15,172,237,0.2)]"
+												: "border-border bg-muted/50 grayscale opacity-40",
+										)}
+									>
+										<span className="text-2xl" role="img" aria-label={badge.name}>
+											{badge.unlocked ? badge.icon : "🔒"}
+										</span>
+									</div>
+								</TooltipTrigger>
+								<TooltipContent>
+									<p className="font-semibold">{badge.name}</p>
+									<p className="text-muted-foreground">{badge.description}</p>
+								</TooltipContent>
+							</Tooltip>
+						))}
 					</div>
-				))}
-			</div>
-		</div>
+				</TooltipProvider>
+			</CardContent>
+		</Card>
 	);
 }
 
@@ -260,24 +266,24 @@ function TrendArrow({ trend }: { trend: "up" | "down" | "same" }) {
 	if (trend === "down") {
 		return <span className="font-mono text-xl font-bold text-red-400">↓</span>;
 	}
-	return <span className="font-mono text-xl font-bold text-gray-500">—</span>;
+	return <span className="font-mono text-xl font-bold text-muted-foreground">—</span>;
 }
 
 function RecentScorelines({ scores }: { scores: ScoreEntry[] }) {
 	const top8 = scores.slice(0, 8);
 
 	return (
-		<div className="rounded-2xl border border-white/10 bg-[#0a1628]/60 backdrop-blur-xl">
-			<div className="border-b border-white/10 px-5 py-3">
-				<h2 className="text-xs font-bold uppercase tracking-widest text-gray-400">
-					Top Scores
-				</h2>
-			</div>
+		<Card>
+			<CardHeader>
+				<CardTitle>Top Scores</CardTitle>
+			</CardHeader>
 
 			{top8.length === 0 ? (
-				<p className="px-5 py-8 text-center text-sm text-gray-500">No scores yet.</p>
+				<CardContent className="py-8 text-center text-sm text-muted-foreground">
+					No scores yet.
+				</CardContent>
 			) : (
-				<ul className="divide-y divide-white/5">
+				<ul className="divide-y divide-border/50">
 					{top8.map((entry, i) => {
 						const next = top8[i + 1];
 						const trend: "up" | "down" | "same" =
@@ -292,14 +298,14 @@ function RecentScorelines({ scores }: { scores: ScoreEntry[] }) {
 						return (
 							<li
 								key={entry.id}
-								className="flex items-center gap-3 px-5 py-3 transition hover:bg-white/5"
+								className="flex items-center gap-3 px-5 py-3 transition hover:bg-muted/30"
 							>
 								<TrendArrow trend={trend} />
 								<div className="flex flex-1 flex-col gap-0.5">
-									<span className="font-mono font-bold text-white">
+									<span className="font-mono font-bold text-foreground">
 										{entry.score.toLocaleString()}
 									</span>
-									<span className="text-xs text-gray-500">
+									<span className="text-xs text-muted-foreground">
 										{fmtKm(entry.distance)} · {entry.difficulty} ·{" "}
 										{new Date(entry.createdAt).toLocaleDateString("en-US", {
 											month: "short",
@@ -308,16 +314,16 @@ function RecentScorelines({ scores }: { scores: ScoreEntry[] }) {
 									</span>
 								</div>
 								{entry.obstaclesCleared > 0 && (
-									<span className="rounded-full bg-orange-400/10 px-2 py-0.5 font-mono text-xs text-orange-400">
+									<Badge variant="orange" className="font-mono">
 										{entry.obstaclesCleared}
-									</span>
+									</Badge>
 								)}
 							</li>
 						);
 					})}
 				</ul>
 			)}
-		</div>
+		</Card>
 	);
 }
 
@@ -336,87 +342,72 @@ export default function PublicProfilePage() {
 		error,
 	} = useQuery(trpc.score.getPublicProfile.queryOptions({ userId: id }));
 
-	/* ---- Loading ---- */
 	if (isPending) {
 		return <PublicProfileSkeleton />;
 	}
 
-	/* ---- Not found ---- */
 	if (error) {
 		return (
 			<main className="flex min-h-[60vh] flex-col items-center justify-center gap-4">
-				<div className="flex h-20 w-20 items-center justify-center rounded-full border-2 border-white/10 bg-white/5 text-4xl">
+				<div className="flex size-20 items-center justify-center rounded-full border-2 border-border bg-muted/50 text-4xl">
 					🔍
 				</div>
-				<h1 className="text-xl font-bold text-white">User not found</h1>
-				<p className="text-sm text-gray-400">
+				<h1 className="text-xl font-bold text-foreground">User not found</h1>
+				<p className="text-sm text-muted-foreground">
 					This user does not exist or their profile is unavailable.
 				</p>
 			</main>
 		);
 	}
 
-	/* ---- Private profile ---- */
 	if (profile.isPrivate) {
 		return (
 			<main className="flex min-h-[60vh] flex-col items-center justify-center gap-4">
-				<div className="flex h-20 w-20 items-center justify-center rounded-full border-2 border-white/10 bg-white/5 text-4xl">
+				<div className="flex size-20 items-center justify-center rounded-full border-2 border-border bg-muted/50 text-4xl">
 					🔒
 				</div>
-				<h1 className="text-xl font-bold text-white">{profile.username}</h1>
-				<p className="text-sm text-gray-400">This profile is private.</p>
+				<h1 className="text-xl font-bold text-foreground">{profile.username}</h1>
+				<p className="text-sm text-muted-foreground">This profile is private.</p>
 			</main>
 		);
 	}
 
-	/* ---- Derived values ---- */
-	const { username, userImage, level, totalXp, equippedSkin, stats, topScores, achievements, skinsUnlocked } =
-		profile;
+	const {
+		username,
+		userImage,
+		level,
+		totalXp,
+		equippedSkin,
+		stats,
+		topScores,
+		achievements,
+		skinsUnlocked,
+	} = profile;
 
 	const levelInfo = getLevelFromXp(totalXp);
 	const highScore = topScores.length > 0 ? (topScores[0]?.score ?? 0) : 0;
 
 	const winRate =
-		stats.racesPlayed > 0
-			? `${((stats.racesWon / stats.racesPlayed) * 100).toFixed(0)}%`
-			: "N/A";
+		stats.racesPlayed > 0 ? `${((stats.racesWon / stats.racesPlayed) * 100).toFixed(0)}%` : "N/A";
 
-	/* ---- Performance tiles ---- */
 	const performanceTiles: MetricTile[] = [
-		{
-			label: "Total Distance",
-			value: fmtKm(stats.totalDistance),
-			accent: "text-[#0FACED]",
-		},
-		{
-			label: "High Score",
-			value: highScore.toLocaleString(),
-			accent: "text-[#0FACED]",
-		},
-		{
-			label: "Win Rate",
-			value: winRate,
-			accent: "text-emerald-400",
-		},
+		{ label: "Total Distance", value: fmtKm(stats.totalDistance), accent: "text-primary" },
+		{ label: "High Score", value: highScore.toLocaleString(), accent: "text-primary" },
+		{ label: "Win Rate", value: winRate, accent: "text-emerald-400" },
 		{
 			label: "Obstacles",
 			value: stats.obstaclesCleared.toLocaleString(),
-			accent: "text-orange-400",
+			accent: "text-fang-orange",
 		},
 		{
 			label: "Games Played",
 			value: stats.gamesPlayed.toLocaleString(),
-			accent: "text-purple-400",
+			accent: "text-fang-purple",
 		},
-		{
-			label: "Total Score",
-			value: stats.totalScore.toLocaleString(),
-			accent: "text-yellow-400",
-		},
+		{ label: "Total Score", value: stats.totalScore.toLocaleString(), accent: "text-fang-gold" },
 	];
 
-	/* ---- Honor Badges ---- */
-	const unlockedBadges: Badge[] = achievements
+	const unlockedBadges: HonorBadge[] = achievements
 		.filter((a) => a.unlocked)
 		.map((a) => ({
 			icon: a.icon,
@@ -425,7 +416,7 @@ export default function PublicProfilePage() {
 			unlocked: true,
 		}));
 
-	const lockedBadges: Badge[] = achievements
+	const lockedBadges: HonorBadge[] = achievements
 		.filter((a) => !a.unlocked)
 		.map((a) => ({
 			icon: a.icon,
@@ -437,11 +428,9 @@ export default function PublicProfilePage() {
 	const BADGE_LIMIT = 12;
 	const allBadges = [...unlockedBadges, ...lockedBadges].slice(0, BADGE_LIMIT);
 
-	/* ---------------------------------------------------------------- */
 	return (
 		<main className="mx-auto max-w-5xl px-4 py-8">
 			<div className="space-y-6">
-				{/* Header banner */}
 				<ProfileHeader
 					userName={username}
 					userImage={userImage}
@@ -452,42 +441,38 @@ export default function PublicProfilePage() {
 				/>
 
 				{/* Level & XP Progress */}
-				<div className="rounded-2xl border border-white/10 bg-[#0a1628]/60 p-5 backdrop-blur-xl">
-					<div className="mb-3 flex items-center justify-between">
-						<div className="flex items-center gap-3">
-							<span className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-[#0FACED]/40 bg-[#0FACED]/10 font-mono text-lg font-bold text-[#0FACED]">
-								{level}
-							</span>
-							<div>
-								<p className="text-sm font-bold text-white">Level {level}</p>
-								<p className="text-xs text-gray-400">{totalXp.toLocaleString()} XP total</p>
+				<Card>
+					<CardContent className="p-5">
+						<div className="mb-3 flex items-center justify-between">
+							<div className="flex items-center gap-3">
+								<span className="flex size-10 items-center justify-center rounded-full border-2 border-primary/40 bg-primary/10 font-mono text-lg font-bold text-primary">
+									{level}
+								</span>
+								<div>
+									<p className="text-sm font-bold text-foreground">Level {level}</p>
+									<p className="text-xs text-muted-foreground">
+										{totalXp.toLocaleString()} XP total
+									</p>
+								</div>
+							</div>
+							<div className="flex items-center gap-3">
+								{skinsUnlocked > 0 && (
+									<Badge variant="gold" className="font-mono font-bold">
+										{skinsUnlocked} SKINS
+									</Badge>
+								)}
+								<p className="text-xs text-muted-foreground">
+									{levelInfo.xpForCurrentLevel.toLocaleString()} /{" "}
+									{levelInfo.xpForNextLevel.toLocaleString()} XP
+								</p>
 							</div>
 						</div>
-						<div className="flex items-center gap-3">
-							{skinsUnlocked > 0 && (
-								<div className="rounded-full border border-amber-400/30 bg-amber-400/10 px-3 py-1">
-									<span className="font-mono text-xs font-bold text-amber-400">
-										{skinsUnlocked} SKINS
-									</span>
-								</div>
-							)}
-							<p className="text-xs text-gray-500">
-								{levelInfo.xpForCurrentLevel.toLocaleString()} /{" "}
-								{levelInfo.xpForNextLevel.toLocaleString()} XP
-							</p>
-						</div>
-					</div>
-					<div className="h-3 w-full overflow-hidden rounded-full bg-white/10">
-						<div
-							className="h-full rounded-full bg-gradient-to-r from-[#0FACED] to-purple-500 transition-all duration-500"
-							style={{ width: `${Math.round(levelInfo.progress * 100)}%` }}
-						/>
-					</div>
-				</div>
+						<Progress value={Math.round(levelInfo.progress * 100)} />
+					</CardContent>
+				</Card>
 
 				{/* Main two-column grid */}
 				<div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_340px]">
-					{/* Left: Performance Matrix + Honor Badges */}
 					<div className="space-y-6">
 						<PerformanceMatrix tiles={performanceTiles} />
 						<HonorBadges
@@ -497,7 +482,6 @@ export default function PublicProfilePage() {
 						/>
 					</div>
 
-					{/* Right: Top Scores (sticky on large screens) */}
 					<div className="lg:sticky lg:top-24 lg:self-start">
 						<RecentScorelines scores={topScores} />
 					</div>

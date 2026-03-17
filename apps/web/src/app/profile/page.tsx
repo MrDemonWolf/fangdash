@@ -8,6 +8,12 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useSession } from "@/lib/auth-client.ts";
 import { useTRPC } from "@/lib/trpc.ts";
+import { cn } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { ProfileSkeleton } from "./_skeleton.tsx";
 
 /* ------------------------------------------------------------------ */
@@ -38,18 +44,18 @@ function ProfileHeader({
 	gamesPlayed: number;
 }) {
 	return (
-		<div className="relative overflow-hidden rounded-2xl border border-white/10 bg-[#0a1628]/60 backdrop-blur-xl">
+		<Card className="relative overflow-hidden">
 			{/* Subtle grid overlay */}
 			<div
 				className="pointer-events-none absolute inset-0 opacity-5"
 				style={{
 					backgroundImage:
-						"linear-gradient(rgba(15,172,237,0.4) 1px, transparent 1px), linear-gradient(90deg, rgba(15,172,237,0.4) 1px, transparent 1px)",
+						"linear-gradient(oklch(0.72 0.15 210 / 0.4) 1px, transparent 1px), linear-gradient(90deg, oklch(0.72 0.15 210 / 0.4) 1px, transparent 1px)",
 					backgroundSize: "40px 40px",
 				}}
 			/>
 
-			<div className="relative flex flex-col items-center gap-6 p-6 sm:flex-row sm:items-center">
+			<CardContent className="relative flex flex-col items-center gap-6 p-6 sm:flex-row sm:items-center">
 				{/* Wolf sprite */}
 				<div className="shrink-0">
 					{skinSpriteKey ? (
@@ -63,7 +69,7 @@ function ProfileHeader({
 							/>
 						</div>
 					) : (
-						<div className="flex h-32 w-32 items-center justify-center rounded-2xl border border-[#0FACED]/20 bg-[#0FACED]/5 text-6xl">
+						<div className="flex h-32 w-32 items-center justify-center rounded-2xl border border-primary/20 bg-primary/5 text-6xl">
 							🐺
 						</div>
 					)}
@@ -72,7 +78,7 @@ function ProfileHeader({
 				{/* Info */}
 				<div className="flex flex-1 flex-col items-center gap-4 sm:flex-row sm:items-start sm:justify-between">
 					<div className="text-center sm:text-left">
-						<h1 className="text-2xl font-bold text-white">{userName}</h1>
+						<h1 className="text-2xl font-bold text-foreground">{userName}</h1>
 						<div className="mt-1 flex items-center justify-center gap-2 sm:justify-start">
 							{userImage && (
 								<Image
@@ -83,29 +89,23 @@ function ProfileHeader({
 									className="rounded-full"
 								/>
 							)}
-							<span className="text-sm text-gray-400">
+							<span className="text-sm text-muted-foreground">
 								@{userName.toLowerCase().replace(/\s+/g, "")}
 							</span>
 						</div>
-						{skinName && <p className="mt-1 text-xs text-[#0FACED]/70">Equipped: {skinName}</p>}
+						{skinName && <p className="mt-1 text-xs text-primary/70">Equipped: {skinName}</p>}
 					</div>
 
 					{/* Right-side badges */}
 					<div className="flex flex-wrap items-center justify-center gap-3 sm:justify-end">
-						<div className="rounded-full border border-[#0FACED]/30 bg-[#0FACED]/10 px-3 py-1">
-							<span className="font-mono text-sm font-bold text-[#0FACED]">
-								HI {highScore.toLocaleString()}
-							</span>
-						</div>
-						<div className="rounded-full border border-purple-400/30 bg-purple-400/10 px-3 py-1">
-							<span className="font-mono text-sm font-bold text-purple-400">
-								{gamesPlayed} RUNS
-							</span>
-						</div>
+						<Badge className="font-mono font-bold">HI {highScore.toLocaleString()}</Badge>
+						<Badge variant="purple" className="font-mono font-bold">
+							{gamesPlayed} RUNS
+						</Badge>
 					</div>
 				</div>
-			</div>
-		</div>
+			</CardContent>
+		</Card>
 	);
 }
 
@@ -121,26 +121,24 @@ interface MetricTile {
 
 function PerformanceMatrix({ tiles }: { tiles: MetricTile[] }) {
 	return (
-		<div className="rounded-2xl border border-white/10 bg-[#0a1628]/60 backdrop-blur-xl">
-			<div className="border-b border-white/10 px-5 py-3">
-				<h2 className="text-xs font-bold uppercase tracking-widest text-gray-400">
-					Performance Matrix
-				</h2>
-			</div>
-			<div className="grid grid-cols-2 gap-px bg-white/5 p-px">
+		<Card>
+			<CardHeader>
+				<CardTitle>Performance Matrix</CardTitle>
+			</CardHeader>
+			<div className="grid grid-cols-2 gap-px bg-border/50 p-px">
 				{tiles.map((tile) => (
 					<div
 						key={tile.label}
-						className="rounded-xl border border-white/5 bg-[#0a1628] p-4 transition-all hover:border-[#0FACED]/30"
+						className="rounded-xl border border-transparent bg-card p-4 transition-all hover:border-primary/30"
 					>
-						<p className="mb-1 text-xs font-bold uppercase tracking-widest text-gray-500">
+						<p className="mb-1 text-xs font-bold uppercase tracking-widest text-muted-foreground">
 							{tile.label}
 						</p>
-						<p className={`font-mono text-2xl font-bold ${tile.accent}`}>{tile.value}</p>
+						<p className={cn("font-mono text-2xl font-bold", tile.accent)}>{tile.value}</p>
 					</div>
 				))}
 			</div>
-		</div>
+		</Card>
 	);
 }
 
@@ -148,7 +146,7 @@ function PerformanceMatrix({ tiles }: { tiles: MetricTile[] }) {
 /*  Honor Badges                                                       */
 /* ------------------------------------------------------------------ */
 
-interface Badge {
+interface HonorBadge {
 	icon: string;
 	name: string;
 	description: string;
@@ -160,36 +158,48 @@ function HonorBadges({
 	unlockedCount,
 	totalCount,
 }: {
-	badges: Badge[];
+	badges: HonorBadge[];
 	unlockedCount: number;
 	totalCount: number;
 }) {
 	return (
-		<div className="rounded-2xl border border-white/10 bg-[#0a1628]/60 backdrop-blur-xl">
-			<div className="flex items-center justify-between border-b border-white/10 px-5 py-3">
-				<h2 className="text-xs font-bold uppercase tracking-widest text-gray-400">Honor Badges</h2>
-				<span className="font-mono text-xs text-[#0FACED]">
+		<Card>
+			<CardHeader>
+				<CardTitle>Honor Badges</CardTitle>
+				<span className="font-mono text-xs text-primary">
 					{unlockedCount} / {totalCount}
 				</span>
-			</div>
-			<div className="flex flex-wrap gap-3 p-5">
-				{badges.map((badge, i) => (
-					<div
-						key={i}
-						title={`${badge.name}: ${badge.description}`}
-						className={`flex h-12 w-12 items-center justify-center rounded-full border-2 transition-all ${
-							badge.unlocked
-								? "border-[#0FACED]/40 bg-[#0FACED]/10 shadow-[0_0_12px_rgba(15,172,237,0.2)]"
-								: "border-white/10 bg-white/5 grayscale opacity-40"
-						}`}
-					>
-						<span className="text-2xl" role="img" aria-label={badge.name}>
-							{badge.unlocked ? badge.icon : "🔒"}
-						</span>
+			</CardHeader>
+			<CardContent>
+				<TooltipProvider delayDuration={200}>
+					<div className="flex flex-wrap gap-3">
+						{badges.map((badge, i) => (
+							<Tooltip key={i}>
+								<TooltipTrigger asChild>
+									<div
+										tabIndex={0}
+										className={cn(
+											"flex h-12 w-12 items-center justify-center rounded-full border-2 transition-all cursor-default",
+											badge.unlocked
+												? "border-primary/40 bg-primary/10 shadow-[0_0_12px_rgba(15,172,237,0.2)]"
+												: "border-border bg-muted/50 grayscale opacity-40",
+										)}
+									>
+										<span className="text-2xl" role="img" aria-label={badge.name}>
+											{badge.unlocked ? badge.icon : "🔒"}
+										</span>
+									</div>
+								</TooltipTrigger>
+								<TooltipContent>
+									<p className="font-semibold">{badge.name}</p>
+									<p className="text-muted-foreground">{badge.description}</p>
+								</TooltipContent>
+							</Tooltip>
+						))}
 					</div>
-				))}
-			</div>
-		</div>
+				</TooltipProvider>
+			</CardContent>
+		</Card>
 	);
 }
 
@@ -212,24 +222,24 @@ function TrendArrow({ trend }: { trend: "up" | "down" | "same" }) {
 	if (trend === "down") {
 		return <span className="font-mono text-xl font-bold text-red-400">↓</span>;
 	}
-	return <span className="font-mono text-xl font-bold text-gray-500">—</span>;
+	return <span className="font-mono text-xl font-bold text-muted-foreground">—</span>;
 }
 
 function RecentScorelines({ scores }: { scores: ScoreEntry[] }) {
 	const top8 = scores.slice(0, 8);
 
 	return (
-		<div className="rounded-2xl border border-white/10 bg-[#0a1628]/60 backdrop-blur-xl">
-			<div className="border-b border-white/10 px-5 py-3">
-				<h2 className="text-xs font-bold uppercase tracking-widest text-gray-400">
-					Recent Scorelines
-				</h2>
-			</div>
+		<Card>
+			<CardHeader>
+				<CardTitle>Recent Scorelines</CardTitle>
+			</CardHeader>
 
 			{top8.length === 0 ? (
-				<p className="px-5 py-8 text-center text-sm text-gray-500">No scores yet. Play a game!</p>
+				<CardContent className="py-8 text-center text-sm text-muted-foreground">
+					No scores yet. Play a game!
+				</CardContent>
 			) : (
-				<ul className="divide-y divide-white/5">
+				<ul className="divide-y divide-border/50">
 					{top8.map((entry, i) => {
 						const next = top8[i + 1];
 						const trend: "up" | "down" | "same" =
@@ -244,14 +254,14 @@ function RecentScorelines({ scores }: { scores: ScoreEntry[] }) {
 						return (
 							<li
 								key={entry.id}
-								className="flex items-center gap-3 px-5 py-3 transition hover:bg-white/5"
+								className="flex items-center gap-3 px-5 py-3 transition hover:bg-muted/30"
 							>
 								<TrendArrow trend={trend} />
 								<div className="flex flex-1 flex-col gap-0.5">
-									<span className="font-mono font-bold text-white">
+									<span className="font-mono font-bold text-foreground">
 										{entry.score.toLocaleString()}
 									</span>
-									<span className="text-xs text-gray-500">
+									<span className="text-xs text-muted-foreground">
 										{fmtKm(entry.distance)} ·{" "}
 										{new Date(entry.createdAt).toLocaleDateString("en-US", {
 											month: "short",
@@ -260,16 +270,16 @@ function RecentScorelines({ scores }: { scores: ScoreEntry[] }) {
 									</span>
 								</div>
 								{entry.obstaclesCleared > 0 && (
-									<span className="rounded-full bg-orange-400/10 px-2 py-0.5 font-mono text-xs text-orange-400">
+									<Badge variant="orange" className="font-mono">
 										{entry.obstaclesCleared}
-									</span>
+									</Badge>
 								)}
 							</li>
 						);
 					})}
 				</ul>
 			)}
-		</div>
+		</Card>
 	);
 }
 
@@ -283,6 +293,7 @@ export default function ProfilePage() {
 	const trpc = useTRPC();
 
 	const isSignedIn = !!session?.user;
+	const [copied, setCopied] = useState(false);
 
 	const { data: scores, isPending: scoresLoading } = useQuery(
 		trpc.score.myScores.queryOptions(undefined, { enabled: isSignedIn }),
@@ -307,14 +318,12 @@ export default function ProfilePage() {
 	const isDataLoading =
 		scoresLoading || skinLoading || achievementsLoading || raceStatsLoading || playerStatsLoading;
 
-	/* ---- Redirect unauthenticated users ---- */
 	useEffect(() => {
 		if (!(sessionLoading || session?.user)) {
 			router.replace("/");
 		}
 	}, [sessionLoading, session, router]);
 
-	/* ---- Skeleton while session or data queries are pending ---- */
 	if (sessionLoading || (isSignedIn && isDataLoading)) {
 		return <ProfileSkeleton />;
 	}
@@ -322,14 +331,13 @@ export default function ProfilePage() {
 	if (!session?.user) {
 		return (
 			<main className="flex min-h-[60vh] items-center justify-center">
-				<p className="text-lg text-gray-400">Sign in to view your profile.</p>
+				<p className="text-lg text-muted-foreground">Sign in to view your profile.</p>
 			</main>
 		);
 	}
 
 	const user = session.user;
 
-	/* ---- Derived values ---- */
 	const skinDef = equippedSkin ? getSkinById(equippedSkin.skinId) : null;
 
 	const highScore = scores && scores.length > 0 ? Math.max(...scores.map((s) => s.score)) : 0;
@@ -346,41 +354,15 @@ export default function ProfilePage() {
 	const racesWon = raceStats?.racesWon ?? 0;
 	const winRate = racesPlayed > 0 ? `${((racesWon / racesPlayed) * 100).toFixed(0)}%` : "N/A";
 
-	/* ---- Performance tiles ---- */
 	const performanceTiles: MetricTile[] = [
-		{
-			label: "Total Distance",
-			value: fmtKm(totalDistance),
-			accent: "text-[#0FACED]",
-		},
-		{
-			label: "High Score",
-			value: highScore.toLocaleString(),
-			accent: "text-[#0FACED]",
-		},
-		{
-			label: "Win Rate",
-			value: winRate,
-			accent: "text-emerald-400",
-		},
-		{
-			label: "Obstacles",
-			value: totalObstacles.toLocaleString(),
-			accent: "text-orange-400",
-		},
-		{
-			label: "Games Played",
-			value: gamesPlayed.toLocaleString(),
-			accent: "text-purple-400",
-		},
-		{
-			label: "Total Score",
-			value: totalScore.toLocaleString(),
-			accent: "text-yellow-400",
-		},
+		{ label: "Total Distance", value: fmtKm(totalDistance), accent: "text-primary" },
+		{ label: "High Score", value: highScore.toLocaleString(), accent: "text-primary" },
+		{ label: "Win Rate", value: winRate, accent: "text-emerald-400" },
+		{ label: "Obstacles", value: totalObstacles.toLocaleString(), accent: "text-fang-orange" },
+		{ label: "Games Played", value: gamesPlayed.toLocaleString(), accent: "text-fang-purple" },
+		{ label: "Total Score", value: totalScore.toLocaleString(), accent: "text-fang-gold" },
 	];
 
-	/* ---- Honor Badges ---- */
 	const unlockedIds = new Set((achievements ?? []).map((a) => a?.id));
 	const sortedUnlocked = [...(achievements ?? [])]
 		.filter((a): a is NonNullable<typeof a> => a != null)
@@ -390,9 +372,8 @@ export default function ProfilePage() {
 			return bT - aT;
 		});
 
-	// Build up to 12 badges: unlocked first (most recent), then locked
 	const BADGE_LIMIT = 12;
-	const unlockedBadges: Badge[] = sortedUnlocked
+	const unlockedBadges: HonorBadge[] = sortedUnlocked
 		.slice(0, BADGE_LIMIT)
 		.filter((a): a is NonNullable<typeof a> => a != null)
 		.map((a) => ({
@@ -403,7 +384,7 @@ export default function ProfilePage() {
 		}));
 
 	const lockedDefs = ACHIEVEMENTS.filter((a) => !unlockedIds.has(a.id));
-	const lockedBadges: Badge[] = lockedDefs
+	const lockedBadges: HonorBadge[] = lockedDefs
 		.slice(0, Math.max(0, BADGE_LIMIT - unlockedBadges.length))
 		.map((a) => ({
 			icon: a.icon,
@@ -414,12 +395,10 @@ export default function ProfilePage() {
 
 	const allBadges = [...unlockedBadges, ...lockedBadges];
 
-	/* ---- Scores for scorelines ---- */
 	const recentScores = (scores ?? []) as ScoreEntry[];
 
-	/* ---- Share profile ---- */
-	const [copied, setCopied] = useState(false);
-	const shareUrl = typeof window !== "undefined" ? `${window.location.origin}/profile/${user.id}` : "";
+	const shareUrl =
+		typeof window !== "undefined" ? `${window.location.origin}/profile/${user.id}` : "";
 	const handleShareProfile = () => {
 		navigator.clipboard.writeText(shareUrl).then(() => {
 			setCopied(true);
@@ -427,11 +406,9 @@ export default function ProfilePage() {
 		});
 	};
 
-	/* ---------------------------------------------------------------- */
 	return (
 		<main className="mx-auto max-w-5xl px-4 py-8">
 			<div className="space-y-6">
-				{/* Header banner */}
 				<ProfileHeader
 					userName={user.name ?? "Unknown"}
 					userImage={user.image}
@@ -443,49 +420,40 @@ export default function ProfilePage() {
 
 				{/* Quick actions */}
 				<div className="flex items-center gap-3">
-					<button
-						type="button"
-						onClick={handleShareProfile}
-						className="rounded-lg border border-[#0FACED]/30 bg-[#0FACED]/10 px-4 py-2 text-sm font-medium text-[#0FACED] transition-colors hover:bg-[#0FACED]/20"
-					>
+					<Button variant="outline" size="sm" onClick={handleShareProfile}>
 						{copied ? "Link copied!" : "Share profile"}
-					</button>
-					<Link
-						href="/settings"
-						className="rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-gray-400 transition-colors hover:bg-white/10 hover:text-white"
-					>
-						Settings
-					</Link>
+					</Button>
+					<Button variant="secondary" size="sm" asChild>
+						<Link href="/settings">Settings</Link>
+					</Button>
 				</div>
 
 				{/* Level & XP Progress */}
-				<div className="rounded-2xl border border-white/10 bg-[#0a1628]/60 p-5 backdrop-blur-xl">
-					<div className="flex items-center justify-between mb-3">
-						<div className="flex items-center gap-3">
-							<span className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-[#0FACED]/40 bg-[#0FACED]/10 font-mono text-lg font-bold text-[#0FACED]">
-								{playerLevel}
-							</span>
-							<div>
-								<p className="text-sm font-bold text-white">Level {playerLevel}</p>
-								<p className="text-xs text-gray-400">{totalXp.toLocaleString()} XP total</p>
+				<Card>
+					<CardContent className="p-5">
+						<div className="flex items-center justify-between mb-3">
+							<div className="flex items-center gap-3">
+								<span className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-primary/40 bg-primary/10 font-mono text-lg font-bold text-primary">
+									{playerLevel}
+								</span>
+								<div>
+									<p className="text-sm font-bold text-foreground">Level {playerLevel}</p>
+									<p className="text-xs text-muted-foreground">
+										{totalXp.toLocaleString()} XP total
+									</p>
+								</div>
 							</div>
+							<p className="text-xs text-muted-foreground">
+								{levelInfo.xpForCurrentLevel.toLocaleString()} /{" "}
+								{levelInfo.xpForNextLevel.toLocaleString()} XP
+							</p>
 						</div>
-						<p className="text-xs text-gray-500">
-							{levelInfo.xpForCurrentLevel.toLocaleString()} /{" "}
-							{levelInfo.xpForNextLevel.toLocaleString()} XP
-						</p>
-					</div>
-					<div className="h-3 w-full overflow-hidden rounded-full bg-white/10">
-						<div
-							className="h-full rounded-full bg-gradient-to-r from-[#0FACED] to-purple-500 transition-all duration-500"
-							style={{ width: `${Math.round(levelInfo.progress * 100)}%` }}
-						/>
-					</div>
-				</div>
+						<Progress value={Math.round(levelInfo.progress * 100)} />
+					</CardContent>
+				</Card>
 
 				{/* Main two-column grid */}
 				<div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_340px]">
-					{/* Left: Performance Matrix + Honor Badges */}
 					<div className="space-y-6">
 						<PerformanceMatrix tiles={performanceTiles} />
 						<HonorBadges
@@ -495,7 +463,6 @@ export default function ProfilePage() {
 						/>
 					</div>
 
-					{/* Right: Recent Scorelines (sticky on large screens) */}
 					<div className="lg:sticky lg:top-24 lg:self-start">
 						<RecentScorelines scores={recentScores} />
 					</div>

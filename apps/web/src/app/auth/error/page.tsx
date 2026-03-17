@@ -5,6 +5,8 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 import { signIn } from "@/lib/auth-client.ts";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 
 const ERROR_MESSAGES: Record<string, string> = {
 	unable_to_create_user: "We couldn't create your account. Please try again.",
@@ -22,7 +24,7 @@ function AuthErrorContent() {
 	};
 
 	return (
-		<main className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-[#091533] px-4 text-center">
+		<main className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-background px-4 text-center">
 			{/* Grid overlay */}
 			<div
 				className="pointer-events-none absolute inset-0 opacity-5"
@@ -45,7 +47,6 @@ function AuthErrorContent() {
 			/>
 
 			<div className="relative z-10 flex flex-col items-center gap-6">
-				{/* Wolf sprite with red glow */}
 				<div className="relative h-32 w-32">
 					<Image
 						src="/wolves/wolf-mrdemonwolf.png"
@@ -56,29 +57,24 @@ function AuthErrorContent() {
 					/>
 				</div>
 
-				{/* Error code badge */}
-				<span className="rounded-full border border-red-500/20 bg-red-500/10 px-3 py-1 font-mono text-xs text-red-400">
+				<Badge variant="destructive" className="font-mono">
 					{code}
-				</span>
+				</Badge>
 
-				{/* Headline */}
-				<h1 className="font-mono text-4xl font-bold tracking-widest text-white sm:text-5xl">
+				<h1 className="font-mono text-4xl font-bold tracking-widest text-foreground sm:text-5xl">
 					LOGIN FAILED
 				</h1>
 
-				{/* Human-readable message */}
-				<p className="max-w-sm text-base text-gray-400">{message}</p>
+				<p className="max-w-sm text-base text-muted-foreground">{message}</p>
 
-				{/* CTAs */}
 				<div className="mt-2 flex flex-col items-center gap-3 sm:flex-row">
-					<button
-						type="button"
-						onClick={handleTryAgain}
-						className="rounded-lg bg-[#0FACED] px-8 py-3 font-bold text-[#091533] transition-transform hover:scale-105 hover:shadow-[0_0_24px_rgba(15,172,237,0.4)] cursor-pointer"
-					>
+					<Button variant="glow" size="lg" onClick={handleTryAgain}>
 						TRY AGAIN
-					</button>
-					<Link href="/" className="text-sm text-gray-500 transition-colors hover:text-gray-300">
+					</Button>
+					<Link
+						href="/"
+						className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+					>
 						← Back to Home
 					</Link>
 				</div>
