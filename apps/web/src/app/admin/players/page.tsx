@@ -11,12 +11,6 @@ function RoleBadge({ role }: { role: string | null }) {
 				admin
 			</span>
 		);
-	if (role === "dev")
-		return (
-			<span className="rounded-full bg-purple-500/20 px-2 py-0.5 text-xs font-bold text-purple-400">
-				dev
-			</span>
-		);
 	return (
 		<span className="rounded-full bg-white/10 px-2 py-0.5 text-xs font-bold text-gray-400">
 			user

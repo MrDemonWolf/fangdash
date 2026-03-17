@@ -4,10 +4,10 @@ import { count, desc, eq, like, sql } from "drizzle-orm";
 import { z } from "zod";
 import { player, playerSkin, raceHistory, score, user } from "../../db/schema.ts";
 import { ensurePlayer } from "../../lib/ensure-player.ts";
-import { devProcedure, router } from "../trpc.ts";
+import { adminProcedure, router } from "../trpc.ts";
 
 export const adminRouter = router({
-	getStats: devProcedure.query(async ({ ctx }) => {
+	getStats: adminProcedure.query(async ({ ctx }) => {
 		const playerCountRows = await ctx.db.select({ count: count() }).from(player);
 		const scoreStatsRows = await ctx.db
 			.select({
@@ -35,7 +35,7 @@ export const adminRouter = router({
 		};
 	}),
 
-	getPlayers: devProcedure
+	getPlayers: adminProcedure
 		.input(
 			z.object({
 				page: z.number().int().min(1).default(1),
@@ -81,7 +81,7 @@ export const adminRouter = router({
 			};
 		}),
 
-	banUser: devProcedure
+	banUser: adminProcedure
 		.input(
 			z.object({
 				userId: z.string(),
@@ -110,7 +110,7 @@ export const adminRouter = router({
 			return { success: true };
 		}),
 
-	unbanUser: devProcedure
+	unbanUser: adminProcedure
 		.input(z.object({ userId: z.string() }))
 		.mutation(async ({ ctx, input }) => {
 			if (!ctx.auth) {
@@ -123,7 +123,7 @@ export const adminRouter = router({
 			return { success: true };
 		}),
 
-	getScores: devProcedure
+	getScores: adminProcedure
 		.input(
 			z.object({
 				page: z.number().int().min(1).default(1),
@@ -163,7 +163,7 @@ export const adminRouter = router({
 			};
 		}),
 
-	deleteScore: devProcedure
+	deleteScore: adminProcedure
 		.input(z.object({ scoreId: z.string() }))
 		.mutation(async ({ ctx, input }) => {
 			const existing = await ctx.db.select().from(score).where(eq(score.id, input.scoreId)).get();
@@ -205,7 +205,7 @@ export const adminRouter = router({
 			return { success: true };
 		}),
 
-	getRaces: devProcedure
+	getRaces: adminProcedure
 		.input(
 			z.object({
 				page: z.number().int().min(1).default(1),
@@ -270,7 +270,7 @@ export const adminRouter = router({
 			};
 		}),
 
-	unlockAllSkins: devProcedure.mutation(async ({ ctx }) => {
+	unlockAllSkins: adminProcedure.mutation(async ({ ctx }) => {
 		const playerRecord = await ensurePlayer(ctx.db, ctx.user.id);
 		if (!playerRecord) {
 			throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Failed to find player" });

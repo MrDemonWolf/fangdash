@@ -37,6 +37,7 @@ export class GameScene extends Phaser.Scene {
 	private debugGraphics: Phaser.GameObjects.Graphics | null = null;
 	private debugElapsedMs = 0;
 	private debugSpeedMultiplier = 1.0;
+	private cheatsUsed = false;
 
 	constructor(key = "GameScene") {
 		super({ key });
@@ -185,7 +186,7 @@ export class GameScene extends Phaser.Scene {
 		}
 
 		// Emit state
-		const state = this.scoreManager.getState(true, speed);
+		const state = this.scoreManager.getState(true, speed, this.cheatsUsed);
 		this.callbacks.onStateUpdate?.(state);
 
 		// Emit debug state (only when callback is set)
@@ -198,6 +199,7 @@ export class GameScene extends Phaser.Scene {
 		this.previewing = false;
 		this.running = true;
 		this.debugElapsedMs = 0;
+		this.cheatsUsed = false;
 		this.player.reset();
 		this.spawner.reset();
 		const seed = this.seed ?? crypto.randomUUID();
@@ -219,7 +221,7 @@ export class GameScene extends Phaser.Scene {
 		this.audioManager.playSFX(AUDIO_KEYS.SFX_HIT);
 		this.audioManager.playSFX(AUDIO_KEYS.SFX_GAME_OVER);
 
-		const finalState = this.scoreManager.getState(false, this.difficulty.currentSpeed);
+		const finalState = this.scoreManager.getState(false, this.difficulty.currentSpeed, this.cheatsUsed);
 		this.callbacks.onGameOver?.(finalState);
 	}
 
@@ -359,6 +361,7 @@ export class GameScene extends Phaser.Scene {
 					value: number;
 				};
 				this.applyConstantOverride(key, value);
+				this.cheatsUsed = true;
 				break;
 			}
 
@@ -378,11 +381,13 @@ export class GameScene extends Phaser.Scene {
 
 			case "toggle-invincibility":
 				this.debugInvincible = !this.debugInvincible;
+				if (this.debugInvincible) this.cheatsUsed = true;
 				break;
 
 			case "set-difficulty": {
 				const levelIndex = command.payload as number;
 				this.difficulty.forceDifficulty(levelIndex);
+				this.cheatsUsed = true;
 				break;
 			}
 
@@ -395,6 +400,7 @@ export class GameScene extends Phaser.Scene {
 			case "set-speed-multiplier": {
 				const multiplier = command.payload as number;
 				this.debugSpeedMultiplier = Math.max(0.1, Math.min(3.0, multiplier));
+				if (multiplier !== 1.0) this.cheatsUsed = true;
 				break;
 			}
 

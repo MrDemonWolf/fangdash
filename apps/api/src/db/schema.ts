@@ -100,6 +100,7 @@ export const score = sqliteTable(
 		difficulty: text("difficulty").notNull().default("easy"),
 		longestCleanRun: integer("longest_clean_run").notNull().default(0),
 		seed: text("seed").notNull(),
+		cheated: integer("cheated").notNull().default(0),
 		createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
 	},
 	(table) => [
@@ -147,6 +148,7 @@ export const raceHistory = sqliteTable(
 		score: integer("score").notNull(),
 		distance: real("distance").notNull(),
 		seed: text("seed").notNull(),
+		cheated: integer("cheated").notNull().default(0),
 		createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
 	},
 	(table) => [index("race_history_player_id_idx").on(table.playerId)],

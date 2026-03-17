@@ -15,7 +15,7 @@ import { PlayMainMenu } from "@/components/game/PlayMainMenu.tsx";
 import { PlayMenu } from "@/components/game/PlayMenu.tsx";
 import { signIn, signOut, useSession } from "@/lib/auth-client.ts";
 import { useTRPC } from "@/lib/trpc.ts";
-import { useIsDevOrAdmin } from "@/lib/use-role.ts";
+import { useIsAdmin } from "@/lib/use-role.ts";
 
 // ---------------------------------------------------------------------------
 // Main Play Page
@@ -39,6 +39,7 @@ export default function PlayPage() {
 		alive: true,
 		speed: 0,
 		longestCleanRun: 0,
+		cheatsUsed: false,
 	});
 	const [elapsedTime, setElapsedTime] = useState(0);
 	const [gameOver, setGameOver] = useState(false);
@@ -66,7 +67,7 @@ export default function PlayPage() {
 	useEffect(() => setHasMounted(true), []);
 	const isPending = !hasMounted || sessionPending;
 	const isSignedIn = !!session?.user;
-	const isDevOrAdmin = useIsDevOrAdmin();
+	const isAdmin = useIsAdmin();
 
 	// Fetch equipped skin (only when signed in)
 	const trpc = useTRPC();
@@ -150,7 +151,7 @@ export default function PlayPage() {
 			setFinalElapsedTime(duration);
 			setGameOver(true);
 
-			if (isSignedIn) {
+			if (isSignedIn && !state.cheatsUsed) {
 				submitScore({
 					score: state.score,
 					distance: state.distance,
@@ -205,6 +206,7 @@ export default function PlayPage() {
 				alive: true,
 				speed: 0,
 				longestCleanRun: 0,
+		cheatsUsed: false,
 			});
 
 			const { game, debug, audio, gameChannel } = createGame({
@@ -351,7 +353,7 @@ export default function PlayPage() {
 	}, [gameOver, countdown, menuOpen, showMenu, openMenu, closeMenu]);
 
 	const handleRetrySubmit = useCallback(() => {
-		if (!finalState) {
+		if (!finalState || finalState.cheatsUsed) {
 			return;
 		}
 		submitScore({
@@ -470,13 +472,14 @@ export default function PlayPage() {
 						submitResult={submitResult ?? null}
 						submitError={submitError}
 						isSignedIn={isSignedIn}
+						cheatsUsed={finalState.cheatsUsed}
 						onRetrySubmit={isSignedIn ? handleRetrySubmit : undefined}
 					/>
 				)}
 			</div>
 
 			{/* Debug Panel (dev/admin only, Ctrl+Shift+D) */}
-			{isDevOrAdmin && (
+			{isAdmin && (
 				<DebugPanel debugState={debugState} onSendCommand={handleDebugCommand} gameKey={gameKey} />
 			)}
 		</main>

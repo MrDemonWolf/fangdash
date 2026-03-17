@@ -13,7 +13,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 	useEffect(() => {
 		if (!isPending) {
 			const role = session?.user?.role;
-			if (!role || (role !== "admin" && role !== "dev")) {
+			if (!role || (role !== "admin")) {
 				router.replace("/");
 			}
 		}
@@ -28,7 +28,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 	}
 
 	const role = session?.user?.role;
-	if (!role || (role !== "admin" && role !== "dev")) {
+	if (!role || (role !== "admin")) {
 		return null;
 	}
 
@@ -46,13 +46,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 				<h1 className="text-2xl font-bold text-white">Admin Panel</h1>
 				<p className="mt-1 text-sm text-gray-400">
 					Logged in as <span className="text-[#0FACED]">{session.user.name}</span>
-					<span
-						className={`ml-2 rounded-full px-2 py-0.5 text-xs font-bold ${
-							role === "admin"
-								? "bg-orange-500/20 text-orange-400"
-								: "bg-purple-500/20 text-purple-400"
-						}`}
-					>
+					<span className="ml-2 rounded-full bg-orange-500/20 px-2 py-0.5 text-xs font-bold text-orange-400">
 						{role}
 					</span>
 				</p>
