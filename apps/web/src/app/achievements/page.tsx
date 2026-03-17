@@ -94,13 +94,15 @@ function AchievementCard({
 					</span>
 					<div className="min-w-0 flex-1">
 						<div className="flex items-center gap-2">
-							<h3 className={cn("font-semibold", unlocked ? "text-foreground" : "text-muted-foreground")}>
+							<h3
+								className={cn(
+									"font-semibold",
+									unlocked ? "text-foreground" : "text-muted-foreground",
+								)}
+							>
 								{name}
 							</h3>
-							<Badge
-								variant={unlocked ? "default" : "secondary"}
-								className="capitalize"
-							>
+							<Badge variant={unlocked ? "default" : "secondary"} className="capitalize">
 								{category}
 							</Badge>
 						</div>
@@ -109,7 +111,9 @@ function AchievementCard({
 						{unlocked && unlockedAt ? (
 							<p className="mt-2 text-xs text-primary">Unlocked {formatDate(unlockedAt)}</p>
 						) : condition ? (
-							<p className="mt-2 text-xs text-muted-foreground italic">{formatCondition(condition)}</p>
+							<p className="mt-2 text-xs text-muted-foreground italic">
+								{formatCondition(condition)}
+							</p>
 						) : null}
 
 						{skin && <p className="mt-1 text-xs text-primary/70">Rewards: {skin.name}</p>}

@@ -38,20 +38,9 @@ const RARITY_STYLES: Record<SkinRarity, { badge: string; border: string }> = {
 /* ------------------------------------------------------------------ */
 /*  Status message                                                     */
 /* ------------------------------------------------------------------ */
-function StatusMessage({
-	type,
-	message,
-}: {
-	type: "success" | "error";
-	message: string;
-}) {
+function StatusMessage({ type, message }: { type: "success" | "error"; message: string }) {
 	return (
-		<p
-			className={cn(
-				"mt-2 text-sm",
-				type === "success" ? "text-emerald-400" : "text-destructive",
-			)}
-		>
+		<p className={cn("mt-2 text-sm", type === "success" ? "text-emerald-400" : "text-destructive")}>
 			{message}
 		</p>
 	);
@@ -147,14 +136,13 @@ function DeleteConfirmationDialog({
 				<DialogHeader>
 					<DialogTitle className="text-destructive">Delete Account</DialogTitle>
 					<DialogDescription>
-						This action is irreversible. Your account, scores, achievements, and
-						all associated data will be permanently deleted after a grace period.
+						This action is irreversible. Your account, scores, achievements, and all associated data
+						will be permanently deleted after a grace period.
 					</DialogDescription>
 				</DialogHeader>
 				<div className="p-6 pt-0">
 					<p className="text-sm text-muted-foreground">
-						Type <span className="font-mono font-bold text-destructive">DELETE</span>{" "}
-						to confirm:
+						Type <span className="font-mono font-bold text-destructive">DELETE</span> to confirm:
 					</p>
 					<Input
 						value={confirmText}
@@ -164,11 +152,7 @@ function DeleteConfirmationDialog({
 					/>
 				</div>
 				<DialogFooter>
-					<Button
-						variant="secondary"
-						onClick={() => onOpenChange(false)}
-						disabled={isPending}
-					>
+					<Button variant="secondary" onClick={() => onOpenChange(false)} disabled={isPending}>
 						Cancel
 					</Button>
 					<Button
@@ -413,7 +397,9 @@ export default function SettingsPage() {
 						</div>
 
 						<div>
-							<h3 className="mb-3 text-sm font-semibold text-secondary-foreground">Equipped Skin</h3>
+							<h3 className="mb-3 text-sm font-semibold text-secondary-foreground">
+								Equipped Skin
+							</h3>
 							{equipStatus && (
 								<StatusMessage type={equipStatus.type} message={equipStatus.message} />
 							)}
@@ -457,10 +443,7 @@ export default function SettingsPage() {
 							/>
 						</div>
 						{privacyStatus && (
-							<StatusMessage
-								type={privacyStatus.type}
-								message={privacyStatus.message}
-							/>
+							<StatusMessage type={privacyStatus.type} message={privacyStatus.message} />
 						)}
 					</CardContent>
 				</Card>
@@ -473,15 +456,11 @@ export default function SettingsPage() {
 					<CardContent>
 						{deletionPending ? (
 							<div className="rounded-lg border border-destructive/30 bg-destructive/10 p-4">
-								<p className="text-sm font-semibold text-destructive">
-									Account deletion pending
-								</p>
+								<p className="text-sm font-semibold text-destructive">Account deletion pending</p>
 								{accountStatus?.deletionScheduledFor && (
 									<p className="mt-1 text-xs text-muted-foreground">
 										Scheduled for deletion on{" "}
-										{new Date(
-											accountStatus.deletionScheduledFor,
-										).toLocaleDateString("en-US", {
+										{new Date(accountStatus.deletionScheduledFor).toLocaleDateString("en-US", {
 											year: "numeric",
 											month: "long",
 											day: "numeric",
@@ -491,9 +470,7 @@ export default function SettingsPage() {
 								{accountStatus?.deletionRequestedAt && (
 									<p className="mt-0.5 text-xs text-muted-foreground/60">
 										Requested on{" "}
-										{new Date(
-											accountStatus.deletionRequestedAt,
-										).toLocaleDateString("en-US", {
+										{new Date(accountStatus.deletionRequestedAt).toLocaleDateString("en-US", {
 											year: "numeric",
 											month: "long",
 											day: "numeric",
@@ -507,16 +484,14 @@ export default function SettingsPage() {
 									disabled={cancelDeletionMutation.isPending}
 									className="mt-3"
 								>
-									{cancelDeletionMutation.isPending
-										? "Cancelling..."
-										: "Cancel Deletion"}
+									{cancelDeletionMutation.isPending ? "Cancelling..." : "Cancel Deletion"}
 								</Button>
 							</div>
 						) : (
 							<div>
 								<p className="text-sm text-secondary-foreground">
-									Permanently delete your account and all associated data including
-									scores, achievements, skins, and race history.
+									Permanently delete your account and all associated data including scores,
+									achievements, skins, and race history.
 								</p>
 								<Button
 									variant="destructive"
@@ -529,10 +504,7 @@ export default function SettingsPage() {
 							</div>
 						)}
 						{deleteStatus && (
-							<StatusMessage
-								type={deleteStatus.type}
-								message={deleteStatus.message}
-							/>
+							<StatusMessage type={deleteStatus.type} message={deleteStatus.message} />
 						)}
 					</CardContent>
 				</Card>

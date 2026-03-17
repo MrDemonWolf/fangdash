@@ -2,15 +2,7 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 
 function Card({ className, ...props }: React.ComponentProps<"div">) {
-	return (
-		<div
-			className={cn(
-				"rounded-xl border border-border bg-card",
-				className,
-			)}
-			{...props}
-		/>
-	);
+	return <div className={cn("rounded-xl border border-border bg-card", className)} {...props} />;
 }
 
 function CardHeader({ className, ...props }: React.ComponentProps<"div">) {
@@ -38,12 +30,7 @@ function CardTitle({ className, ...props }: React.ComponentProps<"h3">) {
 }
 
 function CardDescription({ className, ...props }: React.ComponentProps<"p">) {
-	return (
-		<p
-			className={cn("text-sm text-muted-foreground", className)}
-			{...props}
-		/>
-	);
+	return <p className={cn("text-sm text-muted-foreground", className)} {...props} />;
 }
 
 function CardContent({ className, ...props }: React.ComponentProps<"div">) {
@@ -53,10 +40,7 @@ function CardContent({ className, ...props }: React.ComponentProps<"div">) {
 function CardFooter({ className, ...props }: React.ComponentProps<"div">) {
 	return (
 		<div
-			className={cn(
-				"flex items-center border-t border-border px-5 py-3",
-				className,
-			)}
+			className={cn("flex items-center border-t border-border px-5 py-3", className)}
 			{...props}
 		/>
 	);

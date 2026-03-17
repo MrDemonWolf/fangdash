@@ -14,12 +14,7 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-	Sheet,
-	SheetContent,
-	SheetTitle,
-	SheetTrigger,
-} from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
 
@@ -130,7 +125,12 @@ export function Navbar() {
 								</DropdownMenuContent>
 							</DropdownMenu>
 						) : (
-							<Button variant="outline" size="sm" onClick={handleSignIn} className="h-8 text-[13px]">
+							<Button
+								variant="outline"
+								size="sm"
+								onClick={handleSignIn}
+								className="h-8 text-[13px]"
+							>
 								<TwitchIcon className="size-3.5" />
 								Login with Twitch
 							</Button>
@@ -207,11 +207,7 @@ export function Navbar() {
 											</div>
 										</div>
 									) : (
-										<Button
-											variant="outline"
-											className="w-full"
-											onClick={handleSignIn}
-										>
+										<Button variant="outline" className="w-full" onClick={handleSignIn}>
 											<TwitchIcon className="size-4" />
 											Login with Twitch
 										</Button>

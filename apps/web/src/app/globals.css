@@ -62,7 +62,10 @@
 		font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
 	}
 
-	code, kbd, pre, .font-mono {
+	code,
+	kbd,
+	pre,
+	.font-mono {
 		font-family: var(--font-geist-mono), ui-monospace, "SFMono-Regular", monospace;
 	}
 }

@@ -15,6 +15,7 @@ export default tseslint.config(
 			"**/.open-next/**",
 			"**/.wrangler/**",
 			"**/.partykit/**",
+			"**/.localflare/**",
 			"**/.source/**",
 			"**/out/**",
 			"**/public/sw.js",

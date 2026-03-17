@@ -49,13 +49,7 @@ interface GallerySkin extends SkinDefinition {
 	unlocked: boolean;
 }
 
-function SkinCard({
-	skin,
-	equipped,
-}: {
-	skin: GallerySkin;
-	equipped: boolean;
-}) {
+function SkinCard({ skin, equipped }: { skin: GallerySkin; equipped: boolean }) {
 	const rarity = RARITY_STYLES[skin.rarity];
 
 	return (
@@ -69,11 +63,7 @@ function SkinCard({
 						: "border-border opacity-70",
 			)}
 		>
-			{equipped && (
-				<Badge className="absolute -top-3 left-1/2 -translate-x-1/2">
-					Equipped
-				</Badge>
-			)}
+			{equipped && <Badge className="absolute -top-3 left-1/2 -translate-x-1/2">Equipped</Badge>}
 
 			<div className="relative mb-3 mt-2 h-24 w-24">
 				<Image
@@ -181,11 +171,7 @@ export default function SkinsPage() {
 			{!isLoading && (
 				<div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
 					{skins.map((skin) => (
-						<SkinCard
-							key={skin.id}
-							skin={skin}
-							equipped={signedIn && equippedSkinId === skin.id}
-						/>
+						<SkinCard key={skin.id} skin={skin} equipped={signedIn && equippedSkinId === skin.id} />
 					))}
 				</div>
 			)}

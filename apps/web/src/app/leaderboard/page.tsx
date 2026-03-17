@@ -31,13 +31,25 @@ const TABS: { key: Tab; label: string }[] = [
 
 function RankBadge({ rank }: { rank: number }) {
 	if (rank === 1) {
-		return <Badge variant="gold" className="size-8 justify-center rounded-full px-0 font-bold">{rank}</Badge>;
+		return (
+			<Badge variant="gold" className="size-8 justify-center rounded-full px-0 font-bold">
+				{rank}
+			</Badge>
+		);
 	}
 	if (rank === 2) {
-		return <Badge variant="silver" className="size-8 justify-center rounded-full px-0 font-bold">{rank}</Badge>;
+		return (
+			<Badge variant="silver" className="size-8 justify-center rounded-full px-0 font-bold">
+				{rank}
+			</Badge>
+		);
 	}
 	if (rank === 3) {
-		return <Badge variant="bronze" className="size-8 justify-center rounded-full px-0 font-bold">{rank}</Badge>;
+		return (
+			<Badge variant="bronze" className="size-8 justify-center rounded-full px-0 font-bold">
+				{rank}
+			</Badge>
+		);
 	}
 	return (
 		<span className="inline-flex items-center justify-center size-8 text-muted-foreground font-medium text-sm">
@@ -51,10 +63,7 @@ function DifficultyBadge({ difficulty }: { difficulty: string }) {
 	if (!level) return null;
 	return (
 		<span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
-			<span
-				className="inline-block size-2 rounded-full"
-				style={{ backgroundColor: level.color }}
-			/>
+			<span className="inline-block size-2 rounded-full" style={{ backgroundColor: level.color }} />
 			<span className="hidden sm:inline">{level.label}</span>
 		</span>
 	);
@@ -63,11 +72,21 @@ function DifficultyBadge({ difficulty }: { difficulty: string }) {
 function SkeletonRows() {
 	return Array.from({ length: 5 }).map((_, i) => (
 		<TableRow key={i}>
-			<TableCell><Skeleton className="size-8 rounded-full" /></TableCell>
-			<TableCell><Skeleton className="h-4 w-24" /></TableCell>
-			<TableCell><Skeleton className="h-4 w-16" /></TableCell>
-			<TableCell><Skeleton className="h-4 w-16" /></TableCell>
-			<TableCell className="hidden sm:table-cell"><Skeleton className="h-4 w-20" /></TableCell>
+			<TableCell>
+				<Skeleton className="size-8 rounded-full" />
+			</TableCell>
+			<TableCell>
+				<Skeleton className="h-4 w-24" />
+			</TableCell>
+			<TableCell>
+				<Skeleton className="h-4 w-16" />
+			</TableCell>
+			<TableCell>
+				<Skeleton className="h-4 w-16" />
+			</TableCell>
+			<TableCell className="hidden sm:table-cell">
+				<Skeleton className="h-4 w-20" />
+			</TableCell>
 		</TableRow>
 	));
 }
@@ -220,25 +239,26 @@ export default function LeaderboardPage() {
 								return (
 									<TableRow
 										key={entry.scoreId}
-										className={cn(
-											isCurrentUser && "bg-primary/10 border-primary/20",
-										)}
+										className={cn(isCurrentUser && "bg-primary/10 border-primary/20")}
 									>
 										<TableCell>
 											<RankBadge rank={entry.rank} />
 										</TableCell>
 										<TableCell className="font-medium text-foreground">
 											<span className="inline-flex items-center gap-2">
-												{"profilePublic" in entry && entry.profilePublic === 1 && "userId" in entry ? (
-													<Link href={`/profile/${entry.userId}`} className="hover:text-primary transition-colors hover:underline">
+												{"profilePublic" in entry &&
+												entry.profilePublic === 1 &&
+												"userId" in entry ? (
+													<Link
+														href={`/profile/${entry.userId}`}
+														className="hover:text-primary transition-colors hover:underline"
+													>
 														{entry.username}
 													</Link>
 												) : (
 													entry.username
 												)}
-												{"level" in entry && (
-													<Badge variant="level">Lv.{entry.level}</Badge>
-												)}
+												{"level" in entry && <Badge variant="level">Lv.{entry.level}</Badge>}
 												{isCurrentUser && <span className="text-xs text-primary">(you)</span>}
 											</span>
 										</TableCell>
@@ -253,7 +273,9 @@ export default function LeaderboardPage() {
 												<DifficultyBadge difficulty={entry.difficulty} />
 											</TableCell>
 										)}
-										<TableCell className="text-muted-foreground">{formatDate(entry.createdAt)}</TableCell>
+										<TableCell className="text-muted-foreground">
+											{formatDate(entry.createdAt)}
+										</TableCell>
 									</TableRow>
 								);
 							})}
@@ -285,19 +307,24 @@ export default function LeaderboardPage() {
 									<div className="flex items-center gap-3">
 										<RankBadge rank={entry.rank} />
 										<span className="inline-flex items-center gap-2 font-medium text-foreground">
-											{"profilePublic" in entry && entry.profilePublic === 1 && "userId" in entry ? (
-												<Link href={`/profile/${entry.userId}`} className="hover:text-primary transition-colors hover:underline">
+											{"profilePublic" in entry &&
+											entry.profilePublic === 1 &&
+											"userId" in entry ? (
+												<Link
+													href={`/profile/${entry.userId}`}
+													className="hover:text-primary transition-colors hover:underline"
+												>
 													{entry.username}
 												</Link>
 											) : (
 												entry.username
 											)}
-											{"level" in entry && (
-												<Badge variant="level">Lv.{entry.level}</Badge>
-											)}
+											{"level" in entry && <Badge variant="level">Lv.{entry.level}</Badge>}
 											{isCurrentUser && <span className="text-xs text-primary">(you)</span>}
 										</span>
-										{activeDifficulty === "all" && <DifficultyBadge difficulty={entry.difficulty} />}
+										{activeDifficulty === "all" && (
+											<DifficultyBadge difficulty={entry.difficulty} />
+										)}
 									</div>
 									<div className="mt-3 flex items-center gap-4 text-sm">
 										<div>
@@ -313,7 +340,9 @@ export default function LeaderboardPage() {
 											</span>
 										</div>
 									</div>
-									<div className="mt-1 text-xs text-muted-foreground/60">{formatDate(entry.createdAt)}</div>
+									<div className="mt-1 text-xs text-muted-foreground/60">
+										{formatDate(entry.createdAt)}
+									</div>
 								</CardContent>
 							</Card>
 						);

@@ -36,8 +36,9 @@ export default function Home() {
 							</h1>
 
 							<p className="text-base text-muted-foreground sm:text-lg max-w-md leading-relaxed">
-								The multiplayer endless runner for Twitch.
-								Race <span className="text-foreground">your community</span> in real-time and climb the global leaderboard.
+								The multiplayer endless runner for Twitch. Race{" "}
+								<span className="text-foreground">your community</span> in real-time and climb the
+								global leaderboard.
 							</p>
 
 							<HeroCTA />
@@ -65,9 +66,7 @@ export default function Home() {
 									<p className="font-mono text-4xl font-semibold text-foreground sm:text-5xl tabular-nums">
 										{value}
 									</p>
-									<p className="text-xs font-medium text-muted-foreground tracking-wide">
-										{label}
-									</p>
+									<p className="text-xs font-medium text-muted-foreground tracking-wide">{label}</p>
 								</div>
 							))}
 						</div>

@@ -57,32 +57,20 @@ function DialogContent({
 
 function DialogHeader({ className, ...props }: React.ComponentProps<"div">) {
 	return (
-		<div
-			className={cn(
-				"flex flex-col gap-1.5 border-b border-border p-6",
-				className,
-			)}
-			{...props}
-		/>
+		<div className={cn("flex flex-col gap-1.5 border-b border-border p-6", className)} {...props} />
 	);
 }
 
 function DialogFooter({ className, ...props }: React.ComponentProps<"div">) {
 	return (
 		<div
-			className={cn(
-				"flex items-center justify-end gap-3 border-t border-border p-6",
-				className,
-			)}
+			className={cn("flex items-center justify-end gap-3 border-t border-border p-6", className)}
 			{...props}
 		/>
 	);
 }
 
-function DialogTitle({
-	className,
-	...props
-}: React.ComponentProps<typeof DialogPrimitive.Title>) {
+function DialogTitle({ className, ...props }: React.ComponentProps<typeof DialogPrimitive.Title>) {
 	return (
 		<DialogPrimitive.Title
 			className={cn("text-lg font-bold text-foreground", className)}

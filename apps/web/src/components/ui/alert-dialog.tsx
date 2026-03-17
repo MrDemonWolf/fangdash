@@ -42,28 +42,14 @@ function AlertDialogContent({
 	);
 }
 
-function AlertDialogHeader({
-	className,
-	...props
-}: React.ComponentProps<"div">) {
-	return (
-		<div
-			className={cn("flex flex-col gap-1.5 p-6", className)}
-			{...props}
-		/>
-	);
+function AlertDialogHeader({ className, ...props }: React.ComponentProps<"div">) {
+	return <div className={cn("flex flex-col gap-1.5 p-6", className)} {...props} />;
 }
 
-function AlertDialogFooter({
-	className,
-	...props
-}: React.ComponentProps<"div">) {
+function AlertDialogFooter({ className, ...props }: React.ComponentProps<"div">) {
 	return (
 		<div
-			className={cn(
-				"flex items-center justify-end gap-3 border-t border-border p-6",
-				className,
-			)}
+			className={cn("flex items-center justify-end gap-3 border-t border-border p-6", className)}
 			{...props}
 		/>
 	);

@@ -71,7 +71,10 @@ function AuthErrorContent() {
 					<Button variant="glow" size="lg" onClick={handleTryAgain}>
 						TRY AGAIN
 					</Button>
-					<Link href="/" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
+					<Link
+						href="/"
+						className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+					>
 						← Back to Home
 					</Link>
 				</div>

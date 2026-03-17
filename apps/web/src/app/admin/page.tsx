@@ -17,7 +17,9 @@ function StatCard({
 	return (
 		<Card>
 			<CardContent className="p-6">
-				<p className="mb-2 text-xs font-bold uppercase tracking-widest text-muted-foreground">{label}</p>
+				<p className="mb-2 text-xs font-bold uppercase tracking-widest text-muted-foreground">
+					{label}
+				</p>
 				<p className={cn("font-mono text-3xl font-bold", accent)}>
 					{typeof value === "number" ? value.toLocaleString() : value}
 				</p>

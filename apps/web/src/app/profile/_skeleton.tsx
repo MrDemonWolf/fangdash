@@ -12,7 +12,9 @@ export function ProfileSkeleton() {
 					<div className="space-y-6">
 						{/* Performance Matrix skeleton */}
 						<Card>
-							<CardHeader><Skeleton className="h-4 w-40" /></CardHeader>
+							<CardHeader>
+								<Skeleton className="h-4 w-40" />
+							</CardHeader>
 							<div className="grid grid-cols-2 gap-2 p-4">
 								{Array.from({ length: 6 }).map((_, i) => (
 									<Skeleton key={i} className="h-24 rounded-xl" />
@@ -34,7 +36,9 @@ export function ProfileSkeleton() {
 
 					{/* Scorelines skeleton */}
 					<Card>
-						<CardHeader><Skeleton className="h-4 w-32" /></CardHeader>
+						<CardHeader>
+							<Skeleton className="h-4 w-32" />
+						</CardHeader>
 						<div className="space-y-2 p-4">
 							{Array.from({ length: 8 }).map((_, i) => (
 								<Skeleton key={i} className="h-10 rounded-lg" />

@@ -75,10 +75,7 @@ export default function AdminScoresPage() {
 							);
 							const isSuspicious = s.score > maxScore * 0.9;
 							return (
-								<TableRow
-									key={s.id}
-									className={cn(isSuspicious && "bg-amber-500/5")}
-								>
+								<TableRow key={s.id} className={cn(isSuspicious && "bg-amber-500/5")}>
 									<TableCell className="font-medium text-foreground">{s.playerName}</TableCell>
 									<TableCell
 										className={cn(
@@ -95,7 +92,9 @@ export default function AdminScoresPage() {
 									<TableCell className="font-mono text-secondary-foreground">
 										{(s.distance / 1000).toFixed(1)} km
 									</TableCell>
-									<TableCell className="font-mono text-secondary-foreground">{s.obstaclesCleared}</TableCell>
+									<TableCell className="font-mono text-secondary-foreground">
+										{s.obstaclesCleared}
+									</TableCell>
 									<TableCell className="text-muted-foreground">
 										{s.createdAt ? new Date(s.createdAt).toLocaleDateString() : "—"}
 									</TableCell>
@@ -141,7 +140,10 @@ export default function AdminScoresPage() {
 			)}
 
 			{/* Delete Confirmation Dialog */}
-			<Dialog open={confirmDelete !== null} onOpenChange={(open) => !open && setConfirmDelete(null)}>
+			<Dialog
+				open={confirmDelete !== null}
+				onOpenChange={(open) => !open && setConfirmDelete(null)}
+			>
 				<DialogContent>
 					<DialogHeader>
 						<DialogTitle>Delete Score?</DialogTitle>

@@ -114,7 +114,9 @@ export default function AdminPlayersPage() {
 						(data?.items ?? []).map((p) => (
 							<TableRow key={p.id}>
 								<TableCell className="font-medium text-foreground">{p.name}</TableCell>
-								<TableCell><RoleBadge role={p.role} /></TableCell>
+								<TableCell>
+									<RoleBadge role={p.role} />
+								</TableCell>
 								<TableCell>
 									{p.banned ? (
 										<Badge variant="destructive">Banned</Badge>
@@ -122,7 +124,9 @@ export default function AdminPlayersPage() {
 										<Badge variant="emerald">Active</Badge>
 									)}
 								</TableCell>
-								<TableCell className="font-mono text-secondary-foreground">{p.gamesPlayed ?? 0}</TableCell>
+								<TableCell className="font-mono text-secondary-foreground">
+									{p.gamesPlayed ?? 0}
+								</TableCell>
 								<TableCell className="font-mono text-secondary-foreground">
 									{((p.totalDistance ?? 0) / 1000).toFixed(1)} km
 								</TableCell>

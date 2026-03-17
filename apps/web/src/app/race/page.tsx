@@ -95,7 +95,9 @@ export default function RaceLobbyPage() {
 			<main className="flex min-h-screen flex-col items-center justify-center bg-background px-4">
 				<Card className="w-full max-w-md border-primary/20 text-center shadow-2xl">
 					<CardContent className="p-8">
-						<h1 className="mb-4 text-3xl font-extrabold tracking-tight text-foreground">Race Mode</h1>
+						<h1 className="mb-4 text-3xl font-extrabold tracking-tight text-foreground">
+							Race Mode
+						</h1>
 						<p className="mb-6 text-muted-foreground">Sign in to race against other players.</p>
 						<Button variant="secondary" asChild>
 							<Link href="/">Back to Home</Link>
@@ -146,7 +148,10 @@ export default function RaceLobbyPage() {
 				</Card>
 
 				<div className="text-center">
-					<Link href="/" className="text-sm text-muted-foreground/60 transition-colors hover:text-muted-foreground">
+					<Link
+						href="/"
+						className="text-sm text-muted-foreground/60 transition-colors hover:text-muted-foreground"
+					>
 						Back to Home
 					</Link>
 				</div>

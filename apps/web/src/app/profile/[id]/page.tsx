@@ -10,12 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-	Tooltip,
-	TooltipContent,
-	TooltipProvider,
-	TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 /* ------------------------------------------------------------------ */
 /*  Helper: format distance as km                                      */
@@ -39,7 +34,9 @@ function PublicProfileSkeleton() {
 				<div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_340px]">
 					<div className="space-y-6">
 						<Card>
-							<CardHeader><Skeleton className="h-4 w-40" /></CardHeader>
+							<CardHeader>
+								<Skeleton className="h-4 w-40" />
+							</CardHeader>
 							<div className="grid grid-cols-2 gap-2 p-4">
 								{Array.from({ length: 6 }).map((_, i) => (
 									<Skeleton key={i} className="h-24 rounded-xl" />
@@ -59,7 +56,9 @@ function PublicProfileSkeleton() {
 					</div>
 
 					<Card>
-						<CardHeader><Skeleton className="h-4 w-32" /></CardHeader>
+						<CardHeader>
+							<Skeleton className="h-4 w-32" />
+						</CardHeader>
 						<div className="space-y-2 p-4">
 							{Array.from({ length: 8 }).map((_, i) => (
 								<Skeleton key={i} className="h-10 rounded-lg" />
@@ -142,9 +141,7 @@ function ProfileHeader({
 					</div>
 
 					<div className="flex flex-wrap items-center justify-center gap-3 sm:justify-end">
-						<Badge className="font-mono font-bold">
-							HI {highScore.toLocaleString()}
-						</Badge>
+						<Badge className="font-mono font-bold">HI {highScore.toLocaleString()}</Badge>
 						<Badge variant="purple" className="font-mono font-bold">
 							{gamesPlayed} RUNS
 						</Badge>
@@ -180,9 +177,7 @@ function PerformanceMatrix({ tiles }: { tiles: MetricTile[] }) {
 						<p className="mb-1 text-xs font-bold uppercase tracking-widest text-muted-foreground">
 							{tile.label}
 						</p>
-						<p className={cn("font-mono text-2xl font-bold", tile.accent)}>
-							{tile.value}
-						</p>
+						<p className={cn("font-mono text-2xl font-bold", tile.accent)}>{tile.value}</p>
 					</div>
 				))}
 			</div>
@@ -376,23 +371,38 @@ export default function PublicProfilePage() {
 		);
 	}
 
-	const { username, userImage, level, totalXp, equippedSkin, stats, topScores, achievements, skinsUnlocked } =
-		profile;
+	const {
+		username,
+		userImage,
+		level,
+		totalXp,
+		equippedSkin,
+		stats,
+		topScores,
+		achievements,
+		skinsUnlocked,
+	} = profile;
 
 	const levelInfo = getLevelFromXp(totalXp);
 	const highScore = topScores.length > 0 ? (topScores[0]?.score ?? 0) : 0;
 
 	const winRate =
-		stats.racesPlayed > 0
-			? `${((stats.racesWon / stats.racesPlayed) * 100).toFixed(0)}%`
-			: "N/A";
+		stats.racesPlayed > 0 ? `${((stats.racesWon / stats.racesPlayed) * 100).toFixed(0)}%` : "N/A";
 
 	const performanceTiles: MetricTile[] = [
 		{ label: "Total Distance", value: fmtKm(stats.totalDistance), accent: "text-primary" },
 		{ label: "High Score", value: highScore.toLocaleString(), accent: "text-primary" },
 		{ label: "Win Rate", value: winRate, accent: "text-emerald-400" },
-		{ label: "Obstacles", value: stats.obstaclesCleared.toLocaleString(), accent: "text-fang-orange" },
-		{ label: "Games Played", value: stats.gamesPlayed.toLocaleString(), accent: "text-fang-purple" },
+		{
+			label: "Obstacles",
+			value: stats.obstaclesCleared.toLocaleString(),
+			accent: "text-fang-orange",
+		},
+		{
+			label: "Games Played",
+			value: stats.gamesPlayed.toLocaleString(),
+			accent: "text-fang-purple",
+		},
 		{ label: "Total Score", value: stats.totalScore.toLocaleString(), accent: "text-fang-gold" },
 	];
 
@@ -439,7 +449,9 @@ export default function PublicProfilePage() {
 								</span>
 								<div>
 									<p className="text-sm font-bold text-foreground">Level {level}</p>
-									<p className="text-xs text-muted-foreground">{totalXp.toLocaleString()} XP total</p>
+									<p className="text-xs text-muted-foreground">
+										{totalXp.toLocaleString()} XP total
+									</p>
 								</div>
 							</div>
 							<div className="flex items-center gap-3">

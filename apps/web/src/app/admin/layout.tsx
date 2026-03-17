@@ -47,9 +47,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 				<h1 className="text-2xl font-bold text-foreground">Admin Panel</h1>
 				<p className="mt-1 flex items-center gap-2 text-sm text-muted-foreground">
 					Logged in as <span className="text-primary">{session.user.name}</span>
-					<Badge variant={role === "admin" ? "orange" : "purple"}>
-						{role}
-					</Badge>
+					<Badge variant={role === "admin" ? "orange" : "purple"}>{role}</Badge>
 				</p>
 			</div>
 

@@ -13,12 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import {
-	Tooltip,
-	TooltipContent,
-	TooltipProvider,
-	TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { ProfileSkeleton } from "./_skeleton.tsx";
 
 /* ------------------------------------------------------------------ */
@@ -98,16 +93,12 @@ function ProfileHeader({
 								@{userName.toLowerCase().replace(/\s+/g, "")}
 							</span>
 						</div>
-						{skinName && (
-							<p className="mt-1 text-xs text-primary/70">Equipped: {skinName}</p>
-						)}
+						{skinName && <p className="mt-1 text-xs text-primary/70">Equipped: {skinName}</p>}
 					</div>
 
 					{/* Right-side badges */}
 					<div className="flex flex-wrap items-center justify-center gap-3 sm:justify-end">
-						<Badge className="font-mono font-bold">
-							HI {highScore.toLocaleString()}
-						</Badge>
+						<Badge className="font-mono font-bold">HI {highScore.toLocaleString()}</Badge>
 						<Badge variant="purple" className="font-mono font-bold">
 							{gamesPlayed} RUNS
 						</Badge>
@@ -143,9 +134,7 @@ function PerformanceMatrix({ tiles }: { tiles: MetricTile[] }) {
 						<p className="mb-1 text-xs font-bold uppercase tracking-widest text-muted-foreground">
 							{tile.label}
 						</p>
-						<p className={cn("font-mono text-2xl font-bold", tile.accent)}>
-							{tile.value}
-						</p>
+						<p className={cn("font-mono text-2xl font-bold", tile.accent)}>{tile.value}</p>
 					</div>
 				))}
 			</div>
@@ -407,7 +396,8 @@ export default function ProfilePage() {
 	const recentScores = (scores ?? []) as ScoreEntry[];
 
 	const [copied, setCopied] = useState(false);
-	const shareUrl = typeof window !== "undefined" ? `${window.location.origin}/profile/${user.id}` : "";
+	const shareUrl =
+		typeof window !== "undefined" ? `${window.location.origin}/profile/${user.id}` : "";
 	const handleShareProfile = () => {
 		navigator.clipboard.writeText(shareUrl).then(() => {
 			setCopied(true);
@@ -447,7 +437,9 @@ export default function ProfilePage() {
 								</span>
 								<div>
 									<p className="text-sm font-bold text-foreground">Level {playerLevel}</p>
-									<p className="text-xs text-muted-foreground">{totalXp.toLocaleString()} XP total</p>
+									<p className="text-xs text-muted-foreground">
+										{totalXp.toLocaleString()} XP total
+									</p>
 								</div>
 							</div>
 							<p className="text-xs text-muted-foreground">
