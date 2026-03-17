@@ -4,6 +4,7 @@ import { LogOut, Menu, User } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useState } from "react";
 import { signIn, signOut, useSession } from "@/lib/auth-client.ts";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -37,6 +38,7 @@ const NAV_LINKS = [
 export function Navbar() {
 	const pathname = usePathname();
 	const { data: session, isPending } = useSession();
+	const [mobileOpen, setMobileOpen] = useState(false);
 
 	const isActive = (href: string) => pathname === href;
 
@@ -138,7 +140,7 @@ export function Navbar() {
 					</div>
 
 					{/* Mobile hamburger */}
-					<Sheet>
+					<Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
 						<SheetTrigger asChild>
 							<Button
 								variant="ghost"
@@ -158,6 +160,7 @@ export function Navbar() {
 											key={href}
 											href={href}
 											aria-current={isActive(href) ? "page" : undefined}
+											onClick={() => setMobileOpen(false)}
 											className={cn(
 												"block rounded-md px-3 py-2 text-sm font-medium transition-colors",
 												isActive(href)
