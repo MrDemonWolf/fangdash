@@ -49,7 +49,13 @@ describe("ensurePlayer", () => {
 		const result1 = await ensurePlayer(db as any, userId);
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		const result2 = await ensurePlayer(db as any, userId);
-		expect(result1?.id).toBe(result2?.id);
+		expect(result1).toBeDefined();
+		expect(result2).toBeDefined();
+		expect(result1?.id).toBeDefined();
+		expect(result2?.id).toBeDefined();
+		// Safe to compare: both IDs verified as defined above
+		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+		expect(result1!.id).toBe(result2!.id);
 	});
 
 	it("should handle unique constraint violation gracefully", async () => {

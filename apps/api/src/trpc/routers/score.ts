@@ -4,6 +4,7 @@ import {
 	READY_MODS_MASK,
 	SCORE_PER_OBSTACLE,
 	SCORE_PER_SECOND,
+	areModsCompatible,
 	getScoreMultiplier,
 	getLevelFromXp,
 	getSkinById,
@@ -32,6 +33,20 @@ export const scoreRouter = router({
 			}),
 		)
 		.mutation(async ({ ctx, input }) => {
+			// Validate mods bitmask: only allow ready, compatible mods
+			if ((input.mods & ~READY_MODS_MASK) !== 0) {
+				throw new TRPCError({
+					code: "BAD_REQUEST",
+					message: "Invalid mod flags: contains non-ready mods",
+				});
+			}
+			if (!areModsCompatible(input.mods)) {
+				throw new TRPCError({
+					code: "BAD_REQUEST",
+					message: "Invalid mod flags: incompatible mod combination",
+				});
+			}
+
 			// Anti-cheat: reject impossible scores (account for mod score multipliers)
 			const modMultiplier = getScoreMultiplier(input.mods);
 			const maxAllowedScore =

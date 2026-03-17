@@ -7,6 +7,7 @@ import {
 	MOD_FOG,
 	MOD_HEADWIND,
 	MOD_TREMOR,
+	SeededRandom,
 	hasmod,
 } from "@fangdash/shared";
 import * as Phaser from "phaser";
@@ -260,7 +261,8 @@ export class GameScene extends Phaser.Scene {
 			this.weatherEffects.push(new WindEffect(this, this.player));
 		}
 		if (hasmod(this.mods, MOD_TREMOR)) {
-			this.weatherEffects.push(new TremorEffect(this, this.player));
+			const tremorRng = new SeededRandom(seed + "-tremor");
+			this.weatherEffects.push(new TremorEffect(this, this.player, tremorRng));
 		}
 
 		this.scoreManager.reset();

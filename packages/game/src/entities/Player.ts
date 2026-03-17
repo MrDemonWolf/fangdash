@@ -18,6 +18,7 @@ export class Player {
 	private _alive = true;
 	private _grounded = true;
 	private _boundsRect = new Phaser.Geom.Rectangle(0, 0, 0, 0);
+	private _bobTime = 0;
 
 	// Runtime-overridable constants (for debug menu + mods)
 	overrides: {
@@ -141,9 +142,10 @@ export class Player {
 			this.landingStaggerTimer -= delta;
 		}
 
-		// Slight bob when grounded
+		// Slight bob when grounded (deterministic via accumulator)
 		if (this._grounded) {
-			this.sprite.y = groundY + Math.sin(Date.now() / 200) * this.groundBobAmplitude;
+			this._bobTime += delta;
+			this.sprite.y = groundY + Math.sin(this._bobTime / 200) * this.groundBobAmplitude;
 		}
 	}
 
@@ -161,6 +163,7 @@ export class Player {
 		this.externalForceY = 0;
 		this.groundBobAmplitude = 1;
 		this.landingStaggerTimer = 0;
+		this._bobTime = 0;
 	}
 
 	setSkin(key: string) {

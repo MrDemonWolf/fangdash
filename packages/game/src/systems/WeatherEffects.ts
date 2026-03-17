@@ -1,4 +1,21 @@
-import { GAME_HEIGHT, GAME_WIDTH } from "@fangdash/shared";
+import {
+	GAME_HEIGHT,
+	GAME_WIDTH,
+	TREMOR_BOB_AMPLITUDE_CAP,
+	TREMOR_MAX_BOB_AMPLITUDE,
+	TREMOR_MAX_DISTANCE,
+	TREMOR_MAX_INTENSITY,
+	TREMOR_MAX_STAGGER_MS,
+	TREMOR_MIN_INTERVAL,
+	TREMOR_START_INTENSITY,
+	TREMOR_START_INTERVAL,
+	WIND_FORCE_FLOOR,
+	WIND_GUST_PERIOD,
+	WIND_MAX_DISTANCE,
+	WIND_MAX_FORCE,
+	WIND_MIN_FORCE,
+	type SeededRandom,
+} from "@fangdash/shared";
 import * as Phaser from "phaser";
 import { Player } from "../entities/Player.ts";
 
@@ -9,14 +26,10 @@ export interface WeatherEffect {
 
 // ── Wind ──
 
-const WIND_MAX_DISTANCE = 3500;
-const WIND_MIN_FORCE = 350;
-const WIND_MAX_FORCE = 800;
-const WIND_GUST_PERIOD = 2000;
-
 export class WindEffect implements WeatherEffect {
 	private emitter: Phaser.GameObjects.Particles.ParticleEmitter;
 	private player: Player;
+	private elapsed = 0;
 
 	constructor(scene: Phaser.Scene, player: Player) {
 		this.player = player;
@@ -47,16 +60,19 @@ export class WindEffect implements WeatherEffect {
 		this.emitter.setDepth(9990);
 	}
 
-	update(_delta: number, distance: number, _playerX: number, _playerY: number) {
+	update(delta: number, distance: number, _playerX: number, _playerY: number) {
+		this.elapsed += delta;
 		const t = Math.min(distance / WIND_MAX_DISTANCE, 1);
 		const baseForce = WIND_MIN_FORCE + t * (WIND_MAX_FORCE - WIND_MIN_FORCE);
 
-		const gustOscillation = Math.sin((Date.now() / WIND_GUST_PERIOD) * Math.PI * 2);
+		const gustOscillation = Math.sin((this.elapsed / WIND_GUST_PERIOD) * Math.PI * 2);
 		const gustVariance = (1 - t) * 0.5;
 		const gustFactor = 1.0 - gustVariance * (gustOscillation * 0.5 + 0.5);
 
+		const force = Math.max(WIND_FORCE_FLOOR, baseForce * gustFactor);
+
 		if (!this.player.grounded) {
-			this.player.externalForceY += baseForce * gustFactor;
+			this.player.externalForceY += force;
 		}
 	}
 
@@ -68,26 +84,21 @@ export class WindEffect implements WeatherEffect {
 
 // ── Tremor ──
 
-const TREMOR_MAX_DISTANCE = 3500;
-const TREMOR_START_INTERVAL = 4000;
-const TREMOR_MIN_INTERVAL = 1200;
-const TREMOR_START_INTENSITY = 0.005;
-const TREMOR_MAX_INTENSITY = 0.025;
-const TREMOR_MAX_BOB_AMPLITUDE = 8;
-const TREMOR_MAX_STAGGER_MS = 200;
-
 export class TremorEffect implements WeatherEffect {
 	private timeSinceShake = 0;
 	private currentInterval = TREMOR_START_INTERVAL;
 	private currentIntensity = TREMOR_START_INTENSITY;
 	private player: Player;
+	private rng: SeededRandom;
 	private wasGrounded = true;
 
 	constructor(
 		private scene: Phaser.Scene,
 		player: Player,
+		rng: SeededRandom,
 	) {
 		this.player = player;
+		this.rng = rng;
 	}
 
 	update(delta: number, distance: number, _playerX: number, _playerY: number) {
@@ -102,9 +113,10 @@ export class TremorEffect implements WeatherEffect {
 			this.scene.cameras.main.shake(350, this.currentIntensity);
 		}
 
-		// Chaotic ground bob (randomize amplitude each frame for earthquake feel)
+		// Chaotic ground bob (deterministic via seeded PRNG)
 		const baseAmp = 2 + t * (TREMOR_MAX_BOB_AMPLITUDE - 2);
-		this.player.groundBobAmplitude = baseAmp * (0.7 + Math.random() * 0.6);
+		const rawAmplitude = baseAmp * (0.7 + this.rng.next() * 0.6);
+		this.player.groundBobAmplitude = Math.min(rawAmplitude, TREMOR_BOB_AMPLITUDE_CAP);
 
 		// Landing stagger: detect airborne→grounded transition
 		const isGrounded = this.player.grounded;
