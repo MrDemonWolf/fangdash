@@ -84,6 +84,7 @@ CREATE TABLE IF NOT EXISTS score (
 	difficulty TEXT NOT NULL DEFAULT 'easy',
 	longest_clean_run INTEGER NOT NULL DEFAULT 0,
 	seed TEXT NOT NULL,
+	cheated INTEGER NOT NULL DEFAULT 0,
 	created_at INTEGER NOT NULL
 );
 CREATE INDEX IF NOT EXISTS score_player_id_idx ON score(player_id);
@@ -114,6 +115,7 @@ CREATE TABLE IF NOT EXISTS race_history (
 	score INTEGER NOT NULL,
 	distance REAL NOT NULL,
 	seed TEXT NOT NULL,
+	cheated INTEGER NOT NULL DEFAULT 0,
 	created_at INTEGER NOT NULL
 );
 CREATE INDEX IF NOT EXISTS race_history_player_id_idx ON race_history(player_id);
