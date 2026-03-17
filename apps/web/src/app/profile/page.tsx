@@ -177,6 +177,7 @@ function HonorBadges({
 							<Tooltip key={i}>
 								<TooltipTrigger asChild>
 									<div
+										tabIndex={0}
 										className={cn(
 											"flex h-12 w-12 items-center justify-center rounded-full border-2 transition-all cursor-default",
 											badge.unlocked

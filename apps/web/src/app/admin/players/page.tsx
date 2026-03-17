@@ -185,17 +185,30 @@ export default function AdminPlayersPage() {
 			)}
 
 			{/* Ban Dialog */}
-			<Dialog open={banModal !== null} onOpenChange={(open) => !open && setBanModal(null)}>
+			<Dialog
+				open={banModal !== null}
+				onOpenChange={(open) => {
+					if (!open) {
+						setBanModal(null);
+						setBanReason("");
+						setBanDuration("0");
+					}
+				}}
+			>
 				<DialogContent>
 					<DialogHeader>
 						<DialogTitle>Ban {banModal?.name}</DialogTitle>
 					</DialogHeader>
 					<div className="space-y-4 p-6 pt-0">
 						<div>
-							<label className="mb-1 block text-xs font-bold uppercase tracking-widest text-muted-foreground">
+							<label
+								htmlFor="ban-reason"
+								className="mb-1 block text-xs font-bold uppercase tracking-widest text-muted-foreground"
+							>
 								Reason
 							</label>
 							<Input
+								id="ban-reason"
 								value={banReason}
 								onChange={(e) => setBanReason(e.target.value)}
 								placeholder="Optional reason..."
@@ -206,7 +219,7 @@ export default function AdminPlayersPage() {
 								Duration
 							</label>
 							<Select value={banDuration} onValueChange={setBanDuration}>
-								<SelectTrigger>
+								<SelectTrigger aria-label="Ban duration">
 									<SelectValue />
 								</SelectTrigger>
 								<SelectContent>

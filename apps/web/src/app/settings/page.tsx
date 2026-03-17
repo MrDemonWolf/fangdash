@@ -131,7 +131,13 @@ function DeleteConfirmationDialog({
 	const [confirmText, setConfirmText] = useState("");
 
 	return (
-		<Dialog open={open} onOpenChange={onOpenChange}>
+		<Dialog
+			open={open}
+			onOpenChange={(v) => {
+				if (!v) setConfirmText("");
+				onOpenChange(v);
+			}}
+		>
 			<DialogContent className="border-destructive/30">
 				<DialogHeader>
 					<DialogTitle className="text-destructive">Delete Account</DialogTitle>
