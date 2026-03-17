@@ -4,10 +4,7 @@
 		"outDir": "./dist",
 		"rootDir": "./src",
 		"jsx": "react-jsx",
-		"composite": false,
-		"declaration": false,
-		"declarationMap": false,
-		"lib": ["ESNext", "DOM"]
+		"lib": ["esnext", "dom"]
 	},
 	"include": ["src"]
 }

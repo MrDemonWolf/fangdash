@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
 export default function ErrorPage({
 	error: _error,
@@ -10,26 +11,17 @@ export default function ErrorPage({
 	reset: () => void;
 }) {
 	return (
-		<main className="flex min-h-screen flex-col items-center justify-center bg-[#091533] px-4 text-center">
-			<h1 className="text-6xl font-bold text-[#0FACED]">Oops!</h1>
-			<p className="mt-4 text-xl text-white">Something went wrong.</p>
-			<p className="mt-2 max-w-md text-white/50">
+		<main className="flex min-h-screen flex-col items-center justify-center bg-background px-4 text-center">
+			<h1 className="text-6xl font-bold text-primary">Oops!</h1>
+			<p className="mt-4 text-xl text-foreground">Something went wrong.</p>
+			<p className="mt-2 max-w-md text-muted-foreground">
 				An unexpected error occurred. You can try again or head back to the home page.
 			</p>
 			<div className="mt-8 flex gap-4">
-				<button
-					type="button"
-					onClick={reset}
-					className="rounded-lg bg-[#0FACED] px-6 py-3 font-semibold text-[#091533] transition-colors hover:bg-[#0FACED]/80"
-				>
-					Try Again
-				</button>
-				<Link
-					href="/"
-					className="rounded-lg border border-[#0FACED] px-6 py-3 font-semibold text-[#0FACED] transition-colors hover:bg-[#0FACED]/10"
-				>
-					Back to Home
-				</Link>
+				<Button onClick={reset}>Try Again</Button>
+				<Button variant="outline" asChild>
+					<Link href="/">Back to Home</Link>
+				</Button>
 			</div>
 		</main>
 	);
