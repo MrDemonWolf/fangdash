@@ -19,10 +19,7 @@ import { FogEffect } from "../systems/FogEffect.ts";
 import { ParallaxBackground } from "../systems/ParallaxBackground.ts";
 import { ScoreManager } from "../systems/ScoreManager.ts";
 import type { WeatherEffect } from "../systems/WeatherEffects.ts";
-import {
-	TremorEffect,
-	WindEffect,
-} from "../systems/WeatherEffects.ts";
+import { TremorEffect, WindEffect } from "../systems/WeatherEffects.ts";
 
 export type GameEventCallback = {
 	onStateUpdate?: ((state: GameState) => void) | undefined;

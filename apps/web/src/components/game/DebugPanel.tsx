@@ -640,7 +640,9 @@ function CheatsTab({
 			onSuccess: (data) => {
 				setSkinUnlockStatus(`Unlocked ${data.unlockedCount} skins!`);
 				queryClient.invalidateQueries({ queryKey: trpc.skin.gallery.queryOptions().queryKey });
-				queryClient.invalidateQueries({ queryKey: trpc.skin.getUnlockedSkins.queryOptions().queryKey });
+				queryClient.invalidateQueries({
+					queryKey: trpc.skin.getUnlockedSkins.queryOptions().queryKey,
+				});
 			},
 			onError: (err) => {
 				setSkinUnlockStatus(`Error: ${err.message}`);

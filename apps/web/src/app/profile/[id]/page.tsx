@@ -269,9 +269,7 @@ function RecentScorelines({ scores }: { scores: ScoreEntry[] }) {
 	return (
 		<div className="rounded-2xl border border-white/10 bg-[#0a1628]/60 backdrop-blur-xl">
 			<div className="border-b border-white/10 px-5 py-3">
-				<h2 className="text-xs font-bold uppercase tracking-widest text-gray-400">
-					Top Scores
-				</h2>
+				<h2 className="text-xs font-bold uppercase tracking-widest text-gray-400">Top Scores</h2>
 			</div>
 
 			{top8.length === 0 ? (
@@ -370,16 +368,23 @@ export default function PublicProfilePage() {
 	}
 
 	/* ---- Derived values ---- */
-	const { username, userImage, level, totalXp, equippedSkin, stats, topScores, achievements, skinsUnlocked } =
-		profile;
+	const {
+		username,
+		userImage,
+		level,
+		totalXp,
+		equippedSkin,
+		stats,
+		topScores,
+		achievements,
+		skinsUnlocked,
+	} = profile;
 
 	const levelInfo = getLevelFromXp(totalXp);
 	const highScore = topScores.length > 0 ? (topScores[0]?.score ?? 0) : 0;
 
 	const winRate =
-		stats.racesPlayed > 0
-			? `${((stats.racesWon / stats.racesPlayed) * 100).toFixed(0)}%`
-			: "N/A";
+		stats.racesPlayed > 0 ? `${((stats.racesWon / stats.racesPlayed) * 100).toFixed(0)}%` : "N/A";
 
 	/* ---- Performance tiles ---- */
 	const performanceTiles: MetricTile[] = [

@@ -64,13 +64,7 @@ interface GallerySkin extends SkinDefinition {
 	unlocked: boolean;
 }
 
-function SkinCard({
-	skin,
-	equipped,
-}: {
-	skin: GallerySkin;
-	equipped: boolean;
-}) {
+function SkinCard({ skin, equipped }: { skin: GallerySkin; equipped: boolean }) {
 	const rarity = RARITY_COLORS[skin.rarity];
 
 	return (
@@ -185,9 +179,7 @@ export default function SkinsPage() {
 	return (
 		<main className="mx-auto min-h-screen max-w-6xl px-4 py-12">
 			<h1 className="mb-2 text-center text-4xl font-extrabold text-white">Skins Gallery</h1>
-			<p className="mb-4 text-center text-gray-400">
-				Collect wolf skins by playing the game
-			</p>
+			<p className="mb-4 text-center text-gray-400">Collect wolf skins by playing the game</p>
 			{signedIn && (
 				<p className="mb-10 text-center">
 					<Link href="/settings" className="text-sm text-[#0FACED] hover:underline">
@@ -214,11 +206,7 @@ export default function SkinsPage() {
 			{!isLoading && (
 				<div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
 					{skins.map((skin) => (
-						<SkinCard
-							key={skin.id}
-							skin={skin}
-							equipped={signedIn && equippedSkinId === skin.id}
-						/>
+						<SkinCard key={skin.id} skin={skin} equipped={signedIn && equippedSkinId === skin.id} />
 					))}
 				</div>
 			)}

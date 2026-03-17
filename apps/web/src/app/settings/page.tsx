@@ -22,19 +22,11 @@ const RARITY_COLORS: Record<SkinRarity, { badge: string; border: string }> = {
 /* ------------------------------------------------------------------ */
 /*  Section wrapper                                                    */
 /* ------------------------------------------------------------------ */
-function Section({
-	title,
-	children,
-}: {
-	title: string;
-	children: React.ReactNode;
-}) {
+function Section({ title, children }: { title: string; children: React.ReactNode }) {
 	return (
 		<div className="rounded-2xl border border-white/10 bg-[#0a1628]/60 backdrop-blur-xl">
 			<div className="border-b border-white/10 px-5 py-3">
-				<h2 className="text-xs font-bold uppercase tracking-widest text-gray-400">
-					{title}
-				</h2>
+				<h2 className="text-xs font-bold uppercase tracking-widest text-gray-400">{title}</h2>
 			</div>
 			<div className="p-5">{children}</div>
 		</div>
@@ -44,19 +36,9 @@ function Section({
 /* ------------------------------------------------------------------ */
 /*  Inline status message                                              */
 /* ------------------------------------------------------------------ */
-function StatusMessage({
-	type,
-	message,
-}: {
-	type: "success" | "error";
-	message: string;
-}) {
+function StatusMessage({ type, message }: { type: "success" | "error"; message: string }) {
 	return (
-		<p
-			className={`mt-2 text-sm ${
-				type === "success" ? "text-emerald-400" : "text-red-400"
-			}`}
-		>
+		<p className={`mt-2 text-sm ${type === "success" ? "text-emerald-400" : "text-red-400"}`}>
 			{message}
 		</p>
 	);
@@ -159,12 +141,11 @@ function DeleteConfirmationModal({
 			<div className="mx-4 w-full max-w-md rounded-2xl border border-red-500/30 bg-[#091533] p-6">
 				<h3 className="text-lg font-bold text-red-400">Delete Account</h3>
 				<p className="mt-2 text-sm text-gray-300">
-					This action is irreversible. Your account, scores, achievements, and
-					all associated data will be permanently deleted after a grace period.
+					This action is irreversible. Your account, scores, achievements, and all associated data
+					will be permanently deleted after a grace period.
 				</p>
 				<p className="mt-3 text-sm text-gray-400">
-					Type <span className="font-mono font-bold text-red-400">DELETE</span>{" "}
-					to confirm:
+					Type <span className="font-mono font-bold text-red-400">DELETE</span> to confirm:
 				</p>
 				<input
 					type="text"
@@ -435,9 +416,7 @@ export default function SettingsPage() {
 					{/* Skin picker */}
 					<div>
 						<h3 className="mb-3 text-sm font-semibold text-gray-300">Equipped Skin</h3>
-						{equipStatus && (
-							<StatusMessage type={equipStatus.type} message={equipStatus.message} />
-						)}
+						{equipStatus && <StatusMessage type={equipStatus.type} message={equipStatus.message} />}
 						<div className="mt-3 grid grid-cols-3 gap-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6">
 							{skins.map((skin) => (
 								<SkinPickerCard
@@ -449,9 +428,7 @@ export default function SettingsPage() {
 								/>
 							))}
 						</div>
-						{skins.length === 0 && (
-							<p className="text-sm text-gray-500">No skins available.</p>
-						)}
+						{skins.length === 0 && <p className="text-sm text-gray-500">No skins available.</p>}
 					</div>
 				</Section>
 
@@ -461,12 +438,9 @@ export default function SettingsPage() {
 				<Section title="Privacy">
 					<div className="flex items-center justify-between">
 						<div>
-							<p className="text-sm font-semibold text-white">
-								Allow others to view my profile
-							</p>
+							<p className="text-sm font-semibold text-white">Allow others to view my profile</p>
 							<p className="mt-0.5 text-xs text-gray-400">
-								When disabled, your profile page will not be visible to other
-								players
+								When disabled, your profile page will not be visible to other players
 							</p>
 						</div>
 						<button
@@ -487,10 +461,7 @@ export default function SettingsPage() {
 						</button>
 					</div>
 					{privacyStatus && (
-						<StatusMessage
-							type={privacyStatus.type}
-							message={privacyStatus.message}
-						/>
+						<StatusMessage type={privacyStatus.type} message={privacyStatus.message} />
 					)}
 				</Section>
 
@@ -500,15 +471,11 @@ export default function SettingsPage() {
 				<Section title="Account">
 					{deletionPending ? (
 						<div className="rounded-lg border border-red-500/30 bg-red-500/10 p-4">
-							<p className="text-sm font-semibold text-red-400">
-								Account deletion pending
-							</p>
+							<p className="text-sm font-semibold text-red-400">Account deletion pending</p>
 							{accountStatus?.deletionScheduledFor && (
 								<p className="mt-1 text-xs text-gray-400">
 									Scheduled for deletion on{" "}
-									{new Date(
-										accountStatus.deletionScheduledFor,
-									).toLocaleDateString("en-US", {
+									{new Date(accountStatus.deletionScheduledFor).toLocaleDateString("en-US", {
 										year: "numeric",
 										month: "long",
 										day: "numeric",
@@ -518,9 +485,7 @@ export default function SettingsPage() {
 							{accountStatus?.deletionRequestedAt && (
 								<p className="mt-0.5 text-xs text-gray-500">
 									Requested on{" "}
-									{new Date(
-										accountStatus.deletionRequestedAt,
-									).toLocaleDateString("en-US", {
+									{new Date(accountStatus.deletionRequestedAt).toLocaleDateString("en-US", {
 										year: "numeric",
 										month: "long",
 										day: "numeric",
@@ -533,16 +498,14 @@ export default function SettingsPage() {
 								disabled={cancelDeletionMutation.isPending}
 								className="mt-3 rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-white/10 disabled:opacity-50"
 							>
-								{cancelDeletionMutation.isPending
-									? "Cancelling..."
-									: "Cancel Deletion"}
+								{cancelDeletionMutation.isPending ? "Cancelling..." : "Cancel Deletion"}
 							</button>
 						</div>
 					) : (
 						<div>
 							<p className="text-sm text-gray-300">
-								Permanently delete your account and all associated data including
-								scores, achievements, skins, and race history.
+								Permanently delete your account and all associated data including scores,
+								achievements, skins, and race history.
 							</p>
 							<button
 								type="button"
@@ -554,10 +517,7 @@ export default function SettingsPage() {
 						</div>
 					)}
 					{deleteStatus && (
-						<StatusMessage
-							type={deleteStatus.type}
-							message={deleteStatus.message}
-						/>
+						<StatusMessage type={deleteStatus.type} message={deleteStatus.message} />
 					)}
 				</Section>
 			</div>

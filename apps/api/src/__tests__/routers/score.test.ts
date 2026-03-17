@@ -7,12 +7,7 @@ import {
 	type TestDb,
 } from "../helpers/test-db.ts";
 import { createTestCaller } from "../helpers/test-caller.ts";
-import {
-	SCORE_PER_SECOND,
-	SCORE_PER_OBSTACLE,
-	MOD_FOG,
-	MOD_HEADWIND,
-} from "@fangdash/shared";
+import { SCORE_PER_SECOND, SCORE_PER_OBSTACLE, MOD_FOG, MOD_HEADWIND } from "@fangdash/shared";
 
 describe("score router", () => {
 	let db: TestDb;

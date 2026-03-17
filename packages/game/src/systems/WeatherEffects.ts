@@ -105,8 +105,10 @@ export class TremorEffect implements WeatherEffect {
 		const t = Math.min(distance / TREMOR_MAX_DISTANCE, 1);
 
 		// Camera shake (retuned)
-		this.currentInterval = TREMOR_START_INTERVAL - t * (TREMOR_START_INTERVAL - TREMOR_MIN_INTERVAL);
-		this.currentIntensity = TREMOR_START_INTENSITY + t * (TREMOR_MAX_INTENSITY - TREMOR_START_INTENSITY);
+		this.currentInterval =
+			TREMOR_START_INTERVAL - t * (TREMOR_START_INTERVAL - TREMOR_MIN_INTERVAL);
+		this.currentIntensity =
+			TREMOR_START_INTENSITY + t * (TREMOR_MAX_INTENSITY - TREMOR_START_INTENSITY);
 		this.timeSinceShake += delta;
 		if (this.timeSinceShake >= this.currentInterval) {
 			this.timeSinceShake = 0;

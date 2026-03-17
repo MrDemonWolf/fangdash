@@ -53,8 +53,7 @@ export interface ModDefinition {
 }
 
 // Pairs of flags that cannot be combined
-const INCOMPATIBLE_PAIRS: [number, number][] = [
-];
+const INCOMPATIBLE_PAIRS: [number, number][] = [];
 
 /** Bitmask of all mods marked as ready */
 export const READY_MODS_MASK = MOD_DEFINITIONS.reduce(

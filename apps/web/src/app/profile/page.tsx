@@ -419,7 +419,8 @@ export default function ProfilePage() {
 
 	/* ---- Share profile ---- */
 	const [copied, setCopied] = useState(false);
-	const shareUrl = typeof window !== "undefined" ? `${window.location.origin}/profile/${user.id}` : "";
+	const shareUrl =
+		typeof window !== "undefined" ? `${window.location.origin}/profile/${user.id}` : "";
 	const handleShareProfile = () => {
 		navigator.clipboard.writeText(shareUrl).then(() => {
 			setCopied(true);

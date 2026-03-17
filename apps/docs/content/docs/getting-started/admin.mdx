@@ -70,8 +70,8 @@ bun run promote-admin MrDemonWolf --role dev
 ```
 
 <Callout type="info">
-	You can also run the script directly from the API workspace:
-	`bun run --filter @fangdash/api promote-admin MrDemonWolf`
+	You can also run the script directly from the API workspace: `bun run --filter @fangdash/api
+	promote-admin MrDemonWolf`
 </Callout>
 
 The script looks up users by their `name` column in the database and prints success/failure for each username.
@@ -80,9 +80,9 @@ The script looks up users by their `name` column in the database and prints succ
 
 The admin tRPC router includes the following mutations and queries used by the admin panel:
 
-| Endpoint           | Type     | Description                                          |
-| ------------------ | -------- | ---------------------------------------------------- |
-| `unlockAllSkins`   | Mutation | Unlocks all skins for the authenticated player (dev/admin only). Also accessible from the debug panel's CHEATS tab. |
+| Endpoint         | Type     | Description                                                                                                         |
+| ---------------- | -------- | ------------------------------------------------------------------------------------------------------------------- |
+| `unlockAllSkins` | Mutation | Unlocks all skins for the authenticated player (dev/admin only). Also accessible from the debug panel's CHEATS tab. |
 
 ## Troubleshooting
 
