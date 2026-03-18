@@ -46,7 +46,10 @@ FangDash supports GDPR-compliant account deletion with a safety net:
 		During the grace period, you can return to Settings and click **Cancel Deletion** to restore
 		your account
 	</Step>
-	<Step>After 24 hours, the account is marked for permanent removal. An ops process handles the actual data purge — until then, the account remains in a soft-deleted state.</Step>
+	<Step>
+		After 24 hours, the account is marked for permanent removal. An ops process handles the actual
+		data purge — until then, the account remains in a soft-deleted state.
+	</Step>
 </Steps>
 
 <Callout type="info">
@@ -59,13 +62,13 @@ FangDash supports GDPR-compliant account deletion with a safety net:
 
 The account management endpoints live in the `account` tRPC router:
 
-| Endpoint           | Type     | Description                                    |
-| ------------------ | -------- | ---------------------------------------------- |
-| `getAccountStatus` | Query    | Returns current deletion status and timestamps |
+| Endpoint           | Type     | Description                                                     |
+| ------------------ | -------- | --------------------------------------------------------------- |
+| `getAccountStatus` | Query    | Returns current deletion status and timestamps                  |
 | `requestDeletion`  | Mutation | Schedules the account for deletion after a 24-hour grace period |
-| `cancelDeletion`   | Mutation | Cancels a pending deletion request             |
-| `getPrivacy`       | Query    | Returns current privacy setting                |
-| `updatePrivacy`    | Mutation | Toggles profile visibility on or off           |
+| `cancelDeletion`   | Mutation | Cancels a pending deletion request                              |
+| `getPrivacy`       | Query    | Returns current privacy setting                                 |
+| `updatePrivacy`    | Mutation | Toggles profile visibility on or off                            |
 
 ### Database Schema
 
