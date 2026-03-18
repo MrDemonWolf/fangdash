@@ -46,7 +46,9 @@ const baseResult: SubmitResult = {
 	newLevel: 1,
 };
 
-function makePendingEntry(overrides: Partial<scoreStore.PendingScoreEntry> = {}): scoreStore.PendingScoreEntry {
+function makePendingEntry(
+	overrides: Partial<scoreStore.PendingScoreEntry> = {},
+): scoreStore.PendingScoreEntry {
 	return {
 		id: 1,
 		type: "solo",
@@ -160,9 +162,7 @@ describe("processQueue", () => {
 	});
 
 	it("processes pending + removes on success", async () => {
-		(scoreStore.getAllPendingScores as Mock).mockResolvedValueOnce([
-			makePendingEntry({ id: 10 }),
-		]);
+		(scoreStore.getAllPendingScores as Mock).mockResolvedValueOnce([makePendingEntry({ id: 10 })]);
 		const submitFn = vi.fn().mockResolvedValueOnce(baseResult);
 		const results = await processQueue(submitFn);
 		expect(results).toHaveLength(1);
@@ -171,9 +171,7 @@ describe("processQueue", () => {
 	});
 
 	it("sets syncing during attempt", async () => {
-		(scoreStore.getAllPendingScores as Mock).mockResolvedValueOnce([
-			makePendingEntry({ id: 5 }),
-		]);
+		(scoreStore.getAllPendingScores as Mock).mockResolvedValueOnce([makePendingEntry({ id: 5 })]);
 		const submitFn = vi.fn().mockResolvedValueOnce(baseResult);
 		await processQueue(submitFn);
 		expect(scoreStore.updatePendingScore).toHaveBeenCalledWith(

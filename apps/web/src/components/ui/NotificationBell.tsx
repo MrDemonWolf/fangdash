@@ -39,9 +39,7 @@ export function NotificationBell() {
 				<button
 					type="button"
 					className="relative flex items-center justify-center rounded-md p-1.5 text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
-					aria-label={
-						unreadCount > 0 ? `Notifications (${unreadCount} unread)` : "Notifications"
-					}
+					aria-label={unreadCount > 0 ? `Notifications (${unreadCount} unread)` : "Notifications"}
 				>
 					<Bell className="size-4" />
 					{unreadCount > 0 && (

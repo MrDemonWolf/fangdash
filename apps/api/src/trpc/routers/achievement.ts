@@ -1,6 +1,6 @@
 import { ACHIEVEMENTS } from "@fangdash/shared/achievements";
-import { eq } from "drizzle-orm";
-import { playerAchievement } from "../../db/schema.ts";
+import { count, eq, sql } from "drizzle-orm";
+import { player, playerAchievement } from "../../db/schema.ts";
 import { ensurePlayer } from "../../lib/ensure-player.ts";
 import { protectedProcedure, publicProcedure, router } from "../trpc.ts";
 
@@ -80,5 +80,30 @@ export const achievementRouter = router({
 			icon: a.icon,
 			rewardSkinId: a.rewardSkinId ?? null,
 		}));
+	}),
+
+	getStats: publicProcedure.query(async ({ ctx }) => {
+		const [totalPlayersResult, unlockCounts] = await Promise.all([
+			ctx.db.select({ total: count() }).from(player),
+			ctx.db
+				.select({
+					achievementId: playerAchievement.achievementId,
+					unlockCount: sql<number>`count(*)`,
+				})
+				.from(playerAchievement)
+				.groupBy(playerAchievement.achievementId),
+		]);
+
+		const totalPlayers = totalPlayersResult[0]?.total ?? 0;
+		const result: Record<string, { unlockCount: number; totalPlayers: number }> = {};
+
+		for (const row of unlockCounts) {
+			result[row.achievementId] = {
+				unlockCount: row.unlockCount,
+				totalPlayers,
+			};
+		}
+
+		return result;
 	}),
 });

@@ -80,7 +80,11 @@ export type AchievementCondition =
 	| { type: "obstacles_cleared"; count: number }
 	| { type: "races_won"; count: number }
 	| { type: "races_played"; count: number }
-	| { type: "perfect_run"; distance: number };
+	| { type: "perfect_run"; distance: number }
+	| { type: "time_survived"; threshold: number }
+	| { type: "score_with_mods"; threshold: number; mods: number }
+	| { type: "distance_with_mods"; threshold: number; mods: number }
+	| { type: "combo"; conditions: AchievementCondition[] };
 
 export interface PlayerAchievement {
 	playerId: string;

@@ -182,9 +182,7 @@ export default function LeaderboardPage() {
 					<h1 className="mt-2 text-3xl font-bold text-glow-cyan text-fang-cyan sm:text-4xl">
 						Leaderboard
 					</h1>
-					<p className="mt-2 text-sm text-muted-foreground">
-						Top runners in FangDash
-					</p>
+					<p className="mt-2 text-sm text-muted-foreground">Top runners in FangDash</p>
 				</div>
 
 				{/* Filters */}
@@ -192,7 +190,9 @@ export default function LeaderboardPage() {
 					<CardContent className="flex flex-col gap-3 p-3">
 						{/* Period */}
 						<div>
-							<span className="mb-1 block text-xs font-mono uppercase tracking-[0.15em] text-muted-foreground">Period</span>
+							<span className="mb-1 block text-xs font-mono uppercase tracking-[0.15em] text-muted-foreground">
+								Period
+							</span>
 							<div className="flex flex-wrap gap-1 rounded-lg bg-[var(--color-surface-base)] p-1">
 								{TABS.map((tab) => (
 									<button
@@ -215,7 +215,9 @@ export default function LeaderboardPage() {
 
 						{/* Difficulty */}
 						<div>
-							<span className="mb-1 block text-xs font-mono uppercase tracking-[0.15em] text-muted-foreground">Difficulty</span>
+							<span className="mb-1 block text-xs font-mono uppercase tracking-[0.15em] text-muted-foreground">
+								Difficulty
+							</span>
 							<div className="flex flex-wrap gap-1 rounded-lg bg-[var(--color-surface-base)] p-1">
 								<button
 									type="button"
@@ -255,7 +257,9 @@ export default function LeaderboardPage() {
 
 						{/* Mods */}
 						<div>
-							<span className="mb-1 block text-xs font-mono uppercase tracking-[0.15em] text-muted-foreground">Mods</span>
+							<span className="mb-1 block text-xs font-mono uppercase tracking-[0.15em] text-muted-foreground">
+								Mods
+							</span>
 							<div className="flex flex-wrap gap-1 rounded-lg bg-[var(--color-surface-base)] p-1">
 								<button
 									type="button"
@@ -310,12 +314,26 @@ export default function LeaderboardPage() {
 					<Table>
 						<TableHeader>
 							<TableRow className="hover:bg-transparent border-border/40">
-								<TableHead className="w-16 uppercase tracking-[0.15em] text-muted-foreground font-mono text-xs">Rank</TableHead>
-								<TableHead className="uppercase tracking-[0.15em] text-muted-foreground font-mono text-xs">Username</TableHead>
-								<TableHead className="uppercase tracking-[0.15em] text-muted-foreground font-mono text-xs">Score</TableHead>
-								<TableHead className="uppercase tracking-[0.15em] text-muted-foreground font-mono text-xs">Distance</TableHead>
-								{activeDifficulty === "all" && <TableHead className="uppercase tracking-[0.15em] text-muted-foreground font-mono text-xs">Difficulty</TableHead>}
-								<TableHead className="uppercase tracking-[0.15em] text-muted-foreground font-mono text-xs">Date</TableHead>
+								<TableHead className="w-16 uppercase tracking-[0.15em] text-muted-foreground font-mono text-xs">
+									Rank
+								</TableHead>
+								<TableHead className="uppercase tracking-[0.15em] text-muted-foreground font-mono text-xs">
+									Username
+								</TableHead>
+								<TableHead className="uppercase tracking-[0.15em] text-muted-foreground font-mono text-xs">
+									Score
+								</TableHead>
+								<TableHead className="uppercase tracking-[0.15em] text-muted-foreground font-mono text-xs">
+									Distance
+								</TableHead>
+								{activeDifficulty === "all" && (
+									<TableHead className="uppercase tracking-[0.15em] text-muted-foreground font-mono text-xs">
+										Difficulty
+									</TableHead>
+								)}
+								<TableHead className="uppercase tracking-[0.15em] text-muted-foreground font-mono text-xs">
+									Date
+								</TableHead>
 							</TableRow>
 						</TableHeader>
 						<TableBody>
@@ -430,7 +448,9 @@ export default function LeaderboardPage() {
 									</div>
 									<div className="mt-3 flex items-center gap-4 text-sm">
 										<div>
-											<span className="font-mono uppercase tracking-[0.1em] text-xs text-muted-foreground">Score </span>
+											<span className="font-mono uppercase tracking-[0.1em] text-xs text-muted-foreground">
+												Score{" "}
+											</span>
 											<span className="font-mono text-glow-cyan tabular-nums font-medium">
 												{formatNumber(entry.score)}
 											</span>
@@ -439,7 +459,9 @@ export default function LeaderboardPage() {
 											)}
 										</div>
 										<div>
-											<span className="font-mono uppercase tracking-[0.1em] text-xs text-muted-foreground">Distance </span>
+											<span className="font-mono uppercase tracking-[0.1em] text-xs text-muted-foreground">
+												Distance{" "}
+											</span>
 											<span className="font-mono text-foreground/80 tabular-nums">
 												{formatNumber(Math.round(entry.distance))}m
 											</span>

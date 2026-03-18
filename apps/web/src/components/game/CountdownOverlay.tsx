@@ -17,7 +17,10 @@ export function CountdownOverlay({ seconds }: CountdownOverlayProps) {
 				className={`text-8xl font-black tracking-tighter ${seconds === 0 ? "text-glow-cyan text-primary" : "text-foreground"}`}
 				style={{
 					animation: "countdownPop 0.6s ease-out forwards",
-					filter: seconds === 0 ? "drop-shadow(0 0 40px oklch(0.72 0.15 210 / 0.6))" : "drop-shadow(0 0 30px rgba(255,255,255,0.3))",
+					filter:
+						seconds === 0
+							? "drop-shadow(0 0 40px oklch(0.72 0.15 210 / 0.6))"
+							: "drop-shadow(0 0 30px rgba(255,255,255,0.3))",
 				}}
 			>
 				{display}

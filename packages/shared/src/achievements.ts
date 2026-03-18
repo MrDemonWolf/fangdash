@@ -1,3 +1,4 @@
+import { MOD_FOG, MOD_HEADWIND, MOD_TREMOR } from "./mods.ts";
 import type { AchievementDefinition } from "./types.ts";
 
 export const ACHIEVEMENTS: AchievementDefinition[] = [
@@ -140,6 +141,52 @@ export const ACHIEVEMENTS: AchievementDefinition[] = [
 		category: "social",
 		icon: "🎖️",
 		condition: { type: "races_played", count: 50 },
+	},
+
+	// ── Mod Achievements ──
+	{
+		id: "fog-runner",
+		name: "Fog Runner",
+		description: "Run 2,000 meters with Fog active.",
+		category: "skill",
+		icon: "🌫️",
+		condition: { type: "distance_with_mods", threshold: 2000, mods: MOD_FOG },
+	},
+	{
+		id: "headwind-hero",
+		name: "Headwind Hero",
+		description: "Score 5,000 points with Headwind active.",
+		category: "skill",
+		icon: "💨",
+		condition: { type: "score_with_mods", threshold: 5000, mods: MOD_HEADWIND },
+	},
+	{
+		id: "triple-threat",
+		name: "Triple Threat",
+		description: "Score 3,000 points with all three mods active.",
+		category: "skill",
+		icon: "🌪️",
+		condition: {
+			type: "score_with_mods",
+			threshold: 3000,
+			mods: MOD_FOG | MOD_HEADWIND | MOD_TREMOR,
+		},
+	},
+	{
+		id: "endurance-wolf",
+		name: "Endurance Wolf",
+		description: "Survive for 2 minutes in a single run.",
+		category: "skill",
+		icon: "⏱️",
+		condition: { type: "time_survived", threshold: 120000 },
+	},
+	{
+		id: "obstacle-gauntlet",
+		name: "Obstacle Gauntlet",
+		description: "Clear 500 obstacles in a single run.",
+		category: "skill",
+		icon: "🏋️",
+		condition: { type: "obstacles_cleared", count: 500 },
 	},
 ];
 

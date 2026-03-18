@@ -55,10 +55,7 @@ export async function enqueue(
 	sessionSalt: string,
 	raceId?: string,
 ): Promise<number> {
-	const hmac = await computeHMAC(
-		{ ...payload, cheated: payload.cheated ?? false },
-		sessionSalt,
-	);
+	const hmac = await computeHMAC({ ...payload, cheated: payload.cheated ?? false }, sessionSalt);
 
 	const id = await addPendingScore({
 		type,

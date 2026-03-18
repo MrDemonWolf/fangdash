@@ -15,6 +15,10 @@ export interface PlayerStats {
 	racesPlayed: number;
 	racesWon: number;
 	longestCleanRun: number;
+	// Per-run stats for condition checks requiring latest submission context
+	latestDuration: number;
+	latestMods: number;
+	latestObstaclesCleared: number;
 }
 
 export interface CheckStats {
@@ -40,6 +44,8 @@ export async function checkAchievements(
 		distance: number;
 		obstaclesCleared: number;
 		longestCleanRun?: number;
+		duration?: number;
+		mods?: number;
 	},
 ): Promise<CheckResult> {
 	// Get player stats
@@ -79,6 +85,9 @@ export async function checkAchievements(
 		racesPlayed: playerRecord.racesPlayed,
 		racesWon: playerRecord.racesWon,
 		longestCleanRun: Math.max(maxStats?.highestCleanRun ?? 0, latestScore?.longestCleanRun ?? 0),
+		latestDuration: latestScore?.duration ?? 0,
+		latestMods: latestScore?.mods ?? 0,
+		latestObstaclesCleared: latestScore?.obstaclesCleared ?? 0,
 	};
 
 	const checkStats: CheckStats = {
@@ -138,7 +147,10 @@ export async function checkAchievements(
 				.returning({ skinId: playerSkin.skinId });
 			newSkins = (inserted ?? []).map((r) => r.skinId);
 		} catch (err) {
-			console.error("[checkAchievements] Reward skin insert failed", { playerId, error: err });
+			console.error("[checkAchievements] Reward skin insert failed", {
+				playerId,
+				error: err,
+			});
 		}
 	}
 
@@ -170,6 +182,24 @@ export function isAchievementEarned(
 			return stats.racesPlayed >= condition.count;
 		case "perfect_run":
 			return stats.longestCleanRun >= condition.distance;
+		case "time_survived":
+			return stats.latestDuration >= condition.threshold;
+		case "score_with_mods":
+			return (
+				stats.latestMods !== 0 &&
+				(stats.latestMods & condition.mods) === condition.mods &&
+				stats.highestScore >= condition.threshold
+			);
+		case "distance_with_mods":
+			return (
+				stats.latestMods !== 0 &&
+				(stats.latestMods & condition.mods) === condition.mods &&
+				stats.highestDistance >= condition.threshold
+			);
+		case "combo":
+			return condition.conditions.every((sub) =>
+				isAchievementEarned({ ...achievement, condition: sub }, stats),
+			);
 		default:
 			return false;
 	}
