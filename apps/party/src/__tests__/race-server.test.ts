@@ -40,7 +40,7 @@ describe("RaceServer", () => {
 			server.onConnect(conn);
 
 			expect(conn.send).toHaveBeenCalledTimes(1);
-			const sent = JSON.parse((conn.send as ReturnType<typeof vi.fn>).mock.calls[0]![0]);
+			const sent = JSON.parse((conn.send as ReturnType<typeof vi.fn>).mock.calls[0]?.[0]);
 			expect(sent.type).toBe("room_state");
 			expect(sent.payload.status).toBe("waiting");
 		});
@@ -56,7 +56,7 @@ describe("RaceServer", () => {
 			});
 
 			expect(server.room.players.length).toBe(1);
-			expect(server.room.players[0]!.username).toBe("TestPlayer");
+			expect(server.room.players[0]?.username).toBe("TestPlayer");
 		});
 
 		it("should make first player the host", () => {
@@ -68,7 +68,7 @@ describe("RaceServer", () => {
 			});
 
 			expect(server.room.hostId).toBe("player-1");
-			expect(server.room.players[0]!.isHost).toBe(true);
+			expect(server.room.players[0]?.isHost).toBe(true);
 		});
 
 		it("should not add duplicate players", () => {
@@ -118,7 +118,7 @@ describe("RaceServer", () => {
 			});
 			sendMessage(server, conn, { type: "ready" });
 
-			expect(server.room.players[0]!.ready).toBe(true);
+			expect(server.room.players[0]?.ready).toBe(true);
 		});
 
 		it("should start countdown when host readies", () => {
@@ -150,8 +150,8 @@ describe("RaceServer", () => {
 				payload: { distance: 500, score: 100 },
 			});
 
-			expect(server.room.players[0]!.distance).toBe(500);
-			expect(server.room.players[0]!.score).toBe(100);
+			expect(server.room.players[0]?.distance).toBe(500);
+			expect(server.room.players[0]?.score).toBe(100);
 		});
 
 		it("should ignore updates when not racing", () => {
@@ -167,7 +167,7 @@ describe("RaceServer", () => {
 				payload: { distance: 500, score: 100 },
 			});
 
-			expect(server.room.players[0]!.distance).toBe(0);
+			expect(server.room.players[0]?.distance).toBe(0);
 		});
 
 		it("should ignore updates from dead players", () => {
@@ -179,14 +179,16 @@ describe("RaceServer", () => {
 			});
 
 			server.room.status = "racing";
-			server.room.players[0]!.alive = false;
+			const deadPlayer = server.room.players[0];
+			if (!deadPlayer) throw new Error("expected player");
+			deadPlayer.alive = false;
 
 			sendMessage(server, conn, {
 				type: "update",
 				payload: { distance: 500, score: 100 },
 			});
 
-			expect(server.room.players[0]!.distance).toBe(0);
+			expect(server.room.players[0]?.distance).toBe(0);
 		});
 	});
 
@@ -202,7 +204,7 @@ describe("RaceServer", () => {
 			server.room.status = "racing";
 			sendMessage(server, conn, { type: "died" });
 
-			expect(server.room.players[0]!.alive).toBe(false);
+			expect(server.room.players[0]?.alive).toBe(false);
 		});
 
 		it("should end race when all players die", () => {
@@ -296,8 +298,8 @@ describe("RaceServer", () => {
 			sendMessage(server, conn, { type: "rematch" });
 
 			expect(server.room.status).toBe("waiting");
-			expect(server.room.players[0]!.alive).toBe(true);
-			expect(server.room.players[0]!.score).toBe(0);
+			expect(server.room.players[0]?.alive).toBe(true);
+			expect(server.room.players[0]?.score).toBe(0);
 		});
 
 		it("should not allow rematch from non-host", () => {
@@ -365,7 +367,7 @@ describe("RaceServer", () => {
 			server.onClose(conn1);
 
 			expect(server.room.hostId).toBe("player-2");
-			expect(server.room.players[0]!.isHost).toBe(true);
+			expect(server.room.players[0]?.isHost).toBe(true);
 		});
 	});
 
@@ -412,7 +414,7 @@ describe("RaceServer", () => {
 			});
 
 			// Distance should remain 0 since invalid message was rejected
-			expect(server.room.players[0]!.distance).toBe(0);
+			expect(server.room.players[0]?.distance).toBe(0);
 		});
 	});
 });

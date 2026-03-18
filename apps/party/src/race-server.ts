@@ -73,16 +73,19 @@ export default class RaceServer implements Party.Server {
 		this.broadcast({ type: "player_left", payload: { id: conn.id } });
 
 		// Host migration
-		if (wasHost && this.room.players.length > 0) {
-			const newHost = this.room.players[0]!;
-			this.room.hostId = newHost.id;
-			this.room.players = this.room.players.map((p) => ({
-				...p,
-				isHost: p.id === newHost.id,
-			}));
-			this.broadcast({ type: "host_changed", payload: { hostId: newHost.id } });
-		} else if (this.room.players.length === 0) {
-			this.room.hostId = null;
+		if (wasHost) {
+			const newHost = this.room.players[0];
+			if (newHost) {
+				this.room.hostId = newHost.id;
+				this.room.players = this.room.players.map((p) => ({
+					...p,
+					isHost: p.id === newHost.id,
+				}));
+				this.broadcast({ type: "host_changed", payload: { hostId: newHost.id } });
+			} else {
+				this.room.hostId = null;
+				this.broadcast({ type: "host_changed", payload: { hostId: null } });
+			}
 		}
 
 		if (this.room.status === "racing" && this.room.players.every((p) => !p.alive)) {

@@ -115,6 +115,22 @@ export const DIFFICULTY_LEVELS: readonly DifficultyLevel[] = [
 	},
 ];
 
+// ── Weather / Mod Effects ──
+export const WIND_MAX_DISTANCE = 3500;
+export const WIND_MIN_FORCE = 350;
+export const WIND_MAX_FORCE = 800;
+export const WIND_GUST_PERIOD = 2000;
+export const WIND_FORCE_FLOOR = 175;
+
+export const TREMOR_MAX_DISTANCE = 3500;
+export const TREMOR_START_INTERVAL = 4000;
+export const TREMOR_MIN_INTERVAL = 1200;
+export const TREMOR_START_INTENSITY = 0.005;
+export const TREMOR_MAX_INTENSITY = 0.025;
+export const TREMOR_MAX_BOB_AMPLITUDE = 8;
+export const TREMOR_BOB_AMPLITUDE_CAP = 10.4;
+export const TREMOR_MAX_STAGGER_MS = 200;
+
 // ── Audio ──
 export const AUDIO_KEYS = {
 	BGM_MENU: "bgm-menu",

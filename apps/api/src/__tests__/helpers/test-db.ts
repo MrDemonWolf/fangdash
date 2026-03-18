@@ -82,6 +82,7 @@ CREATE TABLE IF NOT EXISTS score (
 	obstacles_cleared INTEGER NOT NULL,
 	duration INTEGER NOT NULL,
 	difficulty TEXT NOT NULL DEFAULT 'easy',
+	mods INTEGER NOT NULL DEFAULT 0,
 	longest_clean_run INTEGER NOT NULL DEFAULT 0,
 	seed TEXT NOT NULL,
 	cheated INTEGER NOT NULL DEFAULT 0,
@@ -89,6 +90,7 @@ CREATE TABLE IF NOT EXISTS score (
 );
 CREATE INDEX IF NOT EXISTS score_player_id_idx ON score(player_id);
 CREATE INDEX IF NOT EXISTS score_difficulty_idx ON score(difficulty);
+CREATE INDEX IF NOT EXISTS score_mods_idx ON score(mods);
 CREATE INDEX IF NOT EXISTS score_created_at_idx ON score(created_at);
 
 CREATE TABLE IF NOT EXISTS player_skin (
@@ -114,6 +116,7 @@ CREATE TABLE IF NOT EXISTS race_history (
 	placement INTEGER NOT NULL,
 	score INTEGER NOT NULL,
 	distance REAL NOT NULL,
+	mods INTEGER NOT NULL DEFAULT 0,
 	seed TEXT NOT NULL,
 	cheated INTEGER NOT NULL DEFAULT 0,
 	created_at INTEGER NOT NULL
@@ -221,6 +224,7 @@ export function createTestScore(
 		obstaclesCleared: number;
 		duration: number;
 		difficulty: string;
+		mods: number;
 		longestCleanRun: number;
 		seed: string;
 		createdAt: Date;
@@ -236,6 +240,7 @@ export function createTestScore(
 			obstaclesCleared: overrides.obstaclesCleared ?? 5,
 			duration: overrides.duration ?? 30000,
 			difficulty: overrides.difficulty ?? "easy",
+			mods: overrides.mods ?? 0,
 			longestCleanRun: overrides.longestCleanRun ?? 0,
 			seed: overrides.seed ?? "test-seed",
 			createdAt: overrides.createdAt ?? new Date(),

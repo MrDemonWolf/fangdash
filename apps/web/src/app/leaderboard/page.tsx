@@ -1,7 +1,7 @@
 "use client";
 
 import type { DifficultyName } from "@fangdash/shared";
-import { DIFFICULTY_LEVELS } from "@fangdash/shared";
+import { DIFFICULTY_LEVELS, MOD_DEFINITIONS, decodeMods } from "@fangdash/shared";
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -69,6 +69,20 @@ function DifficultyBadge({ difficulty }: { difficulty: string }) {
 	);
 }
 
+function ModIcons({ mods }: { mods: number }) {
+	if (!mods) return null;
+	const activeMods = decodeMods(mods);
+	return (
+		<span className="inline-flex items-center gap-0.5 ml-1">
+			{activeMods.map((mod) => (
+				<span key={mod.id} className="text-xs" title={mod.name}>
+					{mod.icon}
+				</span>
+			))}
+		</span>
+	);
+}
+
 function SkeletonRows() {
 	return Array.from({ length: 5 }).map((_, i) => (
 		<TableRow key={i}>
@@ -124,6 +138,7 @@ function formatNumber(n: number) {
 export default function LeaderboardPage() {
 	const [activeTab, setActiveTab] = useState<Tab>("all-time");
 	const [activeDifficulty, setActiveDifficulty] = useState<DifficultyName | "all">("all");
+	const [activeMods, setActiveMods] = useState<number | undefined>(undefined);
 	const trpc = useTRPC();
 	const { data: session } = useSession();
 
@@ -134,6 +149,7 @@ export default function LeaderboardPage() {
 			limit: 50,
 			period,
 			difficulty: activeDifficulty === "all" ? undefined : activeDifficulty,
+			mods: activeMods,
 		}),
 	);
 
@@ -209,6 +225,50 @@ export default function LeaderboardPage() {
 					))}
 				</div>
 
+				{/* Mods Filter */}
+				<div className="mt-3 flex gap-1 rounded-lg bg-white/5 p-1">
+					<button
+						type="button"
+						onClick={() => setActiveMods(undefined)}
+						aria-pressed={activeMods === undefined}
+						className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+							activeMods === undefined
+								? "bg-[#0FACED]/20 text-[#0FACED]"
+								: "text-gray-400 hover:text-white hover:bg-white/5"
+						}`}
+					>
+						All
+					</button>
+					<button
+						type="button"
+						onClick={() => setActiveMods(0)}
+						aria-pressed={activeMods === 0}
+						className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+							activeMods === 0
+								? "bg-purple-500/20 text-purple-300"
+								: "text-gray-400 hover:text-white hover:bg-white/5"
+						}`}
+					>
+						No Mods
+					</button>
+					{MOD_DEFINITIONS.filter((mod) => mod.ready).map((mod) => (
+						<button
+							type="button"
+							key={mod.id}
+							onClick={() => setActiveMods(mod.flag)}
+							aria-pressed={activeMods === mod.flag}
+							className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+								activeMods === mod.flag
+									? "bg-purple-500/20 text-purple-300"
+									: "text-gray-400 hover:text-white hover:bg-white/5"
+							}`}
+						>
+							<span>{mod.icon}</span>
+							<span className="hidden sm:inline">{mod.name}</span>
+						</button>
+					))}
+				</div>
+
 				{/* Desktop Table */}
 				<div className="mt-6 hidden sm:block">
 					<Table>
@@ -264,6 +324,9 @@ export default function LeaderboardPage() {
 										</TableCell>
 										<TableCell className="text-foreground tabular-nums">
 											{formatNumber(entry.score)}
+											{"mods" in entry && typeof entry.mods === "number" && entry.mods > 0 && (
+												<ModIcons mods={entry.mods} />
+											)}
 										</TableCell>
 										<TableCell className="text-secondary-foreground tabular-nums">
 											{formatNumber(Math.round(entry.distance))}m
@@ -332,6 +395,9 @@ export default function LeaderboardPage() {
 											<span className="text-foreground tabular-nums font-medium">
 												{formatNumber(entry.score)}
 											</span>
+											{"mods" in entry && typeof entry.mods === "number" && entry.mods > 0 && (
+												<ModIcons mods={entry.mods} />
+											)}
 										</div>
 										<div>
 											<span className="text-muted-foreground">Distance </span>

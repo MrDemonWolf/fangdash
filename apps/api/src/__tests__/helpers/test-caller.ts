@@ -12,7 +12,6 @@ interface TestCallerOptions {
 	banExpires?: Date | null;
 }
 
-// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export function createTestCaller(
 	opts: TestCallerOptions,
 ): ReturnType<(typeof appRouter)["createCaller"]> {

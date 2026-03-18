@@ -1,8 +1,11 @@
 import {
 	ACHIEVEMENTS,
 	DIFFICULTY_NAMES,
+	READY_MODS_MASK,
 	SCORE_PER_OBSTACLE,
 	SCORE_PER_SECOND,
+	areModsCompatible,
+	getScoreMultiplier,
 	getLevelFromXp,
 	getSkinById,
 } from "@fangdash/shared";
@@ -26,13 +29,30 @@ export const scoreRouter = router({
 				duration: z.number().int().min(0),
 				seed: z.string().min(1),
 				difficulty: z.enum(DIFFICULTY_NAMES).default("easy"),
+				mods: z.number().int().min(0).default(0),
 				cheated: z.boolean().default(false),
 			}),
 		)
 		.mutation(async ({ ctx, input }) => {
-			// Anti-cheat: reject impossible scores
+			// Validate mods bitmask: only allow ready, compatible mods
+			if ((input.mods & ~READY_MODS_MASK) !== 0) {
+				throw new TRPCError({
+					code: "BAD_REQUEST",
+					message: "Invalid mod flags: contains non-ready mods",
+				});
+			}
+			if (!areModsCompatible(input.mods)) {
+				throw new TRPCError({
+					code: "BAD_REQUEST",
+					message: "Invalid mod flags: incompatible mod combination",
+				});
+			}
+
+			// Anti-cheat: reject impossible scores (account for mod score multipliers)
+			const modMultiplier = getScoreMultiplier(input.mods);
 			const maxAllowedScore =
-				(input.duration / 1000) * SCORE_PER_SECOND + input.obstaclesCleared * SCORE_PER_OBSTACLE;
+				((input.duration / 1000) * SCORE_PER_SECOND + input.obstaclesCleared * SCORE_PER_OBSTACLE) *
+				modMultiplier;
 			// Reject sessions longer than 30 minutes (1,800,000ms)
 			if (input.duration > 1_800_000) {
 				throw new TRPCError({
@@ -67,6 +87,7 @@ export const scoreRouter = router({
 				longestCleanRun: input.longestCleanRun,
 				duration: input.duration,
 				difficulty: input.difficulty,
+				mods: input.mods,
 				seed: input.seed,
 				cheated: isCheated,
 				createdAt: now,
@@ -159,6 +180,7 @@ export const scoreRouter = router({
 					limit: z.number().int().min(1).max(100).default(50),
 					period: z.enum(["daily", "weekly", "all"]).default("all"),
 					difficulty: z.enum(DIFFICULTY_NAMES).optional(),
+					mods: z.number().int().min(0).optional(),
 				})
 				.optional(),
 		)
@@ -166,6 +188,7 @@ export const scoreRouter = router({
 			const limit = input?.limit ?? 50;
 			const period = input?.period ?? "all";
 			const difficulty = input?.difficulty;
+			const mods = input?.mods;
 
 			const cutoff =
 				period === "daily"
@@ -178,6 +201,15 @@ export const scoreRouter = router({
 
 			const diffFilter = difficulty ? sql` AND s2.difficulty = ${difficulty}` : sql``;
 			const outerDiffFilter = difficulty ? sql` AND ${score.difficulty} = ${difficulty}` : sql``;
+			// When filtering by a specific mod value, match exactly.
+			// When showing "All" (mods undefined), exclude scores with non-ready mods.
+			const readyMask = READY_MODS_MASK;
+			const modsFilter =
+				mods !== undefined ? sql` AND s2.mods = ${mods}` : sql` AND (s2.mods & ~${readyMask}) = 0`;
+			const outerModsFilter =
+				mods !== undefined
+					? sql` AND ${score.mods} = ${mods}`
+					: sql` AND (${score.mods} & ~${readyMask}) = 0`;
 			const cutoffFilter = cutoffTs !== null ? sql` AND s2.created_at >= ${cutoffTs}` : sql``;
 			const outerCutoffFilter =
 				cutoffTs !== null ? sql` AND ${score.createdAt} >= ${cutoffTs}` : sql``;
@@ -190,6 +222,7 @@ export const scoreRouter = router({
 					score: score.score,
 					distance: score.distance,
 					difficulty: score.difficulty,
+					mods: score.mods,
 					playerId: player.id,
 					userId: user.id,
 					username: user.name,
@@ -205,10 +238,10 @@ export const scoreRouter = router({
 				.where(
 					sql`${score.id} = (
 						SELECT s2.id FROM score s2
-						WHERE s2.player_id = ${score.playerId}${diffFilter}${cutoffFilter}${cheatedFilter}
+						WHERE s2.player_id = ${score.playerId}${diffFilter}${modsFilter}${cutoffFilter}${cheatedFilter}
 						ORDER BY s2.score DESC, s2.created_at DESC
 						LIMIT 1
-					)${outerDiffFilter}${outerCutoffFilter}${outerCheatedFilter}`,
+					)${outerDiffFilter}${outerModsFilter}${outerCutoffFilter}${outerCheatedFilter}`,
 				)
 				.orderBy(desc(score.score))
 				.limit(limit);
