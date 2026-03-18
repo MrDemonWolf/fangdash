@@ -2,40 +2,43 @@
   <img src="apps/web/public/icons/icon-512.png" alt="FangDash" width="128" />
   <h1>FangDash</h1>
   <p><em>Run with the pack. Dash to the top.</em></p>
-  <p>Multiplayer endless runner for Twitch streamers and their communities.</p>
+  <p>Multiplayer endless runner built for Twitch streamers and their communities.</p>
 </div>
 
-FangDash is a fast-paced multiplayer endless runner where
-players race as wolves, dodging obstacles and competing for
-the highest score. Built for Twitch streamers and their
-communities, it features real-time racing, unlockable skins,
-achievements, and leaderboards.
+You're a wolf. The obstacles don't care. Your chat is watching.
+
+FangDash drops up to four players into the same procedurally generated
+gauntlet — same seed, same layout, zero excuses. Race your mods, race your
+viewers, or race solo to chase a personal best. Earn skins, rack up
+achievements, and watch your name climb the leaderboard while you're live.
 
 ## Features
 
-- **Endless Runner Gameplay** — Jump, dodge, and dash through
-  procedurally generated obstacle courses as a wolf.
-- **Multiplayer Racing** — Race up to 4 players in real-time
-  using WebSocket-powered rooms.
-- **Twitch Integration** — Sign in with Twitch, race your
-  chat, and show off your skins on stream.
-- **6 Wolf Skins** — Earn skins from Gray Wolf to
-  MrDemonWolf through achievements and milestones.
-- **16 Achievements** — Track your progress across score,
-  distance, games played, skill, and social categories.
-- **Leaderboards** — Compete globally with anti-cheat
-  validated score submissions, per-difficulty filtering, and
-  time-period filters (daily/weekly/all-time).
-- **Difficulty Scaling** — Speed ramps from 300 to 800 px/s
-  with narrowing obstacle gaps as you run further.
-- **Deterministic Multiplayer** — Seeded PRNG ensures all
-  racers face the same obstacle layout.
-- **Audio System** — BGM tracks and SFX with adjustable
-  volume sliders.
-- **PWA Support** — Installable with offline support via
-  service worker.
+- **Endless Runner** — Jump, slide, and dash through
+  procedurally generated obstacle courses. The further you
+  run, the faster it gets.
+- **Real-Time Multiplayer** — Up to 4 players race the same
+  seeded layout simultaneously over WebSockets. Everyone
+  sees the same course — fairness is non-negotiable.
+- **Twitch-Native** — Sign in with Twitch, invite your chat,
+  and let your community race you live on stream.
+- **6 Wolf Skins** — Start as a Gray Wolf and unlock your
+  way up to the MrDemonWolf skin through milestones.
+- **16 Achievements** — Spanning score, distance, games
+  played, skill plays, and social categories.
+- **Leaderboards with Anti-Cheat** — Server-validated scores
+  with per-difficulty and time-period filters
+  (daily / weekly / all-time).
+- **Difficulty Ramping** — Speed scales from 300 to 800 px/s
+  as obstacle gaps tighten around you.
+- **Deterministic Seeds** — Seeded PRNG means every racer
+  faces the exact same obstacle layout. No luck, only skill.
+- **Audio System** — BGM crossfade, SFX, and per-category
+  volume controls.
+- **PWA** — Install it, play it offline, put it on your
+  stream layout.
 - **Admin Dashboard** — Player management, score moderation,
-  and race history for admins.
+  and full race history.
 
 ## Getting Started
 
@@ -184,7 +187,7 @@ fangdash/
 
 ## License
 
-![GitHub license](https://img.shields.io/github/license/mrdemonwolf/fangdash.svg?style=for-the-badge&logo=github)
+[![GitHub license](https://img.shields.io/github/license/MrDemonWolf/fangdash.svg?style=for-the-badge&logo=github)](https://github.com/MrDemonWolf/fangdash/blob/main/LICENSE)
 
 ## Contact
 
