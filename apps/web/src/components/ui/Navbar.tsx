@@ -15,6 +15,7 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { NotificationBell } from "@/components/ui/NotificationBell.tsx";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
@@ -94,6 +95,8 @@ export function Navbar() {
 						{isPending ? (
 							<Skeleton className="h-8 w-24 rounded-full" />
 						) : session?.user ? (
+							<>
+							<NotificationBell />
 							<DropdownMenu>
 								<DropdownMenuTrigger asChild>
 									<button
@@ -126,6 +129,7 @@ export function Navbar() {
 									</DropdownMenuItem>
 								</DropdownMenuContent>
 							</DropdownMenu>
+							</>
 						) : (
 							<Button
 								variant="outline"
@@ -193,6 +197,7 @@ export function Navbar() {
 												</span>
 											</div>
 											<div className="flex items-center gap-1">
+												<NotificationBell />
 												<Button variant="ghost" size="icon" className="size-8" asChild>
 													<Link href="/profile" aria-label="Profile">
 														<User className="size-3.5" />

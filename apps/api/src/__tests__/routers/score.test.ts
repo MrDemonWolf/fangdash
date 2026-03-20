@@ -451,4 +451,225 @@ describe("score router", () => {
 			expect(result.totalMeters).toBe(0);
 		});
 	});
+
+	describe("batchSync", () => {
+		const now = Date.now();
+
+		const validScore = {
+			score: 100,
+			distance: 500,
+			obstaclesCleared: 5,
+			longestCleanRun: 200,
+			duration: 30000,
+			seed: "test-seed",
+			difficulty: "easy" as const,
+			mods: 0,
+			cheated: false,
+			clientTimestamp: now,
+		};
+
+		it("should sync a single valid score", async () => {
+			const userId = createTestUser(db);
+			createTestPlayer(db, userId);
+			const caller = createTestCaller({ db, userId });
+
+			const results = await caller.score.batchSync({ scores: [validScore] });
+			expect(results).toHaveLength(1);
+			expect(results[0]!.clientIndex).toBe(0);
+			expect(results[0]!.status).toBe("ok");
+			expect(results[0]!.scoreId).toBeDefined();
+		});
+
+		it("should sync multiple valid scores", async () => {
+			const userId = createTestUser(db);
+			createTestPlayer(db, userId);
+			const caller = createTestCaller({ db, userId });
+
+			const scores = [
+				{ ...validScore, seed: "s1" },
+				{ ...validScore, seed: "s2" },
+				{ ...validScore, seed: "s3" },
+			];
+			const results = await caller.score.batchSync({ scores });
+			expect(results).toHaveLength(3);
+			const ids = results.map((r) => r.scoreId);
+			expect(new Set(ids).size).toBe(3);
+			expect(results.every((r) => r.status === "ok")).toBe(true);
+		});
+
+		it("should reject future clientTimestamp", async () => {
+			const userId = createTestUser(db);
+			createTestPlayer(db, userId);
+			const caller = createTestCaller({ db, userId });
+
+			const results = await caller.score.batchSync({
+				scores: [{ ...validScore, clientTimestamp: now + 120_000 }],
+			});
+			expect(results[0]!.status).toBe("rejected");
+			expect(results[0]!.reason).toBe("Timestamp in the future");
+		});
+
+		it("should reject expired timestamp (>7d)", async () => {
+			const userId = createTestUser(db);
+			createTestPlayer(db, userId);
+			const caller = createTestCaller({ db, userId });
+
+			const eightDaysAgo = now - 8 * 24 * 60 * 60 * 1000;
+			const results = await caller.score.batchSync({
+				scores: [{ ...validScore, clientTimestamp: eightDaysAgo }],
+			});
+			expect(results[0]!.status).toBe("rejected");
+			expect(results[0]!.reason).toBe("Score older than 7 days");
+		});
+
+		it("should accept at 7-day boundary", async () => {
+			const userId = createTestUser(db);
+			createTestPlayer(db, userId);
+			const caller = createTestCaller({ db, userId });
+
+			const justUnder7d = now - 7 * 24 * 60 * 60 * 1000 + 1000;
+			const results = await caller.score.batchSync({
+				scores: [{ ...validScore, clientTimestamp: justUnder7d }],
+			});
+			expect(results[0]!.status).toBe("ok");
+		});
+
+		it("should accept at future boundary", async () => {
+			const userId = createTestUser(db);
+			createTestPlayer(db, userId);
+			const caller = createTestCaller({ db, userId });
+
+			const results = await caller.score.batchSync({
+				scores: [{ ...validScore, clientTimestamp: now + 59_000 }],
+			});
+			expect(results[0]!.status).toBe("ok");
+		});
+
+		it("should reject non-ready mod flags", async () => {
+			const userId = createTestUser(db);
+			createTestPlayer(db, userId);
+			const caller = createTestCaller({ db, userId });
+
+			const results = await caller.score.batchSync({
+				scores: [{ ...validScore, mods: 1 << 10 }],
+			});
+			expect(results[0]!.status).toBe("rejected");
+			expect(results[0]!.reason).toBe("Invalid mod flags");
+		});
+
+		it("should reject duration >30min", async () => {
+			const userId = createTestUser(db);
+			createTestPlayer(db, userId);
+			const caller = createTestCaller({ db, userId });
+
+			const results = await caller.score.batchSync({
+				scores: [{ ...validScore, duration: 2_000_000 }],
+			});
+			expect(results[0]!.status).toBe("rejected");
+			expect(results[0]!.reason).toBe("Duration exceeds maximum");
+		});
+
+		it("should reject anti-cheat violation", async () => {
+			const userId = createTestUser(db);
+			createTestPlayer(db, userId);
+			const caller = createTestCaller({ db, userId });
+
+			const duration = 10000;
+			const obstaclesCleared = 2;
+			const maxAllowed =
+				(duration / 1000) * SCORE_PER_SECOND + obstaclesCleared * SCORE_PER_OBSTACLE;
+			const cheatedScore = Math.ceil(maxAllowed * 1.5);
+
+			const results = await caller.score.batchSync({
+				scores: [{
+					...validScore,
+					score: cheatedScore,
+					duration,
+					obstaclesCleared,
+				}],
+			});
+			expect(results[0]!.status).toBe("rejected");
+			expect(results[0]!.reason).toBe("Score exceeds maximum allowed rate");
+		});
+
+		it("should handle mixed valid + rejected", async () => {
+			const userId = createTestUser(db);
+			createTestPlayer(db, userId);
+			const caller = createTestCaller({ db, userId });
+
+			const duration = 10000;
+			const obstaclesCleared = 2;
+			const maxAllowed =
+				(duration / 1000) * SCORE_PER_SECOND + obstaclesCleared * SCORE_PER_OBSTACLE;
+
+			const scores = [
+				validScore,
+				{ ...validScore, clientTimestamp: now + 120_000 },
+				{
+					...validScore,
+					score: Math.ceil(maxAllowed * 1.5),
+					duration,
+					obstaclesCleared,
+				},
+			];
+
+			const results = await caller.score.batchSync({ scores });
+			expect(results[0]!.status).toBe("ok");
+			expect(results[1]!.status).toBe("rejected");
+			expect(results[1]!.reason).toBe("Timestamp in the future");
+			expect(results[2]!.status).toBe("rejected");
+			expect(results[2]!.reason).toBe("Score exceeds maximum allowed rate");
+		});
+
+		it("should aggregate stats for non-cheated only", async () => {
+			const userId = createTestUser(db);
+			createTestPlayer(db, userId, { gamesPlayed: 0, totalXp: 0, totalScore: 0 });
+			const caller = createTestCaller({ db, userId });
+
+			const scores = [
+				{ ...validScore, score: 100, seed: "s1" },
+				{ ...validScore, score: 200, seed: "s2" },
+				{ ...validScore, score: 50, seed: "s3", cheated: true },
+			];
+
+			await caller.score.batchSync({ scores });
+			const stats = await caller.score.getPlayerStats();
+			expect(stats?.gamesPlayed).toBe(2);
+			expect(stats?.totalXp).toBe(300);
+		});
+
+		it("should skip cheated for XP", async () => {
+			const userId = createTestUser(db);
+			createTestPlayer(db, userId, { totalXp: 0, totalScore: 0 });
+			const caller = createTestCaller({ db, userId });
+
+			await caller.score.batchSync({
+				scores: [{ ...validScore, cheated: true }],
+			});
+			const stats = await caller.score.getPlayerStats();
+			expect(stats?.totalXp).toBe(0);
+		});
+
+		it("should require authentication", async () => {
+			const caller = createTestCaller({ db });
+			await expect(
+				caller.score.batchSync({ scores: [validScore] }),
+			).rejects.toThrow("UNAUTHORIZED");
+		});
+
+		it("should enforce max 20", async () => {
+			const userId = createTestUser(db);
+			createTestPlayer(db, userId);
+			const caller = createTestCaller({ db, userId });
+
+			const scores = Array.from({ length: 21 }, (_, i) => ({
+				...validScore,
+				seed: `s${i}`,
+			}));
+
+			await expect(
+				caller.score.batchSync({ scores }),
+			).rejects.toThrow();
+		});
+	});
 });

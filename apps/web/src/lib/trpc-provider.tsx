@@ -12,6 +12,22 @@ if (!apiUrl) {
 	throw new Error("NEXT_PUBLIC_API_URL is required for tRPC client");
 }
 
+/** Vanilla tRPC client for imperative (non-hook) calls */
+export const trpcVanilla = createTRPCClient<AppRouter>({
+	links: [
+		httpBatchLink({
+			url: `${apiUrl}/trpc`,
+			transformer: superjson,
+			fetch(url, options) {
+				return fetch(url, {
+					...options,
+					credentials: "include",
+				} as RequestInit);
+			},
+		}),
+	],
+});
+
 export function TRPCProvider({ children }: { children: React.ReactNode }) {
 	const [queryClient] = useState(() => new QueryClient());
 	const [trpcClient] = useState(() =>

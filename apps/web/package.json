@@ -10,7 +10,8 @@
 		"start": "next start",
 		"typecheck": "tsc --noEmit",
 		"clean": "rm -rf .next .turbo",
-		"generate:icons": "node scripts/generate-icons.mjs"
+		"generate:icons": "node scripts/generate-icons.mjs",
+		"test": "vitest run"
 	},
 	"dependencies": {
 		"@fangdash/game": "workspace:*",
@@ -35,6 +36,7 @@
 		"class-variance-authority": "^0.7.1",
 		"clsx": "^2.1.1",
 		"geist": "^1.7.0",
+		"idb": "^8.0.3",
 		"lucide-react": "^0.577.0",
 		"next": "^15.1.6",
 		"partysocket": "^1.1.16",
@@ -53,10 +55,12 @@
 		"@types/node": "^25.4.0",
 		"@types/react": "^19.2.14",
 		"@types/react-dom": "^19.2.3",
+		"fake-indexeddb": "^6.2.5",
 		"postcss": "^8.5.8",
 		"sharp": "^0.34.5",
 		"tailwindcss": "^4.2.1",
 		"typescript": "^5.9.3",
+		"vitest": "^4.1.0",
 		"wrangler": "^4.72.0"
 	}
 }

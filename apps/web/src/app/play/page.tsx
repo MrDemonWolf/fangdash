@@ -14,7 +14,11 @@ import OnboardingOverlay from "@/components/game/OnboardingOverlay.tsx";
 import { PlayMainMenu } from "@/components/game/PlayMainMenu.tsx";
 import { PlayMenu } from "@/components/game/PlayMenu.tsx";
 import { signIn, signOut, useSession } from "@/lib/auth-client.ts";
+import { addNotification } from "@/lib/notification-store.ts";
+import { enqueue, processQueue, setupOnlineListener } from "@/lib/score-queue.ts";
+import { addToHistory } from "@/lib/score-store.ts";
 import { useTRPC } from "@/lib/trpc.ts";
+import { trpcVanilla } from "@/lib/trpc-provider.tsx";
 import { useIsAdmin } from "@/lib/use-role.ts";
 
 // ---------------------------------------------------------------------------
@@ -92,7 +96,9 @@ export default function PlayPage() {
 		? (getSkinById(skinData.skinId)?.spriteKey ?? "wolf-gray")
 		: "wolf-gray";
 
-	// Score submission mutation
+	// Session salt for HMAC anti-tamper
+	const sessionSaltRef = useRef(crypto.randomUUID());
+
 	const {
 		mutate: submitScore,
 		data: submitResult,
@@ -100,11 +106,53 @@ export default function PlayPage() {
 		error: submitError,
 	} = useMutation(
 		trpc.score.submit.mutationOptions({
+			onSuccess: (result) => {
+				if (result.newAchievements.length > 0) {
+					for (const id of result.newAchievements) {
+						addNotification({
+							type: "achievement",
+							title: "Achievement Unlocked!",
+							description: id,
+						});
+					}
+				}
+				if (result.newSkins.length > 0) {
+					for (const id of result.newSkins) {
+						addNotification({
+							type: "skin",
+							title: "New Skin Unlocked!",
+							description: id,
+						});
+					}
+				}
+				if (result.levelUp) {
+					addNotification({
+						type: "level_up",
+						title: "Level Up!",
+						description: `You reached level ${result.newLevel}!`,
+					});
+				}
+				addNotification({
+					type: "score_submitted",
+					title: "Score Submitted",
+					description: `Score of ${result.xpGained.toLocaleString()} submitted successfully.`,
+				});
+			},
 			onError: (err) => {
 				console.error("Failed to submit score:", err);
 			},
 		}),
 	);
+
+	// Set up online listener for retrying queued scores
+	useEffect(() => {
+		const submitFn = (payload: Parameters<typeof trpcVanilla.score.submit.mutate>[0]) =>
+			trpcVanilla.score.submit.mutate(payload);
+		const cleanup = setupOnlineListener(submitFn);
+		// Process any existing pending scores on mount
+		processQueue(submitFn);
+		return cleanup;
+	}, []);
 
 	const stopTimer = useCallback(() => {
 		if (timerRef.current) {
@@ -154,17 +202,36 @@ export default function PlayPage() {
 			setFinalElapsedTime(duration);
 			setGameOver(true);
 
+			const payload = {
+				score: state.score,
+				distance: state.distance,
+				obstaclesCleared: state.obstaclesCleared,
+				longestCleanRun: state.longestCleanRun,
+				duration,
+				seed: Date.now().toString(),
+				difficulty: selectedDifficultyRef.current as DifficultyName,
+				mods: selectedModsRef.current,
+			};
+
+			// Always store in local history
+			addToHistory({
+				type: "solo",
+				score: state.score,
+				distance: state.distance,
+				duration,
+				difficulty: selectedDifficultyRef.current,
+				mods: selectedModsRef.current,
+				cheated: state.cheatsUsed,
+			});
+
 			if (isSignedIn && !state.cheatsUsed) {
-				submitScore({
-					score: state.score,
-					distance: state.distance,
-					obstaclesCleared: state.obstaclesCleared,
-					longestCleanRun: state.longestCleanRun,
-					duration,
-					seed: Date.now().toString(),
-					difficulty: selectedDifficultyRef.current as DifficultyName,
-					mods: selectedModsRef.current,
-				});
+				// Submit directly via mutation for immediate UI feedback
+				submitScore(payload);
+				// Also enqueue for retry in case the mutation fails silently
+				enqueue("solo", payload, sessionSaltRef.current);
+			} else if (!state.cheatsUsed) {
+				// Not signed in — enqueue for later sync on login
+				enqueue("solo", payload, sessionSaltRef.current);
 			}
 		},
 		[isSignedIn, stopTimer, submitScore],
@@ -361,7 +428,7 @@ export default function PlayPage() {
 		if (!finalState || finalState.cheatsUsed) {
 			return;
 		}
-		submitScore({
+		const payload = {
 			score: finalState.score,
 			distance: finalState.distance,
 			obstaclesCleared: finalState.obstaclesCleared,
@@ -370,7 +437,9 @@ export default function PlayPage() {
 			seed: Date.now().toString(),
 			difficulty: selectedDifficultyRef.current as DifficultyName,
 			mods: selectedModsRef.current,
-		});
+		};
+		submitScore(payload);
+		enqueue("solo", payload, sessionSaltRef.current);
 	}, [finalState, finalElapsedTime, submitScore]);
 
 	const handleSignIn = useCallback(() => {

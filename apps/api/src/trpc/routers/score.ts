@@ -282,6 +282,127 @@ export const scoreRouter = router({
 		};
 	}),
 
+	batchSync: protectedProcedure
+		.input(
+			z.object({
+				scores: z
+					.array(
+						z.object({
+							score: z.number().int().min(0),
+							distance: z.number().min(0),
+							obstaclesCleared: z.number().int().min(0),
+							longestCleanRun: z.number().min(0).default(0),
+							duration: z.number().int().min(0),
+							seed: z.string().min(1),
+							difficulty: z.enum(DIFFICULTY_NAMES).default("easy"),
+							mods: z.number().int().min(0).default(0),
+							cheated: z.boolean().default(false),
+							clientTimestamp: z.number().int().min(0),
+						}),
+					)
+					.max(20),
+			}),
+		)
+		.mutation(async ({ ctx, input }) => {
+			const playerRecord = await ensurePlayer(ctx.db, ctx.user.id);
+			if (!playerRecord) {
+				throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Failed to create player" });
+			}
+
+			const now = Date.now();
+			const sevenDaysMs = 7 * 24 * 60 * 60 * 1000;
+			const results: Array<{ clientIndex: number; scoreId?: string; status: "ok" | "rejected"; reason?: string }> = [];
+
+			let totalXpGained = 0;
+			const insertedScoreIds: string[] = [];
+
+			for (let i = 0; i < input.scores.length; i++) {
+				const s = input.scores[i]!;
+
+				// Reject future or expired timestamps
+				if (s.clientTimestamp > now + 60_000) {
+					results.push({ clientIndex: i, status: "rejected", reason: "Timestamp in the future" });
+					continue;
+				}
+				if (now - s.clientTimestamp > sevenDaysMs) {
+					results.push({ clientIndex: i, status: "rejected", reason: "Score older than 7 days" });
+					continue;
+				}
+
+				// Validate mods
+				if ((s.mods & ~READY_MODS_MASK) !== 0 || !areModsCompatible(s.mods)) {
+					results.push({ clientIndex: i, status: "rejected", reason: "Invalid mod flags" });
+					continue;
+				}
+
+				// Duration cap
+				if (s.duration > 1_800_000) {
+					results.push({ clientIndex: i, status: "rejected", reason: "Duration exceeds maximum" });
+					continue;
+				}
+
+				// Anti-cheat score bounds
+				const modMultiplier = getScoreMultiplier(s.mods);
+				const maxAllowedScore =
+					((s.duration / 1000) * SCORE_PER_SECOND + s.obstaclesCleared * SCORE_PER_OBSTACLE) *
+					modMultiplier;
+				if (s.score > maxAllowedScore * 1.05 + 10) {
+					results.push({ clientIndex: i, status: "rejected", reason: "Score exceeds maximum allowed rate" });
+					continue;
+				}
+
+				const scoreId = crypto.randomUUID();
+				const isCheated = s.cheated ? 1 : 0;
+
+				await ctx.db.insert(score).values({
+					id: scoreId,
+					playerId: playerRecord.id,
+					score: s.score,
+					distance: s.distance,
+					obstaclesCleared: s.obstaclesCleared,
+					longestCleanRun: s.longestCleanRun,
+					duration: s.duration,
+					difficulty: s.difficulty,
+					mods: s.mods,
+					seed: s.seed,
+					cheated: isCheated,
+					createdAt: new Date(s.clientTimestamp),
+				});
+
+				insertedScoreIds.push(scoreId);
+				if (!s.cheated) {
+					totalXpGained += s.score;
+				}
+				results.push({ clientIndex: i, scoreId, status: "ok" });
+			}
+
+			// Single aggregate XP/stats update for all non-cheated scores
+			if (totalXpGained > 0) {
+				const nonCheated = input.scores.filter((s) => !s.cheated);
+				const totalDistance = nonCheated.reduce((sum, s) => sum + s.distance, 0);
+				const totalObstacles = nonCheated.reduce((sum, s) => sum + s.obstaclesCleared, 0);
+				const gamesCount = nonCheated.length;
+
+				const newTotalXp = playerRecord.totalXp + totalXpGained;
+				const levelInfo = getLevelFromXp(newTotalXp);
+
+				await ctx.db
+					.update(player)
+					.set({
+						totalScore: sql`${player.totalScore} + ${nonCheated.reduce((sum, s) => sum + s.score, 0)}`,
+						totalDistance: sql`${player.totalDistance} + ${totalDistance}`,
+						totalObstaclesCleared: sql`${player.totalObstaclesCleared} + ${totalObstacles}`,
+						gamesPlayed: sql`${player.gamesPlayed} + ${gamesCount}`,
+						totalXp: sql`${player.totalXp} + ${totalXpGained}`,
+						level: levelInfo.level,
+						updatedAt: new Date(),
+					})
+					.where(eq(player.id, playerRecord.id));
+			}
+
+			return results;
+		}),
+
 	myScores: protectedProcedure.query(async ({ ctx }) => {
 		const playerRecord = await ensurePlayer(ctx.db, ctx.user.id);
 		if (!playerRecord) {

@@ -168,106 +168,123 @@ export default function LeaderboardPage() {
 				<h1 className="text-3xl font-bold text-foreground sm:text-4xl">Leaderboard</h1>
 				<p className="mt-2 text-muted-foreground">Top runners in FangDash</p>
 
-				{/* Period Tabs */}
-				<div className="mt-6 flex gap-1 rounded-lg bg-muted p-1">
-					{TABS.map((tab) => (
-						<button
-							type="button"
-							key={tab.key}
-							onClick={() => setActiveTab(tab.key)}
-							aria-pressed={activeTab === tab.key}
-							className={cn(
-								"flex-1 rounded-md px-4 py-2 text-sm font-medium transition-colors cursor-pointer",
-								activeTab === tab.key
-									? "bg-secondary text-foreground"
-									: "text-muted-foreground hover:text-foreground hover:bg-muted/80",
-							)}
-						>
-							{tab.label}
-						</button>
-					))}
-				</div>
+				{/* Filters */}
+				<Card className="mt-6">
+					<CardContent className="flex flex-col gap-3 p-3">
+						{/* Period */}
+						<div>
+							<span className="mb-1 block text-xs font-medium text-muted-foreground">Period</span>
+							<div className="flex gap-1 rounded-lg bg-muted p-1">
+								{TABS.map((tab) => (
+									<button
+										type="button"
+										key={tab.key}
+										onClick={() => setActiveTab(tab.key)}
+										aria-pressed={activeTab === tab.key}
+										className={cn(
+											"flex-1 rounded-md px-4 py-2 text-sm font-medium transition-colors cursor-pointer",
+											activeTab === tab.key
+												? "bg-secondary text-foreground"
+												: "text-muted-foreground hover:text-foreground hover:bg-muted/80",
+										)}
+									>
+										{tab.label}
+									</button>
+								))}
+							</div>
+						</div>
 
-				{/* Difficulty Filter */}
-				<div className="mt-3 flex gap-1 rounded-lg bg-muted p-1">
-					<button
-						type="button"
-						onClick={() => setActiveDifficulty("all")}
-						aria-pressed={activeDifficulty === "all"}
-						className={cn(
-							"rounded-md px-3 py-1.5 text-sm font-medium transition-colors cursor-pointer",
-							activeDifficulty === "all"
-								? "bg-secondary text-foreground"
-								: "text-muted-foreground hover:text-foreground hover:bg-muted/80",
-						)}
-					>
-						All
-					</button>
-					{DIFFICULTY_LEVELS.map((level) => (
-						<button
-							type="button"
-							key={level.name}
-							onClick={() => setActiveDifficulty(level.name)}
-							aria-pressed={activeDifficulty === level.name}
-							className={cn(
-								"flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors cursor-pointer",
-								activeDifficulty === level.name
-									? "bg-muted-foreground/10 text-foreground"
-									: "text-muted-foreground hover:text-foreground hover:bg-muted/80",
-							)}
-						>
-							<span
-								className="inline-block size-2 rounded-full"
-								style={{ backgroundColor: level.color }}
-							/>
-							<span className="hidden sm:inline">{level.label}</span>
-						</button>
-					))}
-				</div>
+						{/* Difficulty */}
+						<div>
+							<span className="mb-1 block text-xs font-medium text-muted-foreground">Difficulty</span>
+							<div className="flex gap-1 rounded-lg bg-muted p-1">
+								<button
+									type="button"
+									onClick={() => setActiveDifficulty("all")}
+									aria-pressed={activeDifficulty === "all"}
+									className={cn(
+										"rounded-md px-3 py-1.5 text-sm font-medium transition-colors cursor-pointer",
+										activeDifficulty === "all"
+											? "bg-secondary text-foreground"
+											: "text-muted-foreground hover:text-foreground hover:bg-muted/80",
+									)}
+								>
+									All
+								</button>
+								{DIFFICULTY_LEVELS.map((level) => (
+									<button
+										type="button"
+										key={level.name}
+										onClick={() => setActiveDifficulty(level.name)}
+										aria-pressed={activeDifficulty === level.name}
+										className={cn(
+											"flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors cursor-pointer",
+											activeDifficulty === level.name
+												? "bg-secondary text-foreground"
+												: "text-muted-foreground hover:text-foreground hover:bg-muted/80",
+										)}
+									>
+										<span
+											className="inline-block size-2 rounded-full"
+											style={{ backgroundColor: level.color }}
+										/>
+										<span className="hidden sm:inline">{level.label}</span>
+									</button>
+								))}
+							</div>
+						</div>
 
-				{/* Mods Filter */}
-				<div className="mt-3 flex gap-1 rounded-lg bg-white/5 p-1">
-					<button
-						type="button"
-						onClick={() => setActiveMods(undefined)}
-						aria-pressed={activeMods === undefined}
-						className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
-							activeMods === undefined
-								? "bg-[#0FACED]/20 text-[#0FACED]"
-								: "text-gray-400 hover:text-white hover:bg-white/5"
-						}`}
-					>
-						All
-					</button>
-					<button
-						type="button"
-						onClick={() => setActiveMods(0)}
-						aria-pressed={activeMods === 0}
-						className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
-							activeMods === 0
-								? "bg-purple-500/20 text-purple-300"
-								: "text-gray-400 hover:text-white hover:bg-white/5"
-						}`}
-					>
-						No Mods
-					</button>
-					{MOD_DEFINITIONS.filter((mod) => mod.ready).map((mod) => (
-						<button
-							type="button"
-							key={mod.id}
-							onClick={() => setActiveMods(mod.flag)}
-							aria-pressed={activeMods === mod.flag}
-							className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
-								activeMods === mod.flag
-									? "bg-purple-500/20 text-purple-300"
-									: "text-gray-400 hover:text-white hover:bg-white/5"
-							}`}
-						>
-							<span>{mod.icon}</span>
-							<span className="hidden sm:inline">{mod.name}</span>
-						</button>
-					))}
-				</div>
+						{/* Mods */}
+						<div>
+							<span className="mb-1 block text-xs font-medium text-muted-foreground">Mods</span>
+							<div className="flex gap-1 rounded-lg bg-muted p-1">
+								<button
+									type="button"
+									onClick={() => setActiveMods(undefined)}
+									aria-pressed={activeMods === undefined}
+									className={cn(
+										"rounded-md px-3 py-1.5 text-sm font-medium transition-colors cursor-pointer",
+										activeMods === undefined
+											? "bg-secondary text-foreground"
+											: "text-muted-foreground hover:text-foreground hover:bg-muted/80",
+									)}
+								>
+									All
+								</button>
+								<button
+									type="button"
+									onClick={() => setActiveMods(0)}
+									aria-pressed={activeMods === 0}
+									className={cn(
+										"rounded-md px-3 py-1.5 text-sm font-medium transition-colors cursor-pointer",
+										activeMods === 0
+											? "bg-secondary text-foreground"
+											: "text-muted-foreground hover:text-foreground hover:bg-muted/80",
+									)}
+								>
+									No Mods
+								</button>
+								{MOD_DEFINITIONS.filter((mod) => mod.ready).map((mod) => (
+									<button
+										type="button"
+										key={mod.id}
+										onClick={() => setActiveMods(mod.flag)}
+										aria-pressed={activeMods === mod.flag}
+										className={cn(
+											"flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors cursor-pointer",
+											activeMods === mod.flag
+												? "bg-secondary text-foreground"
+												: "text-muted-foreground hover:text-foreground hover:bg-muted/80",
+										)}
+									>
+										<span>{mod.icon}</span>
+										<span className="hidden sm:inline">{mod.name}</span>
+									</button>
+								))}
+							</div>
+						</div>
+					</CardContent>
+				</Card>
 
 				{/* Desktop Table */}
 				<div className="mt-6 hidden sm:block">

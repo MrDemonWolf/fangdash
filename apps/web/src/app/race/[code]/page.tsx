@@ -13,7 +13,9 @@ import DebugPanel from "@/components/game/DebugPanel.tsx";
 import { GameHUD } from "@/components/game/GameHUD.tsx";
 import { RaceResultModal } from "@/components/game/RaceResultModal.tsx";
 import { useSession } from "@/lib/auth-client.ts";
+import { addNotification } from "@/lib/notification-store.ts";
 import { RaceConnection, type ConnectionState } from "@/lib/party.ts";
+import { addToHistory } from "@/lib/score-store.ts";
 import { useTRPC } from "@/lib/trpc.ts";
 import { useIsAdmin } from "@/lib/use-role.ts";
 
@@ -413,16 +415,40 @@ export default function RaceRoomPage() {
 		}
 		stopTimer();
 
-		// Submit our result (pass cheated flag so server skips rewards)
+		// Store in local history
 		const myResult = raceResults.find((r) => r.playerId === myId);
-		if (myResult && isSignedIn) {
-			submitResult({
-				raceId: myResult.raceId,
+		if (myResult) {
+			addToHistory({
+				type: "race",
 				score: myResult.score,
 				distance: myResult.distance,
-				seed: raceSeed,
+				duration: 0,
+				difficulty: "easy",
+				mods: 0,
 				cheated: gameState.cheatsUsed,
 			});
+
+			// Submit to server
+			if (isSignedIn) {
+				submitResult(
+					{
+						raceId: myResult.raceId,
+						score: myResult.score,
+						distance: myResult.distance,
+						seed: raceSeed,
+						cheated: gameState.cheatsUsed,
+					},
+					{
+						onSuccess: () => {
+							addNotification({
+								type: "score_submitted",
+								title: "Race Result Submitted",
+								description: `Race score of ${myResult.score.toLocaleString()} submitted.`,
+							});
+						},
+					},
+				);
+			}
 		}
 	}, [
 		phase,
