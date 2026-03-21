@@ -28,11 +28,11 @@ import { Switch } from "@/components/ui/switch";
 /*  Rarity colour map                                                  */
 /* ------------------------------------------------------------------ */
 const RARITY_STYLES: Record<SkinRarity, { badge: string; border: string }> = {
-	common: { badge: "secondary", border: "border-muted-foreground/30" },
-	uncommon: { badge: "emerald", border: "border-emerald-500/40" },
-	rare: { badge: "default", border: "border-primary/40" },
-	epic: { badge: "purple", border: "border-purple-500/40" },
-	legendary: { badge: "gold", border: "border-yellow-500/40" },
+	common: { badge: "secondary", border: "border-gray-500/30" },
+	uncommon: { badge: "emerald", border: "border-emerald-500/30" },
+	rare: { badge: "default", border: "border-primary/30" },
+	epic: { badge: "purple", border: "border-purple-500/30" },
+	legendary: { badge: "gold", border: "border-fang-gold/30" },
 };
 
 /* ------------------------------------------------------------------ */
@@ -74,16 +74,16 @@ function SkinPickerCard({
 			}}
 			disabled={!skin.unlocked || equipped || isEquipping}
 			className={cn(
-				"relative flex flex-col items-center rounded-xl border-2 p-3 transition-all bg-card",
+				"relative flex flex-col items-center rounded-xl border-2 p-3 transition-all bg-card/60 backdrop-blur-sm",
 				equipped
-					? "border-primary shadow-[0_0_20px_rgba(15,172,237,0.4)]"
+					? "border-primary shadow-[var(--glow-cyan)]"
 					: skin.unlocked
-						? cn(rarity.border, "hover:border-primary/60 cursor-pointer")
-						: "border-border opacity-50 cursor-not-allowed",
+						? cn(rarity.border, "hover:border-primary/60 hover:shadow-[var(--glow-cyan)] cursor-pointer")
+						: "border-border grayscale opacity-60 cursor-not-allowed",
 			)}
 		>
 			{equipped && (
-				<Badge className="absolute -top-2.5 left-1/2 -translate-x-1/2 text-[10px] px-2">
+				<Badge className="absolute -top-2.5 left-1/2 -translate-x-1/2 text-[10px] px-2 shadow-[var(--glow-cyan)]">
 					Equipped
 				</Badge>
 			)}
@@ -97,7 +97,7 @@ function SkinPickerCard({
 					sizes="64px"
 				/>
 				{!skin.unlocked && (
-					<div className="absolute inset-0 flex items-center justify-center">
+					<div className="absolute inset-0 flex items-center justify-center rounded-lg bg-background/40">
 						<Lock className="size-6 text-muted-foreground" />
 					</div>
 				)}
@@ -179,10 +179,12 @@ function DeleteConfirmationDialog({
 /* ------------------------------------------------------------------ */
 function SettingsSkeleton() {
 	return (
-		<main className="mx-auto min-h-screen max-w-4xl px-4 py-12">
-			<Skeleton className="mb-2 h-10 w-48" />
-			<Skeleton className="mb-8 h-5 w-64" />
-			<div className="space-y-6">
+		<main className="mx-auto min-h-screen max-w-4xl px-4 py-16">
+			<div className="mb-10 text-center">
+				<Skeleton className="mx-auto mb-2 h-10 w-64" />
+				<Skeleton className="mx-auto h-5 w-80" />
+			</div>
+			<div className="space-y-8">
 				{[1, 2, 3].map((i) => (
 					<Skeleton key={i} className="h-48 rounded-2xl" />
 				))}
@@ -373,15 +375,24 @@ export default function SettingsPage() {
 	const deletionPending = accountStatus?.deletionPending ?? false;
 
 	return (
-		<main className="mx-auto min-h-screen max-w-4xl px-4 py-12">
-			<h1 className="mb-2 text-3xl font-extrabold text-foreground">Settings</h1>
-			<p className="mb-8 text-muted-foreground">Manage your profile, privacy, and account</p>
+		<main className="mx-auto min-h-screen max-w-4xl px-4 py-16">
+			{/* Page Header */}
+			<div className="mb-10 text-center">
+				<h1 className="text-glow-cyan mb-2 text-3xl font-extrabold tracking-tight text-foreground">
+					<span className="text-muted-foreground/40">{"\u2014\u27E8 "}</span>
+					Settings
+					<span className="text-muted-foreground/40">{" \u27E9\u2014"}</span>
+				</h1>
+				<p className="text-sm text-muted-foreground">
+					Manage your profile, privacy, and account
+				</p>
+			</div>
 
-			<div className="space-y-6">
+			<div className="space-y-8">
 				{/* Profile Section */}
-				<Card>
+				<Card className="fang-accent border-border/50">
 					<CardHeader>
-						<CardTitle>Profile</CardTitle>
+						<CardTitle className="text-fang-cyan">Profile</CardTitle>
 					</CardHeader>
 					<CardContent>
 						<div className="mb-6 flex items-center gap-4">
@@ -391,7 +402,7 @@ export default function SettingsPage() {
 									alt={user.name ?? "Avatar"}
 									width={56}
 									height={56}
-									className="rounded-full border-2 border-border"
+									className="rounded-full border-2 border-primary/40 shadow-[var(--glow-cyan)]"
 								/>
 							)}
 							<div>
@@ -403,7 +414,7 @@ export default function SettingsPage() {
 						</div>
 
 						<div>
-							<h3 className="mb-3 text-sm font-semibold text-secondary-foreground">
+							<h3 className="mb-3 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
 								Equipped Skin
 							</h3>
 							{equipStatus && (
@@ -428,17 +439,17 @@ export default function SettingsPage() {
 				</Card>
 
 				{/* Privacy Section */}
-				<Card>
+				<Card className="fang-accent border-border/50">
 					<CardHeader>
-						<CardTitle>Privacy</CardTitle>
+						<CardTitle className="text-fang-cyan">Privacy</CardTitle>
 					</CardHeader>
 					<CardContent>
 						<div className="flex items-center justify-between">
 							<div>
-								<p className="text-sm font-semibold text-foreground">
+								<p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
 									Allow others to view my profile
 								</p>
-								<p className="mt-0.5 text-xs text-muted-foreground">
+								<p className="mt-1 text-sm text-foreground">
 									When disabled, your profile page will not be visible to other players
 								</p>
 							</div>
@@ -454,10 +465,10 @@ export default function SettingsPage() {
 					</CardContent>
 				</Card>
 
-				{/* Account Section */}
-				<Card>
+				{/* Danger Zone */}
+				<Card className="fang-accent border-destructive/20">
 					<CardHeader>
-						<CardTitle>Account</CardTitle>
+						<CardTitle className="text-destructive">Danger Zone</CardTitle>
 					</CardHeader>
 					<CardContent>
 						{deletionPending ? (
@@ -495,7 +506,7 @@ export default function SettingsPage() {
 							</div>
 						) : (
 							<div>
-								<p className="text-sm text-secondary-foreground">
+								<p className="text-sm text-muted-foreground">
 									Permanently delete your account and all associated data including scores,
 									achievements, skins, and race history.
 								</p>
@@ -503,7 +514,7 @@ export default function SettingsPage() {
 									variant="destructive"
 									size="sm"
 									onClick={() => setShowDeleteModal(true)}
-									className="mt-4"
+									className="mt-4 transition-shadow hover:shadow-[0_0_20px_rgba(239,68,68,0.4)]"
 								>
 									Delete My Account
 								</Button>

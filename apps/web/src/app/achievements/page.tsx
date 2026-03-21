@@ -2,7 +2,7 @@
 
 import type { AchievementCategory, AchievementCondition } from "@fangdash/shared";
 import { getSkinById } from "@fangdash/shared";
-import { Check } from "lucide-react";
+import { Check, Lock } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -81,17 +81,24 @@ function AchievementCard({
 	return (
 		<Card
 			className={cn(
-				"relative transition-all border",
+				"fang-accent relative transition-all border",
 				unlocked
-					? "border-primary/40 shadow-[0_0_20px_rgba(15,172,237,0.15)]"
+					? "border-primary/40 shadow-[var(--glow-cyan)]"
 					: "border-border opacity-60 grayscale",
 			)}
 		>
 			<CardContent className="p-5">
 				<div className="flex items-start gap-4">
-					<span className="text-3xl" role="img" aria-label={name}>
-						{icon}
-					</span>
+					<div className="relative flex-shrink-0">
+						<span className="text-4xl" role="img" aria-label={name}>
+							{icon}
+						</span>
+						{!unlocked && (
+							<div className="absolute inset-0 flex items-center justify-center">
+								<Lock className="size-5 text-muted-foreground drop-shadow-lg" />
+							</div>
+						)}
+					</div>
 					<div className="min-w-0 flex-1">
 						<div className="flex items-center gap-2">
 							<h3
@@ -109,19 +116,25 @@ function AchievementCard({
 						<p className="mt-1 text-sm text-muted-foreground">{description}</p>
 
 						{unlocked && unlockedAt ? (
-							<p className="mt-2 text-xs text-primary">Unlocked {formatDate(unlockedAt)}</p>
+							<p className="mt-2 font-mono text-xs text-fang-cyan">
+								Unlocked {formatDate(unlockedAt)}
+							</p>
 						) : condition ? (
 							<p className="mt-2 text-xs text-muted-foreground italic">
 								{formatCondition(condition)}
 							</p>
 						) : null}
 
-						{skin && <p className="mt-1 text-xs text-primary/70">Rewards: {skin.name}</p>}
+						{skin && (
+							<p className="mt-1 text-xs font-semibold text-fang-gold drop-shadow-[var(--glow-gold)]">
+								Rewards: {skin.name}
+							</p>
+						)}
 					</div>
 				</div>
 
 				{unlocked && (
-					<div className="absolute top-3 right-3 text-primary">
+					<div className="absolute top-3 right-3 rounded-full bg-emerald-500/20 p-1 text-emerald-400 shadow-[0_0_12px_rgba(52,211,153,0.4)]">
 						<Check className="size-5" />
 					</div>
 				)}
@@ -188,18 +201,30 @@ export default function AchievementsPage() {
 	return (
 		<main className="min-h-screen bg-background px-4 py-12 sm:px-6 lg:px-8">
 			<div className="mx-auto max-w-5xl">
+				{/* ── Page title with fang decorative lines ── */}
 				<div className="mb-8">
-					<h1 className="text-3xl font-bold text-foreground sm:text-4xl">Achievements</h1>
+					<div className="flex items-center gap-4">
+						<span className="h-px flex-1 max-w-16 bg-gradient-to-r from-transparent to-fang-cyan/60" />
+						<h1 className="text-3xl font-bold text-glow-cyan text-fang-cyan sm:text-4xl">
+							Achievements
+						</h1>
+						<span className="h-px flex-1 max-w-16 bg-gradient-to-l from-transparent to-fang-cyan/60" />
+					</div>
 					{isSignedIn ? (
-						<p className="mt-2 text-lg text-primary">
-							{unlockedCount} of {totalCount} achievements unlocked
+						<p className="mt-2 text-center text-lg">
+							<span className="font-mono font-bold text-fang-cyan">{unlockedCount}</span>
+							<span className="text-muted-foreground"> of </span>
+							<span className="font-mono font-bold text-fang-cyan">{totalCount}</span>
+							<span className="text-muted-foreground"> achievements unlocked</span>
 						</p>
 					) : (
-						<p className="mt-2 text-lg text-muted-foreground">Sign in to track progress</p>
+						<p className="mt-2 text-center text-lg text-muted-foreground">
+							Sign in to track progress
+						</p>
 					)}
 				</div>
 
-				{/* Category filter tabs */}
+				{/* Category filter pills */}
 				<div className="mb-8 flex flex-wrap gap-2">
 					{CATEGORIES.map((cat) => (
 						<button
@@ -207,10 +232,10 @@ export default function AchievementsPage() {
 							key={cat.value}
 							onClick={() => setActiveCategory(cat.value)}
 							className={cn(
-								"rounded-lg px-4 py-2 text-sm font-medium transition-colors cursor-pointer",
+								"rounded-lg border px-4 py-2 text-sm font-medium transition-all cursor-pointer",
 								activeCategory === cat.value
-									? "bg-secondary text-foreground"
-									: "bg-transparent text-muted-foreground hover:bg-secondary hover:text-foreground",
+									? "border-primary/60 bg-primary/10 text-fang-cyan shadow-[var(--glow-cyan)]"
+									: "border-border/40 bg-transparent text-muted-foreground hover:border-primary/30 hover:bg-primary/5 hover:text-foreground",
 							)}
 						>
 							{cat.label}
