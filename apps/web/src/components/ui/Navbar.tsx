@@ -53,22 +53,22 @@ export function Navbar() {
 
 	return (
 		<>
-			<header className="fixed top-0 left-0 right-0 z-50 border-b border-border bg-background/80 backdrop-blur-xl backdrop-saturate-150">
+			<header className="fixed top-0 left-0 right-0 z-50 glass border-b border-border/50" style={{ borderImage: "linear-gradient(90deg, transparent, oklch(0.72 0.15 210 / 0.15), oklch(0.48 0.18 300 / 0.1), transparent) 1" }}>
 				<nav className="mx-auto flex h-14 max-w-7xl items-center justify-between px-6">
 					{/* Logo */}
 					<Link
 						href="/"
-						className="flex items-center gap-1 text-base font-semibold tracking-tight text-foreground transition-colors hover:text-primary"
+						className="flex items-center gap-2 text-base font-bold tracking-tight text-foreground transition-colors hover:text-primary"
 					>
 						<Image
 							src="/wolves/wolf-mrdemonwolf.png"
 							alt=""
-							width={36}
-							height={36}
-							style={{ imageRendering: "pixelated" }}
+							width={32}
+							height={32}
+							className="pixelated drop-shadow-[0_0_8px_rgba(15,172,237,0.3)]"
 							aria-hidden="true"
 						/>
-						FangDash
+						<span className="hidden sm:inline">FangDash</span>
 					</Link>
 
 					{/* Desktop nav links */}
@@ -79,9 +79,9 @@ export function Navbar() {
 								href={href}
 								aria-current={isActive(href) ? "page" : undefined}
 								className={cn(
-									"px-3 py-1.5 text-[13px] font-medium transition-colors rounded-md",
+									"relative px-3 py-1.5 text-[13px] font-medium transition-colors rounded-md",
 									isActive(href)
-										? "text-foreground"
+										? "text-foreground after:absolute after:bottom-0 after:left-3 after:right-3 after:h-px after:bg-primary after:shadow-[var(--glow-cyan)]"
 										: "text-muted-foreground hover:text-foreground",
 								)}
 							>
@@ -101,7 +101,7 @@ export function Navbar() {
 								<DropdownMenuTrigger asChild>
 									<button
 										type="button"
-										className="flex items-center gap-2 rounded-full px-3 py-1.5 border border-border hover:bg-secondary transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+										className="flex items-center gap-2 rounded-full px-3 py-1.5 border border-border/50 hover:border-primary/30 hover:bg-secondary transition-all duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
 									>
 										{session.user.image && (
 											<img

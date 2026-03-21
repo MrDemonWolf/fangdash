@@ -24,12 +24,17 @@ export function HeroCTA() {
 	};
 
 	return (
-		<div className="flex items-center gap-3 pt-2">
-			<Button size="lg" asChild>
+		<div className="flex flex-col gap-3 pt-4 sm:flex-row sm:items-center">
+			<Button size="xl" variant="glow" className="uppercase tracking-widest" asChild>
 				<Link href="/play">Play Now</Link>
 			</Button>
 			{!isPending && !session && (
-				<Button size="lg" variant="secondary" onClick={handleSignIn}>
+				<Button
+					size="xl"
+					variant="outline"
+					className="border-fang-purple/40 text-fang-purple hover:bg-fang-purple/10 hover:border-fang-purple/60"
+					onClick={handleSignIn}
+				>
 					<TwitchIcon className="size-4" />
 					Login with Twitch
 				</Button>
