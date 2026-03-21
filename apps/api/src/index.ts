@@ -62,26 +62,27 @@ const PUBLIC_CACHE_ROUTES: Record<string, number> = {
 	"achievement.list": 3600, // 1 hour (static definitions)
 };
 
+// tRPC handler + cache headers in a single middleware to avoid conflicts
 app.use("/trpc/*", async (c, next) => {
-	await next();
-	if (c.req.method === "GET") {
-		// Extract procedure name from batch URL (e.g., /trpc/score.leaderboard)
-		const path = c.req.path.replace("/trpc/", "");
-		const maxAge = PUBLIC_CACHE_ROUTES[path];
-		if (maxAge && c.res.status === 200) {
-			c.res.headers.set("Cache-Control", `public, max-age=${maxAge}, s-maxage=${maxAge}`);
+	// Run the tRPC handler via next()
+	await trpcServer({
+		router: appRouter,
+		createContext: (_opts, _c) => createContext(c),
+	})(c, next);
+
+	// After tRPC responds, apply cache headers for public GET endpoints
+	try {
+		if (c.req.method === "GET" && c.res.status === 200) {
+			const path = c.req.path.replace("/trpc/", "");
+			const maxAge = PUBLIC_CACHE_ROUTES[path];
+			if (maxAge) {
+				c.res.headers.set("Cache-Control", `public, max-age=${maxAge}, s-maxage=${maxAge}`);
+			}
 		}
+	} catch {
+		// Cache header failure should never break the response
 	}
 });
-
-// tRPC handler
-app.use(
-	"/trpc/*",
-	trpcServer({
-		router: appRouter,
-		createContext: (_opts, c) => createContext(c),
-	}),
-);
 
 app.get("/", (c) => {
 	return c.json({ name: "FangDash API", status: "ok" });
