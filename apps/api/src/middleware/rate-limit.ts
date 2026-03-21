@@ -7,9 +7,11 @@ interface RateLimitEntry {
 
 const mutationBuckets = new Map<string, RateLimitEntry>();
 const queryBuckets = new Map<string, RateLimitEntry>();
+const authBuckets = new Map<string, RateLimitEntry>();
 
 const MUTATION_LIMIT = 10;
 const QUERY_LIMIT = 60;
+const AUTH_LIMIT = 5;
 const WINDOW_MS = 60_000; // 1 minute
 
 let lastCleanup = Date.now();
@@ -49,12 +51,28 @@ function lazyCleanup() {
 }
 
 export async function rateLimitMiddleware(c: Context, next: Next) {
-	// Only rate-limit tRPC routes
-	if (!c.req.path.startsWith("/trpc/")) {
+	lazyCleanup();
+
+	const path = c.req.path;
+
+	// Rate-limit auth endpoints
+	if (path.startsWith("/api/auth/")) {
+		const ip = getClientIp(c);
+		const entry = checkLimit(authBuckets, ip);
+		if (entry.count > AUTH_LIMIT) {
+			const retryAfter = Math.ceil((entry.resetAt - Date.now()) / 1000);
+			return c.json(
+				{ error: "Too many requests" },
+				{ status: 429, headers: { "Retry-After": String(Math.max(1, retryAfter)) } },
+			);
+		}
 		return next();
 	}
 
-	lazyCleanup();
+	// Rate-limit tRPC routes
+	if (!path.startsWith("/trpc/")) {
+		return next();
+	}
 
 	const ip = getClientIp(c);
 	const isMutation = c.req.method === "POST";

@@ -109,6 +109,8 @@ export const score = sqliteTable(
 		index("score_difficulty_idx").on(table.difficulty),
 		index("score_mods_idx").on(table.mods),
 		index("score_created_at_idx").on(table.createdAt),
+		index("score_cheated_idx").on(table.cheated),
+		index("score_leaderboard_idx").on(table.playerId, table.cheated, table.difficulty),
 	],
 );
 
@@ -154,5 +156,9 @@ export const raceHistory = sqliteTable(
 		cheated: integer("cheated").notNull().default(0),
 		createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
 	},
-	(table) => [index("race_history_player_id_idx").on(table.playerId)],
+	(table) => [
+		index("race_history_player_id_idx").on(table.playerId),
+		index("race_history_race_id_idx").on(table.raceId),
+		index("race_history_created_at_idx").on(table.createdAt),
+	],
 );

@@ -55,6 +55,25 @@ app.on(["POST", "GET"], "/api/auth/**", async (c) => {
 	}
 });
 
+// Cache-Control for public read-heavy tRPC queries (reduces CF Worker invocations)
+const PUBLIC_CACHE_ROUTES: Record<string, number> = {
+	"score.leaderboard": 30, // 30s
+	"score.getGlobalStats": 300, // 5 min
+	"achievement.list": 3600, // 1 hour (static definitions)
+};
+
+app.use("/trpc/*", async (c, next) => {
+	await next();
+	if (c.req.method === "GET") {
+		// Extract procedure name from batch URL (e.g., /trpc/score.leaderboard)
+		const path = c.req.path.replace("/trpc/", "");
+		const maxAge = PUBLIC_CACHE_ROUTES[path];
+		if (maxAge && c.res.status === 200) {
+			c.res.headers.set("Cache-Control", `public, max-age=${maxAge}, s-maxage=${maxAge}`);
+		}
+	}
+});
+
 // tRPC handler
 app.use(
 	"/trpc/*",

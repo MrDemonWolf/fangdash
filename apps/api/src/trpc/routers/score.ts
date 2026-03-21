@@ -27,7 +27,7 @@ export const scoreRouter = router({
 				obstaclesCleared: z.number().int().min(0),
 				longestCleanRun: z.number().min(0).default(0),
 				duration: z.number().int().min(0),
-				seed: z.string().min(1),
+				seed: z.string().min(1).max(64),
 				difficulty: z.enum(DIFFICULTY_NAMES).default("easy"),
 				mods: z.number().int().min(0).default(0),
 				cheated: z.boolean().default(false),
@@ -48,11 +48,6 @@ export const scoreRouter = router({
 				});
 			}
 
-			// Anti-cheat: reject impossible scores (account for mod score multipliers)
-			const modMultiplier = getScoreMultiplier(input.mods);
-			const maxAllowedScore =
-				((input.duration / 1000) * SCORE_PER_SECOND + input.obstaclesCleared * SCORE_PER_OBSTACLE) *
-				modMultiplier;
 			// Reject sessions longer than 30 minutes (1,800,000ms)
 			if (input.duration > 1_800_000) {
 				throw new TRPCError({
@@ -61,7 +56,15 @@ export const scoreRouter = router({
 				});
 			}
 
-			if (input.score > maxAllowedScore * 1.05 + 10) {
+			// Anti-cheat: reject impossible scores (account for mod score multipliers)
+			// Tolerance: 10% + 50 flat buffer to absorb frame-timing drift between
+			// the game's per-frame accumulation and the server's integer formula.
+			const modMultiplier = getScoreMultiplier(input.mods);
+			const maxAllowedScore =
+				((input.duration / 1000) * SCORE_PER_SECOND + input.obstaclesCleared * SCORE_PER_OBSTACLE) *
+				modMultiplier;
+
+			if (input.score > maxAllowedScore * 1.1 + 50) {
 				throw new TRPCError({
 					code: "BAD_REQUEST",
 					message: "Score exceeds maximum allowed rate",
@@ -293,7 +296,7 @@ export const scoreRouter = router({
 							obstaclesCleared: z.number().int().min(0),
 							longestCleanRun: z.number().min(0).default(0),
 							duration: z.number().int().min(0),
-							seed: z.string().min(1),
+							seed: z.string().min(1).max(64),
 							difficulty: z.enum(DIFFICULTY_NAMES).default("easy"),
 							mods: z.number().int().min(0).default(0),
 							cheated: z.boolean().default(false),
@@ -315,9 +318,18 @@ export const scoreRouter = router({
 
 			let totalXpGained = 0;
 			const insertedScoreIds: string[] = [];
+			const seenSeeds = new Set<string>();
 
 			for (let i = 0; i < input.scores.length; i++) {
 				const s = input.scores[i]!;
+
+				// Reject duplicate seeds within the same batch
+				const dedupKey = `${s.seed}:${s.clientTimestamp}`;
+				if (seenSeeds.has(dedupKey)) {
+					results.push({ clientIndex: i, status: "rejected", reason: "Duplicate score in batch" });
+					continue;
+				}
+				seenSeeds.add(dedupKey);
 
 				// Reject future or expired timestamps
 				if (s.clientTimestamp > now + 60_000) {
@@ -341,12 +353,12 @@ export const scoreRouter = router({
 					continue;
 				}
 
-				// Anti-cheat score bounds
+				// Anti-cheat score bounds (10% + 50 flat buffer for frame-timing drift)
 				const modMultiplier = getScoreMultiplier(s.mods);
 				const maxAllowedScore =
 					((s.duration / 1000) * SCORE_PER_SECOND + s.obstaclesCleared * SCORE_PER_OBSTACLE) *
 					modMultiplier;
-				if (s.score > maxAllowedScore * 1.05 + 10) {
+				if (s.score > maxAllowedScore * 1.1 + 50) {
 					results.push({ clientIndex: i, status: "rejected", reason: "Score exceeds maximum allowed rate" });
 					continue;
 				}

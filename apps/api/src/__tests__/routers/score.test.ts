@@ -134,7 +134,7 @@ describe("score router", () => {
 			const obstaclesCleared = 2;
 			const maxAllowed =
 				(duration / 1000) * SCORE_PER_SECOND + obstaclesCleared * SCORE_PER_OBSTACLE;
-			const borderlineScore = Math.floor(maxAllowed * 1.05 + 10);
+			const borderlineScore = Math.floor(maxAllowed * 1.1 + 50);
 
 			const result = await caller.score.submit({
 				score: borderlineScore,
@@ -282,7 +282,7 @@ describe("score router", () => {
 			const obstaclesCleared = 2;
 			const maxAllowed =
 				(duration / 1000) * SCORE_PER_SECOND + obstaclesCleared * SCORE_PER_OBSTACLE;
-			const overScore = Math.ceil(maxAllowed * 1.05 + 10) + 1;
+			const overScore = Math.ceil(maxAllowed * 1.1 + 50) + 1;
 
 			await expect(
 				caller.score.submit({
@@ -603,10 +603,11 @@ describe("score router", () => {
 				(duration / 1000) * SCORE_PER_SECOND + obstaclesCleared * SCORE_PER_OBSTACLE;
 
 			const scores = [
-				validScore,
-				{ ...validScore, clientTimestamp: now + 120_000 },
+				{ ...validScore, seed: "mix-1" },
+				{ ...validScore, seed: "mix-2", clientTimestamp: now + 120_000 },
 				{
 					...validScore,
+					seed: "mix-3",
 					score: Math.ceil(maxAllowed * 1.5),
 					duration,
 					obstaclesCleared,

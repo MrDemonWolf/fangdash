@@ -29,7 +29,17 @@ export const trpcVanilla = createTRPCClient<AppRouter>({
 });
 
 export function TRPCProvider({ children }: { children: React.ReactNode }) {
-	const [queryClient] = useState(() => new QueryClient());
+	const [queryClient] = useState(
+		() =>
+			new QueryClient({
+				defaultOptions: {
+					queries: {
+						staleTime: 60_000, // 1 min — reduces unnecessary refetches
+						gcTime: 5 * 60_000, // 5 min garbage collection
+					},
+				},
+			}),
+	);
 	const [trpcClient] = useState(() =>
 		createTRPCClient<AppRouter>({
 			links: [

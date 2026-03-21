@@ -52,9 +52,11 @@ export const achievementRouter = router({
 			.from(playerAchievement)
 			.where(eq(playerAchievement.playerId, playerRecord.id));
 
+		const achievementMap = new Map(ACHIEVEMENTS.map((a) => [a.id, a]));
+
 		return unlocked
 			.map((u) => {
-				const definition = ACHIEVEMENTS.find((a) => a.id === u.achievementId);
+				const definition = achievementMap.get(u.achievementId);
 				if (!definition) {
 					return null;
 				}

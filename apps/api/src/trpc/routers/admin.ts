@@ -40,7 +40,7 @@ export const adminRouter = router({
 			z.object({
 				page: z.number().int().min(1).default(1),
 				limit: z.number().int().min(1).max(100).default(20),
-				search: z.string().optional(),
+				search: z.string().max(100).optional(),
 			}),
 		)
 		.query(async ({ ctx, input }) => {
@@ -107,6 +107,14 @@ export const adminRouter = router({
 				headers: ctx.headers,
 			});
 
+			console.log("[admin] banUser", {
+				adminId: ctx.user.id,
+				targetUserId: input.userId,
+				reason: input.reason ?? null,
+				durationDays: input.durationDays ?? "permanent",
+				timestamp: new Date().toISOString(),
+			});
+
 			return { success: true };
 		}),
 
@@ -120,6 +128,13 @@ export const adminRouter = router({
 				body: { userId: input.userId },
 				headers: ctx.headers,
 			});
+
+			console.log("[admin] unbanUser", {
+				adminId: ctx.user.id,
+				targetUserId: input.userId,
+				timestamp: new Date().toISOString(),
+			});
+
 			return { success: true };
 		}),
 
@@ -201,6 +216,14 @@ export const adminRouter = router({
 					.set({ level: newLevel })
 					.where(eq(player.id, existing.playerId));
 			}
+
+			console.log("[admin] deleteScore", {
+				adminId: ctx.user.id,
+				scoreId: input.scoreId,
+				playerId: existing.playerId,
+				score: existing.score,
+				timestamp: new Date().toISOString(),
+			});
 
 			return { success: true };
 		}),

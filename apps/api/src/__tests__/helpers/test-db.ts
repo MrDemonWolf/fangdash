@@ -92,6 +92,8 @@ CREATE INDEX IF NOT EXISTS score_player_id_idx ON score(player_id);
 CREATE INDEX IF NOT EXISTS score_difficulty_idx ON score(difficulty);
 CREATE INDEX IF NOT EXISTS score_mods_idx ON score(mods);
 CREATE INDEX IF NOT EXISTS score_created_at_idx ON score(created_at);
+CREATE INDEX IF NOT EXISTS score_cheated_idx ON score(cheated);
+CREATE INDEX IF NOT EXISTS score_leaderboard_idx ON score(player_id, cheated, difficulty);
 
 CREATE TABLE IF NOT EXISTS player_skin (
 	id TEXT PRIMARY KEY,
@@ -122,6 +124,8 @@ CREATE TABLE IF NOT EXISTS race_history (
 	created_at INTEGER NOT NULL
 );
 CREATE INDEX IF NOT EXISTS race_history_player_id_idx ON race_history(player_id);
+CREATE INDEX IF NOT EXISTS race_history_race_id_idx ON race_history(race_id);
+CREATE INDEX IF NOT EXISTS race_history_created_at_idx ON race_history(created_at);
 `;
 
 export function createTestDb(): {

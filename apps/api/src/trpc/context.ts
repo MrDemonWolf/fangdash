@@ -9,7 +9,9 @@ export async function createContext(c: Context) {
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	let sessionData: { session: any; user: any } | null = null;
 
-	if (auth) {
+	// Only fetch session when auth cookies are present — saves a D1 read on public requests
+	const hasCookie = c.req.header("cookie")?.includes("better-auth");
+	if (auth && hasCookie) {
 		try {
 			sessionData = await auth.api.getSession({
 				headers: c.req.raw.headers,
