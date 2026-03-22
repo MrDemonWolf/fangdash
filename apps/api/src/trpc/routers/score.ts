@@ -1,16 +1,18 @@
 import {
 	ACHIEVEMENTS,
 	DIFFICULTY_NAMES,
+	PERIOD_MS,
+	PERIODS,
 	READY_MODS_MASK,
 	getLevelFromXp,
+	getPeriodCutoff,
 	getSkinById,
 } from "@fangdash/shared";
 import { TRPCError } from "@trpc/server";
 import { count, desc, eq, sql } from "drizzle-orm";
 import { z } from "zod";
 import { player, playerAchievement, playerSkin, score, user } from "../../db/schema.ts";
-import { checkAchievements } from "../../lib/achievement-checker.ts";
-import { checkSkinUnlocks } from "../../lib/skin-unlocker.ts";
+import { checkAllUnlocks } from "../../lib/check-all-unlocks.ts";
 import { validateScoreInput } from "../../lib/validate-score.ts";
 import { playerProcedure, publicProcedure, router } from "../trpc.ts";
 
@@ -63,7 +65,7 @@ export const scoreRouter = router({
 					scoreId,
 					newAchievements: [],
 					newSkins: [],
-					achievementError: false,
+					unlockError: false,
 					xpGained: 0,
 					levelUp: false,
 					newLevel: playerRecord.level,
@@ -88,51 +90,26 @@ export const scoreRouter = router({
 				})
 				.where(eq(player.id, playerRecord.id));
 
-			let newAchievements: string[] = [];
-			const newSkins: string[] = [];
-			let achievementError = false;
-
-			// Block 1: achievements
-			let checkStats: import("../../lib/achievement-checker.ts").CheckStats | undefined;
-			try {
-				const achievementResult = await checkAchievements(ctx.db, playerRecord.id, {
+			const { newAchievements, newSkins, unlockError } = await checkAllUnlocks(
+				ctx.db,
+				playerRecord.id,
+				"score.submit",
+				scoreId,
+				{
 					score: input.score,
 					distance: input.distance,
 					obstaclesCleared: input.obstaclesCleared,
 					longestCleanRun: input.longestCleanRun,
 					duration: input.duration,
 					mods: input.mods,
-				});
-				newAchievements = achievementResult.newAchievements;
-				newSkins.push(...achievementResult.newSkins);
-				checkStats = achievementResult.stats;
-			} catch (err) {
-				console.error("[score.submit] Achievement check failed", {
-					playerId: playerRecord.id,
-					scoreId,
-					error: err,
-				});
-				achievementError = true;
-			}
-
-			// Block 2: skins (independent — achievement failure doesn't block this)
-			try {
-				const skinUnlocks = await checkSkinUnlocks(ctx.db, playerRecord.id, checkStats);
-				newSkins.push(...skinUnlocks);
-			} catch (err) {
-				console.error("[score.submit] Skin unlock check failed", {
-					playerId: playerRecord.id,
-					scoreId,
-					error: err,
-				});
-				achievementError = true;
-			}
+				},
+			);
 
 			return {
 				scoreId,
 				newAchievements,
 				newSkins,
-				achievementError,
+				unlockError,
 				xpGained: input.score,
 				levelUp: levelInfo.level > previousLevel,
 				newLevel: levelInfo.level,
@@ -144,7 +121,7 @@ export const scoreRouter = router({
 			z
 				.object({
 					limit: z.number().int().min(1).max(100).default(50),
-					period: z.enum(["daily", "weekly", "all"]).default("all"),
+					period: z.enum(PERIODS).default("all"),
 					difficulty: z.enum(DIFFICULTY_NAMES).optional(),
 					mods: z.number().int().min(0).optional(),
 				})
@@ -156,12 +133,7 @@ export const scoreRouter = router({
 			const difficulty = input?.difficulty;
 			const mods = input?.mods;
 
-			const cutoff =
-				period === "daily"
-					? new Date(Date.now() - 24 * 60 * 60 * 1000)
-					: period === "weekly"
-						? new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
-						: null;
+			const cutoff = getPeriodCutoff(period);
 
 			const cutoffTs = cutoff ? Math.floor(cutoff.getTime() / 1000) : null;
 
@@ -268,7 +240,6 @@ export const scoreRouter = router({
 			const { playerRecord } = ctx;
 
 			const now = Date.now();
-			const sevenDaysMs = 7 * 24 * 60 * 60 * 1000;
 			const results: Array<{
 				clientIndex: number;
 				scoreId?: string;
@@ -298,7 +269,7 @@ export const scoreRouter = router({
 					results.push({ clientIndex: i, status: "rejected", reason: "Timestamp in the future" });
 					continue;
 				}
-				if (now - s.clientTimestamp > sevenDaysMs) {
+				if (now - s.clientTimestamp > PERIOD_MS.weekly) {
 					results.push({ clientIndex: i, status: "rejected", reason: "Score older than 7 days" });
 					continue;
 				}

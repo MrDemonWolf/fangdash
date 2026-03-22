@@ -4,9 +4,8 @@ import { desc, eq, inArray, sql } from "drizzle-orm";
 import type { BatchItem } from "drizzle-orm/batch";
 import { z } from "zod";
 import { player, raceHistory } from "../../db/schema.ts";
-import { checkAchievements } from "../../lib/achievement-checker.ts";
+import { checkAllUnlocks } from "../../lib/check-all-unlocks.ts";
 import { ensurePlayer } from "../../lib/ensure-player.ts";
-import { checkSkinUnlocks } from "../../lib/skin-unlocker.ts";
 import { protectedProcedure, router } from "../trpc.ts";
 
 export const raceRouter = router({
@@ -105,7 +104,7 @@ export const raceRouter = router({
 					placement,
 					newAchievements: [],
 					newSkins: [],
-					achievementError: false,
+					unlockError: false,
 					xpGained: 0,
 					levelUp: false,
 					newLevel: playerRecord.level,
@@ -201,50 +200,25 @@ export const raceRouter = router({
 				batchStatements as unknown as [BatchItem<"sqlite">, ...BatchItem<"sqlite">[]],
 			);
 
-			let newAchievements: string[] = [];
-			const newSkins: string[] = [];
-			let achievementError = false;
-
-			// Block 1: achievements
-			let checkStats: import("../../lib/achievement-checker.ts").CheckStats | undefined;
-			try {
-				const achievementResult = await checkAchievements(ctx.db, playerRecord.id, {
+			const { newAchievements, newSkins, unlockError } = await checkAllUnlocks(
+				ctx.db,
+				playerRecord.id,
+				"race.submitResult",
+				raceHistoryId,
+				{
 					score: input.score,
 					distance: input.distance,
 					obstaclesCleared: 0,
 					longestCleanRun: 0,
-				});
-				newAchievements = achievementResult.newAchievements;
-				newSkins.push(...achievementResult.newSkins);
-				checkStats = achievementResult.stats;
-			} catch (err) {
-				console.error("[race.submitResult] Achievement check failed", {
-					playerId: playerRecord.id,
-					raceHistoryId,
-					error: err,
-				});
-				achievementError = true;
-			}
-
-			// Block 2: skins (independent — achievement failure doesn't block this)
-			try {
-				const skinUnlocks = await checkSkinUnlocks(ctx.db, playerRecord.id, checkStats);
-				newSkins.push(...skinUnlocks);
-			} catch (err) {
-				console.error("[race.submitResult] Skin unlock check failed", {
-					playerId: playerRecord.id,
-					raceHistoryId,
-					error: err,
-				});
-				achievementError = true;
-			}
+				},
+			);
 
 			return {
 				raceHistoryId,
 				placement,
 				newAchievements,
 				newSkins,
-				achievementError,
+				unlockError,
 				xpGained,
 				levelUp: levelInfo.level > previousLevel,
 				newLevel: levelInfo.level,

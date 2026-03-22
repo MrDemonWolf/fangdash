@@ -35,7 +35,7 @@ export interface SubmitResult {
 	scoreId: string;
 	newAchievements: string[];
 	newSkins: string[];
-	achievementError: boolean;
+	unlockError: boolean;
 	xpGained: number;
 	levelUp: boolean;
 	newLevel: number;

@@ -40,7 +40,7 @@ const baseResult: SubmitResult = {
 	scoreId: "server-score-1",
 	newAchievements: [],
 	newSkins: [],
-	achievementError: false,
+	unlockError: false,
 	xpGained: 100,
 	levelUp: false,
 	newLevel: 1,
