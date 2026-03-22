@@ -1,4 +1,10 @@
-import { ACHIEVEMENTS, DIFFICULTY_NAMES, READY_MODS_MASK, getLevelFromXp, getSkinById } from "@fangdash/shared";
+import {
+	ACHIEVEMENTS,
+	DIFFICULTY_NAMES,
+	READY_MODS_MASK,
+	getLevelFromXp,
+	getSkinById,
+} from "@fangdash/shared";
 import { TRPCError } from "@trpc/server";
 import { count, desc, eq, sql } from "drizzle-orm";
 import { z } from "zod";
@@ -272,6 +278,7 @@ export const scoreRouter = router({
 
 			let totalXpGained = 0;
 			const insertedScoreIds: string[] = [];
+			const acceptedNonCheated: Array<(typeof input.scores)[number]> = [];
 			const seenSeeds = new Set<string>();
 
 			for (let i = 0; i < input.scores.length; i++) {
@@ -324,16 +331,16 @@ export const scoreRouter = router({
 				insertedScoreIds.push(scoreId);
 				if (!s.cheated) {
 					totalXpGained += s.score;
+					acceptedNonCheated.push(s);
 				}
 				results.push({ clientIndex: i, scoreId, status: "ok" });
 			}
 
-			// Single aggregate XP/stats update for all non-cheated scores
-			if (totalXpGained > 0) {
-				const nonCheated = input.scores.filter((s) => !s.cheated);
-				const totalDistance = nonCheated.reduce((sum, s) => sum + s.distance, 0);
-				const totalObstacles = nonCheated.reduce((sum, s) => sum + s.obstaclesCleared, 0);
-				const gamesCount = nonCheated.length;
+			// Single aggregate XP/stats update for accepted non-cheated scores only
+			if (acceptedNonCheated.length > 0) {
+				const totalDistance = acceptedNonCheated.reduce((sum, s) => sum + s.distance, 0);
+				const totalObstacles = acceptedNonCheated.reduce((sum, s) => sum + s.obstaclesCleared, 0);
+				const gamesCount = acceptedNonCheated.length;
 
 				const newTotalXp = playerRecord.totalXp + totalXpGained;
 				const levelInfo = getLevelFromXp(newTotalXp);
@@ -341,7 +348,7 @@ export const scoreRouter = router({
 				await ctx.db
 					.update(player)
 					.set({
-						totalScore: sql`${player.totalScore} + ${nonCheated.reduce((sum, s) => sum + s.score, 0)}`,
+						totalScore: sql`${player.totalScore} + ${totalXpGained}`,
 						totalDistance: sql`${player.totalDistance} + ${totalDistance}`,
 						totalObstaclesCleared: sql`${player.totalObstaclesCleared} + ${totalObstacles}`,
 						gamesPlayed: sql`${player.gamesPlayed} + ${gamesCount}`,

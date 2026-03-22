@@ -105,12 +105,40 @@ describe("account router", () => {
 		});
 	});
 
+	describe("create-on-first-use", () => {
+		it("auto-creates player on getPrivacy when no player exists", async () => {
+			const userId = createTestUser(db);
+			const caller = createTestCaller({ db, userId });
+
+			const result = await caller.account.getPrivacy();
+			expect(result.profilePublic).toBe(true);
+		});
+
+		it("auto-creates player on updatePrivacy when no player exists", async () => {
+			const userId = createTestUser(db);
+			const caller = createTestCaller({ db, userId });
+
+			const result = await caller.account.updatePrivacy({ profilePublic: false });
+			expect(result.profilePublic).toBe(false);
+
+			const check = await caller.account.getPrivacy();
+			expect(check.profilePublic).toBe(false);
+		});
+	});
+
 	describe("unauthenticated", () => {
 		it("rejects unauthenticated access", async () => {
 			createTestUser(db);
 			const caller = createTestCaller({ db });
 
 			await expect(caller.account.getAccountStatus()).rejects.toThrow("UNAUTHORIZED");
+		});
+
+		it("rejects banned user with truthy non-boolean ban fields without 500", async () => {
+			const userId = createTestUser(db, { banned: true, banExpires: null });
+			const caller = createTestCaller({ db, userId, banned: true, banExpires: null });
+
+			await expect(caller.account.getAccountStatus()).rejects.toThrow("banned");
 		});
 	});
 });

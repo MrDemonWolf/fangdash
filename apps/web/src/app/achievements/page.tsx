@@ -54,8 +54,6 @@ function formatCondition(condition: AchievementCondition): string {
 	}
 }
 
-// formatDate imported from @/lib/format
-
 interface AchievementCardProps {
 	icon: string;
 	name: string;

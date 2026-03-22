@@ -19,7 +19,9 @@ export const protectedProcedure = t.procedure.use(({ ctx, next }) => {
 	// Use truthy check: Better Auth may return raw SQLite integer (1) instead of boolean
 	if (ctx.user.banned) {
 		const banExpires = ctx.user.banExpires
-			? new Date(ctx.user.banExpires instanceof Date ? ctx.user.banExpires.getTime() : ctx.user.banExpires)
+			? new Date(
+					ctx.user.banExpires instanceof Date ? ctx.user.banExpires.getTime() : ctx.user.banExpires,
+				)
 			: null;
 		const isStillBanned = !banExpires || banExpires.getTime() > Date.now();
 
@@ -47,7 +49,12 @@ export const protectedProcedure = t.procedure.use(({ ctx, next }) => {
  * Adds `playerRecord` to the context, eliminating repeated ensurePlayer + null-check boilerplate.
  */
 export const playerProcedure = protectedProcedure.use(async ({ ctx, next }) => {
-	const playerRecord = await ensurePlayer(ctx.db, ctx.user.id);
+	let playerRecord;
+	try {
+		playerRecord = await ensurePlayer(ctx.db, ctx.user.id);
+	} catch {
+		throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Failed to create player" });
+	}
 	if (!playerRecord) {
 		throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Failed to create player" });
 	}

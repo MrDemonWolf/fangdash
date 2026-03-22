@@ -1,12 +1,11 @@
 import {
+	MAX_DURATION_MS,
 	READY_MODS_MASK,
 	SCORE_PER_OBSTACLE,
 	SCORE_PER_SECOND,
 	areModsCompatible,
 	getScoreMultiplier,
 } from "@fangdash/shared";
-
-const MAX_DURATION_MS = 1_800_000; // 30 minutes
 
 export type ScoreValidationInput = {
 	mods: number;
@@ -37,7 +36,8 @@ export function validateScoreInput(input: ScoreValidationInput): ScoreValidation
 
 	const modMultiplier = getScoreMultiplier(input.mods);
 	const maxAllowedScore =
-		((input.duration / 1000) * SCORE_PER_SECOND + input.obstaclesCleared * SCORE_PER_OBSTACLE) * modMultiplier;
+		((input.duration / 1000) * SCORE_PER_SECOND + input.obstaclesCleared * SCORE_PER_OBSTACLE) *
+		modMultiplier;
 
 	if (input.score > maxAllowedScore * 1.1 + 50) {
 		return { valid: false, reason: "Score exceeds maximum allowed rate" };

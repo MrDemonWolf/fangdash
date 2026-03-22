@@ -137,8 +137,6 @@ function SkeletonCards() {
 	));
 }
 
-// formatDate and formatNumber imported from @/lib/format
-
 function buildModsMask(selectedFlags: Set<number>): number {
 	let mask = 0;
 	for (const flag of selectedFlags) {

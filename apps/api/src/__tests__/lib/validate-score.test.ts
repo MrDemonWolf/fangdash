@@ -27,7 +27,10 @@ describe("validateScoreInput", () => {
 
 	it("rejects duration exceeding 30 minutes", () => {
 		const result = validateScoreInput({ ...validInput, duration: 1_800_001 });
-		expect(result).toEqual({ valid: false, reason: "Game session exceeds maximum allowed duration" });
+		expect(result).toEqual({
+			valid: false,
+			reason: "Game session exceeds maximum allowed duration",
+		});
 	});
 
 	it("accepts duration at exactly 30 minutes", () => {
@@ -71,9 +74,7 @@ describe("validateScoreInput", () => {
 			score: 200,
 			obstaclesCleared: 10,
 		});
-		// If base is valid, modded should also be valid (mod multiplier increases max)
-		if (baseResult.valid) {
-			expect(modResult.valid).toBe(true);
-		}
+		expect(baseResult.valid).toBe(true);
+		expect(modResult.valid).toBe(true);
 	});
 });

@@ -18,6 +18,10 @@ describe("formatDate", () => {
 	it("returns empty string for null", () => {
 		expect(formatDate(null)).toBe("");
 	});
+
+	it("returns empty string for invalid date string", () => {
+		expect(formatDate("not-a-date")).toBe("");
+	});
 });
 
 describe("formatNumber", () => {
@@ -25,12 +29,10 @@ describe("formatNumber", () => {
 		expect(formatNumber(42)).toBe("42");
 	});
 
-	it("formats a large number with locale separators", () => {
+	it("formats a large number preserving digit sequence", () => {
 		const result = formatNumber(1234567);
-		// toLocaleString output varies by environment, but should contain digits
-		expect(result).toContain("1");
-		expect(result).toContain("234");
-		expect(result).toContain("567");
+		const digitsOnly = result.replace(/\D/g, "");
+		expect(digitsOnly).toBe("1234567");
 	});
 
 	it("formats zero", () => {

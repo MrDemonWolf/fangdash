@@ -21,6 +21,7 @@ export const SPEED_INCREASE_INTERVAL_MS = 1000;
 export const SCORE_PER_SECOND = 10;
 export const SCORE_PER_OBSTACLE = 50;
 export const DISTANCE_MULTIPLIER = 0.1;
+export const MAX_DURATION_MS = 1_800_000; // 30 minutes
 
 // ── Obstacles ──
 export const OBSTACLE_GROUND_Y = 536; // fixed Y for obstacle anchors — accounts for transparent sprite padding
