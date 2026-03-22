@@ -149,7 +149,8 @@ export type ServerMessage =
 	| { type: "host_changed"; payload: { hostId: string | null } }
 	| { type: "player_ready"; payload: { id: string; ready: boolean } }
 	| { type: "player_kicked"; payload: { id: string } }
-	| { type: "room_reset"; payload: RaceRoom };
+	| { type: "room_reset"; payload: RaceRoom }
+	| { type: "error"; payload: { message: string } };
 
 // ── Game State ──
 export interface GameState {
