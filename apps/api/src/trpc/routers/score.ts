@@ -2,6 +2,7 @@ import {
 	ACHIEVEMENTS,
 	DIFFICULTY_NAMES,
 	PERIOD_MS,
+	PERIODS,
 	READY_MODS_MASK,
 	getLevelFromXp,
 	getPeriodCutoff,
@@ -64,7 +65,7 @@ export const scoreRouter = router({
 					scoreId,
 					newAchievements: [],
 					newSkins: [],
-					achievementError: false,
+					unlockError: false,
 					xpGained: 0,
 					levelUp: false,
 					newLevel: playerRecord.level,
@@ -89,7 +90,7 @@ export const scoreRouter = router({
 				})
 				.where(eq(player.id, playerRecord.id));
 
-			const { newAchievements, newSkins, achievementError } = await checkAllUnlocks(
+			const { newAchievements, newSkins, unlockError } = await checkAllUnlocks(
 				ctx.db,
 				playerRecord.id,
 				"score.submit",
@@ -108,7 +109,7 @@ export const scoreRouter = router({
 				scoreId,
 				newAchievements,
 				newSkins,
-				achievementError,
+				unlockError,
 				xpGained: input.score,
 				levelUp: levelInfo.level > previousLevel,
 				newLevel: levelInfo.level,
@@ -120,7 +121,7 @@ export const scoreRouter = router({
 			z
 				.object({
 					limit: z.number().int().min(1).max(100).default(50),
-					period: z.enum(["daily", "weekly", "all"]).default("all"),
+					period: z.enum(PERIODS).default("all"),
 					difficulty: z.enum(DIFFICULTY_NAMES).optional(),
 					mods: z.number().int().min(0).optional(),
 				})

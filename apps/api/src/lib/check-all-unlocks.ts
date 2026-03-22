@@ -6,7 +6,7 @@ import { checkSkinUnlocks } from "./skin-unlocker.ts";
 interface UnlockResult {
 	newAchievements: string[];
 	newSkins: string[];
-	achievementError: boolean;
+	unlockError: boolean;
 	stats?: CheckStats | undefined;
 }
 
@@ -30,7 +30,7 @@ export async function checkAllUnlocks(
 ): Promise<UnlockResult> {
 	let newAchievements: string[] = [];
 	const newSkins: string[] = [];
-	let achievementError = false;
+	let unlockError = false;
 	let checkStats: CheckStats | undefined;
 
 	// Block 1: achievements
@@ -45,7 +45,7 @@ export async function checkAllUnlocks(
 			contextId,
 			error: err,
 		});
-		achievementError = true;
+		unlockError = true;
 	}
 
 	// Block 2: skins (independent — achievement failure doesn't block this)
@@ -58,8 +58,8 @@ export async function checkAllUnlocks(
 			contextId,
 			error: err,
 		});
-		achievementError = true;
+		unlockError = true;
 	}
 
-	return { newAchievements, newSkins, achievementError, stats: checkStats };
+	return { newAchievements, newSkins, unlockError, stats: checkStats };
 }

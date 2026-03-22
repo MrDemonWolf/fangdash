@@ -104,7 +104,7 @@ export const raceRouter = router({
 					placement,
 					newAchievements: [],
 					newSkins: [],
-					achievementError: false,
+					unlockError: false,
 					xpGained: 0,
 					levelUp: false,
 					newLevel: playerRecord.level,
@@ -200,7 +200,7 @@ export const raceRouter = router({
 				batchStatements as unknown as [BatchItem<"sqlite">, ...BatchItem<"sqlite">[]],
 			);
 
-			const { newAchievements, newSkins, achievementError } = await checkAllUnlocks(
+			const { newAchievements, newSkins, unlockError } = await checkAllUnlocks(
 				ctx.db,
 				playerRecord.id,
 				"race.submitResult",
@@ -218,7 +218,7 @@ export const raceRouter = router({
 				placement,
 				newAchievements,
 				newSkins,
-				achievementError,
+				unlockError,
 				xpGained,
 				levelUp: levelInfo.level > previousLevel,
 				newLevel: levelInfo.level,

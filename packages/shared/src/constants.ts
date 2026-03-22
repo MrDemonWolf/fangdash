@@ -149,12 +149,15 @@ export const AUDIO_KEYS = {
 } as const;
 
 // ── Time Periods ──
+export const PERIODS = ["daily", "weekly", "all"] as const;
+export type Period = (typeof PERIODS)[number];
+
 export const PERIOD_MS = {
 	daily: 86_400_000,
 	weekly: 604_800_000,
 } as const;
 
-export function getPeriodCutoff(period: "daily" | "weekly" | "all"): Date | null {
+export function getPeriodCutoff(period: Period): Date | null {
 	if (period === "all") return null;
 	return new Date(Date.now() - PERIOD_MS[period]);
 }
