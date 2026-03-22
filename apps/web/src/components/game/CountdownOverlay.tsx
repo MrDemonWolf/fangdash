@@ -14,7 +14,7 @@ export function CountdownOverlay({ seconds }: CountdownOverlayProps) {
 		>
 			<span
 				key={display}
-				className={`text-8xl font-black tracking-tighter ${seconds === 0 ? "text-glow-cyan text-primary" : "text-foreground"}`}
+				className={`text-6xl sm:text-8xl font-black tracking-tighter ${seconds === 0 ? "text-glow-cyan text-primary" : "text-foreground"}`}
 				style={{
 					animation: "countdownPop 0.6s ease-out forwards",
 					filter:
@@ -26,7 +26,8 @@ export function CountdownOverlay({ seconds }: CountdownOverlayProps) {
 				{display}
 			</span>
 
-			<style jsx={true}>{`
+			<style jsx={true}>
+				{`
 				@keyframes countdownPop {
 					0% {
 						transform: scale(2);
@@ -41,7 +42,8 @@ export function CountdownOverlay({ seconds }: CountdownOverlayProps) {
 						opacity: 1;
 					}
 				}
-			`}</style>
+			`}
+			</style>
 		</div>
 	);
 }
