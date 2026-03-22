@@ -1,3 +1,4 @@
+import { DEFAULT_SKIN_ID } from "@fangdash/shared";
 import { eq } from "drizzle-orm";
 import type { DrizzleD1Database } from "drizzle-orm/d1";
 import type * as schema from "../db/schema.ts";
@@ -30,7 +31,7 @@ export async function ensurePlayer(db: DrizzleD1Database<typeof schema>, userId:
 			.values({
 				id: crypto.randomUUID(),
 				userId,
-				equippedSkinId: "gray-wolf",
+				equippedSkinId: DEFAULT_SKIN_ID,
 				totalScore: 0,
 				totalDistance: 0,
 				totalObstaclesCleared: 0,
