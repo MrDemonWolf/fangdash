@@ -59,7 +59,9 @@ export function GameOverModal({
 	onRetrySubmit,
 }: GameOverModalProps) {
 	const hasUnlocks =
-		submitResult && (submitResult.newAchievements.length > 0 || submitResult.newSkins.length > 0);
+		submitResult &&
+		(submitResult.newAchievements.length > 0 ||
+			submitResult.newSkins.length > 0);
 
 	return (
 		<div className="absolute inset-0 z-20 flex items-center justify-center bg-black/80 backdrop-blur-sm">
@@ -67,7 +69,7 @@ export function GameOverModal({
 			<div className="scanlines absolute inset-0 pointer-events-none" />
 
 			<div
-				className="relative w-full max-w-sm mx-4 rounded-xl overflow-hidden glass"
+				className="relative w-full max-w-sm mx-3 sm:mx-4 rounded-xl overflow-hidden max-h-[90dvh] overflow-y-auto glass"
 				style={{
 					border: "1px solid oklch(0.72 0.15 210 / 0.15)",
 					boxShadow:
@@ -83,62 +85,64 @@ export function GameOverModal({
 					}}
 				/>
 
-				<div className="relative px-6 pt-8 pb-6">
+				<div className="relative px-4 sm:px-6 pt-6 sm:pt-8 pb-4 sm:pb-6">
 					{/* GAME OVER heading */}
-					<div className="text-center mb-6">
-						<h2 className="text-glow-orange text-5xl font-black font-mono uppercase tracking-tight leading-none mb-2 text-fang-orange">
+					<div className="text-center mb-4 sm:mb-6">
+						<h2 className="text-glow-orange text-4xl sm:text-5xl font-black font-mono uppercase tracking-tight leading-none mb-2 text-fang-orange">
 							Game Over
 						</h2>
-						<p className="text-sm font-mono text-muted-foreground">{subtitle(state.score)}</p>
+						<p className="text-sm font-mono text-muted-foreground">
+							{subtitle(state.score)}
+						</p>
 					</div>
 
 					{/* Level Up banner */}
 					{submitResult?.levelUp && submitResult.newLevel && (
-						<div className="mb-4 rounded-lg px-4 py-3 text-center border border-primary/25 bg-primary/5">
+						<div className="mb-3 sm:mb-4 rounded-lg px-4 py-3 text-center border border-primary/25 bg-primary/5">
 							<p className="text-sm font-bold text-primary">
 								Level Up! You are now level {submitResult.newLevel}!
 							</p>
 						</div>
 					)}
 
-					{/* Stats — 2×2 grid */}
-					<div className="mb-6 grid grid-cols-2 gap-px rounded-lg overflow-hidden bg-primary/10">
+					{/* Stats — 2x2 grid */}
+					<div className="mb-4 sm:mb-6 grid grid-cols-2 gap-px rounded-lg overflow-hidden bg-primary/10">
 						{/* FINAL SCORE */}
-						<div className="bg-[var(--color-surface-void)] px-4 py-3">
+						<div className="bg-[var(--color-surface-void)] px-3 sm:px-4 py-2.5 sm:py-3">
 							<p className="text-[10px] font-mono uppercase tracking-[0.15em] text-muted-foreground mb-1">
 								Final Score
 							</p>
-							<span className="text-glow-cyan text-2xl font-black font-mono tabular-nums text-primary">
+							<span className="text-glow-cyan text-xl sm:text-2xl font-black font-mono tabular-nums text-primary">
 								{state.score.toLocaleString()}
 							</span>
 						</div>
 
 						{/* DISTANCE */}
-						<div className="bg-[var(--color-surface-void)] px-4 py-3">
+						<div className="bg-[var(--color-surface-void)] px-3 sm:px-4 py-2.5 sm:py-3">
 							<p className="text-[10px] font-mono uppercase tracking-[0.15em] text-muted-foreground mb-1">
 								Distance
 							</p>
-							<span className="text-2xl font-bold font-mono tabular-nums text-foreground/80">
+							<span className="text-xl sm:text-2xl font-bold font-mono tabular-nums text-foreground/80">
 								{formatDistance(state.distance)}
 							</span>
 						</div>
 
 						{/* DODGES */}
-						<div className="bg-[var(--color-surface-void)] px-4 py-3">
+						<div className="bg-[var(--color-surface-void)] px-3 sm:px-4 py-2.5 sm:py-3">
 							<p className="text-[10px] font-mono uppercase tracking-[0.15em] text-muted-foreground mb-1">
 								Dodges
 							</p>
-							<span className="text-2xl font-bold font-mono tabular-nums text-foreground/80">
+							<span className="text-xl sm:text-2xl font-bold font-mono tabular-nums text-foreground/80">
 								{state.obstaclesCleared.toLocaleString()}
 							</span>
 						</div>
 
 						{/* TIME */}
-						<div className="bg-[var(--color-surface-void)] px-4 py-3">
+						<div className="bg-[var(--color-surface-void)] px-3 sm:px-4 py-2.5 sm:py-3">
 							<p className="text-[10px] font-mono uppercase tracking-[0.15em] text-muted-foreground mb-1">
 								Time
 							</p>
-							<span className="text-2xl font-bold font-mono tabular-nums text-foreground/80">
+							<span className="text-xl sm:text-2xl font-bold font-mono tabular-nums text-foreground/80">
 								{elapsedTime !== undefined ? formatTime(elapsedTime) : "--:--"}
 							</span>
 						</div>
@@ -146,7 +150,7 @@ export function GameOverModal({
 
 					{/* Cheats active notice */}
 					{cheatsUsed && (
-						<div className="mb-4 rounded-lg px-4 py-3 text-center border border-fang-orange/25 bg-fang-orange/5">
+						<div className="mb-3 sm:mb-4 rounded-lg px-4 py-3 text-center border border-fang-orange/25 bg-fang-orange/5">
 							<p className="text-sm font-bold text-fang-orange">
 								Score not saved — cheats were active
 							</p>
@@ -155,8 +159,10 @@ export function GameOverModal({
 
 					{/* Submit error */}
 					{!cheatsUsed && !!submitError && (
-						<div className="mb-4 text-center">
-							<p className="text-sm text-destructive mb-2">Failed to save score.</p>
+						<div className="mb-3 sm:mb-4 text-center">
+							<p className="text-sm text-destructive mb-2">
+								Failed to save score.
+							</p>
 							{onRetrySubmit && (
 								<button
 									type="button"
@@ -171,14 +177,14 @@ export function GameOverModal({
 
 					{/* Saving indicator */}
 					{isSignedIn && !cheatsUsed && submitting && (
-						<p className="mb-4 text-sm text-center font-mono text-muted-foreground">
+						<p className="mb-3 sm:mb-4 text-sm text-center font-mono text-muted-foreground">
 							Saving score...
 						</p>
 					)}
 
 					{/* Unlocks — horizontal pill badges */}
 					{hasUnlocks && (
-						<div className="mb-5">
+						<div className="mb-4 sm:mb-5">
 							<p className="text-xs font-mono font-bold uppercase tracking-[0.15em] text-fang-gold/70 mb-2">
 								Unlocked
 							</p>
@@ -211,14 +217,15 @@ export function GameOverModal({
 
 					{/* Achievement sync warning */}
 					{submitResult?.achievementError && (
-						<p className="mb-4 text-xs text-center font-mono text-fang-gold/50">
-							Some achievements may not have been recorded. They&apos;ll sync next game.
+						<p className="mb-3 sm:mb-4 text-xs text-center font-mono text-fang-gold/50">
+							Some achievements may not have been recorded. They&apos;ll sync
+							next game.
 						</p>
 					)}
 
 					{/* Sign-in nudge */}
 					{isSignedIn === false && (
-						<p className="mb-4 text-sm text-center font-mono text-muted-foreground">
+						<p className="mb-3 sm:mb-4 text-sm text-center font-mono text-muted-foreground">
 							Sign in to save scores &amp; unlock achievements
 						</p>
 					)}
