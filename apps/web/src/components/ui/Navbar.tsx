@@ -53,7 +53,13 @@ export function Navbar() {
 
 	return (
 		<>
-			<header className="fixed top-0 left-0 right-0 z-50 glass border-b border-border/50" style={{ borderImage: "linear-gradient(90deg, transparent, oklch(0.72 0.15 210 / 0.15), oklch(0.48 0.18 300 / 0.1), transparent) 1" }}>
+			<header
+				className="fixed top-0 left-0 right-0 z-50 glass border-b border-border/50"
+				style={{
+					borderImage:
+						"linear-gradient(90deg, transparent, oklch(0.72 0.15 210 / 0.15), oklch(0.48 0.18 300 / 0.1), transparent) 1",
+				}}
+			>
 				<nav className="mx-auto flex h-14 max-w-7xl items-center justify-between px-6">
 					{/* Logo */}
 					<Link
@@ -96,39 +102,39 @@ export function Navbar() {
 							<Skeleton className="h-8 w-24 rounded-full" />
 						) : session?.user ? (
 							<>
-							<NotificationBell />
-							<DropdownMenu>
-								<DropdownMenuTrigger asChild>
-									<button
-										type="button"
-										className="flex items-center gap-2 rounded-full px-3 py-1.5 border border-border/50 hover:border-primary/30 hover:bg-secondary transition-all duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-									>
-										{session.user.image && (
-											<img
-												src={session.user.image}
-												alt={session.user.name ?? "User avatar"}
-												className="h-5 w-5 rounded-full"
-											/>
-										)}
-										<span className="text-[13px] font-medium text-foreground">
-											{session.user.name}
-										</span>
-									</button>
-								</DropdownMenuTrigger>
-								<DropdownMenuContent align="end">
-									<DropdownMenuItem asChild>
-										<Link href="/profile" className="cursor-pointer">
-											<User className="size-4" />
-											Profile
-										</Link>
-									</DropdownMenuItem>
-									<DropdownMenuSeparator />
-									<DropdownMenuItem onClick={() => signOut()} className="cursor-pointer">
-										<LogOut className="size-4" />
-										Sign Out
-									</DropdownMenuItem>
-								</DropdownMenuContent>
-							</DropdownMenu>
+								<NotificationBell />
+								<DropdownMenu>
+									<DropdownMenuTrigger asChild>
+										<button
+											type="button"
+											className="flex items-center gap-2 rounded-full px-3 py-1.5 border border-border/50 hover:border-primary/30 hover:bg-secondary transition-all duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+										>
+											{session.user.image && (
+												<img
+													src={session.user.image}
+													alt={session.user.name ?? "User avatar"}
+													className="h-5 w-5 rounded-full"
+												/>
+											)}
+											<span className="text-[13px] font-medium text-foreground">
+												{session.user.name}
+											</span>
+										</button>
+									</DropdownMenuTrigger>
+									<DropdownMenuContent align="end">
+										<DropdownMenuItem asChild>
+											<Link href="/profile" className="cursor-pointer">
+												<User className="size-4" />
+												Profile
+											</Link>
+										</DropdownMenuItem>
+										<DropdownMenuSeparator />
+										<DropdownMenuItem onClick={() => signOut()} className="cursor-pointer">
+											<LogOut className="size-4" />
+											Sign Out
+										</DropdownMenuItem>
+									</DropdownMenuContent>
+								</DropdownMenu>
 							</>
 						) : (
 							<Button

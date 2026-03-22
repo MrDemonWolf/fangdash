@@ -1,10 +1,10 @@
-import { getSkinById, SKINS, type SkinDefinition } from "@fangdash/shared";
+import { getSkinById, type SkinDefinition, SKINS } from "@fangdash/shared";
 import { TRPCError } from "@trpc/server";
-import { and, eq } from "drizzle-orm";
+import { and, count, eq, sql } from "drizzle-orm";
 import { z } from "zod";
 import { player, playerSkin } from "../../db/schema.ts";
 import { ensurePlayer } from "../../lib/ensure-player.ts";
-import { protectedProcedure, router } from "../trpc.ts";
+import { protectedProcedure, publicProcedure, router } from "../trpc.ts";
 
 export const skinRouter = router({
 	getUnlockedSkins: protectedProcedure.query(async ({ ctx }) => {
@@ -90,5 +90,30 @@ export const skinRouter = router({
 			...skin,
 			unlocked: unlockedIds.has(skin.id),
 		}));
+	}),
+
+	getStats: publicProcedure.query(async ({ ctx }) => {
+		const [totalPlayersResult, unlockCounts] = await Promise.all([
+			ctx.db.select({ total: count() }).from(player),
+			ctx.db
+				.select({
+					skinId: playerSkin.skinId,
+					unlockCount: sql<number>`count(*)`,
+				})
+				.from(playerSkin)
+				.groupBy(playerSkin.skinId),
+		]);
+
+		const totalPlayers = totalPlayersResult[0]?.total ?? 0;
+		const result: Record<string, { unlockCount: number; totalPlayers: number }> = {};
+
+		for (const row of unlockCounts) {
+			result[row.skinId] = {
+				unlockCount: row.unlockCount,
+				totalPlayers,
+			};
+		}
+
+		return result;
 	}),
 });

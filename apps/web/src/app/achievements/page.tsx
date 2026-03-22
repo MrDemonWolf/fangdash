@@ -42,6 +42,14 @@ function formatCondition(condition: AchievementCondition): string {
 			return `Play ${condition.count.toLocaleString()} races`;
 		case "perfect_run":
 			return `Run ${condition.distance.toLocaleString()}m without hitting obstacles`;
+		case "time_survived":
+			return `Survive ${Math.round(condition.threshold / 1000)}s in a single run`;
+		case "score_with_mods":
+			return `Score ${condition.threshold.toLocaleString()} with required mods active`;
+		case "distance_with_mods":
+			return `Run ${condition.threshold.toLocaleString()}m with required mods active`;
+		case "combo":
+			return condition.conditions.map(formatCondition).join(" and ");
 	}
 }
 
@@ -64,6 +72,7 @@ interface AchievementCardProps {
 	unlockedAt?: Date | string | null;
 	condition?: AchievementCondition | undefined;
 	rewardSkinId?: string | null | undefined;
+	unlockPercent?: number | null;
 }
 
 function AchievementCard({
@@ -75,6 +84,7 @@ function AchievementCard({
 	unlockedAt,
 	condition,
 	rewardSkinId,
+	unlockPercent,
 }: AchievementCardProps) {
 	const skin = rewardSkinId ? getSkinById(rewardSkinId) : null;
 
@@ -130,6 +140,12 @@ function AchievementCard({
 								Rewards: {skin.name}
 							</p>
 						)}
+
+						{unlockPercent != null && (
+							<p className="mt-1 text-xs text-muted-foreground">
+								{unlockPercent.toFixed(1)}% of players
+							</p>
+						)}
 					</div>
 				</div>
 
@@ -153,6 +169,7 @@ export default function AchievementsPage() {
 
 	const getAllOptions = trpc.achievement.getAll.queryOptions();
 	const listOptions = trpc.achievement.list.queryOptions();
+	const statsOptions = trpc.achievement.getStats.queryOptions();
 
 	const {
 		data: authenticatedAchievements,
@@ -171,6 +188,8 @@ export default function AchievementsPage() {
 		...listOptions,
 		enabled: !isSignedIn,
 	});
+
+	const { data: statsData } = useQuery(statsOptions);
 
 	const isLoading = isSignedIn ? isLoadingAuth : isLoadingPublic;
 	const isError = isSignedIn ? isErrorAuth : isErrorPublic;
@@ -262,6 +281,11 @@ export default function AchievementsPage() {
 								unlockedAt={"unlockedAt" in achievement ? achievement.unlockedAt : null}
 								condition={"condition" in achievement ? achievement.condition : undefined}
 								rewardSkinId={achievement.rewardSkinId}
+								unlockPercent={(() => {
+									const stat = statsData?.[achievement.id];
+									if (!stat || stat.totalPlayers === 0) return null;
+									return (stat.unlockCount / stat.totalPlayers) * 100;
+								})()}
 							/>
 						))}
 					</div>

@@ -139,6 +139,8 @@ export const scoreRouter = router({
 					distance: input.distance,
 					obstaclesCleared: input.obstaclesCleared,
 					longestCleanRun: input.longestCleanRun,
+					duration: input.duration,
+					mods: input.mods,
 				});
 				newAchievements = achievementResult.newAchievements;
 				newSkins.push(...achievementResult.newSkins);
@@ -314,7 +316,12 @@ export const scoreRouter = router({
 
 			const now = Date.now();
 			const sevenDaysMs = 7 * 24 * 60 * 60 * 1000;
-			const results: Array<{ clientIndex: number; scoreId?: string; status: "ok" | "rejected"; reason?: string }> = [];
+			const results: Array<{
+				clientIndex: number;
+				scoreId?: string;
+				status: "ok" | "rejected";
+				reason?: string;
+			}> = [];
 
 			let totalXpGained = 0;
 			const insertedScoreIds: string[] = [];
@@ -359,7 +366,11 @@ export const scoreRouter = router({
 					((s.duration / 1000) * SCORE_PER_SECOND + s.obstaclesCleared * SCORE_PER_OBSTACLE) *
 					modMultiplier;
 				if (s.score > maxAllowedScore * 1.1 + 50) {
-					results.push({ clientIndex: i, status: "rejected", reason: "Score exceeds maximum allowed rate" });
+					results.push({
+						clientIndex: i,
+						status: "rejected",
+						reason: "Score exceeds maximum allowed rate",
+					});
 					continue;
 				}
 

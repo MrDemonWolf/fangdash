@@ -333,21 +333,23 @@ describe("SSR guard", () => {
 		delete globalThis.window;
 		try {
 			const mod = await loadModule();
-			await expect(mod.addPendingScore({
-				type: "solo",
-				payload: {
-					score: 10,
-					distance: 50,
-					obstaclesCleared: 0,
-					longestCleanRun: 0,
-					duration: 2000,
-					seed: "s",
-					difficulty: "easy",
-					mods: 0,
-					cheated: false,
-				},
-				hmac: "h",
-			})).rejects.toThrow("IndexedDB not available in SSR");
+			await expect(
+				mod.addPendingScore({
+					type: "solo",
+					payload: {
+						score: 10,
+						distance: 50,
+						obstaclesCleared: 0,
+						longestCleanRun: 0,
+						duration: 2000,
+						seed: "s",
+						difficulty: "easy",
+						mods: 0,
+						cheated: false,
+					},
+					hmac: "h",
+				}),
+			).rejects.toThrow("IndexedDB not available in SSR");
 		} finally {
 			globalThis.window = origWindow;
 		}

@@ -78,7 +78,8 @@ export function GameOverModal({
 				<div
 					className="h-0.5 w-full"
 					style={{
-						background: "linear-gradient(90deg, transparent 10%, var(--color-fang-cyan), transparent 90%)",
+						background:
+							"linear-gradient(90deg, transparent 10%, var(--color-fang-cyan), transparent 90%)",
 					}}
 				/>
 
@@ -170,7 +171,9 @@ export function GameOverModal({
 
 					{/* Saving indicator */}
 					{isSignedIn && !cheatsUsed && submitting && (
-						<p className="mb-4 text-sm text-center font-mono text-muted-foreground">Saving score...</p>
+						<p className="mb-4 text-sm text-center font-mono text-muted-foreground">
+							Saving score...
+						</p>
 					)}
 
 					{/* Unlocks — horizontal pill badges */}
@@ -243,7 +246,8 @@ export function GameOverModal({
 				<div
 					className="h-px w-full"
 					style={{
-						background: "linear-gradient(90deg, transparent, oklch(0.72 0.15 210 / 0.2), transparent)",
+						background:
+							"linear-gradient(90deg, transparent, oklch(0.72 0.15 210 / 0.2), transparent)",
 					}}
 				/>
 			</div>

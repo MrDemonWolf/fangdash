@@ -8,12 +8,15 @@ const buttonVariants = cva(
 	{
 		variants: {
 			variant: {
-				default: "bg-primary text-primary-foreground hover:bg-primary/85 hover:shadow-[var(--glow-cyan)] active:scale-[0.98]",
+				default:
+					"bg-primary text-primary-foreground hover:bg-primary/85 hover:shadow-[var(--glow-cyan)] active:scale-[0.98]",
 				secondary:
 					"border border-border bg-secondary text-secondary-foreground hover:bg-muted hover:text-foreground active:scale-[0.98]",
-				outline: "border border-border text-foreground bg-transparent hover:bg-secondary hover:border-primary/30 active:scale-[0.98]",
+				outline:
+					"border border-border text-foreground bg-transparent hover:bg-secondary hover:border-primary/30 active:scale-[0.98]",
 				ghost: "text-muted-foreground hover:bg-secondary hover:text-foreground",
-				destructive: "bg-destructive text-destructive-foreground hover:bg-destructive/90 hover:shadow-[var(--glow-red)] active:scale-[0.98]",
+				destructive:
+					"bg-destructive text-destructive-foreground hover:bg-destructive/90 hover:shadow-[var(--glow-red)] active:scale-[0.98]",
 				link: "text-primary underline-offset-4 hover:underline",
 				glow: "bg-primary text-primary-foreground font-semibold shadow-[var(--glow-cyan)] hover:shadow-[var(--glow-cyan-strong)] hover:bg-primary/85 hover:scale-[1.02] active:scale-[0.98] animate-pulse-glow",
 			},

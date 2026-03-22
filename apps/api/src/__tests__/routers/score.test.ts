@@ -581,12 +581,14 @@ describe("score router", () => {
 			const cheatedScore = Math.ceil(maxAllowed * 1.5);
 
 			const results = await caller.score.batchSync({
-				scores: [{
-					...validScore,
-					score: cheatedScore,
-					duration,
-					obstaclesCleared,
-				}],
+				scores: [
+					{
+						...validScore,
+						score: cheatedScore,
+						duration,
+						obstaclesCleared,
+					},
+				],
 			});
 			expect(results[0]!.status).toBe("rejected");
 			expect(results[0]!.reason).toBe("Score exceeds maximum allowed rate");
@@ -653,9 +655,9 @@ describe("score router", () => {
 
 		it("should require authentication", async () => {
 			const caller = createTestCaller({ db });
-			await expect(
-				caller.score.batchSync({ scores: [validScore] }),
-			).rejects.toThrow("UNAUTHORIZED");
+			await expect(caller.score.batchSync({ scores: [validScore] })).rejects.toThrow(
+				"UNAUTHORIZED",
+			);
 		});
 
 		it("should enforce max 20", async () => {
@@ -668,9 +670,7 @@ describe("score router", () => {
 				seed: `s${i}`,
 			}));
 
-			await expect(
-				caller.score.batchSync({ scores }),
-			).rejects.toThrow();
+			await expect(caller.score.batchSync({ scores })).rejects.toThrow();
 		});
 	});
 });

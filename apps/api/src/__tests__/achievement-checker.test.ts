@@ -12,6 +12,9 @@ const defaultStats: PlayerStats = {
 	racesPlayed: 0,
 	racesWon: 0,
 	longestCleanRun: 0,
+	latestDuration: 0,
+	latestMods: 0,
+	latestObstaclesCleared: 0,
 };
 
 describe("isAchievementEarned", () => {

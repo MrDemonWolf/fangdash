@@ -32,10 +32,7 @@ export function useLoginSync() {
 
 				const now = Date.now();
 				const eligible = pending.filter(
-					(s) =>
-						!s.payload.cheated &&
-						now - s.createdAt < SEVEN_DAYS_MS &&
-						s.status !== "syncing",
+					(s) => !s.payload.cheated && now - s.createdAt < SEVEN_DAYS_MS && s.status !== "syncing",
 				);
 
 				if (eligible.length === 0) {
@@ -81,7 +78,9 @@ export function useLoginSync() {
 				}
 
 				if (syncedCount > 0) {
-					toast.success(`${syncedCount} score${syncedCount > 1 ? "s" : ""} synced from offline play`);
+					toast.success(
+						`${syncedCount} score${syncedCount > 1 ? "s" : ""} synced from offline play`,
+					);
 					addNotification({
 						type: "score_synced",
 						title: "Scores Synced",

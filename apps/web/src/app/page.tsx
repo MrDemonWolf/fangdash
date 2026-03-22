@@ -95,9 +95,7 @@ export default function Home() {
 						<div className="grid grid-cols-2 gap-6 sm:grid-cols-4 sm:gap-8">
 							{stats.map(({ value, label, color }) => (
 								<div key={label} className="flex flex-col gap-1.5">
-									<p
-										className={`font-mono text-4xl font-black tabular-nums sm:text-5xl ${color}`}
-									>
+									<p className={`font-mono text-4xl font-black tabular-nums sm:text-5xl ${color}`}>
 										{value}
 									</p>
 									<p className="text-[11px] font-medium uppercase tracking-[0.15em] text-muted-foreground">

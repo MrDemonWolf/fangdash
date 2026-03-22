@@ -78,7 +78,10 @@ function SkinPickerCard({
 				equipped
 					? "border-primary shadow-[var(--glow-cyan)]"
 					: skin.unlocked
-						? cn(rarity.border, "hover:border-primary/60 hover:shadow-[var(--glow-cyan)] cursor-pointer")
+						? cn(
+								rarity.border,
+								"hover:border-primary/60 hover:shadow-[var(--glow-cyan)] cursor-pointer",
+							)
 						: "border-border grayscale opacity-60 cursor-not-allowed",
 			)}
 		>
@@ -383,9 +386,7 @@ export default function SettingsPage() {
 					Settings
 					<span className="text-muted-foreground/40">{" \u27E9\u2014"}</span>
 				</h1>
-				<p className="text-sm text-muted-foreground">
-					Manage your profile, privacy, and account
-				</p>
+				<p className="text-sm text-muted-foreground">Manage your profile, privacy, and account</p>
 			</div>
 
 			<div className="space-y-8">

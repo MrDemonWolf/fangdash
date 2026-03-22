@@ -16,10 +16,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 /* ------------------------------------------------------------------ */
 /*  Rarity colour map                                                  */
 /* ------------------------------------------------------------------ */
-const RARITY_STYLES: Record<
-	SkinRarity,
-	{ badge: string; border: string; glow: string }
-> = {
+const RARITY_STYLES: Record<SkinRarity, { badge: string; border: string; glow: string }> = {
 	common: {
 		badge: "secondary",
 		border: "border-muted-foreground/30",
@@ -72,7 +69,15 @@ interface GallerySkin extends SkinDefinition {
 	unlocked: boolean;
 }
 
-function SkinCard({ skin, equipped }: { skin: GallerySkin; equipped: boolean }) {
+function SkinCard({
+	skin,
+	equipped,
+	unlockPercent,
+}: {
+	skin: GallerySkin;
+	equipped: boolean;
+	unlockPercent?: number | null;
+}) {
 	const rarity = RARITY_STYLES[skin.rarity];
 
 	return (
@@ -93,10 +98,7 @@ function SkinCard({ skin, equipped }: { skin: GallerySkin; equipped: boolean }) 
 					src={`/wolves/${skin.spriteKey}.png`}
 					alt={skin.name}
 					fill={true}
-					className={cn(
-						"pixelated object-contain",
-						!skin.unlocked && "grayscale opacity-40",
-					)}
+					className={cn("pixelated object-contain", !skin.unlocked && "grayscale opacity-40")}
 					sizes="96px"
 				/>
 				{!skin.unlocked && (
@@ -131,6 +133,11 @@ function SkinCard({ skin, equipped }: { skin: GallerySkin; equipped: boolean }) 
 						{unlockConditionText(skin.unlockCondition)}
 					</p>
 				)}
+				{unlockPercent != null && (
+					<p className="mt-1 text-xs text-muted-foreground">
+						{unlockPercent.toFixed(1)}% of players
+					</p>
+				)}
 			</div>
 		</Card>
 	);
@@ -163,6 +170,8 @@ export default function SkinsPage() {
 				...s,
 				unlocked: s.unlockCondition.type === "default",
 			}));
+
+	const { data: skinStats } = useQuery(trpc.skin.getStats.queryOptions());
 
 	const isLoading = signedIn && (galleryQuery.isLoading || equippedQuery.isLoading);
 
@@ -206,7 +215,16 @@ export default function SkinsPage() {
 			{!isLoading && (
 				<div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
 					{skins.map((skin) => (
-						<SkinCard key={skin.id} skin={skin} equipped={signedIn && equippedSkinId === skin.id} />
+						<SkinCard
+							key={skin.id}
+							skin={skin}
+							equipped={signedIn && equippedSkinId === skin.id}
+							unlockPercent={(() => {
+								const stat = skinStats?.[skin.id];
+								if (!stat || stat.totalPlayers === 0) return null;
+								return (stat.unlockCount / stat.totalPlayers) * 100;
+							})()}
+						/>
 					))}
 				</div>
 			)}

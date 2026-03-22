@@ -87,7 +87,10 @@ function getDB(): Promise<IDBPDatabase<FangDashScoresDB>> {
 // HMAC helper
 // ---------------------------------------------------------------------------
 
-export async function computeHMAC(payload: PendingScoreEntry["payload"], salt: string): Promise<string> {
+export async function computeHMAC(
+	payload: PendingScoreEntry["payload"],
+	salt: string,
+): Promise<string> {
 	const data = JSON.stringify(payload) + salt;
 	const encoder = new TextEncoder();
 	const key = await crypto.subtle.importKey(
@@ -135,7 +138,10 @@ export async function removePendingScore(id: number): Promise<void> {
 	await db.delete("pending-scores", id);
 }
 
-export async function updatePendingScore(id: number, updates: Partial<PendingScoreEntry>): Promise<void> {
+export async function updatePendingScore(
+	id: number,
+	updates: Partial<PendingScoreEntry>,
+): Promise<void> {
 	const db = await getDB();
 	const existing = await db.get("pending-scores", id);
 	if (!existing) return;
