@@ -1,6 +1,6 @@
+import type * as Party from "partykit/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import RaceServer from "../race-server.ts";
-import type * as Party from "partykit/server";
 
 function createMockConnection(id: string): Party.Connection {
 	return {
@@ -40,7 +40,9 @@ describe("RaceServer", () => {
 			server.onConnect(conn);
 
 			expect(conn.send).toHaveBeenCalledTimes(1);
-			const sent = JSON.parse((conn.send as ReturnType<typeof vi.fn>).mock.calls[0]?.[0]);
+			const sent = JSON.parse(
+				(conn.send as ReturnType<typeof vi.fn>).mock.calls[0]?.[0],
+			);
 			expect(sent.type).toBe("room_state");
 			expect(sent.payload.status).toBe("waiting");
 		});
