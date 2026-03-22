@@ -80,7 +80,7 @@ export async function processQueue(submitFn: SubmitFn): Promise<SubmitResult[]> 
 
 		// Check backoff timing
 		if (entry.lastAttempt && entry.retryCount > 0) {
-			const delay = BACKOFF_DELAYS[Math.min(entry.retryCount - 1, BACKOFF_DELAYS.length - 1)]!;
+			const delay = BACKOFF_DELAYS[Math.min(entry.retryCount - 1, BACKOFF_DELAYS.length - 1)] ?? 0;
 			if (Date.now() - entry.lastAttempt < delay) continue;
 		}
 
@@ -127,7 +127,7 @@ async function submitOne(
 
 function scheduleRetry(submitFn: SubmitFn, retryCount: number) {
 	if (retryTimeout) return; // Already scheduled
-	const delay = BACKOFF_DELAYS[Math.min(retryCount - 1, BACKOFF_DELAYS.length - 1)]!;
+	const delay = BACKOFF_DELAYS[Math.min(retryCount - 1, BACKOFF_DELAYS.length - 1)] ?? 0;
 	retryTimeout = setTimeout(() => {
 		retryTimeout = null;
 		processQueue(submitFn);

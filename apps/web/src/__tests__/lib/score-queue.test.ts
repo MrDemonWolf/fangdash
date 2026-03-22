@@ -166,7 +166,7 @@ describe("processQueue", () => {
 		const submitFn = vi.fn().mockResolvedValueOnce(baseResult);
 		const results = await processQueue(submitFn);
 		expect(results).toHaveLength(1);
-		expect(results[0]!.scoreId).toBe("server-score-1");
+		expect(results[0]?.scoreId).toBe("server-score-1");
 		expect(scoreStore.removePendingScore).toHaveBeenCalledWith(10);
 	});
 
@@ -292,9 +292,9 @@ describe("setupOnlineListener", () => {
 	});
 
 	it("fires processQueue on online event", async () => {
-		let handler: Function | undefined;
+		let handler: (() => void) | undefined;
 		vi.stubGlobal("window", {
-			addEventListener: (_event: string, fn: Function) => {
+			addEventListener: (_event: string, fn: () => void) => {
 				handler = fn;
 			},
 			removeEventListener: vi.fn(),
@@ -306,7 +306,7 @@ describe("setupOnlineListener", () => {
 
 		// Calling handler should invoke processQueue which calls getAllPendingScores
 		(scoreStore.getAllPendingScores as Mock).mockResolvedValueOnce([]);
-		await handler!();
+		await handler?.();
 		expect(scoreStore.getAllPendingScores).toHaveBeenCalled();
 	});
 });

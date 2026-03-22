@@ -62,8 +62,10 @@ export function useLoginSync() {
 
 				let syncedCount = 0;
 				for (let i = 0; i < results.length; i++) {
-					const result = results[i]!;
-					const entry = eligible[result.clientIndex]!;
+					const result = results[i];
+					if (!result) continue;
+					const entry = eligible[result.clientIndex];
+					if (!entry) continue;
 					if ((result.status === "ok" || result.status === "rejected") && entry.id) {
 						await removePendingScore(entry.id);
 						if (result.status === "ok") syncedCount++;

@@ -328,7 +328,8 @@ export const scoreRouter = router({
 			const seenSeeds = new Set<string>();
 
 			for (let i = 0; i < input.scores.length; i++) {
-				const s = input.scores[i]!;
+				const s = input.scores[i];
+				if (!s) continue;
 
 				// Reject duplicate seeds within the same batch
 				const dedupKey = `${s.seed}:${s.clientTimestamp}`;
