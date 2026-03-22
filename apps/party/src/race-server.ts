@@ -52,7 +52,7 @@ export default class RaceServer implements Party.Server {
 					signal: controller.signal,
 				});
 				clearTimeout(timeout);
-				if (!res.ok || !(await res.json() as { session?: unknown }).session) {
+				if (!res.ok || !((await res.json()) as { session?: unknown }).session) {
 					conn.close(4003, "Invalid session");
 					return;
 				}

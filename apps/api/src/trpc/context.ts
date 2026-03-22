@@ -12,9 +12,7 @@ export async function createContext(c: Context) {
 
 	// Only fetch session when auth cookies are present — saves a D1 read on public requests
 	const cookie = c.req.header("cookie") ?? "";
-	const hasCookie = cookie
-		.split(";")
-		.some((part) => part.trim().startsWith("better-auth."));
+	const hasCookie = cookie.split(";").some((part) => part.trim().startsWith("better-auth."));
 	if (auth && hasCookie) {
 		try {
 			sessionData = await auth.api.getSession({
