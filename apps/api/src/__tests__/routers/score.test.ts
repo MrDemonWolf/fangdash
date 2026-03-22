@@ -554,7 +554,7 @@ describe("score router", () => {
 				scores: [{ ...validScore, mods: 1 << 10 }],
 			});
 			expect(results[0]?.status).toBe("rejected");
-			expect(results[0]?.reason).toBe("Invalid mod flags");
+			expect(results[0]?.reason).toBe("Invalid mod flags: contains non-ready mods");
 		});
 
 		it("should reject duration >30min", async () => {
@@ -566,7 +566,7 @@ describe("score router", () => {
 				scores: [{ ...validScore, duration: 2_000_000 }],
 			});
 			expect(results[0]?.status).toBe("rejected");
-			expect(results[0]?.reason).toBe("Duration exceeds maximum");
+			expect(results[0]?.reason).toBe("Game session exceeds maximum allowed duration");
 		});
 
 		it("should reject anti-cheat violation", async () => {
