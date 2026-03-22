@@ -1,7 +1,7 @@
 "use client";
 
 import type { DifficultyName } from "@fangdash/shared";
-import { DIFFICULTY_LEVELS, MOD_DEFINITIONS, decodeMods } from "@fangdash/shared";
+import { areModsCompatible, DIFFICULTY_LEVELS, MOD_DEFINITIONS, decodeMods } from "@fangdash/shared";
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -144,14 +144,26 @@ function formatNumber(n: number) {
 	return n.toLocaleString();
 }
 
+function buildModsMask(selectedFlags: Set<number>): number {
+	let mask = 0;
+	for (const flag of selectedFlags) {
+		mask |= flag;
+	}
+	return mask;
+}
+
 export default function LeaderboardPage() {
 	const [activeTab, setActiveTab] = useState<Tab>("all-time");
 	const [activeDifficulty, setActiveDifficulty] = useState<DifficultyName | "all">("all");
-	const [activeMods, setActiveMods] = useState<number | undefined>(undefined);
+	const [selectedModFlags, setSelectedModFlags] = useState<Set<number>>(new Set());
+	const [modsMode, setModsMode] = useState<"all" | "none" | "selected">("all");
 	const trpc = useTRPC();
 	const { data: session } = useSession();
 
 	const period = activeTab === "all-time" ? ("all" as const) : activeTab;
+
+	const activeMods: number | undefined =
+		modsMode === "all" ? undefined : modsMode === "none" ? 0 : buildModsMask(selectedModFlags);
 
 	const leaderboardQuery = useQuery(
 		trpc.score.leaderboard.queryOptions({
@@ -170,6 +182,26 @@ export default function LeaderboardPage() {
 			toast.error("Failed to load leaderboard.");
 		}
 	}, [leaderboardQuery.isError]);
+
+	function toggleModFlag(flag: number) {
+		const next = new Set(selectedModFlags);
+		if (next.has(flag)) {
+			next.delete(flag);
+		} else {
+			// Check compatibility before adding
+			const combined = buildModsMask(next) | flag;
+			if (!areModsCompatible(combined)) return;
+			next.add(flag);
+		}
+		if (next.size === 0) {
+			setModsMode("all");
+		} else {
+			setModsMode("selected");
+		}
+		setSelectedModFlags(next);
+	}
+
+	const readyMods = MOD_DEFINITIONS.filter((m) => m.ready);
 
 	return (
 		<main className="min-h-screen bg-[var(--color-surface-void)] px-4 py-10 sm:px-6 lg:px-8">
@@ -255,7 +287,7 @@ export default function LeaderboardPage() {
 							</div>
 						</div>
 
-						{/* Mods */}
+						{/* Mods — multi-toggle */}
 						<div>
 							<span className="mb-1 block text-xs font-mono uppercase tracking-[0.15em] text-muted-foreground">
 								Mods
@@ -263,11 +295,14 @@ export default function LeaderboardPage() {
 							<div className="flex flex-wrap gap-1 rounded-lg bg-[var(--color-surface-base)] p-1">
 								<button
 									type="button"
-									onClick={() => setActiveMods(undefined)}
-									aria-pressed={activeMods === undefined}
+									onClick={() => {
+										setModsMode("all");
+										setSelectedModFlags(new Set());
+									}}
+									aria-pressed={modsMode === "all"}
 									className={cn(
 										"rounded-md px-3 py-1.5 text-sm font-medium font-mono transition-all cursor-pointer",
-										activeMods === undefined
+										modsMode === "all"
 											? "bg-fang-cyan/15 text-fang-cyan shadow-[var(--glow-cyan)] border border-fang-cyan/30"
 											: "text-muted-foreground hover:text-foreground hover:bg-surface-bright/50",
 									)}
@@ -276,34 +311,48 @@ export default function LeaderboardPage() {
 								</button>
 								<button
 									type="button"
-									onClick={() => setActiveMods(0)}
-									aria-pressed={activeMods === 0}
+									onClick={() => {
+										setModsMode("none");
+										setSelectedModFlags(new Set());
+									}}
+									aria-pressed={modsMode === "none"}
 									className={cn(
 										"rounded-md px-3 py-1.5 text-sm font-medium font-mono transition-all cursor-pointer",
-										activeMods === 0
+										modsMode === "none"
 											? "bg-fang-cyan/15 text-fang-cyan shadow-[var(--glow-cyan)] border border-fang-cyan/30"
 											: "text-muted-foreground hover:text-foreground hover:bg-surface-bright/50",
 									)}
 								>
 									No Mods
 								</button>
-								{MOD_DEFINITIONS.filter((mod) => mod.ready).map((mod) => (
-									<button
-										type="button"
-										key={mod.id}
-										onClick={() => setActiveMods(mod.flag)}
-										aria-pressed={activeMods === mod.flag}
-										className={cn(
-											"flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium font-mono transition-all cursor-pointer",
-											activeMods === mod.flag
-												? "bg-fang-cyan/15 text-fang-cyan shadow-[var(--glow-cyan)] border border-fang-cyan/30"
-												: "text-muted-foreground hover:text-foreground hover:bg-surface-bright/50",
-										)}
-									>
-										<span>{mod.icon}</span>
-										<span className="hidden sm:inline">{mod.name}</span>
-									</button>
-								))}
+								{readyMods.map((mod) => {
+									const isActive = modsMode === "selected" && selectedModFlags.has(mod.flag);
+									const combinedIfAdded = buildModsMask(selectedModFlags) | mod.flag;
+									const isDisabled =
+										!isActive && modsMode === "selected" && !areModsCompatible(combinedIfAdded);
+									return (
+										<button
+											type="button"
+											key={mod.id}
+											disabled={isDisabled}
+											onClick={() => {
+												setModsMode("selected");
+												toggleModFlag(mod.flag);
+											}}
+											aria-pressed={isActive}
+											className={cn(
+												"flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium font-mono transition-all cursor-pointer",
+												isActive
+													? "bg-fang-cyan/15 text-fang-cyan shadow-[var(--glow-cyan)] border border-fang-cyan/30"
+													: "text-muted-foreground hover:text-foreground hover:bg-surface-bright/50",
+												isDisabled && "opacity-40 cursor-not-allowed",
+											)}
+										>
+											<span>{mod.icon}</span>
+											<span className="hidden sm:inline">{mod.name}</span>
+										</button>
+									);
+								})}
 							</div>
 						</div>
 					</CardContent>
