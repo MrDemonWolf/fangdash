@@ -16,12 +16,35 @@ import { Skeleton } from "@/components/ui/skeleton";
 /* ------------------------------------------------------------------ */
 /*  Rarity colour map                                                  */
 /* ------------------------------------------------------------------ */
-const RARITY_STYLES: Record<SkinRarity, { badge: string; border: string }> = {
-	common: { badge: "secondary", border: "border-muted-foreground/30" },
-	uncommon: { badge: "emerald", border: "border-emerald-500/40" },
-	rare: { badge: "default", border: "border-primary/40" },
-	epic: { badge: "purple", border: "border-purple-500/40" },
-	legendary: { badge: "gold", border: "border-yellow-500/40" },
+const RARITY_STYLES: Record<
+	SkinRarity,
+	{ badge: string; border: string; glow: string }
+> = {
+	common: {
+		badge: "secondary",
+		border: "border-muted-foreground/30",
+		glow: "",
+	},
+	uncommon: {
+		badge: "emerald",
+		border: "border-emerald-500/40",
+		glow: "",
+	},
+	rare: {
+		badge: "default",
+		border: "border-primary/40",
+		glow: "shadow-[var(--glow-cyan)]",
+	},
+	epic: {
+		badge: "purple",
+		border: "border-purple-500/40",
+		glow: "shadow-[var(--glow-purple)]",
+	},
+	legendary: {
+		badge: "gold",
+		border: "border-yellow-500/40",
+		glow: "shadow-[var(--glow-gold)]",
+	},
 };
 
 /* ------------------------------------------------------------------ */
@@ -55,11 +78,11 @@ function SkinCard({ skin, equipped }: { skin: GallerySkin; equipped: boolean }) 
 	return (
 		<Card
 			className={cn(
-				"relative flex flex-col items-center p-4 transition-all border-2",
+				"fang-accent relative flex flex-col items-center p-4 transition-all border-2",
 				equipped
-					? "border-primary shadow-[0_0_20px_rgba(15,172,237,0.4)]"
+					? "border-primary shadow-[var(--glow-cyan)]"
 					: skin.unlocked
-						? rarity.border
+						? cn(rarity.border, rarity.glow)
 						: "border-border opacity-70",
 			)}
 		>
@@ -70,12 +93,15 @@ function SkinCard({ skin, equipped }: { skin: GallerySkin; equipped: boolean }) 
 					src={`/wolves/${skin.spriteKey}.png`}
 					alt={skin.name}
 					fill={true}
-					className={cn("object-contain", !skin.unlocked && "grayscale")}
+					className={cn(
+						"pixelated object-contain",
+						!skin.unlocked && "grayscale opacity-40",
+					)}
 					sizes="96px"
 				/>
 				{!skin.unlocked && (
-					<div className="absolute inset-0 flex items-center justify-center">
-						<Lock className="size-8 text-muted-foreground" />
+					<div className="absolute inset-0 flex items-center justify-center rounded-lg bg-black/30">
+						<Lock className="size-8 text-muted-foreground drop-shadow-lg" />
 					</div>
 				)}
 			</div>
@@ -94,12 +120,14 @@ function SkinCard({ skin, equipped }: { skin: GallerySkin; equipped: boolean }) 
 			<div className="mt-auto pt-4">
 				{skin.unlocked ? (
 					equipped ? (
-						<span className="text-sm font-medium text-primary">Currently Equipped</span>
+						<span className="text-sm font-medium text-fang-cyan text-glow-cyan">
+							Currently Equipped
+						</span>
 					) : (
 						<span className="text-sm font-medium text-emerald-400">Unlocked</span>
 					)
 				) : (
-					<p className="text-center text-xs text-muted-foreground">
+					<p className="font-mono text-xs text-muted-foreground italic">
 						{unlockConditionText(skin.unlockCondition)}
 					</p>
 				)}
@@ -140,13 +168,20 @@ export default function SkinsPage() {
 
 	return (
 		<main className="mx-auto min-h-screen max-w-6xl px-4 py-12">
-			<h1 className="mb-2 text-center text-4xl font-extrabold text-foreground">Skins Gallery</h1>
+			{/* ── Page title with fang decorative lines ── */}
+			<div className="mb-2 flex items-center justify-center gap-4">
+				<span className="h-px flex-1 max-w-24 bg-gradient-to-r from-transparent to-fang-cyan/60" />
+				<h1 className="text-center text-4xl font-extrabold text-glow-cyan text-fang-cyan">
+					Skins Gallery
+				</h1>
+				<span className="h-px flex-1 max-w-24 bg-gradient-to-l from-transparent to-fang-cyan/60" />
+			</div>
 			<p className="mb-4 text-center text-muted-foreground">
 				Collect wolf skins by playing the game
 			</p>
 			{signedIn && (
 				<p className="mb-10 text-center">
-					<Link href="/settings" className="text-sm text-primary hover:underline">
+					<Link href="/settings" className="text-sm text-fang-cyan hover:underline">
 						Go to Settings to change your equipped skin
 					</Link>
 				</p>

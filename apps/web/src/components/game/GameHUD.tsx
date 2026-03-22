@@ -61,40 +61,38 @@ export function GameHUD({
 	return (
 		<div className="absolute top-0 left-0 right-0 z-10 pointer-events-none">
 			<div
-				className="flex items-center justify-between px-3 py-2 bg-[#091533]/90 backdrop-blur-md border-b border-[#0FACED]/20"
-				style={{ boxShadow: "0 2px 20px rgba(15,172,237,0.08)" }}
+				className="flex items-center justify-between px-4 py-2.5 glass"
+				style={{
+					borderBottom: "1px solid oklch(0.72 0.15 210 / 0.15)",
+					boxShadow: "0 4px 30px rgba(15,172,237,0.06)",
+				}}
 			>
 				{/* Stats — vertical stack */}
 				<div className="flex flex-col gap-0.5">
 					{/* Score label */}
-					<span className="text-[10px] font-mono uppercase tracking-widest text-[#0FACED]/60">
+					<span className="text-[10px] font-mono uppercase tracking-[0.2em] text-primary/50">
 						Score
 					</span>
 					{/* Score value */}
-					<span
-						className="text-3xl font-bold font-mono tabular-nums leading-none text-[#0FACED]"
-						style={{
-							textShadow: "0 0 10px #0FACED, 0 0 20px rgba(15,172,237,0.4)",
-						}}
-					>
+					<span className="text-glow-cyan text-3xl font-black font-mono tabular-nums leading-none text-primary">
 						{String(Math.floor(score)).padStart(7, "0")}
 					</span>
 					{/* Dist + Time row */}
-					<div className="flex items-center gap-4 mt-0.5">
+					<div className="flex items-center gap-5 mt-1">
 						<div className="flex items-center gap-1.5">
-							<span className="text-[10px] font-mono uppercase tracking-widest text-white/40">
+							<span className="text-[10px] font-mono uppercase tracking-[0.15em] text-foreground/30">
 								Dist
 							</span>
-							<span className="text-lg font-bold font-mono tabular-nums leading-none text-white/80">
+							<span className="text-lg font-bold font-mono tabular-nums leading-none text-foreground/80">
 								{Math.floor(distance).toLocaleString()}
-								<span className="text-xs text-white/40 ml-0.5">m</span>
+								<span className="text-xs text-foreground/30 ml-0.5">m</span>
 							</span>
 						</div>
 						<div className="flex items-center gap-1.5">
-							<span className="text-[10px] font-mono uppercase tracking-widest text-white/40">
+							<span className="text-[10px] font-mono uppercase tracking-[0.15em] text-foreground/30">
 								Time
 							</span>
-							<span className="text-lg font-bold font-mono tabular-nums leading-none text-white/80">
+							<span className="text-lg font-bold font-mono tabular-nums leading-none text-foreground/80">
 								{formatTime(elapsedTime)}
 							</span>
 						</div>
@@ -102,13 +100,13 @@ export function GameHUD({
 				</div>
 
 				{/* Right controls */}
-				<div className="pointer-events-auto flex items-center gap-3">
+				<div className="pointer-events-auto flex items-center gap-4">
 					{/* Mute button */}
 					{onToggleMute && (
 						<button
 							type="button"
 							onClick={onToggleMute}
-							className="text-white/60 hover:text-[#0FACED] transition-colors"
+							className="text-foreground/40 hover:text-primary hover:drop-shadow-[0_0_6px_rgba(15,172,237,0.4)] transition-all duration-200"
 							aria-label={muted ? "Unmute" : "Mute"}
 						>
 							<SpeakerIcon muted={muted} />
@@ -120,7 +118,7 @@ export function GameHUD({
 						<button
 							type="button"
 							onClick={onOpenMenu}
-							className="text-xs font-mono uppercase tracking-widest text-white/50 hover:text-[#0FACED] transition-colors"
+							className="text-xs font-mono uppercase tracking-[0.15em] text-foreground/35 hover:text-primary transition-colors duration-200"
 							aria-label="Open menu"
 						>
 							PAUSE [ESC]
