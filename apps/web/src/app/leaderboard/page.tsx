@@ -1,7 +1,12 @@
 "use client";
 
 import type { DifficultyName } from "@fangdash/shared";
-import { areModsCompatible, DIFFICULTY_LEVELS, MOD_DEFINITIONS, decodeMods } from "@fangdash/shared";
+import {
+	areModsCompatible,
+	DIFFICULTY_LEVELS,
+	MOD_DEFINITIONS,
+	decodeMods,
+} from "@fangdash/shared";
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { useEffect, useState } from "react";

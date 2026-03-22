@@ -54,15 +54,15 @@ describe("addNotification", () => {
 		addNotification(baseNotification);
 		const items = getNotifications();
 		expect(items).toHaveLength(1);
-		expect(items[0]!.title).toBe("First Run");
+		expect(items[0]?.title).toBe("First Run");
 	});
 
 	it("prepends newest first", () => {
 		addNotification({ ...baseNotification, title: "First" });
 		addNotification({ ...baseNotification, title: "Second" });
 		const items = getNotifications();
-		expect(items[0]!.title).toBe("Second");
-		expect(items[1]!.title).toBe("First");
+		expect(items[0]?.title).toBe("Second");
+		expect(items[1]?.title).toBe("First");
 	});
 
 	it("caps at 10 notifications", () => {
@@ -72,15 +72,16 @@ describe("addNotification", () => {
 		const items = getNotifications();
 		expect(items).toHaveLength(10);
 		// newest should be N11
-		expect(items[0]!.title).toBe("N11");
+		expect(items[0]?.title).toBe("N11");
 	});
 
 	it("sets read=false and generates id/createdAt", () => {
 		addNotification(baseNotification);
-		const item = getNotifications()[0]!;
-		expect(item.read).toBe(false);
-		expect(item.id).toBe("uuid-1");
-		expect(typeof item.createdAt).toBe("number");
+		const item = getNotifications()[0];
+		expect(item).toBeDefined();
+		expect(item?.read).toBe(false);
+		expect(item?.id).toBe("uuid-1");
+		expect(typeof item?.createdAt).toBe("number");
 	});
 });
 

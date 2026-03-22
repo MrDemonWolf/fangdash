@@ -99,18 +99,12 @@ export default class RaceServer implements Party.Server {
 			}
 		}
 
-		if (
-			this.room.status === "racing" &&
-			this.room.players.every((p) => !p.alive)
-		) {
+		if (this.room.status === "racing" && this.room.players.every((p) => !p.alive)) {
 			this.endRace();
 		}
 	}
 
-	private handleJoin(
-		conn: Party.Connection,
-		payload: { username: string; skinId: string },
-	) {
+	private handleJoin(conn: Party.Connection, payload: { username: string; skinId: string }) {
 		if (this.room.players.some((p) => p.id === conn.id)) {
 			return;
 		}
@@ -191,10 +185,7 @@ export default class RaceServer implements Party.Server {
 		this.broadcast({ type: "race_start", payload: { seed: this.room.seed } });
 	}
 
-	private handleUpdate(
-		conn: Party.Connection,
-		payload: { distance: number; score: number },
-	) {
+	private handleUpdate(conn: Party.Connection, payload: { distance: number; score: number }) {
 		if (this.room.status !== "racing") {
 			return;
 		}
@@ -238,9 +229,7 @@ export default class RaceServer implements Party.Server {
 		if (conn.id !== this.room.hostId) return;
 		if (this.room.status !== "waiting") return;
 
-		this.room.players = this.room.players.filter(
-			(p) => p.id !== payload.playerId,
-		);
+		this.room.players = this.room.players.filter((p) => p.id !== payload.playerId);
 		this.broadcast({
 			type: "player_kicked",
 			payload: { id: payload.playerId },

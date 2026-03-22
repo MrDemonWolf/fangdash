@@ -44,7 +44,7 @@ describe("pending scores", () => {
 
 		const pending = await mod.getPendingScores();
 		expect(pending).toHaveLength(1);
-		expect(pending[0]!.payload.score).toBe(100);
+		expect(pending[0]?.payload.score).toBe(100);
 	});
 
 	it("auto-sets defaults (createdAt, retryCount=0, status=pending)", async () => {
@@ -66,11 +66,12 @@ describe("pending scores", () => {
 		});
 
 		const all = await mod.getAllPendingScores();
-		const entry = all.find((e) => e.id === id)!;
-		expect(entry.retryCount).toBe(0);
-		expect(entry.status).toBe("pending");
-		expect(typeof entry.createdAt).toBe("number");
-		expect(entry.lastAttempt).toBeNull();
+		const entry = all.find((e) => e.id === id);
+		expect(entry).toBeDefined();
+		expect(entry?.retryCount).toBe(0);
+		expect(entry?.status).toBe("pending");
+		expect(typeof entry?.createdAt).toBe("number");
+		expect(entry?.lastAttempt).toBeNull();
 	});
 
 	it("getAllPendingScores includes failed", async () => {
@@ -94,7 +95,7 @@ describe("pending scores", () => {
 		await mod.updatePendingScore(id, { status: "failed" });
 		const all = await mod.getAllPendingScores();
 		expect(all).toHaveLength(1);
-		expect(all[0]!.status).toBe("failed");
+		expect(all[0]?.status).toBe("failed");
 
 		// getPendingScores should NOT include failed
 		const pending = await mod.getPendingScores();
@@ -143,8 +144,8 @@ describe("pending scores", () => {
 
 		await mod.updatePendingScore(id, { retryCount: 3, status: "failed" });
 		const all = await mod.getAllPendingScores();
-		expect(all[0]!.retryCount).toBe(3);
-		expect(all[0]!.status).toBe("failed");
+		expect(all[0]?.retryCount).toBe(3);
+		expect(all[0]?.status).toBe("failed");
 	});
 });
 
@@ -168,7 +169,7 @@ describe("score history", () => {
 
 		const history = await mod.getHistory();
 		expect(history).toHaveLength(1);
-		expect(history[0]!.synced).toBe(false);
+		expect(history[0]?.synced).toBe(false);
 	});
 
 	it("sorted newest first", async () => {
@@ -196,8 +197,8 @@ describe("score history", () => {
 		});
 
 		const history = await mod.getHistory();
-		expect(history[0]!.score).toBe(200);
-		expect(history[1]!.score).toBe(100);
+		expect(history[0]?.score).toBe(200);
+		expect(history[1]?.score).toBe(100);
 	});
 
 	it("respects limit param", async () => {
@@ -245,9 +246,9 @@ describe("score history", () => {
 		const synced = all.filter((e) => e.synced === true);
 		const notSynced = all.filter((e) => e.synced === false);
 		expect(synced).toHaveLength(1);
-		expect(synced[0]!.score).toBe(100);
+		expect(synced[0]?.score).toBe(100);
 		expect(notSynced).toHaveLength(1);
-		expect(notSynced[0]!.score).toBe(200);
+		expect(notSynced[0]?.score).toBe(200);
 	});
 
 	it("markHistorySynced sets synced + serverScoreId", async () => {
@@ -264,8 +265,8 @@ describe("score history", () => {
 
 		await mod.markHistorySynced(id, "server-abc");
 		const history = await mod.getHistory();
-		expect(history[0]!.synced).toBe(true);
-		expect(history[0]!.serverScoreId).toBe("server-abc");
+		expect(history[0]?.synced).toBe(true);
+		expect(history[0]?.serverScoreId).toBe("server-abc");
 	});
 
 	it("no-op on non-existent id", async () => {

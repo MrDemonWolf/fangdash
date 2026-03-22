@@ -475,9 +475,9 @@ describe("score router", () => {
 
 			const results = await caller.score.batchSync({ scores: [validScore] });
 			expect(results).toHaveLength(1);
-			expect(results[0]!.clientIndex).toBe(0);
-			expect(results[0]!.status).toBe("ok");
-			expect(results[0]!.scoreId).toBeDefined();
+			expect(results[0]?.clientIndex).toBe(0);
+			expect(results[0]?.status).toBe("ok");
+			expect(results[0]?.scoreId).toBeDefined();
 		});
 
 		it("should sync multiple valid scores", async () => {
@@ -505,8 +505,8 @@ describe("score router", () => {
 			const results = await caller.score.batchSync({
 				scores: [{ ...validScore, clientTimestamp: now + 120_000 }],
 			});
-			expect(results[0]!.status).toBe("rejected");
-			expect(results[0]!.reason).toBe("Timestamp in the future");
+			expect(results[0]?.status).toBe("rejected");
+			expect(results[0]?.reason).toBe("Timestamp in the future");
 		});
 
 		it("should reject expired timestamp (>7d)", async () => {
@@ -518,8 +518,8 @@ describe("score router", () => {
 			const results = await caller.score.batchSync({
 				scores: [{ ...validScore, clientTimestamp: eightDaysAgo }],
 			});
-			expect(results[0]!.status).toBe("rejected");
-			expect(results[0]!.reason).toBe("Score older than 7 days");
+			expect(results[0]?.status).toBe("rejected");
+			expect(results[0]?.reason).toBe("Score older than 7 days");
 		});
 
 		it("should accept at 7-day boundary", async () => {
@@ -531,7 +531,7 @@ describe("score router", () => {
 			const results = await caller.score.batchSync({
 				scores: [{ ...validScore, clientTimestamp: justUnder7d }],
 			});
-			expect(results[0]!.status).toBe("ok");
+			expect(results[0]?.status).toBe("ok");
 		});
 
 		it("should accept at future boundary", async () => {
@@ -542,7 +542,7 @@ describe("score router", () => {
 			const results = await caller.score.batchSync({
 				scores: [{ ...validScore, clientTimestamp: now + 59_000 }],
 			});
-			expect(results[0]!.status).toBe("ok");
+			expect(results[0]?.status).toBe("ok");
 		});
 
 		it("should reject non-ready mod flags", async () => {
@@ -553,8 +553,8 @@ describe("score router", () => {
 			const results = await caller.score.batchSync({
 				scores: [{ ...validScore, mods: 1 << 10 }],
 			});
-			expect(results[0]!.status).toBe("rejected");
-			expect(results[0]!.reason).toBe("Invalid mod flags");
+			expect(results[0]?.status).toBe("rejected");
+			expect(results[0]?.reason).toBe("Invalid mod flags");
 		});
 
 		it("should reject duration >30min", async () => {
@@ -565,8 +565,8 @@ describe("score router", () => {
 			const results = await caller.score.batchSync({
 				scores: [{ ...validScore, duration: 2_000_000 }],
 			});
-			expect(results[0]!.status).toBe("rejected");
-			expect(results[0]!.reason).toBe("Duration exceeds maximum");
+			expect(results[0]?.status).toBe("rejected");
+			expect(results[0]?.reason).toBe("Duration exceeds maximum");
 		});
 
 		it("should reject anti-cheat violation", async () => {
@@ -590,8 +590,8 @@ describe("score router", () => {
 					},
 				],
 			});
-			expect(results[0]!.status).toBe("rejected");
-			expect(results[0]!.reason).toBe("Score exceeds maximum allowed rate");
+			expect(results[0]?.status).toBe("rejected");
+			expect(results[0]?.reason).toBe("Score exceeds maximum allowed rate");
 		});
 
 		it("should handle mixed valid + rejected", async () => {
@@ -617,11 +617,11 @@ describe("score router", () => {
 			];
 
 			const results = await caller.score.batchSync({ scores });
-			expect(results[0]!.status).toBe("ok");
-			expect(results[1]!.status).toBe("rejected");
-			expect(results[1]!.reason).toBe("Timestamp in the future");
-			expect(results[2]!.status).toBe("rejected");
-			expect(results[2]!.reason).toBe("Score exceeds maximum allowed rate");
+			expect(results[0]?.status).toBe("ok");
+			expect(results[1]?.status).toBe("rejected");
+			expect(results[1]?.reason).toBe("Timestamp in the future");
+			expect(results[2]?.status).toBe("rejected");
+			expect(results[2]?.reason).toBe("Score exceeds maximum allowed rate");
 		});
 
 		it("should aggregate stats for non-cheated only", async () => {
