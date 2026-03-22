@@ -33,7 +33,7 @@ function formatDistance(m: number): string {
 
 function subtitle(score: number): string {
 	if (score >= 10000) {
-		return "Legendary run! 🔥";
+		return "Legendary run! \u{1F525}";
 	}
 	if (score >= 5000) {
 		return "Incredible effort!";
@@ -64,102 +64,80 @@ export function GameOverModal({
 	return (
 		<div className="absolute inset-0 z-20 flex items-center justify-center bg-black/80 backdrop-blur-sm">
 			{/* Scanline overlay */}
-			<div
-				className="absolute inset-0 pointer-events-none opacity-[0.06]"
-				style={{
-					backgroundImage:
-						"repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,1) 2px, rgba(0,0,0,1) 4px)",
-				}}
-			/>
+			<div className="scanlines absolute inset-0 pointer-events-none" />
 
 			<div
-				className="relative w-full max-w-sm mx-4 rounded-lg overflow-hidden"
+				className="relative w-full max-w-sm mx-4 rounded-xl overflow-hidden glass"
 				style={{
-					background: "linear-gradient(180deg, #0a1a3a 0%, #091533 100%)",
-					border: "1px solid rgba(15,172,237,0.2)",
+					border: "1px solid oklch(0.72 0.15 210 / 0.15)",
 					boxShadow:
-						"0 0 0 1px rgba(15,172,237,0.05), 0 8px 48px rgba(0,0,0,0.7), 0 0 60px rgba(15,172,237,0.07)",
+						"0 0 0 1px oklch(0.72 0.15 210 / 0.05), 0 8px 48px rgba(0,0,0,0.7), var(--glow-cyan)",
 				}}
 			>
-				{/* Top accent line */}
+				{/* Top accent line — fang slash gradient */}
 				<div
-					className="h-px w-full"
+					className="h-0.5 w-full"
 					style={{
-						background: "linear-gradient(90deg, transparent, #0FACED, transparent)",
+						background: "linear-gradient(90deg, transparent 10%, var(--color-fang-cyan), transparent 90%)",
 					}}
 				/>
 
-				<div className="px-6 pt-8 pb-6">
+				<div className="relative px-6 pt-8 pb-6">
 					{/* GAME OVER heading */}
 					<div className="text-center mb-6">
-						<h2
-							className="text-5xl font-black font-mono uppercase tracking-tight leading-none mb-2"
-							style={{
-								color: "#ff6b2b",
-								textShadow: "0 0 20px rgba(255,107,43,0.6), 0 0 40px rgba(255,107,43,0.25)",
-							}}
-						>
+						<h2 className="text-glow-orange text-5xl font-black font-mono uppercase tracking-tight leading-none mb-2 text-fang-orange">
 							Game Over
 						</h2>
-						<p className="text-sm font-mono text-white/50">{subtitle(state.score)}</p>
+						<p className="text-sm font-mono text-muted-foreground">{subtitle(state.score)}</p>
 					</div>
 
 					{/* Level Up banner */}
 					{submitResult?.levelUp && submitResult.newLevel && (
-						<div
-							className="mb-4 rounded-lg px-4 py-3 text-center"
-							style={{
-								background: "rgba(15,172,237,0.1)",
-								border: "1px solid rgba(15,172,237,0.3)",
-							}}
-						>
-							<p className="text-sm font-bold text-[#0FACED]">
+						<div className="mb-4 rounded-lg px-4 py-3 text-center border border-primary/25 bg-primary/5">
+							<p className="text-sm font-bold text-primary">
 								Level Up! You are now level {submitResult.newLevel}!
 							</p>
 						</div>
 					)}
 
 					{/* Stats — 2×2 grid */}
-					<div className="mb-6 grid grid-cols-2 gap-px bg-[#0FACED]/10 rounded overflow-hidden">
+					<div className="mb-6 grid grid-cols-2 gap-px rounded-lg overflow-hidden bg-primary/10">
 						{/* FINAL SCORE */}
-						<div className="bg-[#091533] px-4 py-3">
-							<p className="text-[10px] font-mono uppercase tracking-widest text-white/40 mb-1">
+						<div className="bg-[var(--color-surface-void)] px-4 py-3">
+							<p className="text-[10px] font-mono uppercase tracking-[0.15em] text-muted-foreground mb-1">
 								Final Score
 							</p>
-							<span
-								className="text-2xl font-bold font-mono tabular-nums text-[#0FACED]"
-								style={{ textShadow: "0 0 10px rgba(15,172,237,0.5)" }}
-							>
+							<span className="text-glow-cyan text-2xl font-black font-mono tabular-nums text-primary">
 								{state.score.toLocaleString()}
 							</span>
 						</div>
 
 						{/* DISTANCE */}
-						<div className="bg-[#091533] px-4 py-3">
-							<p className="text-[10px] font-mono uppercase tracking-widest text-white/40 mb-1">
+						<div className="bg-[var(--color-surface-void)] px-4 py-3">
+							<p className="text-[10px] font-mono uppercase tracking-[0.15em] text-muted-foreground mb-1">
 								Distance
 							</p>
-							<span className="text-2xl font-bold font-mono tabular-nums text-white/80">
+							<span className="text-2xl font-bold font-mono tabular-nums text-foreground/80">
 								{formatDistance(state.distance)}
 							</span>
 						</div>
 
 						{/* DODGES */}
-						<div className="bg-[#091533] px-4 py-3">
-							<p className="text-[10px] font-mono uppercase tracking-widest text-white/40 mb-1">
+						<div className="bg-[var(--color-surface-void)] px-4 py-3">
+							<p className="text-[10px] font-mono uppercase tracking-[0.15em] text-muted-foreground mb-1">
 								Dodges
 							</p>
-							<span className="text-2xl font-bold font-mono tabular-nums text-white/80">
+							<span className="text-2xl font-bold font-mono tabular-nums text-foreground/80">
 								{state.obstaclesCleared.toLocaleString()}
 							</span>
 						</div>
 
 						{/* TIME */}
-						<div className="bg-[#091533] px-4 py-3">
-							<p className="text-[10px] font-mono uppercase tracking-widest text-white/40 mb-1">
+						<div className="bg-[var(--color-surface-void)] px-4 py-3">
+							<p className="text-[10px] font-mono uppercase tracking-[0.15em] text-muted-foreground mb-1">
 								Time
 							</p>
-							<span className="text-2xl font-bold font-mono tabular-nums text-white/80">
+							<span className="text-2xl font-bold font-mono tabular-nums text-foreground/80">
 								{elapsedTime !== undefined ? formatTime(elapsedTime) : "--:--"}
 							</span>
 						</div>
@@ -167,14 +145,8 @@ export function GameOverModal({
 
 					{/* Cheats active notice */}
 					{cheatsUsed && (
-						<div
-							className="mb-4 rounded-lg px-4 py-3 text-center"
-							style={{
-								background: "rgba(255,107,43,0.1)",
-								border: "1px solid rgba(255,107,43,0.3)",
-							}}
-						>
-							<p className="text-sm font-bold text-[#ff6b2b]">
+						<div className="mb-4 rounded-lg px-4 py-3 text-center border border-fang-orange/25 bg-fang-orange/5">
+							<p className="text-sm font-bold text-fang-orange">
 								Score not saved — cheats were active
 							</p>
 						</div>
@@ -183,12 +155,12 @@ export function GameOverModal({
 					{/* Submit error */}
 					{!cheatsUsed && !!submitError && (
 						<div className="mb-4 text-center">
-							<p className="text-sm text-red-400 mb-2">Failed to save score.</p>
+							<p className="text-sm text-destructive mb-2">Failed to save score.</p>
 							{onRetrySubmit && (
 								<button
 									type="button"
 									onClick={onRetrySubmit}
-									className="text-xs font-mono text-[#0FACED] underline hover:no-underline"
+									className="text-xs font-mono text-primary underline hover:no-underline"
 								>
 									Try again
 								</button>
@@ -198,13 +170,13 @@ export function GameOverModal({
 
 					{/* Saving indicator */}
 					{isSignedIn && !cheatsUsed && submitting && (
-						<p className="mb-4 text-sm text-center font-mono text-white/40">Saving score...</p>
+						<p className="mb-4 text-sm text-center font-mono text-muted-foreground">Saving score...</p>
 					)}
 
 					{/* Unlocks — horizontal pill badges */}
 					{hasUnlocks && (
 						<div className="mb-5">
-							<p className="text-xs font-mono font-bold uppercase tracking-widest text-yellow-400/70 mb-2">
+							<p className="text-xs font-mono font-bold uppercase tracking-[0.15em] text-fang-gold/70 mb-2">
 								Unlocked
 							</p>
 							<div className="flex flex-wrap gap-2">
@@ -213,13 +185,9 @@ export function GameOverModal({
 									return (
 										<span
 											key={id}
-											className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-mono"
-											style={{
-												background: "rgba(255,196,0,0.1)",
-												border: "1px solid rgba(255,196,0,0.3)",
-											}}
+											className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-mono border border-fang-gold/25 bg-fang-gold/5 text-fang-gold shadow-[var(--glow-gold)]"
 										>
-											🏆 {achievement?.name ?? id}
+											{"🏆"} {achievement?.name ?? id}
 										</span>
 									);
 								})}
@@ -228,13 +196,9 @@ export function GameOverModal({
 									return (
 										<span
 											key={id}
-											className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-mono"
-											style={{
-												background: "rgba(255,196,0,0.1)",
-												border: "1px solid rgba(255,196,0,0.3)",
-											}}
+											className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-mono border border-fang-gold/25 bg-fang-gold/5 text-fang-gold shadow-[var(--glow-gold)]"
 										>
-											🐺 {skin?.name ?? id}
+											{"🐺"} {skin?.name ?? id}
 										</span>
 									);
 								})}
@@ -244,14 +208,14 @@ export function GameOverModal({
 
 					{/* Achievement sync warning */}
 					{submitResult?.achievementError && (
-						<p className="mb-4 text-xs text-center font-mono text-yellow-400/60">
+						<p className="mb-4 text-xs text-center font-mono text-fang-gold/50">
 							Some achievements may not have been recorded. They&apos;ll sync next game.
 						</p>
 					)}
 
 					{/* Sign-in nudge */}
 					{isSignedIn === false && (
-						<p className="mb-4 text-sm text-center font-mono text-white/40">
+						<p className="mb-4 text-sm text-center font-mono text-muted-foreground">
 							Sign in to save scores &amp; unlock achievements
 						</p>
 					)}
@@ -261,14 +225,14 @@ export function GameOverModal({
 						<button
 							type="button"
 							onClick={onRestart}
-							className="w-full cursor-pointer rounded px-6 py-3 text-sm font-black font-mono uppercase tracking-widest text-primary-foreground bg-primary transition-all hover:brightness-110 active:scale-95 shadow-[0_0_20px_rgba(15,172,237,0.35),0_0_40px_rgba(15,172,237,0.12)]"
+							className="w-full cursor-pointer rounded-lg px-6 py-3.5 text-sm font-black font-mono uppercase tracking-[0.15em] text-primary-foreground bg-primary transition-all hover:brightness-110 active:scale-[0.97] animate-pulse-glow"
 						>
 							PLAY AGAIN
 						</button>
 
 						<Link
 							href="/"
-							className="text-xs font-mono uppercase tracking-widest text-foreground/30 hover:text-foreground/60 transition-colors text-center block w-full py-2"
+							className="text-xs font-mono uppercase tracking-[0.15em] text-muted-foreground/50 hover:text-muted-foreground transition-colors text-center block w-full py-2"
 						>
 							&lt; Back to Home &gt;
 						</Link>
@@ -279,7 +243,7 @@ export function GameOverModal({
 				<div
 					className="h-px w-full"
 					style={{
-						background: "linear-gradient(90deg, transparent, rgba(15,172,237,0.3), transparent)",
+						background: "linear-gradient(90deg, transparent, oklch(0.72 0.15 210 / 0.2), transparent)",
 					}}
 				/>
 			</div>

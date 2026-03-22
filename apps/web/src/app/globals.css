@@ -36,6 +36,20 @@
 	--color-fang-purple: oklch(0.48 0.18 300);
 	--color-fang-gold: oklch(0.85 0.18 90);
 
+	/* Surface hierarchy — "Digital Hunter" depth system */
+	--color-surface-void: oklch(0.07 0.01 260);
+	--color-surface-base: oklch(0.11 0.01 260);
+	--color-surface-elevated: oklch(0.16 0.01 260);
+	--color-surface-bright: oklch(0.2 0.01 260);
+
+	/* Glow tokens */
+	--glow-cyan: 0 0 20px oklch(0.72 0.15 210 / 0.4);
+	--glow-cyan-strong: 0 0 30px oklch(0.72 0.15 210 / 0.5), 0 0 60px oklch(0.72 0.15 210 / 0.2);
+	--glow-orange: 0 0 20px oklch(0.68 0.2 40 / 0.4);
+	--glow-purple: 0 0 20px oklch(0.48 0.18 300 / 0.4);
+	--glow-gold: 0 0 20px oklch(0.85 0.18 90 / 0.4);
+	--glow-red: 0 0 20px oklch(0.6 0.2 25 / 0.4);
+
 	--radius: 0.625rem;
 
 	--color-sidebar-background: oklch(0.11 0.01 260);
@@ -127,6 +141,117 @@
 	animation: float 3s ease-in-out infinite;
 }
 
+/* ------------------------------------------------------------------ */
+/*  Glow & fang-slash keyframes                                        */
+/* ------------------------------------------------------------------ */
+
+@keyframes pulse-glow {
+	0%,
+	100% {
+		box-shadow: var(--glow-cyan);
+	}
+	50% {
+		box-shadow: var(--glow-cyan-strong);
+	}
+}
+
+@keyframes fang-slash-in {
+	from {
+		clip-path: polygon(100% 0, 100% 0, 100% 100%, 100% 100%);
+	}
+	to {
+		clip-path: polygon(85% 0, 100% 0, 100% 100%, 70% 100%);
+	}
+}
+
+@utility animate-pulse-glow {
+	animation: pulse-glow 2s ease-in-out infinite;
+}
+
+@utility animate-fang-slash-in {
+	animation: fang-slash-in 0.4s ease-out forwards;
+}
+
+/* ------------------------------------------------------------------ */
+/*  Fang-slash card accent — diagonal gradient top border              */
+/* ------------------------------------------------------------------ */
+
+@utility fang-accent {
+	position: relative;
+	overflow: hidden;
+}
+
+@utility fang-accent::after {
+	content: "";
+	position: absolute;
+	top: 0;
+	right: 0;
+	width: 80px;
+	height: 3px;
+	background: linear-gradient(90deg, transparent, var(--color-fang-cyan));
+	transform: skewX(-25deg);
+	transform-origin: top right;
+}
+
+/* ------------------------------------------------------------------ */
+/*  Glow text utility                                                  */
+/* ------------------------------------------------------------------ */
+
+@utility text-glow-cyan {
+	text-shadow:
+		0 0 10px oklch(0.72 0.15 210 / 0.6),
+		0 0 30px oklch(0.72 0.15 210 / 0.3);
+}
+
+@utility text-glow-orange {
+	text-shadow:
+		0 0 10px oklch(0.68 0.2 40 / 0.6),
+		0 0 30px oklch(0.68 0.2 40 / 0.3);
+}
+
+@utility text-glow-gold {
+	text-shadow:
+		0 0 10px oklch(0.85 0.18 90 / 0.6),
+		0 0 30px oklch(0.85 0.18 90 / 0.3);
+}
+
+/* ------------------------------------------------------------------ */
+/*  Glassmorphism utility                                              */
+/* ------------------------------------------------------------------ */
+
+@utility glass {
+	background: oklch(0.14 0.01 260 / 0.8);
+	backdrop-filter: blur(20px) saturate(1.5);
+	-webkit-backdrop-filter: blur(20px) saturate(1.5);
+}
+
+/* ------------------------------------------------------------------ */
+/*  Scanline overlay (game modals)                                     */
+/* ------------------------------------------------------------------ */
+
+@utility scanlines::before {
+	content: "";
+	position: absolute;
+	inset: 0;
+	pointer-events: none;
+	background: repeating-linear-gradient(
+		transparent 0px,
+		transparent 2px,
+		oklch(0 0 0 / 0.06) 2px,
+		oklch(0 0 0 / 0.06) 4px
+	);
+	z-index: 1;
+}
+
+/* ------------------------------------------------------------------ */
+/*  Pixel-art rendering                                                */
+/* ------------------------------------------------------------------ */
+
+@utility pixelated {
+	image-rendering: pixelated;
+	image-rendering: crisp-edges;
+}
+
 @media (prefers-reduced-motion: reduce) {
 	.animate-scroll-slow,
 	.animate-scroll-medium,
@@ -134,7 +259,8 @@
 		animation: none;
 	}
 
-	.animate-float {
+	.animate-float,
+	.animate-pulse-glow {
 		animation: none;
 		transform: none;
 	}

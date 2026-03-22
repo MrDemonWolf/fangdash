@@ -32,27 +32,36 @@ const TABS: { key: Tab; label: string }[] = [
 function RankBadge({ rank }: { rank: number }) {
 	if (rank === 1) {
 		return (
-			<Badge variant="gold" className="size-8 justify-center rounded-full px-0 font-bold">
+			<Badge
+				variant="gold"
+				className="size-8 justify-center rounded-full px-0 font-bold shadow-[var(--glow-gold)]"
+			>
 				{rank}
 			</Badge>
 		);
 	}
 	if (rank === 2) {
 		return (
-			<Badge variant="silver" className="size-8 justify-center rounded-full px-0 font-bold">
+			<Badge
+				variant="silver"
+				className="size-8 justify-center rounded-full px-0 font-bold shadow-[0_0_16px_oklch(0.7_0.01_260/0.4)]"
+			>
 				{rank}
 			</Badge>
 		);
 	}
 	if (rank === 3) {
 		return (
-			<Badge variant="bronze" className="size-8 justify-center rounded-full px-0 font-bold">
+			<Badge
+				variant="bronze"
+				className="size-8 justify-center rounded-full px-0 font-bold shadow-[0_0_16px_oklch(0.65_0.12_55/0.4)]"
+			>
 				{rank}
 			</Badge>
 		);
 	}
 	return (
-		<span className="inline-flex items-center justify-center size-8 text-muted-foreground font-medium text-sm">
+		<span className="inline-flex items-center justify-center size-8 font-mono text-muted-foreground font-medium text-sm">
 			{rank}
 		</span>
 	);
@@ -163,18 +172,28 @@ export default function LeaderboardPage() {
 	}, [leaderboardQuery.isError]);
 
 	return (
-		<main className="min-h-screen bg-background px-4 py-8 sm:px-6 lg:px-8">
+		<main className="min-h-screen bg-[var(--color-surface-void)] px-4 py-10 sm:px-6 lg:px-8">
 			<div className="mx-auto max-w-4xl">
-				<h1 className="text-3xl font-bold text-foreground sm:text-4xl">Leaderboard</h1>
-				<p className="mt-2 text-muted-foreground">Top runners in FangDash</p>
+				{/* Title with decorative fang lines */}
+				<div className="flex flex-col items-center text-center">
+					<span className="font-mono text-xs tracking-[0.3em] uppercase text-muted-foreground">
+						{"—⟨ "}Leaderboard{" ⟩—"}
+					</span>
+					<h1 className="mt-2 text-3xl font-bold text-glow-cyan text-fang-cyan sm:text-4xl">
+						Leaderboard
+					</h1>
+					<p className="mt-2 text-sm text-muted-foreground">
+						Top runners in FangDash
+					</p>
+				</div>
 
 				{/* Filters */}
-				<Card className="mt-6">
+				<Card className="fang-accent mt-8 border-border/40 bg-[var(--color-surface-elevated)]">
 					<CardContent className="flex flex-col gap-3 p-3">
 						{/* Period */}
 						<div>
-							<span className="mb-1 block text-xs font-medium text-muted-foreground">Period</span>
-							<div className="flex gap-1 rounded-lg bg-muted p-1">
+							<span className="mb-1 block text-xs font-mono uppercase tracking-[0.15em] text-muted-foreground">Period</span>
+							<div className="flex flex-wrap gap-1 rounded-lg bg-[var(--color-surface-base)] p-1">
 								{TABS.map((tab) => (
 									<button
 										type="button"
@@ -182,10 +201,10 @@ export default function LeaderboardPage() {
 										onClick={() => setActiveTab(tab.key)}
 										aria-pressed={activeTab === tab.key}
 										className={cn(
-											"flex-1 rounded-md px-4 py-2 text-sm font-medium transition-colors cursor-pointer",
+											"flex-1 rounded-md px-4 py-2 text-sm font-medium font-mono transition-all cursor-pointer",
 											activeTab === tab.key
-												? "bg-secondary text-foreground"
-												: "text-muted-foreground hover:text-foreground hover:bg-muted/80",
+												? "bg-fang-cyan/15 text-fang-cyan shadow-[var(--glow-cyan)] border border-fang-cyan/30"
+												: "text-muted-foreground hover:text-foreground hover:bg-surface-bright/50",
 										)}
 									>
 										{tab.label}
@@ -196,17 +215,17 @@ export default function LeaderboardPage() {
 
 						{/* Difficulty */}
 						<div>
-							<span className="mb-1 block text-xs font-medium text-muted-foreground">Difficulty</span>
-							<div className="flex gap-1 rounded-lg bg-muted p-1">
+							<span className="mb-1 block text-xs font-mono uppercase tracking-[0.15em] text-muted-foreground">Difficulty</span>
+							<div className="flex flex-wrap gap-1 rounded-lg bg-[var(--color-surface-base)] p-1">
 								<button
 									type="button"
 									onClick={() => setActiveDifficulty("all")}
 									aria-pressed={activeDifficulty === "all"}
 									className={cn(
-										"rounded-md px-3 py-1.5 text-sm font-medium transition-colors cursor-pointer",
+										"rounded-md px-3 py-1.5 text-sm font-medium font-mono transition-all cursor-pointer",
 										activeDifficulty === "all"
-											? "bg-secondary text-foreground"
-											: "text-muted-foreground hover:text-foreground hover:bg-muted/80",
+											? "bg-fang-cyan/15 text-fang-cyan shadow-[var(--glow-cyan)] border border-fang-cyan/30"
+											: "text-muted-foreground hover:text-foreground hover:bg-surface-bright/50",
 									)}
 								>
 									All
@@ -218,10 +237,10 @@ export default function LeaderboardPage() {
 										onClick={() => setActiveDifficulty(level.name)}
 										aria-pressed={activeDifficulty === level.name}
 										className={cn(
-											"flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors cursor-pointer",
+											"flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium font-mono transition-all cursor-pointer",
 											activeDifficulty === level.name
-												? "bg-secondary text-foreground"
-												: "text-muted-foreground hover:text-foreground hover:bg-muted/80",
+												? "bg-fang-cyan/15 text-fang-cyan shadow-[var(--glow-cyan)] border border-fang-cyan/30"
+												: "text-muted-foreground hover:text-foreground hover:bg-surface-bright/50",
 										)}
 									>
 										<span
@@ -236,17 +255,17 @@ export default function LeaderboardPage() {
 
 						{/* Mods */}
 						<div>
-							<span className="mb-1 block text-xs font-medium text-muted-foreground">Mods</span>
-							<div className="flex gap-1 rounded-lg bg-muted p-1">
+							<span className="mb-1 block text-xs font-mono uppercase tracking-[0.15em] text-muted-foreground">Mods</span>
+							<div className="flex flex-wrap gap-1 rounded-lg bg-[var(--color-surface-base)] p-1">
 								<button
 									type="button"
 									onClick={() => setActiveMods(undefined)}
 									aria-pressed={activeMods === undefined}
 									className={cn(
-										"rounded-md px-3 py-1.5 text-sm font-medium transition-colors cursor-pointer",
+										"rounded-md px-3 py-1.5 text-sm font-medium font-mono transition-all cursor-pointer",
 										activeMods === undefined
-											? "bg-secondary text-foreground"
-											: "text-muted-foreground hover:text-foreground hover:bg-muted/80",
+											? "bg-fang-cyan/15 text-fang-cyan shadow-[var(--glow-cyan)] border border-fang-cyan/30"
+											: "text-muted-foreground hover:text-foreground hover:bg-surface-bright/50",
 									)}
 								>
 									All
@@ -256,10 +275,10 @@ export default function LeaderboardPage() {
 									onClick={() => setActiveMods(0)}
 									aria-pressed={activeMods === 0}
 									className={cn(
-										"rounded-md px-3 py-1.5 text-sm font-medium transition-colors cursor-pointer",
+										"rounded-md px-3 py-1.5 text-sm font-medium font-mono transition-all cursor-pointer",
 										activeMods === 0
-											? "bg-secondary text-foreground"
-											: "text-muted-foreground hover:text-foreground hover:bg-muted/80",
+											? "bg-fang-cyan/15 text-fang-cyan shadow-[var(--glow-cyan)] border border-fang-cyan/30"
+											: "text-muted-foreground hover:text-foreground hover:bg-surface-bright/50",
 									)}
 								>
 									No Mods
@@ -271,10 +290,10 @@ export default function LeaderboardPage() {
 										onClick={() => setActiveMods(mod.flag)}
 										aria-pressed={activeMods === mod.flag}
 										className={cn(
-											"flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors cursor-pointer",
+											"flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium font-mono transition-all cursor-pointer",
 											activeMods === mod.flag
-												? "bg-secondary text-foreground"
-												: "text-muted-foreground hover:text-foreground hover:bg-muted/80",
+												? "bg-fang-cyan/15 text-fang-cyan shadow-[var(--glow-cyan)] border border-fang-cyan/30"
+												: "text-muted-foreground hover:text-foreground hover:bg-surface-bright/50",
 										)}
 									>
 										<span>{mod.icon}</span>
@@ -287,16 +306,16 @@ export default function LeaderboardPage() {
 				</Card>
 
 				{/* Desktop Table */}
-				<div className="mt-6 hidden sm:block">
+				<div className="mt-8 hidden sm:block overflow-hidden rounded-xl border border-border/40 bg-[var(--color-surface-base)]">
 					<Table>
 						<TableHeader>
-							<TableRow className="hover:bg-transparent">
-								<TableHead className="w-16">Rank</TableHead>
-								<TableHead>Username</TableHead>
-								<TableHead>Score</TableHead>
-								<TableHead>Distance</TableHead>
-								{activeDifficulty === "all" && <TableHead>Difficulty</TableHead>}
-								<TableHead>Date</TableHead>
+							<TableRow className="hover:bg-transparent border-border/40">
+								<TableHead className="w-16 uppercase tracking-[0.15em] text-muted-foreground font-mono text-xs">Rank</TableHead>
+								<TableHead className="uppercase tracking-[0.15em] text-muted-foreground font-mono text-xs">Username</TableHead>
+								<TableHead className="uppercase tracking-[0.15em] text-muted-foreground font-mono text-xs">Score</TableHead>
+								<TableHead className="uppercase tracking-[0.15em] text-muted-foreground font-mono text-xs">Distance</TableHead>
+								{activeDifficulty === "all" && <TableHead className="uppercase tracking-[0.15em] text-muted-foreground font-mono text-xs">Difficulty</TableHead>}
+								<TableHead className="uppercase tracking-[0.15em] text-muted-foreground font-mono text-xs">Date</TableHead>
 							</TableRow>
 						</TableHeader>
 						<TableBody>
@@ -316,7 +335,10 @@ export default function LeaderboardPage() {
 								return (
 									<TableRow
 										key={entry.scoreId}
-										className={cn(isCurrentUser && "bg-primary/10 border-primary/20")}
+										className={cn(
+											"transition-colors hover:bg-secondary/50",
+											isCurrentUser && "border-l-2 border-l-fang-cyan bg-fang-cyan/5",
+										)}
 									>
 										<TableCell>
 											<RankBadge rank={entry.rank} />
@@ -328,7 +350,7 @@ export default function LeaderboardPage() {
 												"userId" in entry ? (
 													<Link
 														href={`/profile/${entry.userId}`}
-														className="hover:text-primary transition-colors hover:underline"
+														className="hover:text-fang-cyan transition-colors hover:underline"
 													>
 														{entry.username}
 													</Link>
@@ -336,16 +358,16 @@ export default function LeaderboardPage() {
 													entry.username
 												)}
 												{"level" in entry && <Badge variant="level">Lv.{entry.level}</Badge>}
-												{isCurrentUser && <span className="text-xs text-primary">(you)</span>}
+												{isCurrentUser && <span className="text-xs text-fang-cyan">(you)</span>}
 											</span>
 										</TableCell>
-										<TableCell className="text-foreground tabular-nums">
+										<TableCell className="font-mono text-glow-cyan tabular-nums">
 											{formatNumber(entry.score)}
 											{"mods" in entry && typeof entry.mods === "number" && entry.mods > 0 && (
 												<ModIcons mods={entry.mods} />
 											)}
 										</TableCell>
-										<TableCell className="text-secondary-foreground tabular-nums">
+										<TableCell className="font-mono text-foreground/80 tabular-nums">
 											{formatNumber(Math.round(entry.distance))}m
 										</TableCell>
 										{activeDifficulty === "all" && (
@@ -364,11 +386,11 @@ export default function LeaderboardPage() {
 				</div>
 
 				{/* Mobile Card Layout */}
-				<div className="mt-6 flex flex-col gap-3 sm:hidden">
+				<div className="mt-8 flex flex-col gap-3 sm:hidden">
 					{leaderboardQuery.isLoading && <SkeletonCards />}
 					{!leaderboardQuery.isLoading && entries.length === 0 && (
-						<Card>
-							<CardContent className="px-4 py-12 text-center text-muted-foreground">
+						<Card className="border-border/40 bg-[var(--color-surface-base)]">
+							<CardContent className="px-4 py-12 text-center font-mono text-muted-foreground">
 								No scores yet. Be the first to play!
 							</CardContent>
 						</Card>
@@ -379,8 +401,8 @@ export default function LeaderboardPage() {
 							<Card
 								key={entry.scoreId}
 								className={cn(
-									"transition-colors",
-									isCurrentUser && "border-primary/20 bg-primary/5",
+									"fang-accent transition-colors border-border/40 bg-[var(--color-surface-base)]",
+									isCurrentUser && "border-l-2 border-l-fang-cyan bg-fang-cyan/5",
 								)}
 							>
 								<CardContent className="p-4">
@@ -392,7 +414,7 @@ export default function LeaderboardPage() {
 											"userId" in entry ? (
 												<Link
 													href={`/profile/${entry.userId}`}
-													className="hover:text-primary transition-colors hover:underline"
+													className="hover:text-fang-cyan transition-colors hover:underline"
 												>
 													{entry.username}
 												</Link>
@@ -400,7 +422,7 @@ export default function LeaderboardPage() {
 												entry.username
 											)}
 											{"level" in entry && <Badge variant="level">Lv.{entry.level}</Badge>}
-											{isCurrentUser && <span className="text-xs text-primary">(you)</span>}
+											{isCurrentUser && <span className="text-xs text-fang-cyan">(you)</span>}
 										</span>
 										{activeDifficulty === "all" && (
 											<DifficultyBadge difficulty={entry.difficulty} />
@@ -408,8 +430,8 @@ export default function LeaderboardPage() {
 									</div>
 									<div className="mt-3 flex items-center gap-4 text-sm">
 										<div>
-											<span className="text-muted-foreground">Score </span>
-											<span className="text-foreground tabular-nums font-medium">
+											<span className="font-mono uppercase tracking-[0.1em] text-xs text-muted-foreground">Score </span>
+											<span className="font-mono text-glow-cyan tabular-nums font-medium">
 												{formatNumber(entry.score)}
 											</span>
 											{"mods" in entry && typeof entry.mods === "number" && entry.mods > 0 && (
@@ -417,8 +439,8 @@ export default function LeaderboardPage() {
 											)}
 										</div>
 										<div>
-											<span className="text-muted-foreground">Distance </span>
-											<span className="text-secondary-foreground tabular-nums">
+											<span className="font-mono uppercase tracking-[0.1em] text-xs text-muted-foreground">Distance </span>
+											<span className="font-mono text-foreground/80 tabular-nums">
 												{formatNumber(Math.round(entry.distance))}m
 											</span>
 										</div>
