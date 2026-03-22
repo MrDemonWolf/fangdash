@@ -5,20 +5,13 @@ import { useQuery } from "@tanstack/react-query";
 import Image from "next/image";
 import { useParams } from "next/navigation";
 import { useTRPC } from "@/lib/trpc.ts";
+import { formatDistance } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-
-/* ------------------------------------------------------------------ */
-/*  Helper: format distance as km                                      */
-/* ------------------------------------------------------------------ */
-
-function fmtKm(meters: number): string {
-	return `${(meters / 1000).toFixed(1)} km`;
-}
 
 /* ------------------------------------------------------------------ */
 /*  Loading Skeleton                                                    */
@@ -306,7 +299,7 @@ function RecentScorelines({ scores }: { scores: ScoreEntry[] }) {
 										{entry.score.toLocaleString()}
 									</span>
 									<span className="text-xs text-muted-foreground">
-										{fmtKm(entry.distance)} · {entry.difficulty} ·{" "}
+										{formatDistance(entry.distance)} · {entry.difficulty} ·{" "}
 										{new Date(entry.createdAt).toLocaleDateString("en-US", {
 											month: "short",
 											day: "numeric",
@@ -391,7 +384,7 @@ export default function PublicProfilePage() {
 		stats.racesPlayed > 0 ? `${((stats.racesWon / stats.racesPlayed) * 100).toFixed(0)}%` : "N/A";
 
 	const performanceTiles: MetricTile[] = [
-		{ label: "Total Distance", value: fmtKm(stats.totalDistance), accent: "text-primary" },
+		{ label: "Total Distance", value: formatDistance(stats.totalDistance), accent: "text-primary" },
 		{ label: "High Score", value: highScore.toLocaleString(), accent: "text-primary" },
 		{ label: "Win Rate", value: winRate, accent: "text-emerald-400" },
 		{

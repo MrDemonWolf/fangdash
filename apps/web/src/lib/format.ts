@@ -12,3 +12,7 @@ export function formatDate(date: Date | string | null): string {
 export function formatNumber(n: number): string {
 	return n.toLocaleString();
 }
+
+export function formatDistance(meters: number): string {
+	return `${(meters / 1000).toFixed(1)} km`;
+}

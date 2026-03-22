@@ -1,6 +1,7 @@
 import { ACHIEVEMENTS } from "@fangdash/shared/achievements";
-import { count, eq, sql } from "drizzle-orm";
-import { player, playerAchievement } from "../../db/schema.ts";
+import { eq } from "drizzle-orm";
+import { playerAchievement } from "../../db/schema.ts";
+import { getUnlockStats } from "../../lib/unlock-stats.ts";
 import { playerProcedure, publicProcedure, router } from "../trpc.ts";
 
 export const achievementRouter = router({
@@ -68,27 +69,6 @@ export const achievementRouter = router({
 	}),
 
 	getStats: publicProcedure.query(async ({ ctx }) => {
-		const [totalPlayersResult, unlockCounts] = await Promise.all([
-			ctx.db.select({ total: count() }).from(player),
-			ctx.db
-				.select({
-					achievementId: playerAchievement.achievementId,
-					unlockCount: sql<number>`count(*)`,
-				})
-				.from(playerAchievement)
-				.groupBy(playerAchievement.achievementId),
-		]);
-
-		const totalPlayers = totalPlayersResult[0]?.total ?? 0;
-		const result: Record<string, { unlockCount: number; totalPlayers: number }> = {};
-
-		for (const row of unlockCounts) {
-			result[row.achievementId] = {
-				unlockCount: row.unlockCount,
-				totalPlayers,
-			};
-		}
-
-		return result;
+		return getUnlockStats(ctx.db, playerAchievement, playerAchievement.achievementId);
 	}),
 });
