@@ -40,9 +40,7 @@ describe("RaceServer", () => {
 			server.onConnect(conn);
 
 			expect(conn.send).toHaveBeenCalledTimes(1);
-			const sent = JSON.parse(
-				(conn.send as ReturnType<typeof vi.fn>).mock.calls[0]?.[0],
-			);
+			const sent = JSON.parse((conn.send as ReturnType<typeof vi.fn>).mock.calls[0]?.[0]);
 			expect(sent.type).toBe("room_state");
 			expect(sent.payload.status).toBe("waiting");
 		});

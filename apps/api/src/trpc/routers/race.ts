@@ -90,18 +90,14 @@ export const raceRouter = router({
 			if (input.cheated) {
 				// Still apply placement corrections for other players
 				if (placementChanges.length > 0) {
-					const batchStmts: BatchItem<"sqlite">[] = placementChanges.map(
-						(change) =>
-							ctx.db
-								.update(raceHistory)
-								.set({ placement: change.newPlacement })
-								.where(eq(raceHistory.id, change.id)),
+					const batchStmts: BatchItem<"sqlite">[] = placementChanges.map((change) =>
+						ctx.db
+							.update(raceHistory)
+							.set({ placement: change.newPlacement })
+							.where(eq(raceHistory.id, change.id)),
 					);
 					await ctx.db.batch(
-						batchStmts as unknown as [
-							BatchItem<"sqlite">,
-							...BatchItem<"sqlite">[],
-						],
+						batchStmts as unknown as [BatchItem<"sqlite">, ...BatchItem<"sqlite">[]],
 					);
 				}
 				return {
@@ -117,9 +113,7 @@ export const raceRouter = router({
 			}
 
 			// Phase 2: Fetch affected OTHER players and compute XP/racesWon deltas
-			const otherAffected = placementChanges.filter(
-				(c) => c.playerId !== playerRecord.id,
-			);
+			const otherAffected = placementChanges.filter((c) => c.playerId !== playerRecord.id);
 			let otherPlayerRecords: {
 				id: string;
 				totalXp: number;
@@ -127,9 +121,7 @@ export const raceRouter = router({
 			}[] = [];
 
 			if (otherAffected.length > 0) {
-				const affectedPlayerIds = [
-					...new Set(otherAffected.map((c) => c.playerId)),
-				];
+				const affectedPlayerIds = [...new Set(otherAffected.map((c) => c.playerId))];
 				otherPlayerRecords = await ctx.db
 					.select({
 						id: player.id,
@@ -166,13 +158,11 @@ export const raceRouter = router({
 				if (!record) continue;
 
 				const xpDelta =
-					getPlacementBonus(other.newPlacement) -
-					getPlacementBonus(other.oldPlacement);
+					getPlacementBonus(other.newPlacement) - getPlacementBonus(other.oldPlacement);
 				const adjustedTotalXp = Math.max(0, record.totalXp + xpDelta);
 				const adjustedLevel = getLevelFromXp(adjustedTotalXp).level;
 				const racesWonDelta =
-					(other.oldPlacement === 1 ? -1 : 0) +
-					(other.newPlacement === 1 ? 1 : 0);
+					(other.oldPlacement === 1 ? -1 : 0) + (other.newPlacement === 1 ? 1 : 0);
 
 				batchStatements.push(
 					ctx.db
@@ -203,18 +193,12 @@ export const raceRouter = router({
 			}
 
 			batchStatements.push(
-				ctx.db
-					.update(player)
-					.set(currentPlayerUpdate)
-					.where(eq(player.id, playerRecord.id)),
+				ctx.db.update(player).set(currentPlayerUpdate).where(eq(player.id, playerRecord.id)),
 			);
 
 			// Phase 5: Execute atomically
 			await ctx.db.batch(
-				batchStatements as unknown as [
-					BatchItem<"sqlite">,
-					...BatchItem<"sqlite">[],
-				],
+				batchStatements as unknown as [BatchItem<"sqlite">, ...BatchItem<"sqlite">[]],
 			);
 
 			let newAchievements: string[] = [];
@@ -222,20 +206,14 @@ export const raceRouter = router({
 			let achievementError = false;
 
 			// Block 1: achievements
-			let checkStats:
-				| import("../../lib/achievement-checker.ts").CheckStats
-				| undefined;
+			let checkStats: import("../../lib/achievement-checker.ts").CheckStats | undefined;
 			try {
-				const achievementResult = await checkAchievements(
-					ctx.db,
-					playerRecord.id,
-					{
-						score: input.score,
-						distance: input.distance,
-						obstaclesCleared: 0,
-						longestCleanRun: 0,
-					},
-				);
+				const achievementResult = await checkAchievements(ctx.db, playerRecord.id, {
+					score: input.score,
+					distance: input.distance,
+					obstaclesCleared: 0,
+					longestCleanRun: 0,
+				});
 				newAchievements = achievementResult.newAchievements;
 				newSkins.push(...achievementResult.newSkins);
 				checkStats = achievementResult.stats;
@@ -250,11 +228,7 @@ export const raceRouter = router({
 
 			// Block 2: skins (independent — achievement failure doesn't block this)
 			try {
-				const skinUnlocks = await checkSkinUnlocks(
-					ctx.db,
-					playerRecord.id,
-					checkStats,
-				);
+				const skinUnlocks = await checkSkinUnlocks(ctx.db, playerRecord.id, checkStats);
 				newSkins.push(...skinUnlocks);
 			} catch (err) {
 				console.error("[race.submitResult] Skin unlock check failed", {
@@ -293,9 +267,7 @@ export const raceRouter = router({
 				createdAt: raceHistory.createdAt,
 			})
 			.from(raceHistory)
-			.where(
-				sql`${raceHistory.playerId} = ${playerRecord.id} AND ${raceHistory.cheated} = 0`,
-			)
+			.where(sql`${raceHistory.playerId} = ${playerRecord.id} AND ${raceHistory.cheated} = 0`)
 			.orderBy(desc(raceHistory.createdAt))
 			.limit(20);
 	}),

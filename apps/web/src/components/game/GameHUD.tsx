@@ -128,9 +128,7 @@ export function GameHUD({
 							>
 								<span>{mod.icon}</span>
 								<span className="hidden sm:inline">{mod.name}</span>
-								<span className="text-purple-400 font-bold">
-									×{mod.multiplier.toFixed(1)}
-								</span>
+								<span className="text-purple-400 font-bold">×{mod.multiplier.toFixed(1)}</span>
 							</span>
 						))}
 					</div>

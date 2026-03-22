@@ -59,9 +59,7 @@ export function GameOverModal({
 	onRetrySubmit,
 }: GameOverModalProps) {
 	const hasUnlocks =
-		submitResult &&
-		(submitResult.newAchievements.length > 0 ||
-			submitResult.newSkins.length > 0);
+		submitResult && (submitResult.newAchievements.length > 0 || submitResult.newSkins.length > 0);
 
 	return (
 		<div className="absolute inset-0 z-20 flex items-center justify-center bg-black/80 backdrop-blur-sm">
@@ -91,9 +89,7 @@ export function GameOverModal({
 						<h2 className="text-glow-orange text-4xl sm:text-5xl font-black font-mono uppercase tracking-tight leading-none mb-2 text-fang-orange">
 							Game Over
 						</h2>
-						<p className="text-sm font-mono text-muted-foreground">
-							{subtitle(state.score)}
-						</p>
+						<p className="text-sm font-mono text-muted-foreground">{subtitle(state.score)}</p>
 					</div>
 
 					{/* Level Up banner */}
@@ -160,9 +156,7 @@ export function GameOverModal({
 					{/* Submit error */}
 					{!cheatsUsed && !!submitError && (
 						<div className="mb-3 sm:mb-4 text-center">
-							<p className="text-sm text-destructive mb-2">
-								Failed to save score.
-							</p>
+							<p className="text-sm text-destructive mb-2">Failed to save score.</p>
 							{onRetrySubmit && (
 								<button
 									type="button"
@@ -218,8 +212,7 @@ export function GameOverModal({
 					{/* Achievement sync warning */}
 					{submitResult?.achievementError && (
 						<p className="mb-3 sm:mb-4 text-xs text-center font-mono text-fang-gold/50">
-							Some achievements may not have been recorded. They&apos;ll sync
-							next game.
+							Some achievements may not have been recorded. They&apos;ll sync next game.
 						</p>
 					)}
 

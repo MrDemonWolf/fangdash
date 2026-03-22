@@ -28,21 +28,21 @@ export function CountdownOverlay({ seconds }: CountdownOverlayProps) {
 
 			<style jsx={true}>
 				{`
-				@keyframes countdownPop {
-					0% {
-						transform: scale(2);
-						opacity: 0;
+					@keyframes countdownPop {
+						0% {
+							transform: scale(2);
+							opacity: 0;
+						}
+						40% {
+							transform: scale(0.95);
+							opacity: 1;
+						}
+						100% {
+							transform: scale(1);
+							opacity: 1;
+						}
 					}
-					40% {
-						transform: scale(0.95);
-						opacity: 1;
-					}
-					100% {
-						transform: scale(1);
-						opacity: 1;
-					}
-				}
-			`}
+				`}
 			</style>
 		</div>
 	);
