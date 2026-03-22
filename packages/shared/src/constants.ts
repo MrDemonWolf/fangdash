@@ -147,3 +147,14 @@ export const AUDIO_KEYS = {
 	SFX_SKIN_EQUIP: "sfx-skin-equip",
 	SFX_VICTORY: "sfx-victory",
 } as const;
+
+// ── Time Periods ──
+export const PERIOD_MS = {
+	daily: 86_400_000,
+	weekly: 604_800_000,
+} as const;
+
+export function getPeriodCutoff(period: "daily" | "weekly" | "all"): Date | null {
+	if (period === "all") return null;
+	return new Date(Date.now() - PERIOD_MS[period]);
+}

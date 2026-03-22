@@ -3,20 +3,13 @@ import { TRPCError } from "@trpc/server";
 import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 import { player, playerSkin } from "../../db/schema.ts";
+import { getUnlockedSkinIds } from "../../lib/get-unlocked-ids.ts";
 import { getUnlockStats } from "../../lib/unlock-stats.ts";
 import { playerProcedure, publicProcedure, router } from "../trpc.ts";
 
 export const skinRouter = router({
 	getUnlockedSkins: playerProcedure.query(async ({ ctx }) => {
-		const unlocked = await ctx.db
-			.select({ skinId: playerSkin.skinId })
-			.from(playerSkin)
-			.where(eq(playerSkin.playerId, ctx.playerRecord.id));
-
-		// Always include the default skin
-		const skinIds = new Set(unlocked.map((r) => r.skinId));
-		skinIds.add(DEFAULT_SKIN_ID);
-
+		const skinIds = await getUnlockedSkinIds(ctx.db, ctx.playerRecord.id);
 		return Array.from(skinIds);
 	}),
 
@@ -59,16 +52,7 @@ export const skinRouter = router({
 	}),
 
 	gallery: playerProcedure.query(async ({ ctx }) => {
-		const unlockedIds = new Set<string>([DEFAULT_SKIN_ID]);
-
-		const unlocked = await ctx.db
-			.select({ skinId: playerSkin.skinId })
-			.from(playerSkin)
-			.where(eq(playerSkin.playerId, ctx.playerRecord.id));
-
-		for (const r of unlocked) {
-			unlockedIds.add(r.skinId);
-		}
+		const unlockedIds = await getUnlockedSkinIds(ctx.db, ctx.playerRecord.id);
 
 		return SKINS.map((skin: SkinDefinition) => ({
 			...skin,
