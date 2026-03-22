@@ -1,8 +1,7 @@
 import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { player, user } from "../../db/schema.ts";
-import { ensurePlayer } from "../../lib/ensure-player.ts";
-import { protectedProcedure, router } from "../trpc.ts";
+import { playerProcedure, protectedProcedure, router } from "../trpc.ts";
 
 export const accountRouter = router({
 	getAccountStatus: protectedProcedure.query(async ({ ctx }) => {
@@ -51,29 +50,20 @@ export const accountRouter = router({
 		return { success: true };
 	}),
 
-	getPrivacy: protectedProcedure.query(async ({ ctx }) => {
-		const playerRecord = await ensurePlayer(ctx.db, ctx.user.id);
-		if (!playerRecord) {
-			return { profilePublic: true };
-		}
-		return { profilePublic: playerRecord.profilePublic === 1 };
+	getPrivacy: playerProcedure.query(async ({ ctx }) => {
+		return { profilePublic: ctx.playerRecord.profilePublic === 1 };
 	}),
 
-	updatePrivacy: protectedProcedure
+	updatePrivacy: playerProcedure
 		.input(z.object({ profilePublic: z.boolean() }))
 		.mutation(async ({ ctx, input }) => {
-			const playerRecord = await ensurePlayer(ctx.db, ctx.user.id);
-			if (!playerRecord) {
-				return { profilePublic: input.profilePublic };
-			}
-
 			await ctx.db
 				.update(player)
 				.set({
 					profilePublic: input.profilePublic ? 1 : 0,
 					updatedAt: new Date(),
 				})
-				.where(eq(player.id, playerRecord.id));
+				.where(eq(player.id, ctx.playerRecord.id));
 
 			return { profilePublic: input.profilePublic };
 		}),

@@ -4,6 +4,7 @@ import type { AchievementCategory, AchievementCondition } from "@fangdash/shared
 import { getSkinById } from "@fangdash/shared";
 import { Check, Lock } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
+import { formatDate } from "@/lib/format.ts";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useSession } from "@/lib/auth-client.ts";
@@ -51,16 +52,6 @@ function formatCondition(condition: AchievementCondition): string {
 		case "combo":
 			return condition.conditions.map(formatCondition).join(" and ");
 	}
-}
-
-function formatDate(date: Date | string | null): string {
-	if (!date) return "";
-	const d = typeof date === "string" ? new Date(date) : date;
-	return d.toLocaleDateString("en-US", {
-		month: "short",
-		day: "numeric",
-		year: "numeric",
-	});
 }
 
 interface AchievementCardProps {

@@ -1,30 +1,20 @@
 import { ACHIEVEMENTS } from "@fangdash/shared/achievements";
 import { count, eq, sql } from "drizzle-orm";
 import { player, playerAchievement } from "../../db/schema.ts";
-import { ensurePlayer } from "../../lib/ensure-player.ts";
-import { protectedProcedure, publicProcedure, router } from "../trpc.ts";
+import { playerProcedure, publicProcedure, router } from "../trpc.ts";
 
 export const achievementRouter = router({
 	/**
 	 * Get all achievements with the current user's unlock status.
 	 */
-	getAll: protectedProcedure.query(async ({ ctx }) => {
-		const playerRecord = await ensurePlayer(ctx.db, ctx.user.id);
-		if (!playerRecord) {
-			return ACHIEVEMENTS.map((a) => ({
-				...a,
-				unlocked: false,
-				unlockedAt: null,
-			}));
-		}
-
+	getAll: playerProcedure.query(async ({ ctx }) => {
 		const unlocked = await ctx.db
 			.select({
 				achievementId: playerAchievement.achievementId,
 				unlockedAt: playerAchievement.unlockedAt,
 			})
 			.from(playerAchievement)
-			.where(eq(playerAchievement.playerId, playerRecord.id));
+			.where(eq(playerAchievement.playerId, ctx.playerRecord.id));
 
 		const unlockedMap = new Map(unlocked.map((u) => [u.achievementId, u.unlockedAt]));
 
@@ -38,19 +28,14 @@ export const achievementRouter = router({
 	/**
 	 * Get only the user's unlocked achievements with timestamps.
 	 */
-	getMine: protectedProcedure.query(async ({ ctx }) => {
-		const playerRecord = await ensurePlayer(ctx.db, ctx.user.id);
-		if (!playerRecord) {
-			return [];
-		}
-
+	getMine: playerProcedure.query(async ({ ctx }) => {
 		const unlocked = await ctx.db
 			.select({
 				achievementId: playerAchievement.achievementId,
 				unlockedAt: playerAchievement.unlockedAt,
 			})
 			.from(playerAchievement)
-			.where(eq(playerAchievement.playerId, playerRecord.id));
+			.where(eq(playerAchievement.playerId, ctx.playerRecord.id));
 
 		const achievementMap = new Map(ACHIEVEMENTS.map((a) => [a.id, a]));
 

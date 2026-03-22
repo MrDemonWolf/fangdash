@@ -3,20 +3,14 @@ import { TRPCError } from "@trpc/server";
 import { and, count, eq, sql } from "drizzle-orm";
 import { z } from "zod";
 import { player, playerSkin } from "../../db/schema.ts";
-import { ensurePlayer } from "../../lib/ensure-player.ts";
-import { protectedProcedure, publicProcedure, router } from "../trpc.ts";
+import { playerProcedure, publicProcedure, router } from "../trpc.ts";
 
 export const skinRouter = router({
-	getUnlockedSkins: protectedProcedure.query(async ({ ctx }) => {
-		const playerRecord = await ensurePlayer(ctx.db, ctx.user.id);
-		if (!playerRecord) {
-			return ["gray-wolf"];
-		}
-
+	getUnlockedSkins: playerProcedure.query(async ({ ctx }) => {
 		const unlocked = await ctx.db
 			.select({ skinId: playerSkin.skinId })
 			.from(playerSkin)
-			.where(eq(playerSkin.playerId, playerRecord.id));
+			.where(eq(playerSkin.playerId, ctx.playerRecord.id));
 
 		// Always include the default skin
 		const skinIds = new Set(unlocked.map((r) => r.skinId));
@@ -25,7 +19,7 @@ export const skinRouter = router({
 		return Array.from(skinIds);
 	}),
 
-	equipSkin: protectedProcedure
+	equipSkin: playerProcedure
 		.input(z.object({ skinId: z.string().min(1) }))
 		.mutation(async ({ ctx, input }) => {
 			const skin = getSkinById(input.skinId);
@@ -33,17 +27,14 @@ export const skinRouter = router({
 				throw new TRPCError({ code: "NOT_FOUND", message: "Skin not found" });
 			}
 
-			const playerRecord = await ensurePlayer(ctx.db, ctx.user.id);
-			if (!playerRecord) {
-				throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
-			}
-
 			// Check skin is unlocked (default skin is always available)
 			if (input.skinId !== "gray-wolf") {
 				const owned = await ctx.db
 					.select()
 					.from(playerSkin)
-					.where(and(eq(playerSkin.playerId, playerRecord.id), eq(playerSkin.skinId, input.skinId)))
+					.where(
+						and(eq(playerSkin.playerId, ctx.playerRecord.id), eq(playerSkin.skinId, input.skinId)),
+					)
 					.get();
 
 				if (!owned) {
@@ -57,33 +48,25 @@ export const skinRouter = router({
 			await ctx.db
 				.update(player)
 				.set({ equippedSkinId: input.skinId, updatedAt: new Date() })
-				.where(eq(player.id, playerRecord.id));
+				.where(eq(player.id, ctx.playerRecord.id));
 
 			return { equippedSkinId: input.skinId };
 		}),
 
-	getEquippedSkin: protectedProcedure.query(async ({ ctx }) => {
-		const playerRecord = await ensurePlayer(ctx.db, ctx.user.id);
-		if (!playerRecord) {
-			return { skinId: "gray-wolf" };
-		}
-
-		return { skinId: playerRecord.equippedSkinId };
+	getEquippedSkin: playerProcedure.query(async ({ ctx }) => {
+		return { skinId: ctx.playerRecord.equippedSkinId };
 	}),
 
-	gallery: protectedProcedure.query(async ({ ctx }) => {
-		const playerRecord = await ensurePlayer(ctx.db, ctx.user.id);
+	gallery: playerProcedure.query(async ({ ctx }) => {
 		const unlockedIds = new Set<string>(["gray-wolf"]);
 
-		if (playerRecord) {
-			const unlocked = await ctx.db
-				.select({ skinId: playerSkin.skinId })
-				.from(playerSkin)
-				.where(eq(playerSkin.playerId, playerRecord.id));
+		const unlocked = await ctx.db
+			.select({ skinId: playerSkin.skinId })
+			.from(playerSkin)
+			.where(eq(playerSkin.playerId, ctx.playerRecord.id));
 
-			for (const r of unlocked) {
-				unlockedIds.add(r.skinId);
-			}
+		for (const r of unlocked) {
+			unlockedIds.add(r.skinId);
 		}
 
 		return SKINS.map((skin: SkinDefinition) => ({
