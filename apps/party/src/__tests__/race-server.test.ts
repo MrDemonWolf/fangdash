@@ -5,6 +5,7 @@ import RaceServer from "../race-server.ts";
 function createMockConnection(id: string): Party.Connection {
 	return {
 		id,
+		uri: `http://localhost/party/test-room?token=test-session-token`,
 		send: vi.fn(),
 		close: vi.fn(),
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -15,6 +16,7 @@ function createMockParty(id = "test-room"): Party.Party {
 	const connections = new Map<string, Party.Connection>();
 	return {
 		id,
+		env: {},
 		getConnections: () => connections.values(),
 		broadcast: vi.fn(),
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -35,9 +37,9 @@ describe("RaceServer", () => {
 	});
 
 	describe("onConnect", () => {
-		it("should send room state on connect", () => {
+		it("should send room state on connect", async () => {
 			const conn = createMockConnection("player-1");
-			server.onConnect(conn);
+			await server.onConnect(conn);
 
 			expect(conn.send).toHaveBeenCalledTimes(1);
 			const sent = JSON.parse((conn.send as ReturnType<typeof vi.fn>).mock.calls[0]?.[0]);
@@ -47,9 +49,9 @@ describe("RaceServer", () => {
 	});
 
 	describe("join", () => {
-		it("should add player to room", () => {
+		it("should add player to room", async () => {
 			const conn = createMockConnection("player-1");
-			server.onConnect(conn);
+			await server.onConnect(conn);
 			sendMessage(server, conn, {
 				type: "join",
 				payload: { username: "TestPlayer", skinId: "gray-wolf" },
@@ -59,9 +61,9 @@ describe("RaceServer", () => {
 			expect(server.room.players[0]?.username).toBe("TestPlayer");
 		});
 
-		it("should make first player the host", () => {
+		it("should make first player the host", async () => {
 			const conn = createMockConnection("player-1");
-			server.onConnect(conn);
+			await server.onConnect(conn);
 			sendMessage(server, conn, {
 				type: "join",
 				payload: { username: "Host", skinId: "gray-wolf" },
@@ -71,9 +73,9 @@ describe("RaceServer", () => {
 			expect(server.room.players[0]?.isHost).toBe(true);
 		});
 
-		it("should not add duplicate players", () => {
+		it("should not add duplicate players", async () => {
 			const conn = createMockConnection("player-1");
-			server.onConnect(conn);
+			await server.onConnect(conn);
 			sendMessage(server, conn, {
 				type: "join",
 				payload: { username: "Player", skinId: "gray-wolf" },
@@ -86,9 +88,9 @@ describe("RaceServer", () => {
 			expect(server.room.players.length).toBe(1);
 		});
 
-		it("should reject join when room is not waiting", () => {
+		it("should reject join when room is not waiting", async () => {
 			const conn = createMockConnection("player-1");
-			server.onConnect(conn);
+			await server.onConnect(conn);
 			sendMessage(server, conn, {
 				type: "join",
 				payload: { username: "Player", skinId: "gray-wolf" },
@@ -98,7 +100,7 @@ describe("RaceServer", () => {
 			server.room.status = "racing";
 
 			const conn2 = createMockConnection("player-2");
-			server.onConnect(conn2);
+			await server.onConnect(conn2);
 			sendMessage(server, conn2, {
 				type: "join",
 				payload: { username: "Late", skinId: "gray-wolf" },
@@ -109,9 +111,9 @@ describe("RaceServer", () => {
 	});
 
 	describe("ready", () => {
-		it("should mark player as ready", () => {
+		it("should mark player as ready", async () => {
 			const conn = createMockConnection("player-1");
-			server.onConnect(conn);
+			await server.onConnect(conn);
 			sendMessage(server, conn, {
 				type: "join",
 				payload: { username: "Player", skinId: "gray-wolf" },
@@ -121,9 +123,9 @@ describe("RaceServer", () => {
 			expect(server.room.players[0]?.ready).toBe(true);
 		});
 
-		it("should not start countdown with only one player", () => {
+		it("should not start countdown with only one player", async () => {
 			const conn = createMockConnection("player-1");
-			server.onConnect(conn);
+			await server.onConnect(conn);
 			sendMessage(server, conn, {
 				type: "join",
 				payload: { username: "Host", skinId: "gray-wolf" },
@@ -134,11 +136,11 @@ describe("RaceServer", () => {
 			expect(server.room.status).toBe("waiting");
 		});
 
-		it("should start countdown when host readies with enough players", () => {
+		it("should start countdown when host readies with enough players", async () => {
 			const conn1 = createMockConnection("player-1");
 			const conn2 = createMockConnection("player-2");
-			server.onConnect(conn1);
-			server.onConnect(conn2);
+			await server.onConnect(conn1);
+			await server.onConnect(conn2);
 			sendMessage(server, conn1, {
 				type: "join",
 				payload: { username: "Host", skinId: "gray-wolf" },
@@ -154,9 +156,9 @@ describe("RaceServer", () => {
 	});
 
 	describe("update", () => {
-		it("should update player distance and score during race", () => {
+		it("should update player distance and score during race", async () => {
 			const conn = createMockConnection("player-1");
-			server.onConnect(conn);
+			await server.onConnect(conn);
 			sendMessage(server, conn, {
 				type: "join",
 				payload: { username: "Player", skinId: "gray-wolf" },
@@ -172,9 +174,9 @@ describe("RaceServer", () => {
 			expect(server.room.players[0]?.score).toBe(100);
 		});
 
-		it("should ignore updates when not racing", () => {
+		it("should ignore updates when not racing", async () => {
 			const conn = createMockConnection("player-1");
-			server.onConnect(conn);
+			await server.onConnect(conn);
 			sendMessage(server, conn, {
 				type: "join",
 				payload: { username: "Player", skinId: "gray-wolf" },
@@ -188,9 +190,9 @@ describe("RaceServer", () => {
 			expect(server.room.players[0]?.distance).toBe(0);
 		});
 
-		it("should ignore updates from dead players", () => {
+		it("should ignore updates from dead players", async () => {
 			const conn = createMockConnection("player-1");
-			server.onConnect(conn);
+			await server.onConnect(conn);
 			sendMessage(server, conn, {
 				type: "join",
 				payload: { username: "Player", skinId: "gray-wolf" },
@@ -211,9 +213,9 @@ describe("RaceServer", () => {
 	});
 
 	describe("died", () => {
-		it("should mark player as dead", () => {
+		it("should mark player as dead", async () => {
 			const conn = createMockConnection("player-1");
-			server.onConnect(conn);
+			await server.onConnect(conn);
 			sendMessage(server, conn, {
 				type: "join",
 				payload: { username: "Player", skinId: "gray-wolf" },
@@ -225,11 +227,11 @@ describe("RaceServer", () => {
 			expect(server.room.players[0]?.alive).toBe(false);
 		});
 
-		it("should end race when all players die", () => {
+		it("should end race when all players die", async () => {
 			const conn1 = createMockConnection("player-1");
 			const conn2 = createMockConnection("player-2");
-			server.onConnect(conn1);
-			server.onConnect(conn2);
+			await server.onConnect(conn1);
+			await server.onConnect(conn2);
 
 			sendMessage(server, conn1, {
 				type: "join",
@@ -249,7 +251,7 @@ describe("RaceServer", () => {
 	});
 
 	describe("kick", () => {
-		it("should allow host to kick players", () => {
+		it("should allow host to kick players", async () => {
 			const mockConns = new Map<string, Party.Connection>();
 			const conn1 = createMockConnection("player-1");
 			const conn2 = createMockConnection("player-2");
@@ -258,8 +260,8 @@ describe("RaceServer", () => {
 			// eslint-disable-next-line @typescript-eslint/no-explicit-any
 			(party as any).getConnections = () => mockConns.values();
 
-			server.onConnect(conn1);
-			server.onConnect(conn2);
+			await server.onConnect(conn1);
+			await server.onConnect(conn2);
 
 			sendMessage(server, conn1, {
 				type: "join",
@@ -279,11 +281,11 @@ describe("RaceServer", () => {
 			expect(conn2.close).toHaveBeenCalled();
 		});
 
-		it("should not allow non-host to kick", () => {
+		it("should not allow non-host to kick", async () => {
 			const conn1 = createMockConnection("player-1");
 			const conn2 = createMockConnection("player-2");
-			server.onConnect(conn1);
-			server.onConnect(conn2);
+			await server.onConnect(conn1);
+			await server.onConnect(conn2);
 
 			sendMessage(server, conn1, {
 				type: "join",
@@ -304,9 +306,9 @@ describe("RaceServer", () => {
 	});
 
 	describe("rematch", () => {
-		it("should reset room when host requests rematch", () => {
+		it("should reset room when host requests rematch", async () => {
 			const conn = createMockConnection("player-1");
-			server.onConnect(conn);
+			await server.onConnect(conn);
 			sendMessage(server, conn, {
 				type: "join",
 				payload: { username: "Host", skinId: "gray-wolf" },
@@ -320,11 +322,11 @@ describe("RaceServer", () => {
 			expect(server.room.players[0]?.score).toBe(0);
 		});
 
-		it("should not allow rematch from non-host", () => {
+		it("should not allow rematch from non-host", async () => {
 			const conn1 = createMockConnection("player-1");
 			const conn2 = createMockConnection("player-2");
-			server.onConnect(conn1);
-			server.onConnect(conn2);
+			await server.onConnect(conn1);
+			await server.onConnect(conn2);
 
 			sendMessage(server, conn1, {
 				type: "join",
@@ -341,9 +343,9 @@ describe("RaceServer", () => {
 			expect(server.room.status).toBe("finished");
 		});
 
-		it("should not allow rematch when not finished", () => {
+		it("should not allow rematch when not finished", async () => {
 			const conn = createMockConnection("player-1");
-			server.onConnect(conn);
+			await server.onConnect(conn);
 			sendMessage(server, conn, {
 				type: "join",
 				payload: { username: "Host", skinId: "gray-wolf" },
@@ -355,9 +357,9 @@ describe("RaceServer", () => {
 	});
 
 	describe("onClose", () => {
-		it("should reset room when all players leave", () => {
+		it("should reset room when all players leave", async () => {
 			const conn = createMockConnection("player-1");
-			server.onConnect(conn);
+			await server.onConnect(conn);
 			sendMessage(server, conn, {
 				type: "join",
 				payload: { username: "Player", skinId: "gray-wolf" },
@@ -370,11 +372,11 @@ describe("RaceServer", () => {
 			expect(server.room.hostId).toBeNull();
 		});
 
-		it("should reset countdown state when all players leave during countdown", () => {
+		it("should reset countdown state when all players leave during countdown", async () => {
 			const conn1 = createMockConnection("player-1");
 			const conn2 = createMockConnection("player-2");
-			server.onConnect(conn1);
-			server.onConnect(conn2);
+			await server.onConnect(conn1);
+			await server.onConnect(conn2);
 			sendMessage(server, conn1, {
 				type: "join",
 				payload: { username: "Host", skinId: "gray-wolf" },
@@ -396,9 +398,9 @@ describe("RaceServer", () => {
 			expect(server.room.players.length).toBe(0);
 		});
 
-		it("should remove player on disconnect", () => {
+		it("should remove player on disconnect", async () => {
 			const conn = createMockConnection("player-1");
-			server.onConnect(conn);
+			await server.onConnect(conn);
 			sendMessage(server, conn, {
 				type: "join",
 				payload: { username: "Player", skinId: "gray-wolf" },
@@ -408,11 +410,11 @@ describe("RaceServer", () => {
 			expect(server.room.players.length).toBe(0);
 		});
 
-		it("should migrate host on host disconnect", () => {
+		it("should migrate host on host disconnect", async () => {
 			const conn1 = createMockConnection("player-1");
 			const conn2 = createMockConnection("player-2");
-			server.onConnect(conn1);
-			server.onConnect(conn2);
+			await server.onConnect(conn1);
+			await server.onConnect(conn2);
 
 			sendMessage(server, conn1, {
 				type: "join",
@@ -431,25 +433,25 @@ describe("RaceServer", () => {
 	});
 
 	describe("message validation", () => {
-		it("should ignore invalid JSON", () => {
+		it("should ignore invalid JSON", async () => {
 			const conn = createMockConnection("player-1");
-			server.onConnect(conn);
+			await server.onConnect(conn);
 			server.onMessage("not json", conn);
 
 			expect(server.room.players.length).toBe(0);
 		});
 
-		it("should ignore messages with invalid schema", () => {
+		it("should ignore messages with invalid schema", async () => {
 			const conn = createMockConnection("player-1");
-			server.onConnect(conn);
+			await server.onConnect(conn);
 			server.onMessage(JSON.stringify({ type: "unknown_type" }), conn);
 
 			expect(server.room.players.length).toBe(0);
 		});
 
-		it("should reject join with oversized username", () => {
+		it("should reject join with oversized username", async () => {
 			const conn = createMockConnection("player-1");
-			server.onConnect(conn);
+			await server.onConnect(conn);
 			sendMessage(server, conn, {
 				type: "join",
 				payload: { username: "a".repeat(51), skinId: "gray-wolf" },
@@ -458,9 +460,9 @@ describe("RaceServer", () => {
 			expect(server.room.players.length).toBe(0);
 		});
 
-		it("should reject update with out-of-bounds values", () => {
+		it("should reject update with out-of-bounds values", async () => {
 			const conn = createMockConnection("player-1");
-			server.onConnect(conn);
+			await server.onConnect(conn);
 			sendMessage(server, conn, {
 				type: "join",
 				payload: { username: "Player", skinId: "gray-wolf" },

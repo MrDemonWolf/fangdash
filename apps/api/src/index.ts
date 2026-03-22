@@ -3,6 +3,7 @@ import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { createAuth } from "./lib/auth.ts";
 import { rateLimitMiddleware } from "./middleware/rate-limit.ts";
+import { securityHeaders } from "./middleware/security-headers.ts";
 import { createContext } from "./trpc/context.ts";
 import { appRouter } from "./trpc/router.ts";
 
@@ -31,6 +32,9 @@ app.use(
 	}),
 );
 
+// Security headers
+app.use("*", securityHeaders);
+
 // Rate limiting
 app.use("*", rateLimitMiddleware);
 
@@ -50,7 +54,8 @@ app.on(["POST", "GET"], "/api/auth/**", async (c) => {
 			headers: new Headers(response.headers),
 		});
 	} catch (err) {
-		console.error("[auth] Handler error:", err);
+		const message = err instanceof Error ? err.message : "Unknown error";
+		console.error("[auth] Handler error:", message);
 		return c.json({ error: "Internal auth error" }, 500);
 	}
 });

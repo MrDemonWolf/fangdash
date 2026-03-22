@@ -80,6 +80,9 @@ export function createAuth(env: AuthBindings) {
 				maxAge: 30 * 60,
 			},
 		},
+		advanced: {
+			useSecureCookies: !isDev,
+		},
 		trustedOrigins,
 		onAPIError: {
 			errorURL: `${webURL}/auth/error`,

@@ -27,7 +27,37 @@ export default class RaceServer implements Party.Server {
 		};
 	}
 
-	onConnect(conn: Party.Connection) {
+	async onConnect(conn: Party.Connection) {
+		// Validate session token passed as query param
+		const url = new URL(conn.uri, "http://localhost");
+		const token = url.searchParams.get("token");
+
+		if (!token) {
+			this.send(conn, {
+				type: "error" as ServerMessage["type"],
+				payload: { message: "Authentication required" },
+			} as unknown as ServerMessage);
+			conn.close(4001, "Authentication required");
+			return;
+		}
+
+		// Verify token against the API
+		const apiUrl = this.party.env["API_URL"] as string | undefined;
+		if (apiUrl) {
+			try {
+				const res = await fetch(`${apiUrl}/api/auth/get-session`, {
+					headers: { cookie: `better-auth.session_token=${token}` },
+				});
+				if (!res.ok || !(await res.json() as { session?: unknown }).session) {
+					conn.close(4003, "Invalid session");
+					return;
+				}
+			} catch {
+				// If API is unreachable, allow connection but log warning
+				console.warn("[race-server] Could not verify session — API unreachable");
+			}
+		}
+
 		this.send(conn, { type: "room_state", payload: this.room });
 	}
 
