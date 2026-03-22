@@ -6,8 +6,9 @@ export async function createContext(c: Context) {
 	const db = createDb(c.env.DB);
 	const auth = createAuth(c.env);
 
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	let sessionData: { session: any; user: any } | null = null;
+	// Better Auth's getSession return type has many optional/undefined fields.
+	// We normalize them to non-undefined in the return object below.
+	let sessionData: Awaited<ReturnType<NonNullable<typeof auth>["api"]["getSession"]>> | null = null;
 
 	// Only fetch session when auth cookies are present — saves a D1 read on public requests
 	const hasCookie = c.req.header("cookie")?.includes("better-auth");
@@ -39,8 +40,8 @@ export async function createContext(c: Context) {
 					userId: sessionData.session.userId,
 					token: sessionData.session.token,
 					expiresAt: sessionData.session.expiresAt,
-					ipAddress: sessionData.session.ipAddress,
-					userAgent: sessionData.session.userAgent,
+					ipAddress: sessionData.session.ipAddress ?? null,
+					userAgent: sessionData.session.userAgent ?? null,
 				}
 			: null,
 		user: sessionData?.user
@@ -49,11 +50,11 @@ export async function createContext(c: Context) {
 					name: sessionData.user.name,
 					email: sessionData.user.email,
 					emailVerified: sessionData.user.emailVerified,
-					image: sessionData.user.image,
+					image: sessionData.user.image ?? null,
 					role: sessionData.user.role,
-					banned: sessionData.user.banned,
-					banReason: sessionData.user.banReason,
-					banExpires: sessionData.user.banExpires,
+					banned: sessionData.user.banned ?? null,
+					banReason: sessionData.user.banReason ?? null,
+					banExpires: sessionData.user.banExpires ?? null,
 					createdAt: sessionData.user.createdAt,
 					updatedAt: sessionData.user.updatedAt,
 				}

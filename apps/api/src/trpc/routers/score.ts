@@ -1,25 +1,15 @@
-import {
-	ACHIEVEMENTS,
-	DIFFICULTY_NAMES,
-	READY_MODS_MASK,
-	SCORE_PER_OBSTACLE,
-	SCORE_PER_SECOND,
-	areModsCompatible,
-	getScoreMultiplier,
-	getLevelFromXp,
-	getSkinById,
-} from "@fangdash/shared";
+import { ACHIEVEMENTS, DIFFICULTY_NAMES, READY_MODS_MASK, getLevelFromXp, getSkinById } from "@fangdash/shared";
 import { TRPCError } from "@trpc/server";
 import { count, desc, eq, sql } from "drizzle-orm";
 import { z } from "zod";
 import { player, playerAchievement, playerSkin, score, user } from "../../db/schema.ts";
 import { checkAchievements } from "../../lib/achievement-checker.ts";
-import { ensurePlayer } from "../../lib/ensure-player.ts";
 import { checkSkinUnlocks } from "../../lib/skin-unlocker.ts";
-import { protectedProcedure, publicProcedure, router } from "../trpc.ts";
+import { validateScoreInput } from "../../lib/validate-score.ts";
+import { playerProcedure, publicProcedure, router } from "../trpc.ts";
 
 export const scoreRouter = router({
-	submit: protectedProcedure
+	submit: playerProcedure
 		.input(
 			z.object({
 				score: z.number().int().min(0),
@@ -34,47 +24,12 @@ export const scoreRouter = router({
 			}),
 		)
 		.mutation(async ({ ctx, input }) => {
-			// Validate mods bitmask: only allow ready, compatible mods
-			if ((input.mods & ~READY_MODS_MASK) !== 0) {
-				throw new TRPCError({
-					code: "BAD_REQUEST",
-					message: "Invalid mod flags: contains non-ready mods",
-				});
-			}
-			if (!areModsCompatible(input.mods)) {
-				throw new TRPCError({
-					code: "BAD_REQUEST",
-					message: "Invalid mod flags: incompatible mod combination",
-				});
+			const validation = validateScoreInput(input);
+			if (!validation.valid) {
+				throw new TRPCError({ code: "BAD_REQUEST", message: validation.reason });
 			}
 
-			// Reject sessions longer than 30 minutes (1,800,000ms)
-			if (input.duration > 1_800_000) {
-				throw new TRPCError({
-					code: "BAD_REQUEST",
-					message: "Game session exceeds maximum allowed duration",
-				});
-			}
-
-			// Anti-cheat: reject impossible scores (account for mod score multipliers)
-			// Tolerance: 10% + 50 flat buffer to absorb frame-timing drift between
-			// the game's per-frame accumulation and the server's integer formula.
-			const modMultiplier = getScoreMultiplier(input.mods);
-			const maxAllowedScore =
-				((input.duration / 1000) * SCORE_PER_SECOND + input.obstaclesCleared * SCORE_PER_OBSTACLE) *
-				modMultiplier;
-
-			if (input.score > maxAllowedScore * 1.1 + 50) {
-				throw new TRPCError({
-					code: "BAD_REQUEST",
-					message: "Score exceeds maximum allowed rate",
-				});
-			}
-
-			const playerRecord = await ensurePlayer(ctx.db, ctx.user.id);
-			if (!playerRecord) {
-				throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Failed to create player" });
-			}
+			const { playerRecord } = ctx;
 
 			const now = new Date();
 			const scoreId = crypto.randomUUID();
@@ -257,19 +212,14 @@ export const scoreRouter = router({
 			}));
 		}),
 
-	getPlayerStats: protectedProcedure.query(async ({ ctx }) => {
-		const playerRecord = await ensurePlayer(ctx.db, ctx.user.id);
-		if (!playerRecord) {
-			return null;
-		}
-
+	getPlayerStats: playerProcedure.query(async ({ ctx }) => {
 		return {
-			gamesPlayed: playerRecord.gamesPlayed,
-			totalScore: playerRecord.totalScore,
-			totalDistance: playerRecord.totalDistance,
-			totalObstaclesCleared: playerRecord.totalObstaclesCleared,
-			totalXp: playerRecord.totalXp,
-			level: playerRecord.level,
+			gamesPlayed: ctx.playerRecord.gamesPlayed,
+			totalScore: ctx.playerRecord.totalScore,
+			totalDistance: ctx.playerRecord.totalDistance,
+			totalObstaclesCleared: ctx.playerRecord.totalObstaclesCleared,
+			totalXp: ctx.playerRecord.totalXp,
+			level: ctx.playerRecord.level,
 		};
 	}),
 
@@ -287,7 +237,7 @@ export const scoreRouter = router({
 		};
 	}),
 
-	batchSync: protectedProcedure
+	batchSync: playerProcedure
 		.input(
 			z.object({
 				scores: z
@@ -309,10 +259,7 @@ export const scoreRouter = router({
 			}),
 		)
 		.mutation(async ({ ctx, input }) => {
-			const playerRecord = await ensurePlayer(ctx.db, ctx.user.id);
-			if (!playerRecord) {
-				throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Failed to create player" });
-			}
+			const { playerRecord } = ctx;
 
 			const now = Date.now();
 			const sevenDaysMs = 7 * 24 * 60 * 60 * 1000;
@@ -349,29 +296,10 @@ export const scoreRouter = router({
 					continue;
 				}
 
-				// Validate mods
-				if ((s.mods & ~READY_MODS_MASK) !== 0 || !areModsCompatible(s.mods)) {
-					results.push({ clientIndex: i, status: "rejected", reason: "Invalid mod flags" });
-					continue;
-				}
-
-				// Duration cap
-				if (s.duration > 1_800_000) {
-					results.push({ clientIndex: i, status: "rejected", reason: "Duration exceeds maximum" });
-					continue;
-				}
-
-				// Anti-cheat score bounds (10% + 50 flat buffer for frame-timing drift)
-				const modMultiplier = getScoreMultiplier(s.mods);
-				const maxAllowedScore =
-					((s.duration / 1000) * SCORE_PER_SECOND + s.obstaclesCleared * SCORE_PER_OBSTACLE) *
-					modMultiplier;
-				if (s.score > maxAllowedScore * 1.1 + 50) {
-					results.push({
-						clientIndex: i,
-						status: "rejected",
-						reason: "Score exceeds maximum allowed rate",
-					});
+				// Validate mods, duration, and score bounds
+				const validation = validateScoreInput(s);
+				if (!validation.valid) {
+					results.push({ clientIndex: i, status: "rejected", reason: validation.reason });
 					continue;
 				}
 
@@ -427,16 +355,11 @@ export const scoreRouter = router({
 			return results;
 		}),
 
-	myScores: protectedProcedure.query(async ({ ctx }) => {
-		const playerRecord = await ensurePlayer(ctx.db, ctx.user.id);
-		if (!playerRecord) {
-			return [];
-		}
-
+	myScores: playerProcedure.query(async ({ ctx }) => {
 		return ctx.db
 			.select()
 			.from(score)
-			.where(sql`${score.playerId} = ${playerRecord.id} AND ${score.cheated} = 0`)
+			.where(sql`${score.playerId} = ${ctx.playerRecord.id} AND ${score.cheated} = 0`)
 			.orderBy(desc(score.createdAt))
 			.limit(20);
 	}),

@@ -1,5 +1,6 @@
 import { initTRPC, TRPCError } from "@trpc/server";
 import superjson from "superjson";
+import { ensurePlayer } from "../lib/ensure-player.ts";
 import type { TRPCContext } from "./context.ts";
 
 const t = initTRPC.context<TRPCContext>().create({
@@ -15,10 +16,12 @@ export const protectedProcedure = t.procedure.use(({ ctx, next }) => {
 	}
 
 	// Ban enforcement — blocks all protected routes
-	if (ctx.user.banned === true) {
-		const banExpires = ctx.user.banExpires ? new Date(ctx.user.banExpires) : null;
-		const isPermaBan = !banExpires;
-		const isStillBanned = isPermaBan || banExpires > new Date();
+	// Use truthy check: Better Auth may return raw SQLite integer (1) instead of boolean
+	if (ctx.user.banned) {
+		const banExpires = ctx.user.banExpires
+			? new Date(ctx.user.banExpires instanceof Date ? ctx.user.banExpires.getTime() : ctx.user.banExpires)
+			: null;
+		const isStillBanned = !banExpires || banExpires.getTime() > Date.now();
 
 		if (isStillBanned) {
 			throw new TRPCError({
@@ -37,6 +40,18 @@ export const protectedProcedure = t.procedure.use(({ ctx, next }) => {
 			user: ctx.user,
 		},
 	});
+});
+
+/**
+ * Procedure that ensures a player record exists for the authenticated user.
+ * Adds `playerRecord` to the context, eliminating repeated ensurePlayer + null-check boilerplate.
+ */
+export const playerProcedure = protectedProcedure.use(async ({ ctx, next }) => {
+	const playerRecord = await ensurePlayer(ctx.db, ctx.user.id);
+	if (!playerRecord) {
+		throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Failed to create player" });
+	}
+	return next({ ctx: { ...ctx, playerRecord } });
 });
 
 const roleGuard = (allowedRoles: string[], message: string) =>

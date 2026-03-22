@@ -8,6 +8,7 @@ import {
 	decodeMods,
 } from "@fangdash/shared";
 import { useQuery } from "@tanstack/react-query";
+import { formatDate, formatNumber } from "@/lib/format.ts";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -136,18 +137,7 @@ function SkeletonCards() {
 	));
 }
 
-function formatDate(date: Date | string) {
-	const d = typeof date === "string" ? new Date(date) : date;
-	return d.toLocaleDateString("en-US", {
-		month: "short",
-		day: "numeric",
-		year: "numeric",
-	});
-}
-
-function formatNumber(n: number) {
-	return n.toLocaleString();
-}
+// formatDate and formatNumber imported from @/lib/format
 
 function buildModsMask(selectedFlags: Set<number>): number {
 	let mask = 0;
