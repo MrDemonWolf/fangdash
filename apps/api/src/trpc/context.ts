@@ -14,7 +14,7 @@ export async function createContext(c: Context) {
 	const cookie = c.req.header("cookie") ?? "";
 	const hasCookie = cookie
 		.split(";")
-		.some((c) => c.trim().startsWith("better-auth."));
+		.some((part) => part.trim().startsWith("better-auth."));
 	if (auth && hasCookie) {
 		try {
 			sessionData = await auth.api.getSession({

@@ -54,8 +54,9 @@ app.on(["POST", "GET"], "/api/auth/**", async (c) => {
 			headers: new Headers(response.headers),
 		});
 	} catch (err) {
+		const name = err instanceof Error ? err.name : typeof err;
 		const message = err instanceof Error ? err.message : "Unknown error";
-		console.error("[auth] Handler error:", message);
+		console.error("[auth] Handler error:", name, message);
 		return c.json({ error: "Internal auth error" }, 500);
 	}
 });

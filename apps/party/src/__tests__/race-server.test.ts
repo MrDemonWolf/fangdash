@@ -46,6 +46,46 @@ describe("RaceServer", () => {
 			expect(sent.type).toBe("room_state");
 			expect(sent.payload.status).toBe("waiting");
 		});
+
+		it("should reject connection without token", async () => {
+			const conn = {
+				id: "no-token",
+				uri: "http://localhost/party/test-room",
+				send: vi.fn(),
+				close: vi.fn(),
+				// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			} as any;
+			await server.onConnect(conn);
+
+			expect(conn.close).toHaveBeenCalledWith(4001, "Authentication required");
+			// send is called once with the error message before close
+			expect(conn.send).toHaveBeenCalledTimes(1);
+			const sent = JSON.parse((conn.send as ReturnType<typeof vi.fn>).mock.calls[0]?.[0]);
+			expect(sent.type).toBe("error");
+		});
+
+		it("should reject connection with invalid session when API_URL is set", async () => {
+			// Create a party with API_URL set and mock fetch to return invalid session
+			const partyWithApi = {
+				...party,
+				env: { API_URL: "http://localhost:8787" },
+			};
+			const serverWithApi = new RaceServer(partyWithApi as Party.Party);
+
+			const fetchMock = vi.fn().mockResolvedValue({
+				ok: true,
+				json: () => Promise.resolve({ session: null }),
+			});
+			vi.stubGlobal("fetch", fetchMock);
+
+			const conn = createMockConnection("invalid-session");
+			await serverWithApi.onConnect(conn);
+
+			expect(conn.close).toHaveBeenCalledWith(4003, "Invalid session");
+			expect(conn.send).not.toHaveBeenCalled();
+
+			vi.unstubAllGlobals();
+		});
 	});
 
 	describe("join", () => {
