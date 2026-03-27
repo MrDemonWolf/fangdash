@@ -482,7 +482,7 @@ export default function PlayPage() {
 	}, [startGame]);
 
 	return (
-		<main className="flex flex-col bg-[#091533]">
+		<main className="flex flex-col h-dvh overflow-hidden bg-[#091533]">
 			<div className="relative w-full h-dvh">
 				{/* HUD overlay */}
 				{!(gameOver || showMenu) && (
