@@ -179,18 +179,18 @@
 @utility fang-accent {
 	position: relative;
 	overflow: hidden;
-}
 
-@utility fang-accent::after {
-	content: "";
-	position: absolute;
-	top: 0;
-	right: 0;
-	width: 80px;
-	height: 3px;
-	background: linear-gradient(90deg, transparent, var(--color-fang-cyan));
-	transform: skewX(-25deg);
-	transform-origin: top right;
+	&::after {
+		content: "";
+		position: absolute;
+		top: 0;
+		right: 0;
+		width: 80px;
+		height: 3px;
+		background: linear-gradient(90deg, transparent, var(--color-fang-cyan));
+		transform: skewX(-25deg);
+		transform-origin: top right;
+	}
 }
 
 /* ------------------------------------------------------------------ */
@@ -229,18 +229,22 @@
 /*  Scanline overlay (game modals)                                     */
 /* ------------------------------------------------------------------ */
 
-@utility scanlines::before {
-	content: "";
-	position: absolute;
-	inset: 0;
-	pointer-events: none;
-	background: repeating-linear-gradient(
-		transparent 0px,
-		transparent 2px,
-		oklch(0 0 0 / 0.06) 2px,
-		oklch(0 0 0 / 0.06) 4px
-	);
-	z-index: 1;
+@utility scanlines {
+	position: relative;
+
+	&::before {
+		content: "";
+		position: absolute;
+		inset: 0;
+		pointer-events: none;
+		background: repeating-linear-gradient(
+			transparent 0px,
+			transparent 2px,
+			oklch(0 0 0 / 0.06) 2px,
+			oklch(0 0 0 / 0.06) 4px
+		);
+		z-index: 1;
+	}
 }
 
 /* ------------------------------------------------------------------ */

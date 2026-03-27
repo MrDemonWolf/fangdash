@@ -64,7 +64,7 @@ describe("skin router", () => {
 
 			await expect(
 				caller.skin.equipSkin({ skinId: "legendary-wolf-that-doesnt-exist" }),
-			).rejects.toThrow();
+			).rejects.toThrow("Skin not found");
 		});
 
 		it("should require authentication", async () => {
@@ -83,9 +83,10 @@ describe("skin router", () => {
 			expect(result).toHaveProperty("skinId", "gray-wolf");
 		});
 
-		it("should require authentication", async () => {
+		it("should return default skin when not authenticated", async () => {
 			const caller = createTestCaller({ db });
-			await expect(caller.skin.getEquippedSkin()).rejects.toThrow("UNAUTHORIZED");
+			const result = await caller.skin.getEquippedSkin();
+			expect(result).toHaveProperty("skinId", "gray-wolf");
 		});
 	});
 

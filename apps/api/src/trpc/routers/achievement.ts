@@ -1,6 +1,7 @@
 import { ACHIEVEMENTS } from "@fangdash/shared/achievements";
 import { eq } from "drizzle-orm";
 import { playerAchievement } from "../../db/schema.ts";
+import { ensurePlayer } from "../../lib/ensure-player.ts";
 import { getUnlockStats } from "../../lib/unlock-stats.ts";
 import { playerProcedure, publicProcedure, router } from "../trpc.ts";
 
@@ -8,16 +9,28 @@ export const achievementRouter = router({
 	/**
 	 * Get all achievements with the current user's unlock status.
 	 */
-	getAll: playerProcedure.query(async ({ ctx }) => {
-		const unlocked = await ctx.db
-			.select({
-				achievementId: playerAchievement.achievementId,
-				unlockedAt: playerAchievement.unlockedAt,
-			})
-			.from(playerAchievement)
-			.where(eq(playerAchievement.playerId, ctx.playerRecord.id));
+	getAll: publicProcedure.query(async ({ ctx }) => {
+		let unlockedMap = new Map<string, Date>();
 
-		const unlockedMap = new Map(unlocked.map((u) => [u.achievementId, u.unlockedAt]));
+		if (ctx.session?.userId) {
+			try {
+				const playerRecord = await ensurePlayer(ctx.db, ctx.session.userId);
+				if (playerRecord) {
+					const unlocked = await ctx.db
+						.select({
+							achievementId: playerAchievement.achievementId,
+							unlockedAt: playerAchievement.unlockedAt,
+						})
+						.from(playerAchievement)
+						.where(eq(playerAchievement.playerId, playerRecord.id));
+
+					unlockedMap = new Map(unlocked.map((u) => [u.achievementId, u.unlockedAt]));
+				}
+			} catch (err) {
+				console.error("[achievement.getAll]", err instanceof Error ? err.message : err);
+				// Fall through with empty unlock map
+			}
+		}
 
 		return ACHIEVEMENTS.map((a) => ({
 			...a,
@@ -40,18 +53,11 @@ export const achievementRouter = router({
 
 		const achievementMap = new Map(ACHIEVEMENTS.map((a) => [a.id, a]));
 
-		return unlocked
-			.map((u) => {
-				const definition = achievementMap.get(u.achievementId);
-				if (!definition) {
-					return null;
-				}
-				return {
-					...definition,
-					unlockedAt: u.unlockedAt,
-				};
-			})
-			.filter(Boolean);
+		return unlocked.flatMap((u) => {
+			const definition = achievementMap.get(u.achievementId);
+			if (!definition) return [];
+			return [{ ...definition, unlockedAt: u.unlockedAt }];
+		});
 	}),
 
 	/**

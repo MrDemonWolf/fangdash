@@ -18,7 +18,11 @@ export async function createContext(c: Context) {
 			sessionData = await auth.api.getSession({
 				headers: c.req.raw.headers,
 			});
-		} catch {
+		} catch (err) {
+			console.error(
+				"[trpc-context] Session fetch failed:",
+				err instanceof Error ? err.message : err,
+			);
 			// Auth failure — continue as unauthenticated for public procedures
 		}
 	}
