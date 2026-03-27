@@ -23,7 +23,13 @@ import {
 import { useIsAdmin } from "@/lib/use-role.ts";
 
 import { Button } from "@/components/ui/button.tsx";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select.tsx";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select.tsx";
 import { Separator } from "@/components/ui/separator.tsx";
 import { Slider } from "@/components/ui/slider.tsx";
 import { Switch } from "@/components/ui/switch.tsx";
@@ -103,11 +109,7 @@ function StatRow({
 	warn?: boolean;
 	danger?: boolean;
 }) {
-	const valueColor = danger
-		? "text-blue-300"
-		: warn
-			? "text-blue-400"
-			: "text-[#0FACED]";
+	const valueColor = danger ? "text-blue-300" : warn ? "text-blue-400" : "text-[#0FACED]";
 	return (
 		<div className="flex justify-between items-baseline gap-2 py-0.5">
 			<span className="text-[11px] font-mono text-muted-foreground">{label}</span>
@@ -159,8 +161,15 @@ function StatsTab({ state }: { state: DebugState | null }) {
 			<StatRow label="VEL-Y" value={state.player.velocityY} />
 			<StatRow label="JUMPS" value={`${state.player.jumpsRemaining}`} />
 			<StatRow label="GROUND" value={state.player.grounded ? "YES" : "NO"} />
-			<StatRow label="ALIVE" value={state.player.alive ? "YES" : "NO"} danger={!state.player.alive} />
-			<StatRow label="BOUNDS" value={`${state.player.bounds.width}x${state.player.bounds.height}`} />
+			<StatRow
+				label="ALIVE"
+				value={state.player.alive ? "YES" : "NO"}
+				danger={!state.player.alive}
+			/>
+			<StatRow
+				label="BOUNDS"
+				value={`${state.player.bounds.width}x${state.player.bounds.height}`}
+			/>
 
 			<SectionHeader>Scoring</SectionHeader>
 			<StatRow label="SCORE" value={state.scoring.score} />
@@ -200,33 +209,110 @@ const CONSTANT_GROUPS: { name: string; constants: ConstantDef[] }[] = [
 		name: "Physics",
 		constants: [
 			{ key: "GRAVITY", label: "GRAVITY", defaultValue: GRAVITY, min: 100, max: 3000, step: 50 },
-			{ key: "JUMP_VELOCITY", label: "JUMP-V", defaultValue: JUMP_VELOCITY, min: -1000, max: -100, step: 10 },
-			{ key: "DOUBLE_JUMP_VELOCITY", label: "DJUMP-V", defaultValue: DOUBLE_JUMP_VELOCITY, min: -1000, max: -100, step: 10 },
+			{
+				key: "JUMP_VELOCITY",
+				label: "JUMP-V",
+				defaultValue: JUMP_VELOCITY,
+				min: -1000,
+				max: -100,
+				step: 10,
+			},
+			{
+				key: "DOUBLE_JUMP_VELOCITY",
+				label: "DJUMP-V",
+				defaultValue: DOUBLE_JUMP_VELOCITY,
+				min: -1000,
+				max: -100,
+				step: 10,
+			},
 			{ key: "MAX_JUMPS", label: "MAX-JMP", defaultValue: MAX_JUMPS, min: 1, max: 10, step: 1 },
 		],
 	},
 	{
 		name: "Speed",
 		constants: [
-			{ key: "BASE_SPEED", label: "BASE-SPD", defaultValue: BASE_SPEED, min: 50, max: 800, step: 10 },
-			{ key: "MAX_SPEED", label: "MAX-SPD", defaultValue: MAX_SPEED, min: 200, max: 2000, step: 50 },
-			{ key: "SPEED_INCREMENT", label: "SPD-INC", defaultValue: SPEED_INCREMENT, min: 0.1, max: 5, step: 0.1 },
-			{ key: "SPEED_INCREASE_INTERVAL_MS", label: "SPD-INT", defaultValue: SPEED_INCREASE_INTERVAL_MS, min: 100, max: 5000, step: 100 },
+			{
+				key: "BASE_SPEED",
+				label: "BASE-SPD",
+				defaultValue: BASE_SPEED,
+				min: 50,
+				max: 800,
+				step: 10,
+			},
+			{
+				key: "MAX_SPEED",
+				label: "MAX-SPD",
+				defaultValue: MAX_SPEED,
+				min: 200,
+				max: 2000,
+				step: 50,
+			},
+			{
+				key: "SPEED_INCREMENT",
+				label: "SPD-INC",
+				defaultValue: SPEED_INCREMENT,
+				min: 0.1,
+				max: 5,
+				step: 0.1,
+			},
+			{
+				key: "SPEED_INCREASE_INTERVAL_MS",
+				label: "SPD-INT",
+				defaultValue: SPEED_INCREASE_INTERVAL_MS,
+				min: 100,
+				max: 5000,
+				step: 100,
+			},
 		],
 	},
 	{
 		name: "Scoring",
 		constants: [
-			{ key: "SCORE_PER_SECOND", label: "SC/SEC", defaultValue: SCORE_PER_SECOND, min: 1, max: 100, step: 1 },
-			{ key: "SCORE_PER_OBSTACLE", label: "SC/OBS", defaultValue: SCORE_PER_OBSTACLE, min: 10, max: 500, step: 10 },
-			{ key: "DISTANCE_MULTIPLIER", label: "DIST-X", defaultValue: DISTANCE_MULTIPLIER, min: 0.01, max: 1, step: 0.01 },
+			{
+				key: "SCORE_PER_SECOND",
+				label: "SC/SEC",
+				defaultValue: SCORE_PER_SECOND,
+				min: 1,
+				max: 100,
+				step: 1,
+			},
+			{
+				key: "SCORE_PER_OBSTACLE",
+				label: "SC/OBS",
+				defaultValue: SCORE_PER_OBSTACLE,
+				min: 10,
+				max: 500,
+				step: 10,
+			},
+			{
+				key: "DISTANCE_MULTIPLIER",
+				label: "DIST-X",
+				defaultValue: DISTANCE_MULTIPLIER,
+				min: 0.01,
+				max: 1,
+				step: 0.01,
+			},
 		],
 	},
 	{
 		name: "Obstacles",
 		constants: [
-			{ key: "MIN_OBSTACLE_GAP_MS", label: "MIN-GAP", defaultValue: MIN_OBSTACLE_GAP_MS, min: 200, max: 3000, step: 50 },
-			{ key: "MAX_OBSTACLE_GAP_MS", label: "MAX-GAP", defaultValue: MAX_OBSTACLE_GAP_MS, min: 500, max: 5000, step: 100 },
+			{
+				key: "MIN_OBSTACLE_GAP_MS",
+				label: "MIN-GAP",
+				defaultValue: MIN_OBSTACLE_GAP_MS,
+				min: 200,
+				max: 3000,
+				step: 50,
+			},
+			{
+				key: "MAX_OBSTACLE_GAP_MS",
+				label: "MAX-GAP",
+				defaultValue: MAX_OBSTACLE_GAP_MS,
+				min: 500,
+				max: 5000,
+				step: 100,
+			},
 		],
 	},
 ];
@@ -428,7 +514,9 @@ function CheatsTab({
 			<div className="space-y-2 py-1">
 				<div className="flex justify-between items-center">
 					<span className="text-[11px] font-mono text-muted-foreground">DIFFICULTY</span>
-					<span className="text-[11px] font-mono text-[#0FACED]">{DIFFICULTY_NAMES[difficulty]}</span>
+					<span className="text-[11px] font-mono text-[#0FACED]">
+						{DIFFICULTY_NAMES[difficulty]}
+					</span>
 				</div>
 				<Select value={String(difficulty)} onValueChange={handleDifficultyChange}>
 					<SelectTrigger className="h-8 text-xs">
@@ -615,14 +703,18 @@ export default function DebugPanel({ debugState, onSendCommand, gameKey }: Debug
 			{!minimized && (
 				<Tabs defaultValue="stats">
 					<TabsList className="mx-2 mt-2">
-						<TabsTrigger value="stats" className="text-xs">Stats</TabsTrigger>
-						<TabsTrigger value="constants" className="text-xs">Constants</TabsTrigger>
-						<TabsTrigger value="cheats" className="text-xs">Cheats</TabsTrigger>
+						<TabsTrigger value="stats" className="text-xs">
+							Stats
+						</TabsTrigger>
+						<TabsTrigger value="constants" className="text-xs">
+							Constants
+						</TabsTrigger>
+						<TabsTrigger value="cheats" className="text-xs">
+							Cheats
+						</TabsTrigger>
 					</TabsList>
 
-					<div
-						className="max-h-[60vh] overflow-y-auto scrollbar-none"
-					>
+					<div className="max-h-[60vh] overflow-y-auto scrollbar-none">
 						<TabsContent value="stats" className="mt-0">
 							<StatsTab state={debugState} />
 						</TabsContent>

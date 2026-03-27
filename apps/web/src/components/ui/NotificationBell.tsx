@@ -48,7 +48,11 @@ export function NotificationBell() {
 					)}
 				</button>
 			</DropdownMenuTrigger>
-			<DropdownMenuContent align="end" className="w-72 p-0" onCloseAutoFocus={(e) => e.preventDefault()}>
+			<DropdownMenuContent
+				align="end"
+				className="w-72 p-0"
+				onCloseAutoFocus={(e) => e.preventDefault()}
+			>
 				{/* Header */}
 				<div className="flex items-center justify-between px-4 py-2.5 border-b border-border/50">
 					<span className="text-[10px] font-mono uppercase tracking-[0.15em] text-muted-foreground">
@@ -99,10 +103,14 @@ export function NotificationBell() {
 									{/* Content */}
 									<div className={cn("flex-1 min-w-0", isLast ? "pb-0" : "pb-1")}>
 										<div className="flex items-baseline justify-between gap-2">
-											<p className={cn(
-												"text-xs truncate",
-												!notification.read ? "font-semibold text-foreground" : "font-medium text-foreground/80",
-											)}>
+											<p
+												className={cn(
+													"text-xs truncate",
+													!notification.read
+														? "font-semibold text-foreground"
+														: "font-medium text-foreground/80",
+												)}
+											>
 												<span className="mr-1.5">{config.icon}</span>
 												{notification.title}
 											</p>
@@ -119,7 +127,11 @@ export function NotificationBell() {
 
 							if (notification.href) {
 								return (
-									<Link key={notification.id} href={notification.href} className="block hover:bg-muted/30 -mx-2 px-2 rounded-md transition-colors">
+									<Link
+										key={notification.id}
+										href={notification.href}
+										className="block hover:bg-muted/30 -mx-2 px-2 rounded-md transition-colors"
+									>
 										{content}
 									</Link>
 								);
