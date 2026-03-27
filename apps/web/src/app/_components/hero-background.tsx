@@ -40,15 +40,6 @@ export function HeroBackground() {
 			<div className="absolute inset-0 bg-gradient-to-b from-background/85 via-background/75 to-background" />
 			{/* Top fade — blends into navbar */}
 			<div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-background to-transparent" />
-			{/* Subtle hex grid pattern */}
-			<div
-				className="absolute inset-0 opacity-[0.03]"
-				style={{
-					backgroundImage:
-						"linear-gradient(30deg, oklch(0.72 0.15 210) 12%, transparent 12.5%, transparent 87%, oklch(0.72 0.15 210) 87.5%, oklch(0.72 0.15 210))",
-					backgroundSize: "40px 70px",
-				}}
-			/>
 		</div>
 	);
 }

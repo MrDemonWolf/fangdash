@@ -32,11 +32,19 @@ const nextConfig: NextConfig = {
 	},
 	env: {
 		NEXT_PUBLIC_APP_VERSION: process.env["npm_package_version"] ?? "0.0.0",
-		NEXT_PUBLIC_COMMIT_SHA: (
-			process.env["COMMIT_SHA"] ??
-			process.env["VERCEL_GIT_COMMIT_SHA"] ??
-			"dev"
-		).slice(0, 7),
+		NEXT_PUBLIC_COMMIT_SHA: (() => {
+			const sha = process.env["COMMIT_SHA"] ?? process.env["VERCEL_GIT_COMMIT_SHA"];
+			if (sha) return sha.slice(0, 7);
+			// In dev, show git branch + short SHA
+			try {
+				const { execSync } = require("node:child_process");
+				const branch = execSync("git rev-parse --abbrev-ref HEAD", { encoding: "utf-8" }).trim();
+				const shortSha = execSync("git rev-parse --short HEAD", { encoding: "utf-8" }).trim();
+				return `${branch}@${shortSha}`;
+			} catch {
+				return "dev";
+			}
+		})(),
 		NEXT_PUBLIC_PARTYKIT_HOST:
 			process.env["NEXT_PUBLIC_PARTYKIT_HOST"] ||
 			(process.env.NODE_ENV === "production"

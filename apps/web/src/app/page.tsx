@@ -158,10 +158,10 @@ export default function Home() {
 					</p>
 					<p className="self-center font-mono text-xs text-muted-foreground/50 sm:text-center">
 						v{process.env["NEXT_PUBLIC_APP_VERSION"]}
-						{process.env["NEXT_PUBLIC_COMMIT_SHA"] &&
-							COMMIT_SHA_PATTERN.test(process.env["NEXT_PUBLIC_COMMIT_SHA"]) && (
-								<>
-									{" · "}
+						{process.env["NEXT_PUBLIC_COMMIT_SHA"] && (
+							<>
+								{" · "}
+								{COMMIT_SHA_PATTERN.test(process.env["NEXT_PUBLIC_COMMIT_SHA"]) ? (
 									<Link
 										href={`https://github.com/MrDemonWolf/fangdash/commit/${process.env["NEXT_PUBLIC_COMMIT_SHA"]}`}
 										target="_blank"
@@ -170,8 +170,11 @@ export default function Home() {
 									>
 										{process.env["NEXT_PUBLIC_COMMIT_SHA"]}
 									</Link>
-								</>
-							)}
+								) : (
+									<span>{process.env["NEXT_PUBLIC_COMMIT_SHA"]}</span>
+								)}
+							</>
+						)}
 					</p>
 					<div className="flex justify-center gap-6 self-center sm:justify-end">
 						<Link

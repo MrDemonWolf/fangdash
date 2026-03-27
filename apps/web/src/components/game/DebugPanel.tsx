@@ -5,6 +5,30 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTRPC } from "@/lib/trpc.ts";
 
+import {
+	BASE_SPEED,
+	DISTANCE_MULTIPLIER,
+	DOUBLE_JUMP_VELOCITY,
+	GRAVITY,
+	JUMP_VELOCITY,
+	MAX_JUMPS,
+	MAX_OBSTACLE_GAP_MS,
+	MAX_SPEED,
+	MIN_OBSTACLE_GAP_MS,
+	SCORE_PER_OBSTACLE,
+	SCORE_PER_SECOND,
+	SPEED_INCREASE_INTERVAL_MS,
+	SPEED_INCREMENT,
+} from "@fangdash/shared";
+import { useIsAdmin } from "@/lib/use-role.ts";
+
+import { Button } from "@/components/ui/button.tsx";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select.tsx";
+import { Separator } from "@/components/ui/separator.tsx";
+import { Slider } from "@/components/ui/slider.tsx";
+import { Switch } from "@/components/ui/switch.tsx";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs.tsx";
+
 // ---------------------------------------------------------------------------
 // localStorage persistence helpers
 // ---------------------------------------------------------------------------
@@ -42,28 +66,9 @@ function saveDebugFlags(flags: StoredDebugFlags) {
 	localStorage.setItem(DEBUG_FLAGS_KEY, JSON.stringify(flags));
 }
 
-import {
-	BASE_SPEED,
-	DISTANCE_MULTIPLIER,
-	DOUBLE_JUMP_VELOCITY,
-	GRAVITY,
-	JUMP_VELOCITY,
-	MAX_JUMPS,
-	MAX_OBSTACLE_GAP_MS,
-	MAX_SPEED,
-	MIN_OBSTACLE_GAP_MS,
-	SCORE_PER_OBSTACLE,
-	SCORE_PER_SECOND,
-	SPEED_INCREASE_INTERVAL_MS,
-	SPEED_INCREMENT,
-} from "@fangdash/shared";
-import { useIsAdmin } from "@/lib/use-role.ts";
-
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
-type Tab = "STATS" | "CONSTANTS" | "CHEATS";
-
 interface DebugPanelProps {
 	debugState: DebugState | null;
 	onSendCommand: (command: DebugCommand) => void;
@@ -71,281 +76,21 @@ interface DebugPanelProps {
 }
 
 // ---------------------------------------------------------------------------
-// CRT CSS (injected once)
+// Section Header
 // ---------------------------------------------------------------------------
-const CRT_STYLES = `
-@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
-
-.debug-crt {
-  font-family: 'Press Start 2P', 'Courier New', monospace;
-  background: #0f0f1a;
-  color: #0FACED;
-  border: 2px solid #0FACED;
-  border-radius: 8px;
-  box-shadow:
-    0 0 10px rgba(15, 172, 237, 0.3),
-    0 0 20px rgba(15, 172, 237, 0.1),
-    inset 0 0 30px rgba(0, 0, 0, 0.5);
-  position: relative;
-  overflow: hidden;
+function SectionHeader({ children }: { children: React.ReactNode }) {
+	return (
+		<div className="flex items-center gap-2 pt-3 pb-1">
+			<span className="text-[10px] font-mono uppercase tracking-widest text-[#0FACED]/60">
+				{children}
+			</span>
+			<Separator className="flex-1 bg-[#0FACED]/15" />
+		</div>
+	);
 }
-
-.debug-crt::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: repeating-linear-gradient(
-    0deg,
-    transparent,
-    transparent 2px,
-    rgba(0, 0, 0, 0.15) 2px,
-    rgba(0, 0, 0, 0.15) 4px
-  );
-  pointer-events: none;
-  z-index: 10;
-}
-
-.debug-crt::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(
-    ellipse at center,
-    transparent 60%,
-    rgba(0, 0, 0, 0.4) 100%
-  );
-  pointer-events: none;
-  z-index: 11;
-}
-
-.debug-crt-title {
-  background: #1a1a2e;
-  border-bottom: 1px solid #0FACED;
-  cursor: grab;
-  user-select: none;
-  padding: 6px 8px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.debug-crt-title:active {
-  cursor: grabbing;
-}
-
-.debug-tab {
-  background: transparent;
-  color: #0FACED;
-  border: 1px solid #0FACED;
-  padding: 3px 8px;
-  font-family: 'Press Start 2P', monospace;
-  font-size: 7px;
-  cursor: pointer;
-  transition: all 0.15s;
-}
-
-.debug-tab:hover {
-  background: rgba(15, 172, 237, 0.15);
-  text-shadow: 0 0 6px #0FACED;
-}
-
-.debug-tab-active {
-  background: #0FACED;
-  color: #0f0f1a;
-  text-shadow: none;
-}
-
-.debug-label {
-  color: #888;
-  font-size: 7px;
-  line-height: 1.6;
-}
-
-.debug-value {
-  color: #0FACED;
-  font-size: 7px;
-  text-shadow: 0 0 4px rgba(15, 172, 237, 0.5);
-}
-
-.debug-value-warn {
-  color: #ffaa00;
-  text-shadow: 0 0 4px rgba(255, 170, 0, 0.5);
-}
-
-.debug-value-danger {
-  color: #ff3333;
-  text-shadow: 0 0 4px rgba(255, 51, 51, 0.5);
-}
-
-.debug-section-header {
-  color: #0FACED;
-  font-size: 8px;
-  border-bottom: 1px dashed #0FACED;
-  padding-bottom: 2px;
-  margin-bottom: 4px;
-  margin-top: 6px;
-  text-shadow: 0 0 4px rgba(15, 172, 237, 0.5);
-}
-
-.debug-btn {
-  background: #1a1a2e;
-  color: #0FACED;
-  border: 1px solid #0FACED;
-  padding: 4px 10px;
-  font-family: 'Press Start 2P', monospace;
-  font-size: 7px;
-  cursor: pointer;
-  transition: all 0.15s;
-  text-transform: uppercase;
-}
-
-.debug-btn:hover {
-  background: #ff6b2b;
-  color: #0f0f1a;
-  border-color: #ff6b2b;
-  box-shadow: 0 0 8px rgba(255, 107, 43, 0.4);
-}
-
-.debug-btn-danger {
-  border-color: #ff3333;
-  color: #ff3333;
-}
-
-.debug-btn-danger:hover {
-  background: #ff3333;
-  color: #0f0f1a;
-  border-color: #ff3333;
-  box-shadow: 0 0 8px rgba(255, 51, 51, 0.4);
-}
-
-.debug-toggle {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  cursor: pointer;
-  font-size: 7px;
-}
-
-.debug-toggle-box {
-  width: 14px;
-  height: 14px;
-  border: 1px solid #0FACED;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 9px;
-  flex-shrink: 0;
-}
-
-.debug-toggle-box-on {
-  background: #ff6b2b;
-  color: #0f0f1a;
-  border-color: #ff6b2b;
-  box-shadow: 0 0 6px rgba(255, 107, 43, 0.5);
-}
-
-.debug-slider-container {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 7px;
-}
-
-.debug-slider {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 100%;
-  height: 4px;
-  background: #1a1a2e;
-  border: 1px solid #0FACED;
-  outline: none;
-}
-
-.debug-slider::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 10px;
-  height: 14px;
-  background: #0FACED;
-  cursor: pointer;
-  border: none;
-}
-
-.debug-slider::-moz-range-thumb {
-  width: 10px;
-  height: 14px;
-  background: #0FACED;
-  cursor: pointer;
-  border: none;
-}
-
-.debug-select {
-  background: #1a1a2e;
-  color: #0FACED;
-  border: 1px solid #0FACED;
-  padding: 3px 6px;
-  font-family: 'Press Start 2P', monospace;
-  font-size: 7px;
-  cursor: pointer;
-  outline: none;
-}
-
-.debug-select option {
-  background: #0f0f1a;
-  color: #0FACED;
-}
-
-@keyframes debug-flicker {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.97; }
-  75% { opacity: 0.99; }
-}
-
-.debug-crt-body {
-  animation: debug-flicker 4s infinite;
-  position: relative;
-  z-index: 1;
-}
-
-.debug-minimize-btn {
-  background: none;
-  border: 1px solid #0FACED;
-  color: #0FACED;
-  width: 16px;
-  height: 16px;
-  font-size: 10px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0;
-  line-height: 1;
-}
-
-.debug-minimize-btn:hover {
-  background: #0FACED;
-  color: #0f0f1a;
-}
-
-.debug-toggle-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 5px 0;
-  cursor: pointer;
-  border-bottom: 1px solid rgba(15, 172, 237, 0.1);
-}
-.debug-toggle-row:hover { background: rgba(15, 172, 237, 0.05); }
-
-.debug-pill { font-size: 6px; padding: 2px 6px; border: 1px solid currentColor; }
-.debug-pill-on  { background: #ff6b2b; color: #0f0f1a; border-color: #ff6b2b; box-shadow: 0 0 6px rgba(255,107,43,.5); }
-.debug-pill-off { color: #444; border-color: #333; }
-
-.debug-slider-labels { display: flex; justify-content: space-between; font-size: 6px; color: #444; margin-top: 2px; }
-`;
 
 // ---------------------------------------------------------------------------
-// Stat Row component
+// Stat Row
 // ---------------------------------------------------------------------------
 function StatRow({
 	label,
@@ -358,11 +103,39 @@ function StatRow({
 	warn?: boolean;
 	danger?: boolean;
 }) {
-	const cls = danger ? "debug-value-danger" : warn ? "debug-value-warn" : "debug-value";
+	const valueColor = danger
+		? "text-blue-300"
+		: warn
+			? "text-blue-400"
+			: "text-[#0FACED]";
 	return (
-		<div className="flex justify-between items-baseline gap-2">
-			<span className="debug-label">{label}</span>
-			<span className={cls}>{value}</span>
+		<div className="flex justify-between items-baseline gap-2 py-0.5">
+			<span className="text-[11px] font-mono text-muted-foreground">{label}</span>
+			<span className={`text-[11px] font-mono tabular-nums ${valueColor}`}>{value}</span>
+		</div>
+	);
+}
+
+// ---------------------------------------------------------------------------
+// Toggle Row
+// ---------------------------------------------------------------------------
+function ToggleRow({
+	label,
+	checked,
+	onToggle,
+}: {
+	label: string;
+	checked: boolean;
+	onToggle: () => void;
+}) {
+	return (
+		<div className="flex items-center justify-between py-1.5">
+			<span className="text-[11px] font-mono text-muted-foreground">{label}</span>
+			<Switch
+				checked={checked}
+				onCheckedChange={onToggle}
+				className="data-[state=checked]:bg-[#0FACED] data-[state=unchecked]:bg-muted scale-75"
+			/>
 		</div>
 	);
 }
@@ -372,44 +145,37 @@ function StatRow({
 // ---------------------------------------------------------------------------
 function StatsTab({ state }: { state: DebugState | null }) {
 	if (!state) {
-		return <div className="debug-label p-2">Waiting for game data...</div>;
+		return <div className="text-xs text-muted-foreground p-3">Waiting for game data...</div>;
 	}
 
 	return (
-		<div className="space-y-1 p-2">
-			<div className="debug-section-header">{"// PERFORMANCE"}</div>
+		<div className="space-y-0.5 p-3">
+			<SectionHeader>Performance</SectionHeader>
 			<StatRow label="FPS" value={state.fps} warn={state.fps < 30} danger={state.fps < 15} />
 			<StatRow label="DELTA" value={`${state.frameDelta}ms`} />
 
-			<div className="debug-section-header">{"// PLAYER"}</div>
+			<SectionHeader>Player</SectionHeader>
 			<StatRow label="POS" value={`${state.player.x}, ${state.player.y}`} />
 			<StatRow label="VEL-Y" value={state.player.velocityY} />
 			<StatRow label="JUMPS" value={`${state.player.jumpsRemaining}`} />
 			<StatRow label="GROUND" value={state.player.grounded ? "YES" : "NO"} />
-			<StatRow
-				label="ALIVE"
-				value={state.player.alive ? "YES" : "NO"}
-				danger={!state.player.alive}
-			/>
-			<StatRow
-				label="BOUNDS"
-				value={`${state.player.bounds.width}x${state.player.bounds.height}`}
-			/>
+			<StatRow label="ALIVE" value={state.player.alive ? "YES" : "NO"} danger={!state.player.alive} />
+			<StatRow label="BOUNDS" value={`${state.player.bounds.width}x${state.player.bounds.height}`} />
 
-			<div className="debug-section-header">{"// SCORING"}</div>
+			<SectionHeader>Scoring</SectionHeader>
 			<StatRow label="SCORE" value={state.scoring.score} />
 			<StatRow label="DIST" value={`${state.scoring.distance}m`} />
 			<StatRow label="CLEARED" value={state.scoring.obstaclesCleared} />
 			<StatRow label="SPEED" value={state.scoring.currentSpeed} />
 			<StatRow label="TIME" value={`${Math.floor(state.scoring.elapsedMs / 1000)}s`} />
 
-			<div className="debug-section-header">{"// DIFFICULTY"}</div>
+			<SectionHeader>Difficulty</SectionHeader>
 			<StatRow label="LEVEL" value={state.difficulty.levelName.toUpperCase()} />
 			<StatRow label="SPD-X" value={`${state.difficulty.speedMultiplier}x`} />
 			<StatRow label="SPN-X" value={`${state.difficulty.spawnRateMultiplier}x`} />
 			<StatRow label="GAP" value={`${state.difficulty.minGap}-${state.difficulty.maxGap}ms`} />
 
-			<div className="debug-section-header">{"// SPAWNER"}</div>
+			<SectionHeader>Spawner</SectionHeader>
 			<StatRow label="SINCE" value={`${state.spawner.timeSinceLastSpawn}ms`} />
 			<StatRow label="NEXT" value={`${state.spawner.nextSpawnTime}ms`} />
 			<StatRow label="ACTIVE" value={state.spawner.activeObstacleCount} />
@@ -431,127 +197,36 @@ interface ConstantDef {
 
 const CONSTANT_GROUPS: { name: string; constants: ConstantDef[] }[] = [
 	{
-		name: "PHYSICS",
+		name: "Physics",
 		constants: [
-			{
-				key: "GRAVITY",
-				label: "GRAVITY",
-				defaultValue: GRAVITY,
-				min: 100,
-				max: 3000,
-				step: 50,
-			},
-			{
-				key: "JUMP_VELOCITY",
-				label: "JUMP-V",
-				defaultValue: JUMP_VELOCITY,
-				min: -1000,
-				max: -100,
-				step: 10,
-			},
-			{
-				key: "DOUBLE_JUMP_VELOCITY",
-				label: "DJUMP-V",
-				defaultValue: DOUBLE_JUMP_VELOCITY,
-				min: -1000,
-				max: -100,
-				step: 10,
-			},
-			{
-				key: "MAX_JUMPS",
-				label: "MAX-JMP",
-				defaultValue: MAX_JUMPS,
-				min: 1,
-				max: 10,
-				step: 1,
-			},
+			{ key: "GRAVITY", label: "GRAVITY", defaultValue: GRAVITY, min: 100, max: 3000, step: 50 },
+			{ key: "JUMP_VELOCITY", label: "JUMP-V", defaultValue: JUMP_VELOCITY, min: -1000, max: -100, step: 10 },
+			{ key: "DOUBLE_JUMP_VELOCITY", label: "DJUMP-V", defaultValue: DOUBLE_JUMP_VELOCITY, min: -1000, max: -100, step: 10 },
+			{ key: "MAX_JUMPS", label: "MAX-JMP", defaultValue: MAX_JUMPS, min: 1, max: 10, step: 1 },
 		],
 	},
 	{
-		name: "SPEED",
+		name: "Speed",
 		constants: [
-			{
-				key: "BASE_SPEED",
-				label: "BASE-SPD",
-				defaultValue: BASE_SPEED,
-				min: 50,
-				max: 800,
-				step: 10,
-			},
-			{
-				key: "MAX_SPEED",
-				label: "MAX-SPD",
-				defaultValue: MAX_SPEED,
-				min: 200,
-				max: 2000,
-				step: 50,
-			},
-			{
-				key: "SPEED_INCREMENT",
-				label: "SPD-INC",
-				defaultValue: SPEED_INCREMENT,
-				min: 0.1,
-				max: 5,
-				step: 0.1,
-			},
-			{
-				key: "SPEED_INCREASE_INTERVAL_MS",
-				label: "SPD-INT",
-				defaultValue: SPEED_INCREASE_INTERVAL_MS,
-				min: 100,
-				max: 5000,
-				step: 100,
-			},
+			{ key: "BASE_SPEED", label: "BASE-SPD", defaultValue: BASE_SPEED, min: 50, max: 800, step: 10 },
+			{ key: "MAX_SPEED", label: "MAX-SPD", defaultValue: MAX_SPEED, min: 200, max: 2000, step: 50 },
+			{ key: "SPEED_INCREMENT", label: "SPD-INC", defaultValue: SPEED_INCREMENT, min: 0.1, max: 5, step: 0.1 },
+			{ key: "SPEED_INCREASE_INTERVAL_MS", label: "SPD-INT", defaultValue: SPEED_INCREASE_INTERVAL_MS, min: 100, max: 5000, step: 100 },
 		],
 	},
 	{
-		name: "SCORING",
+		name: "Scoring",
 		constants: [
-			{
-				key: "SCORE_PER_SECOND",
-				label: "SC/SEC",
-				defaultValue: SCORE_PER_SECOND,
-				min: 1,
-				max: 100,
-				step: 1,
-			},
-			{
-				key: "SCORE_PER_OBSTACLE",
-				label: "SC/OBS",
-				defaultValue: SCORE_PER_OBSTACLE,
-				min: 10,
-				max: 500,
-				step: 10,
-			},
-			{
-				key: "DISTANCE_MULTIPLIER",
-				label: "DIST-X",
-				defaultValue: DISTANCE_MULTIPLIER,
-				min: 0.01,
-				max: 1,
-				step: 0.01,
-			},
+			{ key: "SCORE_PER_SECOND", label: "SC/SEC", defaultValue: SCORE_PER_SECOND, min: 1, max: 100, step: 1 },
+			{ key: "SCORE_PER_OBSTACLE", label: "SC/OBS", defaultValue: SCORE_PER_OBSTACLE, min: 10, max: 500, step: 10 },
+			{ key: "DISTANCE_MULTIPLIER", label: "DIST-X", defaultValue: DISTANCE_MULTIPLIER, min: 0.01, max: 1, step: 0.01 },
 		],
 	},
 	{
-		name: "OBSTACLES",
+		name: "Obstacles",
 		constants: [
-			{
-				key: "MIN_OBSTACLE_GAP_MS",
-				label: "MIN-GAP",
-				defaultValue: MIN_OBSTACLE_GAP_MS,
-				min: 200,
-				max: 3000,
-				step: 50,
-			},
-			{
-				key: "MAX_OBSTACLE_GAP_MS",
-				label: "MAX-GAP",
-				defaultValue: MAX_OBSTACLE_GAP_MS,
-				min: 500,
-				max: 5000,
-				step: 100,
-			},
+			{ key: "MIN_OBSTACLE_GAP_MS", label: "MIN-GAP", defaultValue: MIN_OBSTACLE_GAP_MS, min: 200, max: 3000, step: 50 },
+			{ key: "MAX_OBSTACLE_GAP_MS", label: "MAX-GAP", defaultValue: MAX_OBSTACLE_GAP_MS, min: 500, max: 5000, step: 100 },
 		],
 	},
 ];
@@ -584,35 +259,33 @@ function ConstantsTab({ onSendCommand }: { onSendCommand: (cmd: DebugCommand) =>
 	};
 
 	return (
-		<div className="space-y-1 p-2">
+		<div className="space-y-1 p-3">
 			{CONSTANT_GROUPS.map((group) => (
 				<div key={group.name}>
-					<div className="debug-section-header">{`// ${group.name}`}</div>
+					<SectionHeader>{group.name}</SectionHeader>
 					{group.constants.map((c) => (
-						<div key={c.key} className="mb-2">
-							<div className="flex justify-between items-baseline mb-1">
-								<span className="debug-label">{c.label}</span>
-								<span className="debug-value">{values[c.key]}</span>
+						<div key={c.key} className="mb-3">
+							<div className="flex justify-between items-baseline mb-1.5">
+								<span className="text-[11px] font-mono text-muted-foreground">{c.label}</span>
+								<span className="text-[11px] font-mono tabular-nums text-[#0FACED]">
+									{values[c.key]}
+								</span>
 							</div>
-							<div className="debug-slider-container">
-								<input
-									type="range"
-									className="debug-slider"
-									min={c.min}
-									max={c.max}
-									step={c.step}
-									value={values[c.key]}
-									onChange={(e) => handleChange(c.key, Number.parseFloat(e.target.value))}
-								/>
-							</div>
+							<Slider
+								min={c.min}
+								max={c.max}
+								step={c.step}
+								value={[values[c.key] ?? c.defaultValue]}
+								onValueChange={(vals) => handleChange(c.key, vals[0] ?? c.defaultValue)}
+							/>
 						</div>
 					))}
 				</div>
 			))}
 			<div className="pt-2">
-				<button type="button" className="debug-btn-danger debug-btn w-full" onClick={handleReset}>
-					RESET DEFAULTS
-				</button>
+				<Button variant="outline" size="sm" className="w-full text-xs" onClick={handleReset}>
+					Reset Defaults
+				</Button>
 			</div>
 		</div>
 	);
@@ -654,14 +327,11 @@ function CheatsTab({
 	const [difficulty, setDifficulty] = useState(() => loadDebugFlags().difficulty);
 	const prevGameKeyRef = useRef(-1);
 
-	// Prefer live game state when available, else fall back to localStorage
 	const hitboxes = debugState?.debug?.hitboxes ?? localFlags.hitboxes;
 	const renderBoxes = debugState?.debug?.renderBoxes ?? localFlags.renderBoxes;
 	const invincible = debugState?.debug?.invincible ?? localFlags.invincible;
 	const speedMultiplier = debugState?.debug?.speedMultiplier ?? localFlags.speedMultiplier;
 
-	// Sync stored flags to game when a new game starts (gameKey increments from event handler,
-	// debugState becomes non-null from Phaser's rAF loop — always separate React batch cycles)
 	useEffect(() => {
 		if (debugState !== null && gameKey !== prevGameKeyRef.current) {
 			prevGameKeyRef.current = gameKey;
@@ -708,7 +378,8 @@ function CheatsTab({
 		onSendCommand({ type: "toggle-invincibility" });
 	};
 
-	const handleDifficultyChange = (idx: number) => {
+	const handleDifficultyChange = (value: string) => {
+		const idx = Number.parseInt(value, 10);
 		setDifficulty(idx);
 		const updated = { ...localFlags, difficulty: idx };
 		setLocalFlags(updated);
@@ -745,98 +416,84 @@ function CheatsTab({
 	};
 
 	return (
-		<div className="p-2">
-			<div className="debug-section-header">{"// VISIBILITY"}</div>
-			<div className="debug-toggle-row" onClick={toggleHitboxes}>
-				<span className="debug-label">HITBOX VIZ</span>
-				<span className={`debug-pill ${hitboxes ? "debug-pill-on" : "debug-pill-off"}`}>
-					{hitboxes ? "ON" : "OFF"}
-				</span>
-			</div>
-			<div className="debug-toggle-row" onClick={toggleRenderBoxes}>
-				<span className="debug-label">RENDER VIZ</span>
-				<span className={`debug-pill ${renderBoxes ? "debug-pill-on" : "debug-pill-off"}`}>
-					{renderBoxes ? "ON" : "OFF"}
-				</span>
-			</div>
+		<div className="p-3 space-y-0.5">
+			<SectionHeader>Visibility</SectionHeader>
+			<ToggleRow label="HITBOX VIZ" checked={hitboxes} onToggle={toggleHitboxes} />
+			<ToggleRow label="RENDER VIZ" checked={renderBoxes} onToggle={toggleRenderBoxes} />
 
-			<div className="debug-section-header">{"// INVINCIBILITY"}</div>
-			<div className="debug-toggle-row" onClick={toggleInvincible}>
-				<span className="debug-label">INVINCIBLE</span>
-				<span className={`debug-pill ${invincible ? "debug-pill-on" : "debug-pill-off"}`}>
-					{invincible ? "ON" : "OFF"}
-				</span>
-			</div>
+			<SectionHeader>Invincibility</SectionHeader>
+			<ToggleRow label="INVINCIBLE" checked={invincible} onToggle={toggleInvincible} />
 
-			<div className="debug-section-header">{"// GAME OVERRIDES"}</div>
-			<div className="mb-2">
-				<div className="flex justify-between items-baseline mb-1">
-					<span className="debug-label">DIFFICULTY</span>
-					<span className="debug-value">{DIFFICULTY_NAMES[difficulty]}</span>
+			<SectionHeader>Game Overrides</SectionHeader>
+			<div className="space-y-2 py-1">
+				<div className="flex justify-between items-center">
+					<span className="text-[11px] font-mono text-muted-foreground">DIFFICULTY</span>
+					<span className="text-[11px] font-mono text-[#0FACED]">{DIFFICULTY_NAMES[difficulty]}</span>
 				</div>
-				<select
-					className="debug-select w-full"
-					value={difficulty}
-					onChange={(e) => handleDifficultyChange(Number.parseInt(e.target.value, 10))}
-				>
-					{DIFFICULTY_NAMES.map((name, idx) => (
-						<option key={name} value={idx}>
-							{name}
-						</option>
-					))}
-				</select>
+				<Select value={String(difficulty)} onValueChange={handleDifficultyChange}>
+					<SelectTrigger className="h-8 text-xs">
+						<SelectValue />
+					</SelectTrigger>
+					<SelectContent>
+						{DIFFICULTY_NAMES.map((name, idx) => (
+							<SelectItem key={name} value={String(idx)}>
+								{name}
+							</SelectItem>
+						))}
+					</SelectContent>
+				</Select>
 			</div>
-			<div className="mb-2">
-				<div className="flex justify-between items-baseline mb-1">
-					<span className="debug-label">TIME SCALE</span>
-					<span className="debug-value">{speedMultiplier.toFixed(1)}x</span>
+			<div className="space-y-2 py-1">
+				<div className="flex justify-between items-center">
+					<span className="text-[11px] font-mono text-muted-foreground">TIME SCALE</span>
+					<span className="text-[11px] font-mono tabular-nums text-[#0FACED]">
+						{speedMultiplier.toFixed(1)}x
+					</span>
 				</div>
-				<input
-					type="range"
-					className="debug-slider w-full"
+				<Slider
 					min={0.1}
 					max={3.0}
 					step={0.1}
-					value={speedMultiplier}
-					onChange={(e) => handleSpeedMultiplierChange(Number.parseFloat(e.target.value))}
+					value={[speedMultiplier]}
+					onValueChange={(vals) => handleSpeedMultiplierChange(vals[0] ?? 1.0)}
 				/>
-				<div className="debug-slider-labels">
+				<div className="flex justify-between text-[10px] font-mono text-muted-foreground/50">
 					<span>0.1x</span>
 					<span>3.0x</span>
 				</div>
 			</div>
 
-			<div className="debug-section-header">{"// ACTIONS"}</div>
-			<button
-				type="button"
-				className="debug-btn-danger debug-btn w-full mb-2"
+			<SectionHeader>Actions</SectionHeader>
+			<Button
+				variant="outline"
+				size="sm"
+				className="w-full text-xs border-blue-500/40 text-blue-400 hover:bg-blue-500/10 hover:text-blue-300"
 				onClick={() => onSendCommand({ type: "force-game-over" })}
 			>
-				FORCE GAME OVER
-			</button>
+				Force Game Over
+			</Button>
 
-			<div className="debug-section-header">{"// SKINS"}</div>
-			<button
-				type="button"
-				className="debug-btn w-full mb-1"
+			<SectionHeader>Skins</SectionHeader>
+			<Button
+				variant="outline"
+				size="sm"
+				className="w-full text-xs"
 				onClick={() => {
 					setSkinUnlockStatus(null);
 					unlockAllSkins.mutate();
 				}}
 				disabled={unlockAllSkins.isPending}
 			>
-				{unlockAllSkins.isPending ? "UNLOCKING..." : "UNLOCK ALL SKINS"}
-			</button>
+				{unlockAllSkins.isPending ? "Unlocking..." : "Unlock All Skins"}
+			</Button>
 			{skinUnlockStatus && (
-				<div className="debug-label mb-2" style={{ fontSize: "6px" }}>
-					{skinUnlockStatus}
-				</div>
+				<p className="text-[10px] font-mono text-muted-foreground pt-1">{skinUnlockStatus}</p>
 			)}
 
-			<div className="debug-section-header">{"// RESET"}</div>
-			<button type="button" className="debug-btn debug-btn w-full" onClick={handleReset}>
-				RESET CHEATS
-			</button>
+			<SectionHeader>Reset</SectionHeader>
+			<Button variant="outline" size="sm" className="w-full text-xs" onClick={handleReset}>
+				Reset Cheats
+			</Button>
 		</div>
 	);
 }
@@ -853,12 +510,10 @@ export default function DebugPanel({ debugState, onSendCommand, gameKey }: Debug
 		setMounted(true);
 	}, []);
 	const [minimized, setMinimized] = useState(false);
-	const [activeTab, setActiveTab] = useState<Tab>("STATS");
 	const [position, setPosition] = useState({ x: 16, y: 80 });
 	const dragging = useRef(false);
 	const dragOffset = useRef({ x: 0, y: 0 });
 	const panelRef = useRef<HTMLDivElement>(null);
-	const styleInjected = useRef(false);
 
 	// Keyboard shortcut: Ctrl+Shift+D
 	useEffect(() => {
@@ -870,22 +525,6 @@ export default function DebugPanel({ debugState, onSendCommand, gameKey }: Debug
 		};
 		window.addEventListener("keydown", handler);
 		return () => window.removeEventListener("keydown", handler);
-	}, []);
-
-	// Inject CRT styles once
-	useEffect(() => {
-		if (styleInjected.current) {
-			return;
-		}
-		styleInjected.current = true;
-		const style = document.createElement("style");
-		style.textContent = CRT_STYLES;
-		style.setAttribute("data-debug-panel", "true");
-		document.head.appendChild(style);
-		return () => {
-			style.remove();
-			styleInjected.current = false;
-		};
 	}, []);
 
 	// Dragging handlers
@@ -933,7 +572,7 @@ export default function DebugPanel({ debugState, onSendCommand, gameKey }: Debug
 				type="button"
 				onClick={() => setVisible(true)}
 				onPointerDown={(e) => e.stopPropagation()}
-				className="fixed bottom-4 left-4 flex h-8 w-8 items-center justify-center rounded bg-[#0f0f1a] border border-[#0FACED]/40 text-[#0FACED] text-xs font-mono opacity-60 hover:opacity-100 transition-opacity pointer-events-auto"
+				className="fixed bottom-4 left-4 flex h-8 w-8 items-center justify-center rounded-lg bg-card/80 border border-[#0FACED]/30 text-[#0FACED] text-xs font-mono opacity-50 hover:opacity-100 transition-opacity pointer-events-auto backdrop-blur-sm"
 				style={{ zIndex: 50 }}
 				title="Open Debug Panel (Ctrl+Shift+D)"
 			>
@@ -942,85 +581,66 @@ export default function DebugPanel({ debugState, onSendCommand, gameKey }: Debug
 		);
 	}
 
-	const tabs: Tab[] = ["STATS", "CONSTANTS", "CHEATS"];
-
 	return (
 		<div
 			ref={panelRef}
-			className="debug-crt fixed"
+			className="fixed rounded-xl border border-[#0FACED]/20 bg-card/95 backdrop-blur-xl shadow-[0_0_40px_rgba(15,172,237,0.1)] overflow-hidden"
 			style={{
-				position: "fixed",
 				left: position.x,
 				top: position.y,
-				width: minimized ? 220 : 300,
+				width: minimized ? 220 : 320,
 				zIndex: 50,
 			}}
 		>
 			{/* Title bar */}
-			<div className="debug-crt-title" onMouseDown={handleMouseDown}>
-				<span
-					style={{
-						fontSize: "7px",
-						fontFamily: "'Press Start 2P', monospace",
-						letterSpacing: "1px",
-					}}
-				>
-					{">"} DEBUG_TERMINAL
+			<div
+				className="flex items-center justify-between px-3 py-2 bg-muted/50 border-b border-[#0FACED]/15 cursor-grab active:cursor-grabbing select-none"
+				onMouseDown={handleMouseDown}
+			>
+				<span className="text-[11px] font-mono font-medium tracking-wider text-[#0FACED]/80">
+					Debug Panel
 				</span>
 				<button
 					type="button"
-					className="debug-minimize-btn"
+					className="flex items-center justify-center w-5 h-5 rounded text-[#0FACED]/60 hover:text-[#0FACED] hover:bg-[#0FACED]/10 transition-colors text-xs font-mono cursor-pointer"
 					onClick={(e) => {
 						e.stopPropagation();
 						setMinimized((v) => !v);
 					}}
 				>
-					{minimized ? "+" : "-"}
+					{minimized ? "+" : "\u2013"}
 				</button>
 			</div>
 
 			{!minimized && (
-				<div className="debug-crt-body">
-					{/* Tabs */}
-					<div className="flex gap-1 p-1 border-b border-[#0FACED]/30">
-						{tabs.map((tab) => (
-							<button
-								type="button"
-								key={tab}
-								className={`debug-tab ${activeTab === tab ? "debug-tab-active" : ""}`}
-								onClick={() => setActiveTab(tab)}
-							>
-								{tab}
-							</button>
-						))}
-					</div>
+				<Tabs defaultValue="stats">
+					<TabsList className="mx-2 mt-2">
+						<TabsTrigger value="stats" className="text-xs">Stats</TabsTrigger>
+						<TabsTrigger value="constants" className="text-xs">Constants</TabsTrigger>
+						<TabsTrigger value="cheats" className="text-xs">Cheats</TabsTrigger>
+					</TabsList>
 
-					{/* Tab content */}
 					<div
-						className="max-h-[60vh] overflow-y-auto"
-						style={{
-							scrollbarWidth: "thin",
-							scrollbarColor: "#0FACED #0f0f1a",
-						}}
+						className="max-h-[60vh] overflow-y-auto scrollbar-none"
 					>
-						{activeTab === "STATS" && <StatsTab state={debugState} />}
-						{activeTab === "CONSTANTS" && <ConstantsTab onSendCommand={onSendCommand} />}
-						{activeTab === "CHEATS" && (
+						<TabsContent value="stats" className="mt-0">
+							<StatsTab state={debugState} />
+						</TabsContent>
+						<TabsContent value="constants" className="mt-0">
+							<ConstantsTab onSendCommand={onSendCommand} />
+						</TabsContent>
+						<TabsContent value="cheats" className="mt-0">
 							<CheatsTab debugState={debugState} onSendCommand={onSendCommand} gameKey={gameKey} />
-						)}
+						</TabsContent>
 					</div>
 
 					{/* Footer */}
-					<div
-						className="border-t border-[#0FACED]/30 p-1"
-						style={{
-							fontSize: "6px",
-							fontFamily: "'Press Start 2P', monospace",
-						}}
-					>
-						<span className="debug-label">CTRL+SHIFT+D TO CLOSE</span>
+					<div className="border-t border-[#0FACED]/10 px-3 py-1.5">
+						<span className="text-[10px] font-mono text-muted-foreground/50">
+							Ctrl+Shift+D to close
+						</span>
 					</div>
-				</div>
+				</Tabs>
 			)}
 		</div>
 	);
