@@ -84,9 +84,9 @@ export function useLoginSync() {
 						`${syncedCount} score${syncedCount > 1 ? "s" : ""} synced from offline play`,
 					);
 					addNotification({
-						type: "score_synced",
+						type: "score",
 						title: "Scores Synced",
-						description: `${syncedCount} score${syncedCount > 1 ? "s" : ""} from offline play ${syncedCount > 1 ? "have" : "has"} been synced.`,
+						description: `${syncedCount} score${syncedCount > 1 ? "s" : ""} from offline play synced.`,
 					});
 				}
 			} catch (err) {

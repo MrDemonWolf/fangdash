@@ -441,7 +441,7 @@ export default function RaceRoomPage() {
 					{
 						onSuccess: () => {
 							addNotification({
-								type: "score_submitted",
+								type: "score",
 								title: "Race Result Submitted",
 								description: `Race score of ${myResult.score.toLocaleString()} submitted.`,
 							});

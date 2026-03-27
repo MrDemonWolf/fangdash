@@ -130,6 +130,7 @@ export default function PlayPage() {
 							type: "achievement",
 							title: "Achievement Unlocked!",
 							description: id,
+							href: "/achievements",
 						});
 					}
 				}
@@ -139,6 +140,7 @@ export default function PlayPage() {
 							type: "skin",
 							title: "New Skin Unlocked!",
 							description: id,
+							href: "/skins",
 						});
 					}
 				}
@@ -150,7 +152,7 @@ export default function PlayPage() {
 					});
 				}
 				addNotification({
-					type: "score_submitted",
+					type: "score",
 					title: "Score Submitted",
 					description: `Score of ${result.xpGained.toLocaleString()} submitted successfully.`,
 				});

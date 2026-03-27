@@ -9,28 +9,12 @@ import {
 } from "@/lib/notification-store.ts";
 
 // ---------------------------------------------------------------------------
-// Mock localStorage
+// Setup
 // ---------------------------------------------------------------------------
-
-function createMockLocalStorage() {
-	const store = new Map<string, string>();
-	return {
-		getItem: (key: string) => store.get(key) ?? null,
-		setItem: (key: string, value: string) => store.set(key, value),
-		removeItem: (key: string) => store.delete(key),
-		clear: () => store.clear(),
-		get length() {
-			return store.size;
-		},
-		key: (_index: number) => null,
-	} as Storage;
-}
 
 let uuidCounter = 0;
 
 beforeEach(() => {
-	vi.stubGlobal("window", globalThis);
-	vi.stubGlobal("localStorage", createMockLocalStorage());
 	uuidCounter = 0;
 	vi.stubGlobal("crypto", {
 		...globalThis.crypto,
@@ -65,14 +49,14 @@ describe("addNotification", () => {
 		expect(items[1]?.title).toBe("First");
 	});
 
-	it("caps at 10 notifications", () => {
-		for (let i = 0; i < 12; i++) {
+	it("caps at 5 notifications", () => {
+		for (let i = 0; i < 7; i++) {
 			addNotification({ ...baseNotification, title: `N${i}` });
 		}
 		const items = getNotifications();
-		expect(items).toHaveLength(10);
-		// newest should be N11
-		expect(items[0]?.title).toBe("N11");
+		expect(items).toHaveLength(5);
+		// newest should be N6
+		expect(items[0]?.title).toBe("N6");
 	});
 
 	it("sets read=false and generates id/createdAt", () => {
@@ -157,13 +141,17 @@ describe("subscribe", () => {
 	});
 });
 
-describe("SSR", () => {
-	it("returns [] when window is undefined", () => {
-		vi.stubGlobal("window", undefined);
-		// The load() function checks typeof window === "undefined"
-		// Since we're in a test env, we need to also remove localStorage
-		vi.stubGlobal("localStorage", undefined);
-		const items = getNotifications();
-		expect(items).toEqual([]);
+describe("getSnapshot referential stability", () => {
+	it("returns same reference when no changes", () => {
+		const a = getNotifications();
+		const b = getNotifications();
+		expect(a).toBe(b);
+	});
+
+	it("returns new reference after mutation", () => {
+		const before = getNotifications();
+		addNotification(baseNotification);
+		const after = getNotifications();
+		expect(before).not.toBe(after);
 	});
 });

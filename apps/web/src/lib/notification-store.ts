@@ -1,16 +1,18 @@
 // ---------------------------------------------------------------------------
-// Notification store — localStorage-backed, last 10 FIFO
+// Notification store — in-memory (session-only), last 5 FIFO
 // ---------------------------------------------------------------------------
 
-const STORAGE_KEY = "fangdash-notifications";
-const MAX_NOTIFICATIONS = 10;
+const MAX_NOTIFICATIONS = 5;
+
+export type NotificationType = "achievement" | "skin" | "level_up" | "score";
 
 export interface Notification {
 	id: string;
-	type: "achievement" | "skin" | "level_up" | "score_synced" | "score_submitted";
+	type: NotificationType;
 	title: string;
 	description: string;
 	icon?: string;
+	href?: string;
 	createdAt: number;
 	read: boolean;
 }
@@ -32,22 +34,13 @@ export function subscribe(listener: Listener): () => void {
 }
 
 // ---------------------------------------------------------------------------
-// Read / write helpers
+// In-memory store (session-only — clears on page reload)
 // ---------------------------------------------------------------------------
 
-function load(): Notification[] {
-	if (typeof window === "undefined") return [];
-	try {
-		const raw = localStorage.getItem(STORAGE_KEY);
-		return raw ? (JSON.parse(raw) as Notification[]) : [];
-	} catch {
-		return [];
-	}
-}
+let notifications: Notification[] = [];
 
-function save(notifications: Notification[]) {
-	if (typeof window === "undefined") return;
-	localStorage.setItem(STORAGE_KEY, JSON.stringify(notifications));
+function update(next: Notification[]) {
+	notifications = next;
 	emit();
 }
 
@@ -56,36 +49,33 @@ function save(notifications: Notification[]) {
 // ---------------------------------------------------------------------------
 
 export function getNotifications(): Notification[] {
-	return load();
+	return notifications;
 }
 
 export function getSnapshot(): Notification[] {
-	return load();
+	return notifications;
 }
 
 export function addNotification(
 	notification: Omit<Notification, "id" | "createdAt" | "read">,
 ): void {
-	const items = load();
 	const entry: Notification = {
 		...notification,
 		id: crypto.randomUUID(),
 		createdAt: Date.now(),
 		read: false,
 	};
-	items.unshift(entry);
-	save(items.slice(0, MAX_NOTIFICATIONS));
+	update([entry, ...notifications].slice(0, MAX_NOTIFICATIONS));
 }
 
 export function markAllRead(): void {
-	const items = load();
-	save(items.map((n) => ({ ...n, read: true })));
+	update(notifications.map((n) => ({ ...n, read: true })));
 }
 
 export function clearAll(): void {
-	save([]);
+	update([]);
 }
 
 export function getUnreadCount(): number {
-	return load().filter((n) => !n.read).length;
+	return notifications.filter((n) => !n.read).length;
 }
