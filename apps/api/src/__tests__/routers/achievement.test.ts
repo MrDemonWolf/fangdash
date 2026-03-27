@@ -44,9 +44,11 @@ describe("achievement router", () => {
 			expect(first?.unlocked).toBe(true);
 		});
 
-		it("should require authentication", async () => {
+		it("should return all achievements unlocked=false when not authenticated", async () => {
 			const caller = createTestCaller({ db });
-			await expect(caller.achievement.getAll()).rejects.toThrow("UNAUTHORIZED");
+			const result = await caller.achievement.getAll();
+			expect(result.length).toBeGreaterThan(0);
+			expect(result.every((a) => a.unlocked === false)).toBe(true);
 		});
 	});
 

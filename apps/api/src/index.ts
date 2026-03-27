@@ -1,6 +1,9 @@
 import { trpcServer } from "@hono/trpc-server";
+import { sql } from "drizzle-orm";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
+import { createDb } from "./db/index.ts";
+import { user } from "./db/schema.ts";
 import { createAuth } from "./lib/auth.ts";
 import { rateLimitMiddleware } from "./middleware/rate-limit.ts";
 import { securityHeaders } from "./middleware/security-headers.ts";
@@ -68,13 +71,9 @@ const PUBLIC_CACHE_ROUTES: Record<string, number> = {
 	"achievement.list": 3600, // 1 hour (static definitions)
 };
 
-// tRPC handler + cache headers in a single middleware to avoid conflicts
+// Cache-Control middleware for public tRPC queries (runs before handler, applies after)
 app.use("/trpc/*", async (c, next) => {
-	// Run the tRPC handler via next()
-	await trpcServer({
-		router: appRouter,
-		createContext: (_opts, _c) => createContext(c),
-	})(c, next);
+	await next();
 
 	// After tRPC responds, apply cache headers for public GET endpoints
 	try {
@@ -90,12 +89,36 @@ app.use("/trpc/*", async (c, next) => {
 	}
 });
 
+// tRPC handler
+app.use(
+	"/trpc/*",
+	trpcServer({
+		router: appRouter,
+		createContext: (_opts, c) => createContext(c),
+	}),
+);
+
 app.get("/", (c) => {
 	return c.json({ name: "FangDash API", status: "ok" });
 });
 
-app.get("/health", (c) => {
-	return c.json({ status: "healthy" });
+app.get("/health", async (c) => {
+	try {
+		const db = createDb(c.env.DB);
+		const result = await db.select({ cnt: sql<number>`count(*)` }).from(user).get();
+		const auth = createAuth(c.env);
+
+		return c.json({
+			status: "healthy",
+			db: result ? "connected" : "error",
+			auth: auth ? "configured" : "not_configured",
+			timestamp: new Date().toISOString(),
+		});
+	} catch (err) {
+		const message = err instanceof Error ? err.message : "Unknown";
+		console.error("[health] DB check failed:", message);
+		return c.json({ status: "unhealthy", error: message }, 503);
+	}
 });
 
 export default app;

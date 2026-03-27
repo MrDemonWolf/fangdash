@@ -55,12 +55,34 @@ jobs:
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
 
+      - name: Verify D1 migrations
+        working-directory: apps/api
+        run: |
+          RESULT=$(bunx wrangler d1 migrations list fangdash-db --remote --env production 2>&1)
+          echo "$RESULT"
+          if echo "$RESULT" | grep -qiE "unapplied|pending|No migrations"; then
+            echo "ERROR: Some migrations are not applied!"
+            exit 1
+          fi
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+
       - name: Deploy API to Cloudflare Workers
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           workingDirectory: apps/api
           command: deploy --env production
+
+      - name: Smoke test production API
+        run: |
+          sleep 5
+          HEALTH=$(curl -sf https://fangdash-api.mrdemonwolf.workers.dev/health || echo "FAILED")
+          echo "Health check: $HEALTH"
+          if echo "$HEALTH" | grep -q "unhealthy\|FAILED"; then
+            echo "ERROR: Production health check failed!"
+            exit 1
+          fi
 
   deploy-web:
     name: Deploy Web
