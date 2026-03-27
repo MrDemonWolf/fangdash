@@ -33,6 +33,12 @@ import {
 import { Slider } from "@/components/ui/slider.tsx";
 import { Switch } from "@/components/ui/switch.tsx";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs.tsx";
+import {
+	Tooltip,
+	TooltipContent,
+	TooltipProvider,
+	TooltipTrigger,
+} from "@/components/ui/tooltip.tsx";
 
 // ---------------------------------------------------------------------------
 // localStorage persistence helpers
@@ -122,16 +128,30 @@ function StatRow({
 // ---------------------------------------------------------------------------
 function ToggleRow({
 	label,
+	hint,
 	checked,
 	onToggle,
 }: {
 	label: string;
+	hint?: string;
 	checked: boolean;
 	onToggle: () => void;
 }) {
+	const labelEl = (
+		<span className="text-[10px] font-mono text-muted-foreground/70 cursor-default">{label}</span>
+	);
 	return (
 		<div className="flex items-center justify-between py-0.5">
-			<span className="text-[10px] font-mono text-muted-foreground/70">{label}</span>
+			{hint ? (
+				<Tooltip>
+					<TooltipTrigger asChild>{labelEl}</TooltipTrigger>
+					<TooltipContent side="right" className="max-w-48 text-xs">
+						{hint}
+					</TooltipContent>
+				</Tooltip>
+			) : (
+				labelEl
+			)}
 			<Switch
 				checked={checked}
 				onCheckedChange={onToggle}
@@ -504,16 +524,40 @@ function CheatsTab({
 	return (
 		<div className="px-2.5 py-1.5 space-y-0">
 			<SectionHeader>Visibility</SectionHeader>
-			<ToggleRow label="HITBOX VIZ" checked={hitboxes} onToggle={toggleHitboxes} />
-			<ToggleRow label="RENDER VIZ" checked={renderBoxes} onToggle={toggleRenderBoxes} />
+			<ToggleRow
+				label="HITBOX VIZ"
+				hint="Show collision boxes on player and obstacles"
+				checked={hitboxes}
+				onToggle={toggleHitboxes}
+			/>
+			<ToggleRow
+				label="RENDER VIZ"
+				hint="Show sprite render boundaries"
+				checked={renderBoxes}
+				onToggle={toggleRenderBoxes}
+			/>
 
 			<SectionHeader>Invincibility</SectionHeader>
-			<ToggleRow label="INVINCIBLE" checked={invincible} onToggle={toggleInvincible} />
+			<ToggleRow
+				label="INVINCIBLE"
+				hint="Player ignores all obstacle collisions"
+				checked={invincible}
+				onToggle={toggleInvincible}
+			/>
 
 			<SectionHeader>Game Overrides</SectionHeader>
 			<div className="space-y-1 py-0.5">
 				<div className="flex justify-between items-center">
-					<span className="text-[10px] font-mono text-muted-foreground/70">DIFFICULTY</span>
+					<Tooltip>
+						<TooltipTrigger asChild>
+							<span className="text-[10px] font-mono text-muted-foreground/70 cursor-default">
+								DIFFICULTY
+							</span>
+						</TooltipTrigger>
+						<TooltipContent side="right" className="max-w-48 text-xs">
+							Override the difficulty level mid-game
+						</TooltipContent>
+					</Tooltip>
 					<span className="text-[10px] font-mono text-[#0FACED]">
 						{DIFFICULTY_NAMES[difficulty]}
 					</span>
@@ -533,8 +577,17 @@ function CheatsTab({
 			</div>
 			<div className="space-y-1 py-0.5">
 				<div className="flex justify-between items-center">
-					<span className="text-[10px] font-mono text-muted-foreground/70">TIME SCALE</span>
-					<span className="text-[11px] font-mono tabular-nums text-[#0FACED]">
+					<Tooltip>
+						<TooltipTrigger asChild>
+							<span className="text-[10px] font-mono text-muted-foreground/70 cursor-default">
+								TIME SCALE
+							</span>
+						</TooltipTrigger>
+						<TooltipContent side="right" className="max-w-48 text-xs">
+							Speed up or slow down the entire game (0.1x = slow motion, 3x = fast forward)
+						</TooltipContent>
+					</Tooltip>
+					<span className="text-[10px] font-mono tabular-nums text-[#0FACED]">
 						{speedMultiplier.toFixed(1)}x
 					</span>
 				</div>
@@ -670,70 +723,76 @@ export default function DebugPanel({ debugState, onSendCommand, gameKey }: Debug
 	}
 
 	return (
-		<div
-			ref={panelRef}
-			className="fixed rounded-xl border border-[#0FACED]/20 bg-card/95 backdrop-blur-xl shadow-[0_0_40px_rgba(15,172,237,0.1)] overflow-hidden"
-			style={{
-				left: position.x,
-				top: position.y,
-				width: minimized ? 200 : 280,
-				zIndex: 50,
-			}}
-		>
-			{/* Title bar */}
+		<TooltipProvider delayDuration={200}>
 			<div
-				className="flex items-center justify-between px-2.5 py-1.5 bg-muted/50 border-b border-[#0FACED]/15 cursor-grab active:cursor-grabbing select-none"
-				onMouseDown={handleMouseDown}
+				ref={panelRef}
+				className="fixed rounded-xl border border-[#0FACED]/20 bg-card/95 backdrop-blur-xl shadow-[0_0_40px_rgba(15,172,237,0.1)] overflow-hidden"
+				style={{
+					left: position.x,
+					top: position.y,
+					width: minimized ? 200 : 280,
+					zIndex: 50,
+				}}
 			>
-				<span className="text-[11px] font-mono font-medium tracking-wider text-[#0FACED]/80">
-					Debug Panel
-				</span>
-				<button
-					type="button"
-					className="flex items-center justify-center w-5 h-5 rounded text-[#0FACED]/60 hover:text-[#0FACED] hover:bg-[#0FACED]/10 transition-colors text-xs font-mono cursor-pointer"
-					onClick={(e) => {
-						e.stopPropagation();
-						setMinimized((v) => !v);
-					}}
+				{/* Title bar */}
+				<div
+					className="flex items-center justify-between px-2.5 py-1.5 bg-muted/50 border-b border-[#0FACED]/15 cursor-grab active:cursor-grabbing select-none"
+					onMouseDown={handleMouseDown}
 				>
-					{minimized ? "+" : "\u2013"}
-				</button>
+					<span className="text-[11px] font-mono font-medium tracking-wider text-[#0FACED]/80">
+						Debug Panel
+					</span>
+					<button
+						type="button"
+						className="flex items-center justify-center w-5 h-5 rounded text-[#0FACED]/60 hover:text-[#0FACED] hover:bg-[#0FACED]/10 transition-colors text-xs font-mono cursor-pointer"
+						onClick={(e) => {
+							e.stopPropagation();
+							setMinimized((v) => !v);
+						}}
+					>
+						{minimized ? "+" : "\u2013"}
+					</button>
+				</div>
+
+				{!minimized && (
+					<Tabs defaultValue="stats">
+						<TabsList className="mx-2 mt-1.5">
+							<TabsTrigger value="stats" className="text-xs">
+								Stats
+							</TabsTrigger>
+							<TabsTrigger value="constants" className="text-xs">
+								Constants
+							</TabsTrigger>
+							<TabsTrigger value="cheats" className="text-xs">
+								Cheats
+							</TabsTrigger>
+						</TabsList>
+
+						<div className="max-h-[60vh] overflow-y-auto scrollbar-none">
+							<TabsContent value="stats" className="mt-0">
+								<StatsTab state={debugState} />
+							</TabsContent>
+							<TabsContent value="constants" className="mt-0">
+								<ConstantsTab onSendCommand={onSendCommand} />
+							</TabsContent>
+							<TabsContent value="cheats" className="mt-0">
+								<CheatsTab
+									debugState={debugState}
+									onSendCommand={onSendCommand}
+									gameKey={gameKey}
+								/>
+							</TabsContent>
+						</div>
+
+						{/* Footer */}
+						<div className="border-t border-[#0FACED]/10 px-2.5 py-1">
+							<span className="text-[8px] font-mono text-muted-foreground/40">
+								Ctrl+Shift+D to close
+							</span>
+						</div>
+					</Tabs>
+				)}
 			</div>
-
-			{!minimized && (
-				<Tabs defaultValue="stats">
-					<TabsList className="mx-2 mt-1.5">
-						<TabsTrigger value="stats" className="text-xs">
-							Stats
-						</TabsTrigger>
-						<TabsTrigger value="constants" className="text-xs">
-							Constants
-						</TabsTrigger>
-						<TabsTrigger value="cheats" className="text-xs">
-							Cheats
-						</TabsTrigger>
-					</TabsList>
-
-					<div className="max-h-[60vh] overflow-y-auto scrollbar-none">
-						<TabsContent value="stats" className="mt-0">
-							<StatsTab state={debugState} />
-						</TabsContent>
-						<TabsContent value="constants" className="mt-0">
-							<ConstantsTab onSendCommand={onSendCommand} />
-						</TabsContent>
-						<TabsContent value="cheats" className="mt-0">
-							<CheatsTab debugState={debugState} onSendCommand={onSendCommand} gameKey={gameKey} />
-						</TabsContent>
-					</div>
-
-					{/* Footer */}
-					<div className="border-t border-[#0FACED]/10 px-2.5 py-1">
-						<span className="text-[8px] font-mono text-muted-foreground/40">
-							Ctrl+Shift+D to close
-						</span>
-					</div>
-				</Tabs>
-			)}
-		</div>
+		</TooltipProvider>
 	);
 }
