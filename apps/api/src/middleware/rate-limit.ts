@@ -55,8 +55,11 @@ export async function rateLimitMiddleware(c: Context, next: Next) {
 
 	const path = c.req.path;
 
-	// Rate-limit auth endpoints
+	// Rate-limit auth endpoints (exempt session checks — called on every page load)
 	if (path.startsWith("/api/auth/")) {
+		if (path === "/api/auth/get-session" && c.req.method === "GET") {
+			return next();
+		}
 		const ip = getClientIp(c);
 		const entry = checkLimit(authBuckets, ip);
 		if (entry.count > AUTH_LIMIT) {

@@ -226,10 +226,10 @@ export default function LeaderboardPage() {
 										onClick={() => setActiveTab(tab.key)}
 										aria-pressed={activeTab === tab.key}
 										className={cn(
-											"flex-1 rounded-md px-4 py-2 text-sm font-medium font-mono transition-all cursor-pointer",
+											"flex-1 rounded-md border px-4 py-2 text-sm font-medium font-mono transition-all cursor-pointer",
 											activeTab === tab.key
-												? "bg-fang-cyan/15 text-fang-cyan shadow-[var(--glow-cyan)] border border-fang-cyan/30"
-												: "border border-transparent text-muted-foreground hover:text-foreground hover:bg-surface-bright/50",
+												? "bg-fang-cyan/15 text-fang-cyan shadow-[var(--glow-cyan)] border-fang-cyan/30"
+												: "border-transparent text-muted-foreground hover:text-foreground hover:bg-surface-bright/50",
 										)}
 									>
 										{tab.label}
@@ -249,10 +249,10 @@ export default function LeaderboardPage() {
 									onClick={() => setActiveDifficulty("all")}
 									aria-pressed={activeDifficulty === "all"}
 									className={cn(
-										"rounded-md px-3 py-1.5 text-sm font-medium font-mono transition-all cursor-pointer",
+										"rounded-md border px-3 py-1.5 text-sm font-medium font-mono transition-all cursor-pointer",
 										activeDifficulty === "all"
-											? "bg-fang-cyan/15 text-fang-cyan shadow-[var(--glow-cyan)] border border-fang-cyan/30"
-											: "border border-transparent text-muted-foreground hover:text-foreground hover:bg-surface-bright/50",
+											? "bg-fang-cyan/15 text-fang-cyan shadow-[var(--glow-cyan)] border-fang-cyan/30"
+											: "border-transparent text-muted-foreground hover:text-foreground hover:bg-surface-bright/50",
 									)}
 								>
 									All
@@ -264,10 +264,10 @@ export default function LeaderboardPage() {
 										onClick={() => setActiveDifficulty(level.name)}
 										aria-pressed={activeDifficulty === level.name}
 										className={cn(
-											"flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium font-mono transition-all cursor-pointer",
+											"flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-sm font-medium font-mono transition-all cursor-pointer",
 											activeDifficulty === level.name
-												? "bg-fang-cyan/15 text-fang-cyan shadow-[var(--glow-cyan)] border border-fang-cyan/30"
-												: "border border-transparent text-muted-foreground hover:text-foreground hover:bg-surface-bright/50",
+												? "bg-fang-cyan/15 text-fang-cyan shadow-[var(--glow-cyan)] border-fang-cyan/30"
+												: "border-transparent text-muted-foreground hover:text-foreground hover:bg-surface-bright/50",
 										)}
 									>
 										<span
@@ -294,10 +294,10 @@ export default function LeaderboardPage() {
 									}}
 									aria-pressed={modsMode === "all"}
 									className={cn(
-										"rounded-md px-3 py-1.5 text-sm font-medium font-mono transition-all cursor-pointer",
+										"rounded-md border px-3 py-1.5 text-sm font-medium font-mono transition-all cursor-pointer",
 										modsMode === "all"
-											? "bg-fang-cyan/15 text-fang-cyan shadow-[var(--glow-cyan)] border border-fang-cyan/30"
-											: "border border-transparent text-muted-foreground hover:text-foreground hover:bg-surface-bright/50",
+											? "bg-fang-cyan/15 text-fang-cyan shadow-[var(--glow-cyan)] border-fang-cyan/30"
+											: "border-transparent text-muted-foreground hover:text-foreground hover:bg-surface-bright/50",
 									)}
 								>
 									All
@@ -310,10 +310,10 @@ export default function LeaderboardPage() {
 									}}
 									aria-pressed={modsMode === "none"}
 									className={cn(
-										"rounded-md px-3 py-1.5 text-sm font-medium font-mono transition-all cursor-pointer",
+										"rounded-md border px-3 py-1.5 text-sm font-medium font-mono transition-all cursor-pointer",
 										modsMode === "none"
-											? "bg-fang-cyan/15 text-fang-cyan shadow-[var(--glow-cyan)] border border-fang-cyan/30"
-											: "border border-transparent text-muted-foreground hover:text-foreground hover:bg-surface-bright/50",
+											? "bg-fang-cyan/15 text-fang-cyan shadow-[var(--glow-cyan)] border-fang-cyan/30"
+											: "border-transparent text-muted-foreground hover:text-foreground hover:bg-surface-bright/50",
 									)}
 								>
 									No Mods
@@ -334,10 +334,10 @@ export default function LeaderboardPage() {
 											}}
 											aria-pressed={isActive}
 											className={cn(
-												"flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium font-mono transition-all cursor-pointer",
+												"flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-sm font-medium font-mono transition-all cursor-pointer",
 												isActive
-													? "bg-fang-cyan/15 text-fang-cyan shadow-[var(--glow-cyan)] border border-fang-cyan/30"
-													: "border border-transparent text-muted-foreground hover:text-foreground hover:bg-surface-bright/50",
+													? "bg-fang-cyan/15 text-fang-cyan shadow-[var(--glow-cyan)] border-fang-cyan/30"
+													: "border-transparent text-muted-foreground hover:text-foreground hover:bg-surface-bright/50",
 												isDisabled && "opacity-40 cursor-not-allowed",
 											)}
 										>
