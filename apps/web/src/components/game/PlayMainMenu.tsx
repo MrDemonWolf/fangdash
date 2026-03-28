@@ -1,6 +1,7 @@
 "use client";
 import { DIFFICULTY_LEVELS, getScoreMultiplier, MOD_DEFINITIONS } from "@fangdash/shared";
 import { LogOut, User } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
@@ -130,14 +131,15 @@ export function PlayMainMenu({
 
 			<div className="relative z-10 flex flex-col items-center gap-2 sm:gap-4 lg:gap-6 text-center px-4 sm:px-6 max-w-sm sm:max-w-xl w-full h-full overflow-hidden justify-center py-10 sm:py-6">
 				{/* Wolf skin */}
-				<img
+				<Image
 					src={`/wolves/${skinKey}.png`}
 					alt=""
 					aria-hidden="true"
+					priority
 					width={80}
 					height={80}
-					className="w-10 h-10 sm:w-14 sm:h-14 lg:w-20 lg:h-20 drop-shadow-[0_0_32px_rgba(15,172,237,0.5)]"
-					style={{ imageRendering: "pixelated" }}
+					className="w-10 h-10 sm:w-14 sm:h-14 lg:w-20 lg:h-20 drop-shadow-[0_0_32px_rgba(15,172,237,0.5)] pixelated"
+					unoptimized
 				/>
 
 				{/* Title */}
