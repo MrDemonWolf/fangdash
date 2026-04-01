@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useTRPC } from "@/lib/trpc.ts";
+import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 
 type Tab = "audio" | "skins" | "stats" | "leaderboard" | "controls" | "hud" | "quit";
@@ -81,15 +82,14 @@ function AudioTab({
 						<span>Volume</span>
 						<span>{Math.round((muted ? 0 : volume) * 100)}%</span>
 					</div>
-					<input
-						type="range"
-						min="0"
-						max="1"
-						step="0.05"
-						value={muted ? 0 : volume}
-						onChange={(e) => onVolumeChange(Number.parseFloat(e.target.value))}
-						className="w-full h-1 accent-[#0FACED] cursor-pointer"
+					<Slider
+						min={0}
+						max={1}
+						step={0.05}
+						value={[muted ? 0 : volume]}
+						onValueChange={([v]) => onVolumeChange(v ?? 0)}
 						aria-label="Volume"
+						className="w-full"
 					/>
 				</div>
 			</div>
