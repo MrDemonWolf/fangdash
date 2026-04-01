@@ -699,8 +699,7 @@ export default function RaceRoomPage() {
 				{/* Game canvas container */}
 				<div
 					ref={containerRef}
-					className="aspect-[4/3] w-full overflow-hidden rounded-xl border border-[#0FACED]/20"
-					style={{ touchAction: "none" }}
+					className="aspect-[4/3] w-full overflow-hidden rounded-xl border border-[#0FACED]/20 touch-none"
 				/>
 
 				{/* Connection lost overlay */}

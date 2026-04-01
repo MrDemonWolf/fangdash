@@ -502,11 +502,7 @@ export default function PlayPage() {
 				)}
 
 				{/* Game canvas container */}
-				<div
-					ref={containerRef}
-					className="w-full h-full overflow-hidden bg-[#0f0f1a]"
-					style={{ touchAction: "none" }}
-				/>
+				<div ref={containerRef} className="w-full h-full overflow-hidden bg-[#0f0f1a] touch-none" />
 
 				{/* Game load error overlay */}
 				{gameError && (
