@@ -262,8 +262,7 @@ export class DevRaceConnection {
 		}, BOT_UPDATE_INTERVAL_MS);
 
 		// Bot dies at a random time between 15–25 seconds
-		const deathDelay =
-			BOT_DEATH_MIN_MS + Math.random() * (BOT_DEATH_MAX_MS - BOT_DEATH_MIN_MS);
+		const deathDelay = BOT_DEATH_MIN_MS + Math.random() * (BOT_DEATH_MAX_MS - BOT_DEATH_MIN_MS);
 		this.botDeathTimer = setTimeout(() => {
 			this.botAlive = false;
 			if (this.botUpdateTimer) {

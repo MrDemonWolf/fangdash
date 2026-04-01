@@ -34,8 +34,7 @@ export default function RaceRoomPage() {
 	const searchParams = useSearchParams();
 	const roomCode = params.code.toUpperCase();
 	const isDevMode =
-		searchParams.get("dev") === "true" &&
-		process.env["NEXT_PUBLIC_API_URL"]?.includes("localhost");
+		searchParams.get("dev") === "true" && process.env["NEXT_PUBLIC_API_URL"]?.includes("localhost");
 
 	// Auth
 	const { data: session } = useSession();
