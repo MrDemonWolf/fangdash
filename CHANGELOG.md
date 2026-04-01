@@ -1,0 +1,153 @@
+# Changelog
+
+All notable changes to FangDash are documented here.
+
+For the latest updates, visit [fangdash.mrdemonwolf.workers.dev/changelog](https://fangdash.mrdemonwolf.workers.dev/changelog).
+
+---
+
+## v0.2.0 — Settings, Public Profiles & Account Management
+
+**Released:** 2026-03-15
+
+> New Settings page, public player profiles, privacy controls, GDPR-compliant account deletion, and improved in-game feedback.
+
+### Settings Page
+
+- New `/settings` page for account management
+- **Skin picker** moved from the Skins gallery to Settings — the Skins page is now a view-only gallery
+- **Privacy toggle** — "Allow others to view my profile" controls public profile visibility
+- **Account deletion** — GDPR-compliant 24-hour soft delete with the ability to cancel during the grace period
+
+### Public Profiles
+
+- New `/profile/[id]` routes for viewing other players' profiles
+- Linked from the leaderboard — click a player's name to view their profile
+- Displays stats, achievements, top scores, and equipped skin
+- Respects the player's privacy setting (private profiles show a notice)
+- **Share Profile** button on your own profile to copy a direct link
+
+### Skins Page Update
+
+- The Skins gallery at `/skins` is now **view-only** — no more equip button
+- Links to Settings for equipping skins
+
+### Play Page Improvements
+
+- Removed toast notifications for score saves, level-ups, and achievement warnings
+- These messages are now shown **inline in the Game Over modal** for a cleaner experience
+
+### Debug Panel
+
+- New **"Unlock All Skins"** button in the CHEATS tab (dev/admin only)
+- Calls the new `admin.unlockAllSkins` mutation
+
+### API Changes
+
+- New `account` tRPC router with endpoints: `getAccountStatus`, `requestDeletion`, `cancelDeletion`, `getPrivacy`, `updatePrivacy`
+- New `score.getPublicProfile` query for fetching public profile data
+- New `admin.unlockAllSkins` mutation
+- Leaderboard responses now include `userId` and `profilePublic` fields for profile linking
+- Database schema: `user` table gains `deletionRequestedAt` and `deletionScheduledFor` columns; `player` table gains `profilePublic` column
+
+### Auth Improvements
+
+- Session creation hook now backfills `twitchId` and `twitchAvatar` if missing from the user record
+
+---
+
+## v0.1.0 — Alpha Release
+
+**Released:** 2026-03-11
+
+> First public alpha. Core gameplay, multiplayer, player accounts, level system, and admin panel are all live.
+
+### Core Gameplay
+
+- Endless runner — wolf runs automatically, player jumps over obstacles
+- Double jump (up to 2 jumps per airborne phase)
+- 4 obstacle types: rock, log, bush, spike
+- Procedurally generated courses (seeded for multiplayer fairness)
+- 5 progressive difficulty tiers (Easy → Nightmare) scaling speed from 300 to 800 px/s
+- Scoring: 10 pts/sec survived + 50 pts per obstacle cleared
+- Per-difficulty score saving — scores track which difficulty tier they were achieved at
+- Server-side anti-cheat: scores validated against theoretical maximum
+- Longest clean run tracking (used for Perfect Dash achievement)
+
+### Level System
+
+- Every point scored = 1 XP
+- Cubic level curve: `totalXpForLevel(n) = 5 × (n - 1)³`
+- Race placement bonuses: 1st = 500 XP, 2nd = 250 XP, 3rd = 100 XP
+- Level and XP progress bar on profile page
+
+### Wolf Skins
+
+6 skins across 5 rarity tiers (all must be unlocked except Gray Wolf):
+
+| Skin            | Rarity    | Unlock Condition                 |
+| --------------- | --------- | -------------------------------- |
+| Gray Wolf       | Common    | Default                          |
+| Shadow Wolf     | Uncommon  | Run 2,000m in a single run       |
+| Fire Wolf       | Rare      | Score 5,000 pts in a single run  |
+| Storm Wolf      | Epic      | Earn Obstacle Master achievement |
+| Blood Moon Wolf | Legendary | Score 15,000 pts in a single run |
+| MrDemonWolf     | Legendary | Earn Champion achievement        |
+
+### Achievements
+
+16 achievements across 5 categories (Score, Distance, Games Played, Skill, Social). Three achievements unlock exclusive skins as rewards.
+
+### Multiplayer
+
+- Real-time races via PartyKit WebSockets (up to 4 players)
+- Ghost players visible during races (live position sync)
+- Shared seeded PRNG — all players face identical obstacles
+- 3-second countdown, minimum 2 players to start
+- Race results with placements saved to history
+- Placement XP bonuses (1st = 500, 2nd = 250, 3rd = 100)
+
+### Player Profiles
+
+- Twitch OAuth sign-in (username + avatar only)
+- Persistent stats: total score, distance, games played, obstacles cleared
+- Race stats: races played, won, win rate
+- Recent score history with trend arrows
+- Level and XP progress bar
+- Honor badges (recent achievements)
+- Skin and achievement tracking
+
+### Leaderboard
+
+- Global leaderboard with time-period filters (All-time / Weekly / Daily)
+- Per-difficulty filtering (view scores for a specific difficulty tier)
+- Per-player personal best (one entry per player)
+- Top 3 rank badges (gold / silver / bronze)
+
+### Admin Panel
+
+- Protected `/admin` route (admin + dev roles)
+- Dashboard: total players, games, meters, races, entries
+- Players: paginated list, search, ban/unban with reason + duration
+- Scores: paginated list, suspicious score highlighting, delete with aggregate rollback
+- Races: paginated history grouped by race, placement badges
+
+### Audio
+
+- 3 BGM tracks (menu, solo, race) with automatic switching
+- 9 SFX (jump, double jump, hit, game over, milestone, countdown, achievement, skin equip, victory)
+- Master volume slider and mute toggle; preferences saved to localStorage
+
+### Debug Panel
+
+- Ctrl+Shift+D in-game (dev/admin only)
+- Tabs: Stats, Constants, Cheats (set score/distance, invincibility, skip difficulty)
+
+### Infrastructure
+
+- API: Hono + tRPC v11 on Cloudflare Workers with D1 (SQLite)
+- Web: Next.js 15 (App Router) deployed via OpenNext + Cloudflare Workers
+- Party: PartyKit WebSocket server
+- Auth: Better Auth with Twitch OAuth, cookie-based sessions (30-min cache)
+- OG image generation via Satori
+- Docs: Fumadocs MDX site

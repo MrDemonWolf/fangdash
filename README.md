@@ -185,6 +185,10 @@ fangdash/
 └── tsconfig.base.json # Shared TypeScript config
 ```
 
+## Changelog
+
+See [CHANGELOG.md](./CHANGELOG.md) for the full release history, or visit [fangdash.mrdemonwolf.workers.dev/changelog](https://fangdash.mrdemonwolf.workers.dev/changelog) for the web version.
+
 ## License
 
 [![GitHub license](https://img.shields.io/github/license/MrDemonWolf/fangdash.svg?style=for-the-badge&logo=github)](https://github.com/MrDemonWolf/fangdash/blob/main/LICENSE)
