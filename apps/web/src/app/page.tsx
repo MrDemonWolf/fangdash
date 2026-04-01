@@ -83,7 +83,8 @@ export default function Home() {
 									alt="FangDash wolf mascot"
 									width={240}
 									height={240}
-									priority={true}
+									priority
+									loading="eager"
 									className="pixelated animate-float relative z-10 drop-shadow-[0_0_50px_rgba(15,172,237,0.35)]"
 								/>
 							</div>
