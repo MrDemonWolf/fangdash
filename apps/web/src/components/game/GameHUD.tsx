@@ -2,7 +2,7 @@
 
 import { decodeMods } from "@fangdash/shared";
 import type { DifficultyName } from "@fangdash/shared";
-import { formatTime } from "@/lib/format-time.ts";
+import { formatTime } from "@/lib/format.ts";
 import { InGameLeaderboard } from "./InGameLeaderboard.tsx";
 import { InputOverlay } from "./InputOverlay.tsx";
 
