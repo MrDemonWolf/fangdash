@@ -5,7 +5,7 @@ import type { DebugCommand, DebugState, GameState, RacePlayer, RaceResult } from
 import { getSkinById } from "@fangdash/shared/skins";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import Link from "next/link";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { CountdownOverlay } from "@/components/game/CountdownOverlay.tsx";
@@ -14,6 +14,7 @@ import { GameHUD } from "@/components/game/GameHUD.tsx";
 import { RaceResultModal } from "@/components/game/RaceResultModal.tsx";
 import { useSession } from "@/lib/auth-client.ts";
 import { addNotification } from "@/lib/notification-store.ts";
+import { DevRaceConnection } from "@/lib/dev-race-connection.ts";
 import { RaceConnection, type ConnectionState } from "@/lib/party.ts";
 import { addToHistory } from "@/lib/score-store.ts";
 import { useTRPC } from "@/lib/trpc.ts";
@@ -30,7 +31,11 @@ type Phase = "waiting" | "countdown" | "racing" | "results";
 export default function RaceRoomPage() {
 	const params = useParams<{ code: string }>();
 	const router = useRouter();
+	const searchParams = useSearchParams();
 	const roomCode = params.code.toUpperCase();
+	const isDevMode =
+		searchParams.get("dev") === "true" &&
+		process.env["NEXT_PUBLIC_API_URL"]?.includes("localhost");
 
 	// Auth
 	const { data: session } = useSession();
@@ -96,7 +101,7 @@ export default function RaceRoomPage() {
 	const containerRef = useRef<HTMLDivElement>(null);
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	const gameRef = useRef<any>(null);
-	const connectionRef = useRef<RaceConnection | null>(null);
+	const connectionRef = useRef<RaceConnection | DevRaceConnection | null>(null);
 	const hasJoinedRef = useRef(false);
 
 	const equippedSkin = skinData?.skinId
@@ -236,7 +241,8 @@ export default function RaceRoomPage() {
 
 		hasJoinedRef.current = false;
 		let wasDisconnected = false;
-		const connection = new RaceConnection({
+		const ConnectionClass = isDevMode ? DevRaceConnection : RaceConnection;
+		const connection = new ConnectionClass({
 			roomCode,
 			onConnectionStateChange: (state) => {
 				setConnectionState(state);
@@ -369,7 +375,7 @@ export default function RaceRoomPage() {
 			connection.disconnect();
 			connectionRef.current = null;
 		};
-	}, [isSignedIn, roomCode, session?.user?.email, session?.user?.name, session?.user]);
+	}, [isDevMode, isSignedIn, roomCode, session?.user?.email, session?.user?.name, session?.user]);
 
 	// ── Join once skin data has resolved ──
 	useEffect(() => {
