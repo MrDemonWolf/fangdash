@@ -7,6 +7,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useSession } from "@/lib/auth-client.ts";
+import { formatDistance } from "@/lib/format.ts";
 import { useTRPC } from "@/lib/trpc.ts";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
@@ -15,14 +16,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { ProfileSkeleton } from "./_skeleton.tsx";
-
-/* ------------------------------------------------------------------ */
-/*  Helper: format distance as km                                      */
-/* ------------------------------------------------------------------ */
-
-function fmtKm(meters: number): string {
-	return `${(meters / 1000).toFixed(1)} km`;
-}
 
 /* ------------------------------------------------------------------ */
 /*  Header Banner                                                      */
@@ -262,7 +255,7 @@ function RecentScorelines({ scores }: { scores: ScoreEntry[] }) {
 										{entry.score.toLocaleString()}
 									</span>
 									<span className="text-xs text-muted-foreground">
-										{fmtKm(entry.distance)} ·{" "}
+										{formatDistance(entry.distance)} ·{" "}
 										{new Date(entry.createdAt).toLocaleDateString("en-US", {
 											month: "short",
 											day: "numeric",
@@ -355,7 +348,7 @@ export default function ProfilePage() {
 	const winRate = racesPlayed > 0 ? `${((racesWon / racesPlayed) * 100).toFixed(0)}%` : "N/A";
 
 	const performanceTiles: MetricTile[] = [
-		{ label: "Total Distance", value: fmtKm(totalDistance), accent: "text-primary" },
+		{ label: "Total Distance", value: formatDistance(totalDistance), accent: "text-primary" },
 		{ label: "High Score", value: highScore.toLocaleString(), accent: "text-primary" },
 		{ label: "Win Rate", value: winRate, accent: "text-emerald-400" },
 		{ label: "Obstacles", value: totalObstacles.toLocaleString(), accent: "text-fang-orange" },

@@ -3,7 +3,7 @@
 import type { GameState } from "@fangdash/shared";
 import { getAchievementById, getSkinById } from "@fangdash/shared";
 import Link from "next/link";
-import { formatTime } from "@/lib/format-time.ts";
+import { formatDistance, formatTime } from "@/lib/format.ts";
 
 interface GameOverModalProps {
 	state: GameState;
@@ -22,13 +22,6 @@ interface GameOverModalProps {
 	isSignedIn?: boolean;
 	cheatsUsed?: boolean;
 	onRetrySubmit?: (() => void) | undefined;
-}
-
-function formatDistance(m: number): string {
-	if (m >= 1000) {
-		return `${(m / 1000).toFixed(1)}km`;
-	}
-	return `${Math.floor(m)}m`;
 }
 
 function subtitle(score: number): string {
