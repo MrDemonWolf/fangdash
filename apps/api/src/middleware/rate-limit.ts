@@ -42,6 +42,9 @@ function lazyCleanup() {
 	if (now - lastCleanup < WINDOW_MS) return;
 	lastCleanup = now;
 
+	for (const [key, entry] of authBuckets) {
+		if (now >= entry.resetAt) authBuckets.delete(key);
+	}
 	for (const [key, entry] of mutationBuckets) {
 		if (now >= entry.resetAt) mutationBuckets.delete(key);
 	}

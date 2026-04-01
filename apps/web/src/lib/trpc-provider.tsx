@@ -24,7 +24,9 @@ function is429(error: unknown): boolean {
 		const data = error.data as Record<string, unknown> | undefined;
 		const shapeData = error.shape?.data as Record<string, unknown> | undefined;
 		const status = data?.["httpStatus"] ?? shapeData?.["httpStatus"];
-		return status === 429;
+		if (status === 429) return true;
+		// Middleware-level 429s surface as a raw Response on error.cause
+		if (error.cause instanceof Response && error.cause.status === 429) return true;
 	}
 	return false;
 }
@@ -91,12 +93,13 @@ export function TRPCProvider({ children }: { children: React.ReactNode }) {
 						retryDelay: retryDelay429,
 					},
 					mutations: {
-						retry: shouldRetry429,
-						retryDelay: retryDelay429,
+						// Disable retries for all mutations — they are non-idempotent and
+						// retrying (e.g. score.submit) would create duplicate records.
+						retry: false,
 						onError: (error) => {
 							if (is429(error)) {
-								toast.warning("Slow down a bit!", {
-									description: "Try again in a moment.",
+								toast.warning("Still too many requests.", {
+									description: "Please wait a moment.",
 									duration: 4000,
 								});
 							}

@@ -129,7 +129,7 @@ export function PlayMainMenu({
 				)}
 			</div>
 
-			<div className="relative z-10 flex flex-col items-center gap-2 sm:gap-4 lg:gap-6 text-center px-4 sm:px-6 max-w-sm sm:max-w-xl w-full h-full overflow-hidden justify-center py-10 sm:py-6">
+			<div className="relative z-10 flex flex-col items-center gap-2 sm:gap-4 lg:gap-6 text-center px-4 sm:px-6 max-w-sm sm:max-w-xl w-full h-full overflow-hidden justify-center py-6 sm:py-10">
 				{/* Wolf skin */}
 				<Image
 					src={`/wolves/${skinKey}.png`}
