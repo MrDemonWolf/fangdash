@@ -59,9 +59,7 @@ export default async function ChangelogPage() {
 									<Badge variant="secondary">{release.tag_name}</Badge>
 									{release.prerelease && <Badge variant="outline">Pre-release</Badge>}
 								</div>
-								<p className="text-sm text-muted-foreground">
-									{formatDate(release.published_at)}
-								</p>
+								<p className="text-sm text-muted-foreground">{formatDate(release.published_at)}</p>
 							</CardHeader>
 							{release.body ? (
 								<CardContent>
