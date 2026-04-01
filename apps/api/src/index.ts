@@ -105,7 +105,10 @@ app.get("/", (c) => {
 app.get("/health", async (c) => {
 	try {
 		const db = createDb(c.env.DB);
-		const result = await db.select({ cnt: sql<number>`count(*)` }).from(user).get();
+		const result = await db
+			.select({ cnt: sql<number>`count(*)` })
+			.from(user)
+			.get();
 		const auth = createAuth(c.env);
 
 		return c.json({

@@ -107,7 +107,7 @@ export function PlayMainMenu({
 	const multiplier = getScoreMultiplier(selectedMods);
 
 	return (
-		<div className="absolute inset-0 z-20 flex flex-col items-center justify-center">
+		<div className="absolute inset-0 z-20 flex flex-col items-center justify-center overflow-hidden">
 			{/* Gradient backdrop — lets game canvas show through */}
 			<div className="absolute inset-0 bg-gradient-to-b from-[#091533]/80 via-[#091533]/60 to-[#091533]/80" />
 
@@ -128,7 +128,7 @@ export function PlayMainMenu({
 				)}
 			</div>
 
-			<div className="relative z-10 flex flex-col items-center gap-4 sm:gap-6 text-center px-4 sm:px-6 max-w-sm sm:max-w-xl w-full max-h-[90dvh] overflow-y-auto scrollbar-none py-14 sm:py-6">
+			<div className="relative z-10 flex flex-col items-center gap-2 sm:gap-4 lg:gap-6 text-center px-4 sm:px-6 max-w-sm sm:max-w-xl w-full h-full overflow-hidden justify-center py-10 sm:py-6">
 				{/* Wolf skin */}
 				<img
 					src={`/wolves/${skinKey}.png`}
@@ -136,13 +136,13 @@ export function PlayMainMenu({
 					aria-hidden="true"
 					width={80}
 					height={80}
-					className="w-14 h-14 sm:w-20 sm:h-20 drop-shadow-[0_0_32px_rgba(15,172,237,0.5)]"
+					className="w-10 h-10 sm:w-14 sm:h-14 lg:w-20 lg:h-20 drop-shadow-[0_0_32px_rgba(15,172,237,0.5)]"
 					style={{ imageRendering: "pixelated" }}
 				/>
 
 				{/* Title */}
 				<div>
-					<h1 className="text-4xl sm:text-5xl font-extrabold uppercase tracking-tight text-white">
+					<h1 className="text-2xl sm:text-4xl lg:text-5xl font-extrabold uppercase tracking-tight text-white">
 						FangDash
 					</h1>
 					<p className="text-xs font-semibold uppercase tracking-widest text-[#0FACED]/60 mt-1">
@@ -156,18 +156,18 @@ export function PlayMainMenu({
 						<span className="text-[10px] font-mono uppercase tracking-widest text-white/40">
 							Best
 						</span>
-						<span className="text-xl sm:text-2xl font-bold font-mono tabular-nums text-[#0FACED]">
+						<span className="text-lg sm:text-xl lg:text-2xl font-bold font-mono tabular-nums text-[#0FACED]">
 							{String(bestScore).padStart(7, "0")}
 						</span>
 					</div>
 				)}
 
 				{/* Difficulty selector */}
-				<div className="flex flex-col gap-2 w-full">
+				<div className="flex flex-col gap-1 sm:gap-2 w-full">
 					<span className="text-[10px] font-mono uppercase tracking-widest text-white/40">
 						Difficulty
 					</span>
-					<div className="grid grid-cols-2 gap-2 w-full sm:grid-cols-3">
+					<div className="grid grid-cols-3 gap-1.5 sm:gap-2 w-full">
 						{DIFFICULTY_LEVELS.map((level) => {
 							const isSelected = selectedDifficulty === level.name;
 							return (
@@ -176,7 +176,7 @@ export function PlayMainMenu({
 									key={level.name}
 									onClick={() => onSelectDifficulty(level.name)}
 									aria-pressed={isSelected}
-									className={`relative rounded-lg border-l-[3px] px-2 sm:px-3 py-2 sm:py-2.5 text-left transition-all cursor-pointer ${
+									className={`relative rounded-lg border-l-[3px] px-2 py-1.5 sm:py-2 text-left transition-all cursor-pointer ${
 										isSelected
 											? "bg-white/10 border-white/20"
 											: "bg-white/5 border-white/10 hover:bg-white/[0.07] hover:border-white/15"
@@ -192,7 +192,7 @@ export function PlayMainMenu({
 									>
 										{level.label}
 									</span>
-									<div className="mt-1 flex items-center gap-1.5 sm:gap-2 text-[10px] font-mono text-white/40">
+									<div className="mt-0.5 hidden sm:flex items-center gap-1.5 sm:gap-2 text-[10px] font-mono text-white/40">
 										<span>{level.speedMultiplier}x</span>
 										<span className="text-white/20">|</span>
 										<span>{level.maxObstaclesOnScreen} obs</span>
@@ -204,11 +204,11 @@ export function PlayMainMenu({
 				</div>
 
 				{/* Mod selector */}
-				<div className="flex flex-col gap-2 w-full">
+				<div className="flex flex-col gap-1 sm:gap-2 w-full">
 					<span className="text-[10px] font-mono uppercase tracking-widest text-white/40">
 						Mods
 					</span>
-					<div className="grid grid-cols-2 gap-2 w-full">
+					<div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 sm:gap-2 w-full">
 						{MOD_DEFINITIONS.map((mod) => {
 							const isActive = (selectedMods & mod.flag) !== 0;
 							return (
@@ -217,7 +217,7 @@ export function PlayMainMenu({
 									key={mod.id}
 									onClick={() => onSelectMods(selectedMods ^ mod.flag)}
 									aria-pressed={isActive}
-									className={`relative rounded-lg border px-2 sm:px-3 py-2 sm:py-2.5 text-left transition-all cursor-pointer ${
+									className={`relative rounded-lg border px-2 py-1.5 sm:py-2 text-left transition-all cursor-pointer ${
 										isActive
 											? "bg-purple-500/15 border-purple-500/40"
 											: "bg-white/5 border-white/10 hover:bg-white/[0.07] hover:border-white/15"
@@ -226,8 +226,8 @@ export function PlayMainMenu({
 										boxShadow: isActive ? "0 0 16px rgba(168, 85, 247, 0.2)" : undefined,
 									}}
 								>
-									<div className="flex items-center gap-2 overflow-hidden">
-										<span className="text-base">{mod.icon}</span>
+									<div className="flex items-center gap-1.5 overflow-hidden">
+										<span className="text-sm sm:text-base">{mod.icon}</span>
 										<span
 											className={`text-xs font-bold uppercase tracking-wide truncate ${
 												isActive ? "text-purple-300" : "text-white/60"
@@ -236,7 +236,7 @@ export function PlayMainMenu({
 											{mod.name}
 										</span>
 										{!mod.ready && (
-											<span className="rounded px-1 py-0.5 text-[8px] font-bold uppercase bg-yellow-500/20 text-yellow-400">
+											<span className="rounded px-1 py-0.5 text-[8px] font-bold uppercase bg-yellow-500/20 text-yellow-400 hidden sm:inline">
 												Beta
 											</span>
 										)}
@@ -248,7 +248,7 @@ export function PlayMainMenu({
 											{mod.multiplier}x
 										</span>
 									</div>
-									<p className="mt-1 text-[10px] text-white/30 leading-tight">
+									<p className="mt-1 text-[10px] text-white/30 leading-tight hidden sm:block">
 										{mod.description}
 										{!mod.ready && isActive && (
 											<span className="block mt-0.5 text-yellow-400/60">
@@ -271,7 +271,7 @@ export function PlayMainMenu({
 				<button
 					type="button"
 					onClick={onPlay}
-					className="w-full rounded-full bg-[#0FACED] py-3 sm:py-4 text-base sm:text-lg font-extrabold uppercase tracking-widest text-[#091533] shadow-[0_0_32px_rgba(15,172,237,0.4)] hover:bg-[#0FACED]/90 transition-all hover:scale-105 active:scale-95 cursor-pointer"
+					className="w-full rounded-full bg-[#0FACED] py-2.5 sm:py-3 lg:py-4 text-sm sm:text-base lg:text-lg font-extrabold uppercase tracking-widest text-[#091533] shadow-[0_0_32px_rgba(15,172,237,0.4)] hover:bg-[#0FACED]/90 transition-all hover:scale-105 active:scale-95 cursor-pointer"
 				>
 					PLAY
 				</button>
