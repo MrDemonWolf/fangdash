@@ -4,6 +4,7 @@ import { Bell } from "lucide-react";
 import Link from "next/link";
 import type { NotificationType } from "@/lib/notification-store.ts";
 import { useNotifications } from "@/hooks/use-notifications.ts";
+import { formatRelativeTime } from "@/lib/format.ts";
 import { cn } from "@/lib/utils";
 import {
 	DropdownMenu,
@@ -17,17 +18,6 @@ const TYPE_CONFIG: Record<NotificationType, { dot: string; icon: string }> = {
 	skin: { dot: "bg-purple-400", icon: "\ud83c\udfa8" },
 	level_up: { dot: "bg-emerald-400", icon: "\u2b06\ufe0f" },
 };
-
-function formatRelativeTime(timestamp: number): string {
-	const seconds = Math.floor((Date.now() - timestamp) / 1000);
-	if (seconds < 60) return "now";
-	const minutes = Math.floor(seconds / 60);
-	if (minutes < 60) return `${minutes}m`;
-	const hours = Math.floor(minutes / 60);
-	if (hours < 24) return `${hours}h`;
-	const days = Math.floor(hours / 24);
-	return `${days}d`;
-}
 
 export function NotificationBell() {
 	const { notifications, unreadCount, markAllRead, clearAll } = useNotifications();
