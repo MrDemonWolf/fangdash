@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-import { signIn, signOut, useSession } from "@/lib/auth-client.ts";
+import { signInWithTwitch, signOut, useSession } from "@/lib/auth-client.ts";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
@@ -44,7 +44,7 @@ export function Navbar() {
 	const isActive = (href: string) => pathname === href;
 
 	const handleSignIn = () => {
-		signIn.social({ provider: "twitch", callbackURL: window.location.origin });
+		signInWithTwitch();
 	};
 
 	if (pathname === "/play") {

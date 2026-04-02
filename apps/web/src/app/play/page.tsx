@@ -13,7 +13,7 @@ import { GameOverModal } from "@/components/game/GameOverModal.tsx";
 import OnboardingOverlay from "@/components/game/OnboardingOverlay.tsx";
 import { PlayMainMenu } from "@/components/game/PlayMainMenu.tsx";
 import { PlayMenu } from "@/components/game/PlayMenu.tsx";
-import { signIn, signOut, useSession } from "@/lib/auth-client.ts";
+import { signInWithTwitch, signOut, useSession } from "@/lib/auth-client.ts";
 import { addNotification } from "@/lib/notification-store.ts";
 import { enqueue, processQueue, setupOnlineListener } from "@/lib/score-queue.ts";
 import { addToHistory } from "@/lib/score-store.ts";
@@ -462,7 +462,7 @@ export default function PlayPage() {
 	}, [gameOver, countdown, menuOpen, showMenu, openMenu, closeMenu]);
 
 	const handleSignIn = useCallback(() => {
-		signIn.social({ provider: "twitch", callbackURL: window.location.href });
+		signInWithTwitch({ preservePath: true });
 	}, []);
 
 	const handleSignOut = useCallback(() => {

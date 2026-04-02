@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { signIn, useSession } from "@/lib/auth-client.ts";
+import { signInWithTwitch, useSession } from "@/lib/auth-client.ts";
 import { Button } from "@/components/ui/button";
 
 function TwitchIcon({ className }: { className?: string }) {
@@ -20,7 +20,7 @@ export function HeroCTA() {
 	const isPending = !hasMounted || sessionPending;
 
 	const handleSignIn = () => {
-		signIn.social({ provider: "twitch", callbackURL: window.location.origin });
+		signInWithTwitch();
 	};
 
 	return (
