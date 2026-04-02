@@ -16,105 +16,103 @@ import { checkAllUnlocks } from "../../lib/check-all-unlocks.ts";
 import { validateScoreInput } from "../../lib/validate-score.ts";
 import { playerProcedure, publicProcedure, router } from "../trpc.ts";
 
+const baseScoreSchema = z.object({
+	score: z.number().int().min(0),
+	distance: z.number().min(0),
+	obstaclesCleared: z.number().int().min(0),
+	longestCleanRun: z.number().min(0).default(0),
+	duration: z.number().int().min(0),
+	seed: z.string().min(1).max(64),
+	difficulty: z.enum(DIFFICULTY_NAMES).default("easy"),
+	mods: z.number().int().min(0).default(0),
+	cheated: z.boolean().default(false),
+});
+
 export const scoreRouter = router({
-	submit: playerProcedure
-		.input(
-			z.object({
-				score: z.number().int().min(0),
-				distance: z.number().min(0),
-				obstaclesCleared: z.number().int().min(0),
-				longestCleanRun: z.number().min(0).default(0),
-				duration: z.number().int().min(0),
-				seed: z.string().min(1).max(64),
-				difficulty: z.enum(DIFFICULTY_NAMES).default("easy"),
-				mods: z.number().int().min(0).default(0),
-				cheated: z.boolean().default(false),
-			}),
-		)
-		.mutation(async ({ ctx, input }) => {
-			const validation = validateScoreInput(input);
-			if (!validation.valid) {
-				throw new TRPCError({ code: "BAD_REQUEST", message: validation.reason });
-			}
+	submit: playerProcedure.input(baseScoreSchema).mutation(async ({ ctx, input }) => {
+		const validation = validateScoreInput(input);
+		if (!validation.valid) {
+			throw new TRPCError({ code: "BAD_REQUEST", message: validation.reason });
+		}
 
-			const { playerRecord } = ctx;
+		const { playerRecord } = ctx;
 
-			const now = new Date();
-			const scoreId = crypto.randomUUID();
+		const now = new Date();
+		const scoreId = crypto.randomUUID();
 
-			const isCheated = input.cheated ? 1 : 0;
+		const isCheated = input.cheated ? 1 : 0;
 
-			await ctx.db.insert(score).values({
-				id: scoreId,
-				playerId: playerRecord.id,
+		await ctx.db.insert(score).values({
+			id: scoreId,
+			playerId: playerRecord.id,
+			score: input.score,
+			distance: input.distance,
+			obstaclesCleared: input.obstaclesCleared,
+			longestCleanRun: input.longestCleanRun,
+			duration: input.duration,
+			difficulty: input.difficulty,
+			mods: input.mods,
+			seed: input.seed,
+			cheated: isCheated,
+			createdAt: now,
+		});
+
+		// If cheated, skip all rewards and stat updates
+		if (input.cheated) {
+			return {
+				scoreId,
+				newAchievements: [],
+				newSkins: [],
+				unlockError: false,
+				xpGained: 0,
+				levelUp: false,
+				newLevel: playerRecord.level,
+			};
+		}
+
+		// Update player aggregate stats, XP, and level atomically
+		const newTotalXp = playerRecord.totalXp + input.score;
+		const levelInfo = getLevelFromXp(newTotalXp);
+		const previousLevel = playerRecord.level;
+
+		await ctx.db
+			.update(player)
+			.set({
+				totalScore: sql`${player.totalScore} + ${input.score}`,
+				totalDistance: sql`${player.totalDistance} + ${input.distance}`,
+				totalObstaclesCleared: sql`${player.totalObstaclesCleared} + ${input.obstaclesCleared}`,
+				gamesPlayed: sql`${player.gamesPlayed} + 1`,
+				totalXp: sql`${player.totalXp} + ${input.score}`,
+				level: levelInfo.level,
+				updatedAt: now,
+			})
+			.where(eq(player.id, playerRecord.id));
+
+		const { newAchievements, newSkins, unlockError } = await checkAllUnlocks(
+			ctx.db,
+			playerRecord.id,
+			"score.submit",
+			scoreId,
+			{
 				score: input.score,
 				distance: input.distance,
 				obstaclesCleared: input.obstaclesCleared,
 				longestCleanRun: input.longestCleanRun,
 				duration: input.duration,
-				difficulty: input.difficulty,
 				mods: input.mods,
-				seed: input.seed,
-				cheated: isCheated,
-				createdAt: now,
-			});
+			},
+		);
 
-			// If cheated, skip all rewards and stat updates
-			if (input.cheated) {
-				return {
-					scoreId,
-					newAchievements: [],
-					newSkins: [],
-					unlockError: false,
-					xpGained: 0,
-					levelUp: false,
-					newLevel: playerRecord.level,
-				};
-			}
-
-			// Update player aggregate stats, XP, and level atomically
-			const newTotalXp = playerRecord.totalXp + input.score;
-			const levelInfo = getLevelFromXp(newTotalXp);
-			const previousLevel = playerRecord.level;
-
-			await ctx.db
-				.update(player)
-				.set({
-					totalScore: sql`${player.totalScore} + ${input.score}`,
-					totalDistance: sql`${player.totalDistance} + ${input.distance}`,
-					totalObstaclesCleared: sql`${player.totalObstaclesCleared} + ${input.obstaclesCleared}`,
-					gamesPlayed: sql`${player.gamesPlayed} + 1`,
-					totalXp: sql`${player.totalXp} + ${input.score}`,
-					level: levelInfo.level,
-					updatedAt: now,
-				})
-				.where(eq(player.id, playerRecord.id));
-
-			const { newAchievements, newSkins, unlockError } = await checkAllUnlocks(
-				ctx.db,
-				playerRecord.id,
-				"score.submit",
-				scoreId,
-				{
-					score: input.score,
-					distance: input.distance,
-					obstaclesCleared: input.obstaclesCleared,
-					longestCleanRun: input.longestCleanRun,
-					duration: input.duration,
-					mods: input.mods,
-				},
-			);
-
-			return {
-				scoreId,
-				newAchievements,
-				newSkins,
-				unlockError,
-				xpGained: input.score,
-				levelUp: levelInfo.level > previousLevel,
-				newLevel: levelInfo.level,
-			};
-		}),
+		return {
+			scoreId,
+			newAchievements,
+			newSkins,
+			unlockError,
+			xpGained: input.score,
+			levelUp: levelInfo.level > previousLevel,
+			newLevel: levelInfo.level,
+		};
+	}),
 
 	leaderboard: publicProcedure
 		.input(
@@ -220,16 +218,7 @@ export const scoreRouter = router({
 			z.object({
 				scores: z
 					.array(
-						z.object({
-							score: z.number().int().min(0),
-							distance: z.number().min(0),
-							obstaclesCleared: z.number().int().min(0),
-							longestCleanRun: z.number().min(0).default(0),
-							duration: z.number().int().min(0),
-							seed: z.string().min(1).max(64),
-							difficulty: z.enum(DIFFICULTY_NAMES).default("easy"),
-							mods: z.number().int().min(0).default(0),
-							cheated: z.boolean().default(false),
+						baseScoreSchema.extend({
 							clientTimestamp: z.number().int().min(0),
 						}),
 					)
