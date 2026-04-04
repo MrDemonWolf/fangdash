@@ -5,6 +5,11 @@ interface RateLimitEntry {
 	resetAt: number;
 }
 
+// NOTE: These in-memory buckets are per-isolate. On Cloudflare Workers each
+// edge location and each new deployment gets a fresh Map, so rate limits are
+// not globally enforced. For stricter enforcement consider using Cloudflare
+// Rate Limiting rules or a Durable Object-backed implementation.
+// TODO: Migrate to Durable Objects for global rate limiting.
 const mutationBuckets = new Map<string, RateLimitEntry>();
 const queryBuckets = new Map<string, RateLimitEntry>();
 const authBuckets = new Map<string, RateLimitEntry>();

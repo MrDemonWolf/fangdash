@@ -74,6 +74,9 @@ export function createAuth(env: Bindings) {
 		},
 		advanced: {
 			useSecureCookies: !isDev,
+			cookieOptions: {
+				sameSite: "lax",
+			},
 		},
 		trustedOrigins,
 		onAPIError: {
