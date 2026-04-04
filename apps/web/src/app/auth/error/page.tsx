@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
-import { signIn } from "@/lib/auth-client.ts";
+import { signInWithTwitch } from "@/lib/auth-client.ts";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
@@ -20,7 +20,7 @@ function AuthErrorContent() {
 	const message = ERROR_MESSAGES[code] ?? "Authentication failed. Please try again.";
 
 	const handleTryAgain = () => {
-		signIn.social({ provider: "twitch", callbackURL: window.location.origin });
+		signInWithTwitch();
 	};
 
 	return (

@@ -12,3 +12,8 @@ export const authClient = createAuthClient({
 });
 
 export const { signIn, signUp, signOut, useSession } = authClient;
+
+export function signInWithTwitch(opts?: { preservePath?: boolean }) {
+	const callbackURL = opts?.preservePath ? window.location.href : window.location.origin;
+	void signIn.social({ provider: "twitch", callbackURL });
+}
