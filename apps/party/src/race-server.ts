@@ -58,8 +58,8 @@ export default class RaceServer implements Party.Server {
 				}
 			} catch {
 				clearTimeout(timeout);
-				// If API is unreachable or timed out, allow connection but log warning
-				console.warn("[race-server] Could not verify session — API unreachable or timed out");
+				conn.close(4003, "Auth verification failed");
+				return;
 			}
 		}
 
