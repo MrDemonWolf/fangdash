@@ -4,16 +4,8 @@ import { admin } from "better-auth/plugins";
 import { eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/d1";
 import * as schema from "../db/schema.ts";
-
-type AuthBindings = {
-	DB: D1Database;
-	BETTER_AUTH_SECRET: string;
-	BETTER_AUTH_URL: string;
-	TWITCH_CLIENT_ID: string;
-	TWITCH_CLIENT_SECRET: string;
-	WEB_URL: string;
-	ENVIRONMENT?: string;
-};
+import type { Bindings } from "../types.ts";
+import { getTrustedOrigins } from "./origins.ts";
 
 const REQUIRED_AUTH_KEYS = [
 	"BETTER_AUTH_SECRET",
@@ -25,7 +17,7 @@ const REQUIRED_AUTH_KEYS = [
 
 let didWarnMissingAuth = false;
 
-export function createAuth(env: AuthBindings) {
+export function createAuth(env: Bindings) {
 	const missing = REQUIRED_AUTH_KEYS.filter((k) => !env[k]);
 	if (missing.length > 0) {
 		if (!didWarnMissingAuth) {
@@ -42,7 +34,7 @@ export function createAuth(env: AuthBindings) {
 
 	const isDev = env.ENVIRONMENT === "development";
 	const webURL = env.WEB_URL;
-	const trustedOrigins = isDev ? ["http://localhost:3000", webURL] : [webURL];
+	const trustedOrigins = getTrustedOrigins(env);
 
 	return betterAuth({
 		database: drizzleAdapter(db, {
