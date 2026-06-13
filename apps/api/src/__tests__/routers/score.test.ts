@@ -7,7 +7,15 @@ import {
 	type TestDb,
 } from "../helpers/test-db.ts";
 import { createTestCaller } from "../helpers/test-caller.ts";
-import { SCORE_PER_SECOND, SCORE_PER_OBSTACLE, MOD_FOG, MOD_HEADWIND } from "@fangdash/shared";
+import {
+	MAX_DISTANCE_ABSOLUTE,
+	MAX_OBSTACLES_ABSOLUTE,
+	MAX_SCORE_ABSOLUTE,
+	SCORE_PER_SECOND,
+	SCORE_PER_OBSTACLE,
+	MOD_FOG,
+	MOD_HEADWIND,
+} from "@fangdash/shared";
 
 describe("score router", () => {
 	let db: TestDb;
@@ -75,7 +83,8 @@ describe("score router", () => {
 					seed: "test-seed",
 					difficulty: "easy",
 				}),
-			).rejects.toThrow("Game session exceeds maximum allowed duration");
+				// Rejected at the zod layer now that duration carries .max(MAX_DURATION_MS)
+			).rejects.toThrow(/Too big|exceeds maximum allowed duration/);
 		});
 
 		it("should block banned users", async () => {
@@ -297,6 +306,124 @@ describe("score router", () => {
 			).rejects.toThrow("Score exceeds maximum allowed rate");
 		});
 
+		it("should reject a second submission with the same seed", async () => {
+			const userId = createTestUser(db);
+			createTestPlayer(db, userId);
+			const caller = createTestCaller({ db, userId });
+
+			await caller.score.submit({
+				score: 100,
+				distance: 500,
+				obstaclesCleared: 5,
+				longestCleanRun: 0,
+				duration: 30000,
+				seed: "replay-seed",
+				difficulty: "easy",
+			});
+
+			await expect(
+				caller.score.submit({
+					score: 200,
+					distance: 600,
+					obstaclesCleared: 6,
+					longestCleanRun: 0,
+					duration: 30000,
+					seed: "replay-seed",
+					difficulty: "easy",
+				}),
+			).rejects.toThrow("A score for this run was already submitted");
+		});
+
+		it("should reject obstacles cleared exceeding the maximum possible rate", async () => {
+			const userId = createTestUser(db);
+			createTestPlayer(db, userId);
+			const caller = createTestCaller({ db, userId });
+
+			await expect(
+				caller.score.submit({
+					score: 100,
+					distance: 500,
+					obstaclesCleared: 50,
+					longestCleanRun: 0,
+					duration: 10000,
+					seed: "test-seed",
+					difficulty: "easy",
+				}),
+			).rejects.toThrow("Obstacles cleared exceeds maximum possible rate");
+		});
+
+		it("should reject distance exceeding the maximum possible rate", async () => {
+			const userId = createTestUser(db);
+			createTestPlayer(db, userId);
+			const caller = createTestCaller({ db, userId });
+
+			await expect(
+				caller.score.submit({
+					score: 100,
+					distance: 5000,
+					obstaclesCleared: 2,
+					longestCleanRun: 0,
+					duration: 10000,
+					seed: "test-seed",
+					difficulty: "easy",
+				}),
+			).rejects.toThrow("Distance exceeds maximum possible rate");
+		});
+
+		it("should reject score above the absolute cap", async () => {
+			const userId = createTestUser(db);
+			createTestPlayer(db, userId);
+			const caller = createTestCaller({ db, userId });
+
+			await expect(
+				caller.score.submit({
+					score: MAX_SCORE_ABSOLUTE + 1,
+					distance: 500,
+					obstaclesCleared: 5,
+					longestCleanRun: 0,
+					duration: 30000,
+					seed: "test-seed",
+					difficulty: "easy",
+				}),
+			).rejects.toThrow();
+		});
+
+		it("should reject distance above the absolute cap", async () => {
+			const userId = createTestUser(db);
+			createTestPlayer(db, userId);
+			const caller = createTestCaller({ db, userId });
+
+			await expect(
+				caller.score.submit({
+					score: 100,
+					distance: MAX_DISTANCE_ABSOLUTE + 1,
+					obstaclesCleared: 5,
+					longestCleanRun: 0,
+					duration: 30000,
+					seed: "test-seed",
+					difficulty: "easy",
+				}),
+			).rejects.toThrow();
+		});
+
+		it("should reject obstacles cleared above the absolute cap", async () => {
+			const userId = createTestUser(db);
+			createTestPlayer(db, userId);
+			const caller = createTestCaller({ db, userId });
+
+			await expect(
+				caller.score.submit({
+					score: 100,
+					distance: 500,
+					obstaclesCleared: MAX_OBSTACLES_ABSOLUTE + 1,
+					longestCleanRun: 0,
+					duration: 30000,
+					seed: "test-seed",
+					difficulty: "easy",
+				}),
+			).rejects.toThrow();
+		});
+
 		it("should update player stats after submission", async () => {
 			const userId = createTestUser(db);
 			createTestPlayer(db, userId, { gamesPlayed: 0, totalScore: 0, totalXp: 0 });
@@ -402,6 +529,22 @@ describe("score router", () => {
 			const result = await caller.score.leaderboard({ mods: MOD_FOG });
 			expect(result).toHaveLength(1);
 			expect(result[0]?.score).toBe(600);
+		});
+
+		it("should hide private profiles", async () => {
+			const caller = createTestCaller({ db });
+
+			const user1 = createTestUser(db, { name: "PublicPlayer" });
+			const player1 = createTestPlayer(db, user1);
+			createTestScore(db, player1, { score: 500 });
+
+			const user2 = createTestUser(db, { name: "PrivatePlayer" });
+			const player2 = createTestPlayer(db, user2, { profilePublic: 0 });
+			createTestScore(db, player2, { score: 1000 });
+
+			const result = await caller.score.leaderboard();
+			expect(result).toHaveLength(1);
+			expect(result[0]?.username).toBe("PublicPlayer");
 		});
 
 		it("should filter by difficulty", async () => {
@@ -562,11 +705,12 @@ describe("score router", () => {
 			createTestPlayer(db, userId);
 			const caller = createTestCaller({ db, userId });
 
-			const results = await caller.score.batchSync({
-				scores: [{ ...validScore, duration: 2_000_000 }],
-			});
-			expect(results[0]?.status).toBe("rejected");
-			expect(results[0]?.reason).toBe("Game session exceeds maximum allowed duration");
+			// Rejected at the zod layer now that duration carries .max(MAX_DURATION_MS)
+			await expect(
+				caller.score.batchSync({
+					scores: [{ ...validScore, duration: 2_000_000 }],
+				}),
+			).rejects.toThrow(/Too big/);
 		});
 
 		it("should reject anti-cheat violation", async () => {
@@ -651,6 +795,72 @@ describe("score router", () => {
 			});
 			const stats = await caller.score.getPlayerStats();
 			expect(stats?.totalXp).toBe(0);
+		});
+
+		it("should reject duplicate seed within a batch regardless of timestamp", async () => {
+			const userId = createTestUser(db);
+			createTestPlayer(db, userId);
+			const caller = createTestCaller({ db, userId });
+
+			const results = await caller.score.batchSync({
+				scores: [
+					{ ...validScore, seed: "dup-seed", clientTimestamp: now - 10_000 },
+					{ ...validScore, seed: "dup-seed", clientTimestamp: now },
+				],
+			});
+			expect(results[0]?.status).toBe("ok");
+			expect(results[1]?.status).toBe("rejected");
+			expect(results[1]?.reason).toBe("Duplicate score in batch");
+		});
+
+		it("should reject seeds already submitted in a previous request", async () => {
+			const userId = createTestUser(db);
+			createTestPlayer(db, userId);
+			const caller = createTestCaller({ db, userId });
+
+			const first = await caller.score.batchSync({
+				scores: [{ ...validScore, seed: "replay-seed" }],
+			});
+			expect(first[0]?.status).toBe("ok");
+
+			const second = await caller.score.batchSync({
+				scores: [{ ...validScore, seed: "replay-seed" }],
+			});
+			expect(second[0]?.status).toBe("rejected");
+			expect(second[0]?.reason).toBe("Duplicate score (seed already submitted)");
+		});
+
+		it("should store server time as createdAt, not clientTimestamp", async () => {
+			const userId = createTestUser(db);
+			createTestPlayer(db, userId);
+			const caller = createTestCaller({ db, userId });
+
+			const sixDaysAgo = now - 6 * 24 * 60 * 60 * 1000;
+			const results = await caller.score.batchSync({
+				scores: [{ ...validScore, seed: "old-client-ts", clientTimestamp: sixDaysAgo }],
+			});
+			expect(results[0]?.status).toBe("ok");
+
+			const myScores = await caller.score.myScores();
+			expect(myScores).toHaveLength(1);
+			expect(Math.abs((myScores[0]?.createdAt.getTime() ?? 0) - Date.now())).toBeLessThan(60_000);
+		});
+
+		it("should reject obstacles-rate and distance-rate violations", async () => {
+			const userId = createTestUser(db);
+			createTestPlayer(db, userId);
+			const caller = createTestCaller({ db, userId });
+
+			const results = await caller.score.batchSync({
+				scores: [
+					{ ...validScore, seed: "rate-1", duration: 10000, obstaclesCleared: 50 },
+					{ ...validScore, seed: "rate-2", duration: 10000, distance: 5000, obstaclesCleared: 2 },
+				],
+			});
+			expect(results[0]?.status).toBe("rejected");
+			expect(results[0]?.reason).toBe("Obstacles cleared exceeds maximum possible rate");
+			expect(results[1]?.status).toBe("rejected");
+			expect(results[1]?.reason).toBe("Distance exceeds maximum possible rate");
 		});
 
 		it("should require authentication", async () => {

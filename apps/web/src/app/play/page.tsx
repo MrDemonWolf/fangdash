@@ -109,9 +109,6 @@ export default function PlayPage() {
 	);
 	const bestScore = myScores?.[0]?.score ?? 0;
 
-	// Session salt for HMAC anti-tamper
-	const sessionSaltRef = useRef(crypto.randomUUID());
-
 	const equippedSkinKey = skinData?.skinId
 		? (getSkinById(skinData.skinId)?.spriteKey ?? "wolf-gray")
 		: "wolf-gray";
@@ -247,10 +244,10 @@ export default function PlayPage() {
 				// Submit directly via mutation for immediate UI feedback
 				submitScore(payload);
 				// Also enqueue for retry in case the mutation fails silently
-				enqueue("solo", payload, sessionSaltRef.current);
+				enqueue("solo", payload);
 			} else if (!state.cheatsUsed) {
 				// Not signed in — enqueue for later sync on login
-				enqueue("solo", payload, sessionSaltRef.current);
+				enqueue("solo", payload);
 			}
 		},
 		[isSignedIn, stopTimer, submitScore],
@@ -439,7 +436,7 @@ export default function PlayPage() {
 			mods: selectedModsRef.current,
 		};
 		submitScore(payload);
-		enqueue("solo", payload, sessionSaltRef.current);
+		enqueue("solo", payload);
 	}, [finalState, finalElapsedTime, submitScore]);
 
 	// Escape key toggles menu (only when game is running, not during countdown or game over)

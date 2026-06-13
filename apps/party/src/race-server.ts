@@ -13,9 +13,14 @@ import {
 } from "@fangdash/shared";
 import type * as Party from "partykit/server";
 
+const UPDATE_THROTTLE_MS = 50;
+
 export default class RaceServer implements Party.Server {
 	room: RaceRoom;
 	private countdownInProgress = false;
+	private userIds = new Map<string, string>();
+	private kickedUserIds = new Set<string>();
+	private lastUpdateAt = new Map<string, number>();
 
 	constructor(readonly party: Party.Party) {
 		this.room = {
@@ -41,26 +46,44 @@ export default class RaceServer implements Party.Server {
 			return;
 		}
 
-		// Verify token against the API
+		// Verify token against the API — fail closed if the API is not configured
 		const apiUrl = this.party.env["API_URL"] as string | undefined;
-		if (apiUrl) {
-			const controller = new AbortController();
-			const timeout = setTimeout(() => controller.abort(), 3000);
-			try {
-				const res = await fetch(`${apiUrl}/api/auth/get-session`, {
-					headers: { cookie: `better-auth.session_token=${token}` },
-					signal: controller.signal,
-				});
-				clearTimeout(timeout);
-				if (!res.ok || !((await res.json()) as { session?: unknown }).session) {
-					conn.close(4003, "Invalid session");
-					return;
-				}
-			} catch {
-				clearTimeout(timeout);
-				conn.close(4003, "Auth verification failed");
+		if (!apiUrl) {
+			this.send(conn, {
+				type: "error",
+				payload: { message: "Race server misconfigured" },
+			});
+			conn.close(4500, "Server misconfigured");
+			return;
+		}
+
+		const controller = new AbortController();
+		const timeout = setTimeout(() => controller.abort(), 3000);
+		try {
+			const res = await fetch(`${apiUrl}/api/auth/get-session`, {
+				headers: { cookie: `better-auth.session_token=${token}` },
+				signal: controller.signal,
+			});
+			clearTimeout(timeout);
+			if (!res.ok) {
+				conn.close(4003, "Invalid session");
 				return;
 			}
+			const data = (await res.json()) as {
+				session?: unknown;
+				user?: { id?: string };
+			};
+			if (!data.session) {
+				conn.close(4003, "Invalid session");
+				return;
+			}
+			if (data.user?.id) {
+				this.userIds.set(conn.id, data.user.id);
+			}
+		} catch {
+			clearTimeout(timeout);
+			conn.close(4003, "Auth verification failed");
+			return;
 		}
 
 		this.send(conn, { type: "room_state", payload: this.room });
@@ -105,6 +128,8 @@ export default class RaceServer implements Party.Server {
 	onClose(conn: Party.Connection) {
 		const wasHost = conn.id === this.room.hostId;
 		this.room.players = this.room.players.filter((p) => p.id !== conn.id);
+		this.userIds.delete(conn.id);
+		this.lastUpdateAt.delete(conn.id);
 		this.broadcast({ type: "player_left", payload: { id: conn.id } });
 
 		// Reset room if everyone left
@@ -112,6 +137,7 @@ export default class RaceServer implements Party.Server {
 			this.room.status = "waiting";
 			this.room.hostId = null;
 			this.countdownInProgress = false;
+			this.kickedUserIds.clear();
 			return;
 		}
 
@@ -147,6 +173,11 @@ export default class RaceServer implements Party.Server {
 			return;
 		}
 		if (this.room.players.length >= MAX_PLAYERS_PER_RACE) {
+			return;
+		}
+
+		const userId = this.userIds.get(conn.id);
+		if (userId && this.kickedUserIds.has(userId)) {
 			return;
 		}
 
@@ -197,10 +228,9 @@ export default class RaceServer implements Party.Server {
 		this.room.status = "countdown";
 
 		for (let i = RACE_COUNTDOWN_SECONDS; i > 0; i--) {
-			// Bail out if everyone left during countdown
-			if (this.room.players.length === 0) {
-				this.room.status = "waiting";
-				this.countdownInProgress = false;
+			// Bail out if too few players remain during countdown
+			if (this.room.players.length < MIN_PLAYERS_TO_START) {
+				this.abortCountdown();
 				return;
 			}
 			this.broadcast({ type: "countdown", payload: { seconds: i } });
@@ -208,9 +238,8 @@ export default class RaceServer implements Party.Server {
 		}
 
 		// Final check — players may have left during the last tick
-		if (this.room.players.length === 0) {
-			this.room.status = "waiting";
-			this.countdownInProgress = false;
+		if (this.room.players.length < MIN_PLAYERS_TO_START) {
+			this.abortCountdown();
 			return;
 		}
 
@@ -218,6 +247,15 @@ export default class RaceServer implements Party.Server {
 		this.room.startedAt = new Date().toISOString();
 		this.room.seed = crypto.randomUUID();
 		this.broadcast({ type: "race_start", payload: { seed: this.room.seed } });
+	}
+
+	// Roll the room back to the lobby when a countdown can no longer start, and tell
+	// every client so they leave the countdown overlay instead of hanging on it.
+	private abortCountdown() {
+		this.room.status = "waiting";
+		this.countdownInProgress = false;
+		this.room.players = this.room.players.map((p) => ({ ...p, ready: false }));
+		this.broadcast({ type: "room_reset", payload: this.room });
 	}
 
 	private handleUpdate(conn: Party.Connection, payload: { distance: number; score: number }) {
@@ -228,6 +266,13 @@ export default class RaceServer implements Party.Server {
 		if (!player?.alive) {
 			return;
 		}
+
+		const now = Date.now();
+		const lastAccepted = this.lastUpdateAt.get(conn.id);
+		if (lastAccepted !== undefined && now - lastAccepted < UPDATE_THROTTLE_MS) {
+			return;
+		}
+		this.lastUpdateAt.set(conn.id, now);
 
 		player.distance = payload.distance;
 		player.score = payload.score;
@@ -264,6 +309,11 @@ export default class RaceServer implements Party.Server {
 		if (conn.id !== this.room.hostId) return;
 		if (this.room.status !== "waiting") return;
 
+		const kickedUserId = this.userIds.get(payload.playerId);
+		if (kickedUserId) {
+			this.kickedUserIds.add(kickedUserId);
+		}
+
 		this.room.players = this.room.players.filter((p) => p.id !== payload.playerId);
 		this.broadcast({
 			type: "player_kicked",
@@ -289,6 +339,9 @@ export default class RaceServer implements Party.Server {
 		this.room.startedAt = undefined;
 		this.room.finishedAt = undefined;
 		this.countdownInProgress = false;
+		// Note: kickedUserIds is intentionally NOT cleared here — a player kicked from
+		// the lobby must stay barred across a rematch. It is only cleared when the room
+		// fully empties (onClose), which starts a genuinely fresh room.
 
 		// Reset all players
 		this.room.players = this.room.players.map((p) => ({
@@ -307,10 +360,17 @@ export default class RaceServer implements Party.Server {
 		this.room.status = "finished";
 		this.room.finishedAt = new Date().toISOString();
 
+		// Room code + ":" + UUID seed stays under the API's 64-char raceId limit
+		const raceId = `${this.room.id}:${this.room.seed}`;
+
 		const results: RaceResult[] = this.room.players
-			.sort((a, b) => b.score - a.score)
+			.sort((a, b) => {
+				if (b.score !== a.score) return b.score - a.score;
+				// Later death = longer survival wins the tie
+				return (b.finishTime ?? 0) - (a.finishTime ?? 0);
+			})
 			.map((p, i) => ({
-				raceId: this.room.id,
+				raceId,
 				playerId: p.id,
 				placement: i + 1,
 				score: p.score,

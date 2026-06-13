@@ -1,8 +1,10 @@
-const CACHE_APP = "fangdash-app-v2";
-const CACHE_ASSETS = "fangdash-assets-v2";
+const CACHE_APP = "fangdash-app-v3";
+const CACHE_ASSETS = "fangdash-assets-v3";
 const APP_SHELL = ["/", "/play", "/race", "/leaderboard", "/offline"];
 const ASSET_PATHS = ["/backgrounds/", "/wolves/", "/obstacles/", "/audio/", "/icons/"];
 const EXCLUDED_PATHS = ["/api/", "/trpc/"];
+// Authenticated/personalized pages — never cache their HTML
+const NO_CACHE_NAV = ["/profile", "/admin", "/settings", "/achievements", "/skins"];
 
 function isGameAsset(url) {
 	const path = new URL(url).pathname;
@@ -12,6 +14,11 @@ function isGameAsset(url) {
 function isExcluded(url) {
 	const path = new URL(url).pathname;
 	return EXCLUDED_PATHS.some((prefix) => path.startsWith(prefix));
+}
+
+function isNoCacheNav(url) {
+	const path = new URL(url).pathname;
+	return NO_CACHE_NAV.some((prefix) => path === prefix || path.startsWith(`${prefix}/`));
 }
 
 // ---------------------------------------------------------------------------
@@ -68,6 +75,16 @@ self.addEventListener("fetch", (e) => {
 						.catch(() => cached);
 					return cached || fetchPromise;
 				}),
+			),
+		);
+		return;
+	}
+
+	// Personalized routes: network only (never cached), fallback to offline page
+	if (e.request.mode === "navigate" && isNoCacheNav(e.request.url)) {
+		e.respondWith(
+			fetch(e.request).catch(() =>
+				caches.match("/offline").then((resp) => resp || new Response("Offline", { status: 503 })),
 			),
 		);
 		return;

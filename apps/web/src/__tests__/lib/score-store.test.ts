@@ -38,7 +38,6 @@ describe("pending scores", () => {
 				mods: 0,
 				cheated: false,
 			},
-			hmac: "deadbeef",
 		});
 		expect(id).toBeGreaterThan(0);
 
@@ -62,7 +61,6 @@ describe("pending scores", () => {
 				mods: 0,
 				cheated: false,
 			},
-			hmac: "abc123",
 		});
 
 		const all = await mod.getAllPendingScores();
@@ -89,7 +87,6 @@ describe("pending scores", () => {
 				mods: 0,
 				cheated: false,
 			},
-			hmac: "h",
 		});
 
 		await mod.updatePendingScore(id, { status: "failed" });
@@ -117,7 +114,6 @@ describe("pending scores", () => {
 				mods: 0,
 				cheated: false,
 			},
-			hmac: "h",
 		});
 
 		await mod.removePendingScore(id);
@@ -139,7 +135,6 @@ describe("pending scores", () => {
 				mods: 0,
 				cheated: false,
 			},
-			hmac: "h",
 		});
 
 		await mod.updatePendingScore(id, { retryCount: 3, status: "failed" });
@@ -279,51 +274,6 @@ describe("score history", () => {
 });
 
 // ---------------------------------------------------------------------------
-// computeHMAC
-// ---------------------------------------------------------------------------
-
-describe("computeHMAC", () => {
-	const payload = {
-		score: 100,
-		distance: 500,
-		obstaclesCleared: 5,
-		longestCleanRun: 100,
-		duration: 30000,
-		seed: "abc",
-		difficulty: "easy",
-		mods: 0,
-		cheated: false,
-	};
-
-	it("returns hex string", async () => {
-		const mod = await loadModule();
-		const hmac = await mod.computeHMAC(payload, "salt1");
-		expect(hmac).toMatch(/^[0-9a-f]+$/);
-	});
-
-	it("is deterministic", async () => {
-		const mod = await loadModule();
-		const h1 = await mod.computeHMAC(payload, "salt1");
-		const h2 = await mod.computeHMAC(payload, "salt1");
-		expect(h1).toBe(h2);
-	});
-
-	it("differs with different salt", async () => {
-		const mod = await loadModule();
-		const h1 = await mod.computeHMAC(payload, "salt1");
-		const h2 = await mod.computeHMAC(payload, "salt2");
-		expect(h1).not.toBe(h2);
-	});
-
-	it("differs with different payload", async () => {
-		const mod = await loadModule();
-		const h1 = await mod.computeHMAC(payload, "salt1");
-		const h2 = await mod.computeHMAC({ ...payload, score: 999 }, "salt1");
-		expect(h1).not.toBe(h2);
-	});
-});
-
-// ---------------------------------------------------------------------------
 // SSR guard
 // ---------------------------------------------------------------------------
 
@@ -348,7 +298,6 @@ describe("SSR guard", () => {
 						mods: 0,
 						cheated: false,
 					},
-					hmac: "h",
 				}),
 			).rejects.toThrow("IndexedDB not available in SSR");
 		} finally {
