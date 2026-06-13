@@ -110,8 +110,10 @@ export class GameScene extends Phaser.Scene {
 			this.audioManager.stopBGM();
 			if (this.input.keyboard) {
 				this.input.keyboard.off("keydown-SPACE");
+				this.input.keyboard.off("keyup-SPACE");
 			}
 			this.input.off("pointerdown");
+			this.input.off("pointerup");
 			this.game.canvas.removeEventListener("contextmenu", preventContextMenu);
 		});
 

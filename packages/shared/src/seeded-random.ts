@@ -28,11 +28,13 @@ export class SeededRandom {
 		return Math.floor(this.between(min, max + 1));
 	}
 
-	/** Picks a random element from the array */
+	/** Picks a random element from the array. Throws if the array is empty. */
 	pick<T>(array: readonly T[]): T {
-		// Index is always valid: next() returns [0, 1), so floor(next() * length) is in [0, length-1]
-		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-		return array[Math.floor(this.next() * array.length)]!;
+		if (array.length === 0) {
+			throw new Error("Cannot pick from an empty array");
+		}
+		// next() returns [0, 1), so the index is in [0, length-1] for a non-empty array
+		return array[Math.floor(this.next() * array.length)] as T;
 	}
 
 	/** Simple string hash (djb2) */

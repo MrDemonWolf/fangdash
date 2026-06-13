@@ -5,7 +5,6 @@ import { describe, it, expect, beforeEach, afterEach, vi, type Mock } from "vite
 // ---------------------------------------------------------------------------
 
 vi.mock("@/lib/score-store.ts", () => ({
-	computeHMAC: vi.fn().mockResolvedValue("mocked-hmac"),
 	addPendingScore: vi.fn().mockResolvedValue(1),
 	getAllPendingScores: vi.fn().mockResolvedValue([]),
 	removePendingScore: vi.fn().mockResolvedValue(undefined),
@@ -67,7 +66,6 @@ function makePendingEntry(
 		retryCount: 0,
 		lastAttempt: null,
 		status: "pending",
-		hmac: "mocked-hmac",
 		...overrides,
 	};
 }
@@ -91,37 +89,31 @@ afterEach(() => {
 // ---------------------------------------------------------------------------
 
 describe("enqueue", () => {
-	it("computes HMAC + calls addPendingScore", async () => {
-		const id = await enqueue("solo", basePayload, "salt-123");
-		expect(scoreStore.computeHMAC).toHaveBeenCalledWith(
-			{ ...basePayload, cheated: false },
-			"salt-123",
-		);
+	it("calls addPendingScore", async () => {
+		const id = await enqueue("solo", basePayload);
 		expect(scoreStore.addPendingScore).toHaveBeenCalledWith({
 			type: "solo",
 			payload: { ...basePayload, cheated: false },
 			raceId: undefined,
-			hmac: "mocked-hmac",
 		});
 		expect(id).toBe(1);
 	});
 
 	it("returns id", async () => {
 		(scoreStore.addPendingScore as Mock).mockResolvedValueOnce(42);
-		const id = await enqueue("solo", basePayload, "salt");
+		const id = await enqueue("solo", basePayload);
 		expect(id).toBe(42);
 	});
 
 	it("defaults cheated to false", async () => {
-		await enqueue("solo", basePayload, "salt");
-		expect(scoreStore.computeHMAC).toHaveBeenCalledWith(
-			expect.objectContaining({ cheated: false }),
-			"salt",
+		await enqueue("solo", basePayload);
+		expect(scoreStore.addPendingScore).toHaveBeenCalledWith(
+			expect.objectContaining({ payload: expect.objectContaining({ cheated: false }) }),
 		);
 	});
 
 	it("passes raceId", async () => {
-		await enqueue("race", basePayload, "salt", "race-123");
+		await enqueue("race", basePayload, "race-123");
 		expect(scoreStore.addPendingScore).toHaveBeenCalledWith(
 			expect.objectContaining({ raceId: "race-123", type: "race" }),
 		);
@@ -189,6 +181,21 @@ describe("processQueue", () => {
 		expect(scoreStore.updatePendingScore).toHaveBeenCalledWith(
 			7,
 			expect.objectContaining({ retryCount: 2, status: "pending" }),
+		);
+	});
+
+	it("treats a CONFLICT as already-submitted: drops the entry, no retry", async () => {
+		(scoreStore.getAllPendingScores as Mock).mockResolvedValueOnce([
+			makePendingEntry({ id: 30, retryCount: 0 }),
+		]);
+		const submitFn = vi.fn().mockRejectedValueOnce({ data: { code: "CONFLICT" } });
+		const results = await processQueue(submitFn);
+		expect(results).toEqual([]);
+		expect(scoreStore.removePendingScore).toHaveBeenCalledWith(30);
+		// Not re-queued for retry
+		expect(scoreStore.updatePendingScore).not.toHaveBeenCalledWith(
+			30,
+			expect.objectContaining({ retryCount: 1 }),
 		);
 	});
 

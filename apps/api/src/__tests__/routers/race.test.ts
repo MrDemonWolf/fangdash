@@ -1,6 +1,7 @@
 import { describe, expect, it, beforeEach } from "vitest";
 import { createTestDb, createTestUser, createTestPlayer, type TestDb } from "../helpers/test-db.ts";
 import { createTestCaller } from "../helpers/test-caller.ts";
+import { MAX_DURATION_MS, MAX_SCORE_ABSOLUTE } from "@fangdash/shared";
 
 describe("race router", () => {
 	let db: TestDb;
@@ -19,6 +20,8 @@ describe("race router", () => {
 				raceId: "race-1",
 				score: 500,
 				distance: 1000,
+				duration: 60000,
+				obstaclesCleared: 5,
 				seed: "test-seed",
 			});
 
@@ -40,6 +43,8 @@ describe("race router", () => {
 				raceId: "race-1",
 				score: 300,
 				distance: 600,
+				duration: 60000,
+				obstaclesCleared: 3,
 				seed: "test-seed",
 			});
 
@@ -47,10 +52,123 @@ describe("race router", () => {
 				raceId: "race-1",
 				score: 500,
 				distance: 1000,
+				duration: 60000,
+				obstaclesCleared: 5,
 				seed: "test-seed",
 			});
 
 			expect(result2.placement).toBe(1);
+		});
+
+		it("should reject a second result for the same race from the same player", async () => {
+			const userId = createTestUser(db);
+			createTestPlayer(db, userId);
+			const caller = createTestCaller({ db, userId });
+
+			await caller.race.submitResult({
+				raceId: "race-1",
+				score: 500,
+				distance: 1000,
+				duration: 60000,
+				obstaclesCleared: 5,
+				seed: "test-seed",
+			});
+
+			await expect(
+				caller.race.submitResult({
+					raceId: "race-1",
+					score: 600,
+					distance: 1200,
+					duration: 60000,
+					obstaclesCleared: 6,
+					seed: "test-seed",
+				}),
+			).rejects.toThrow("Result for this race was already submitted");
+		});
+
+		it("should reject scores exceeding the anti-cheat rate", async () => {
+			const userId = createTestUser(db);
+			createTestPlayer(db, userId);
+			const caller = createTestCaller({ db, userId });
+
+			await expect(
+				caller.race.submitResult({
+					raceId: "race-1",
+					score: 999_999,
+					distance: 500,
+					duration: 10000,
+					obstaclesCleared: 2,
+					seed: "test-seed",
+				}),
+			).rejects.toThrow("Score exceeds maximum allowed rate");
+		});
+
+		it("should reject distance exceeding the maximum possible rate", async () => {
+			const userId = createTestUser(db);
+			createTestPlayer(db, userId);
+			const caller = createTestCaller({ db, userId });
+
+			await expect(
+				caller.race.submitResult({
+					raceId: "race-1",
+					score: 100,
+					distance: 10_000,
+					duration: 10000,
+					obstaclesCleared: 2,
+					seed: "test-seed",
+				}),
+			).rejects.toThrow("Distance exceeds maximum possible rate");
+		});
+
+		it("should reject obstacles cleared exceeding the maximum possible rate", async () => {
+			const userId = createTestUser(db);
+			createTestPlayer(db, userId);
+			const caller = createTestCaller({ db, userId });
+
+			await expect(
+				caller.race.submitResult({
+					raceId: "race-1",
+					score: 100,
+					distance: 500,
+					duration: 10000,
+					obstaclesCleared: 100,
+					seed: "test-seed",
+				}),
+			).rejects.toThrow("Obstacles cleared exceeds maximum possible rate");
+		});
+
+		it("should reject scores above the absolute cap", async () => {
+			const userId = createTestUser(db);
+			createTestPlayer(db, userId);
+			const caller = createTestCaller({ db, userId });
+
+			await expect(
+				caller.race.submitResult({
+					raceId: "race-1",
+					score: MAX_SCORE_ABSOLUTE + 1,
+					distance: 1000,
+					duration: 60000,
+					obstaclesCleared: 5,
+					seed: "test-seed",
+				}),
+			).rejects.toThrow();
+		});
+
+		it("should reject durations above the absolute cap", async () => {
+			const userId = createTestUser(db);
+			createTestPlayer(db, userId);
+			const caller = createTestCaller({ db, userId });
+
+			await expect(
+				caller.race.submitResult({
+					raceId: "race-1",
+					score: 500,
+					distance: 1000,
+					duration: MAX_DURATION_MS + 1,
+					obstaclesCleared: 5,
+					seed: "test-seed",
+				}),
+			).rejects.toThrow();
 		});
 
 		it("should block banned users", async () => {
@@ -68,6 +186,8 @@ describe("race router", () => {
 					raceId: "race-1",
 					score: 500,
 					distance: 1000,
+					duration: 60000,
+					obstaclesCleared: 5,
 					seed: "test-seed",
 				}),
 			).rejects.toThrow("banned");
@@ -81,6 +201,8 @@ describe("race router", () => {
 					raceId: "race-1",
 					score: 500,
 					distance: 1000,
+					duration: 60000,
+					obstaclesCleared: 5,
 					seed: "test-seed",
 				}),
 			).rejects.toThrow("UNAUTHORIZED");
@@ -94,6 +216,8 @@ describe("race router", () => {
 				raceId: "race-1",
 				score: 500,
 				distance: 1000,
+				duration: 60000,
+				obstaclesCleared: 5,
 				seed: "test-seed",
 			});
 
@@ -109,6 +233,8 @@ describe("race router", () => {
 				raceId: "race-1",
 				score: 500,
 				distance: 1000,
+				duration: 60000,
+				obstaclesCleared: 5,
 				seed: "test-seed",
 			});
 
@@ -125,6 +251,8 @@ describe("race router", () => {
 				raceId: "race-1",
 				score: 0,
 				distance: 0,
+				duration: 1000,
+				obstaclesCleared: 0,
 				seed: "test-seed",
 			});
 
@@ -140,6 +268,8 @@ describe("race router", () => {
 				raceId: "race-1",
 				score: 5000,
 				distance: 10000,
+				duration: 300000,
+				obstaclesCleared: 50,
 				seed: "test-seed",
 			});
 
@@ -147,43 +277,77 @@ describe("race router", () => {
 			expect(typeof result.newLevel).toBe("number");
 		});
 
-		it("should adjust bumped players when new result ranks higher", async () => {
+		it("should rank a later, higher result above earlier ones", async () => {
 			const user1 = createTestUser(db);
 			createTestPlayer(db, user1);
 			const user2 = createTestUser(db);
 			createTestPlayer(db, user2);
-			const user3 = createTestUser(db);
-			createTestPlayer(db, user3);
 
 			const caller1 = createTestCaller({ db, userId: user1 });
 			const caller2 = createTestCaller({ db, userId: user2 });
-			const caller3 = createTestCaller({ db, userId: user3 });
 
-			// User1 submits first with low score
+			// User1 submits a high score first, then user2 submits even higher.
 			await caller1.race.submitResult({
-				raceId: "race-1",
-				score: 100,
-				distance: 200,
-				seed: "test-seed",
-			});
-
-			// User2 submits with medium score
-			await caller2.race.submitResult({
 				raceId: "race-1",
 				score: 300,
 				distance: 600,
+				duration: 60000,
+				obstaclesCleared: 3,
 				seed: "test-seed",
 			});
-
-			// User3 submits with highest score — should be 1st
-			const result3 = await caller3.race.submitResult({
+			const result2 = await caller2.race.submitResult({
 				raceId: "race-1",
 				score: 500,
 				distance: 1000,
+				duration: 60000,
+				obstaclesCleared: 5,
 				seed: "test-seed",
 			});
 
-			expect(result3.placement).toBe(1);
+			// The higher score outranks the earlier one.
+			expect(result2.placement).toBe(1);
+		});
+
+		it("must NOT mutate another player's stats when a foreign result is submitted (anti-grief)", async () => {
+			// Regression test for the race-result griefing vector: an authenticated user
+			// who submits under a raceId they did not play must not be able to demote a
+			// real participant's placement, XP, or races-won.
+			const victim = createTestUser(db);
+			createTestPlayer(db, victim);
+			const griefer = createTestUser(db);
+			createTestPlayer(db, griefer);
+
+			const victimCaller = createTestCaller({ db, userId: victim });
+			const grieferCaller = createTestCaller({ db, userId: griefer });
+
+			// Victim legitimately wins their race.
+			await victimCaller.race.submitResult({
+				raceId: "race-1",
+				score: 400,
+				distance: 800,
+				duration: 60000,
+				obstaclesCleared: 4,
+				seed: "victim-seed",
+			});
+			const before = await victimCaller.race.getStats();
+			const beforeXp = (await victimCaller.score.getPlayerStats()).totalXp;
+			expect(before.racesWon).toBe(1);
+
+			// Griefer injects a higher score into the SAME race.
+			await grieferCaller.race.submitResult({
+				raceId: "race-1",
+				score: 900,
+				distance: 1800,
+				duration: 120000,
+				obstaclesCleared: 9,
+				seed: "griefer-seed",
+			});
+
+			// Victim's stats are untouched — no cross-player writes occurred.
+			const after = await victimCaller.race.getStats();
+			const afterXp = (await victimCaller.score.getPlayerStats()).totalXp;
+			expect(after.racesWon).toBe(before.racesWon);
+			expect(afterXp).toBe(beforeXp);
 		});
 
 		it("should reject invalid raceId", async () => {
@@ -196,6 +360,8 @@ describe("race router", () => {
 					raceId: "",
 					score: 500,
 					distance: 1000,
+					duration: 60000,
+					obstaclesCleared: 5,
 					seed: "test-seed",
 				}),
 			).rejects.toThrow();

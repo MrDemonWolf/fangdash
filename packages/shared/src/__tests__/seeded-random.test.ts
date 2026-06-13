@@ -70,4 +70,27 @@ describe("SeededRandom", () => {
 			expect(items).toContain(val);
 		}
 	});
+
+	it("pick() throws on an empty array", () => {
+		const rng = new SeededRandom("empty-pick-test");
+		expect(() => rng.pick([])).toThrowError("Cannot pick from an empty array");
+	});
+
+	it("pick() returns the only element of a 1-element array", () => {
+		const rng = new SeededRandom("single-pick-test");
+		for (let i = 0; i < 10; i++) {
+			expect(rng.pick(["only"])).toBe("only");
+		}
+	});
+
+	it("pick() produces deterministic sequences from the same seed", () => {
+		const items = ["a", "b", "c", "d"] as const;
+		const a = new SeededRandom("pick-determinism");
+		const b = new SeededRandom("pick-determinism");
+
+		const seqA = Array.from({ length: 20 }, () => a.pick(items));
+		const seqB = Array.from({ length: 20 }, () => b.pick(items));
+
+		expect(seqA).toEqual(seqB);
+	});
 });

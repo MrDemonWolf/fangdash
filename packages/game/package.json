@@ -15,10 +15,10 @@
 	},
 	"dependencies": {
 		"@fangdash/shared": "workspace:*",
-		"phaser": "^3.90.0"
+		"phaser": "^4.1.0"
 	},
 	"devDependencies": {
-		"typescript": "^5.9.3",
-		"vitest": "^4.1.0"
+		"typescript": "^6.0.3",
+		"vitest": "^4.1.8"
 	}
 }

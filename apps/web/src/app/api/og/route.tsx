@@ -14,6 +14,7 @@ export async function GET(_req: NextRequest) {
 		if (apiUrl) {
 			const res = await fetch(`${apiUrl}/trpc/score.getGlobalStats`, {
 				next: { revalidate: 86400 },
+				signal: AbortSignal.timeout(5000),
 			});
 			if (res.ok) {
 				const json = (await res.json()) as {
