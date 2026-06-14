@@ -17,6 +17,7 @@ import { addNotification } from "@/lib/notification-store.ts";
 import { DevRaceConnection } from "@/lib/dev-race-connection.ts";
 import { RaceConnection, type ConnectionState } from "@/lib/party.ts";
 import { addToHistory } from "@/lib/score-store.ts";
+import { trpcVanilla } from "@/lib/trpc-provider.tsx";
 import { useTRPC } from "@/lib/trpc.ts";
 import { useIsAdmin } from "@/lib/use-role.ts";
 
@@ -250,6 +251,12 @@ export default function RaceRoomPage() {
 		const ConnectionClass = isDevMode ? DevRaceConnection : RaceConnection;
 		const connection = new ConnectionClass({
 			roomCode,
+			// Mint a fresh short-lived token for each (re)connect. The DevRaceConnection
+			// ignores this; only the real PartyKit socket forwards it as ?token=.
+			getToken: async () => {
+				const { token } = await trpcVanilla.race.getConnectionToken.mutate();
+				return token;
+			},
 			onConnectionStateChange: (state) => {
 				setConnectionState(state);
 				if (state === "disconnected" || state === "error") {

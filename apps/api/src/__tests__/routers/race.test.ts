@@ -1,3 +1,4 @@
+import { verifyRaceToken } from "@fangdash/shared";
 import { describe, expect, it, beforeEach } from "vitest";
 import { createTestDb, createTestUser, createTestPlayer, type TestDb } from "../helpers/test-db.ts";
 import { createTestCaller } from "../helpers/test-caller.ts";
@@ -8,6 +9,32 @@ describe("race router", () => {
 
 	beforeEach(() => {
 		({ db } = createTestDb());
+	});
+
+	describe("getConnectionToken", () => {
+		it("mints a token that verifies back to the user id", async () => {
+			const userId = createTestUser(db);
+			const caller = createTestCaller({ db, userId, raceTokenSecret: "secret-a" });
+
+			const { token, expiresIn } = await caller.race.getConnectionToken();
+
+			expect(expiresIn).toBeGreaterThan(0);
+			expect(await verifyRaceToken(token, "secret-a")).toEqual({ userId });
+			// Wrong secret must not verify
+			expect(await verifyRaceToken(token, "secret-b")).toBeNull();
+		});
+
+		it("throws when RACE_TOKEN_SECRET is not configured", async () => {
+			const userId = createTestUser(db);
+			const caller = createTestCaller({ db, userId, raceTokenSecret: null });
+
+			await expect(caller.race.getConnectionToken()).rejects.toThrow(/RACE_TOKEN_SECRET/);
+		});
+
+		it("rejects unauthenticated callers", async () => {
+			const caller = createTestCaller({ db });
+			await expect(caller.race.getConnectionToken()).rejects.toThrow();
+		});
 	});
 
 	describe("submitResult", () => {
