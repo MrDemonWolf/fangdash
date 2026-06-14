@@ -46,9 +46,14 @@ jobs:
       - name: Set Cloudflare Worker secrets
         working-directory: apps/api
         run: |
+          if [ -z "${{ secrets.RACE_TOKEN_SECRET }}" ]; then
+            echo "::error::RACE_TOKEN_SECRET is missing or empty"
+            exit 1
+          fi
           printf '%s' "${{ secrets.BETTER_AUTH_SECRET }}" | bunx wrangler secret put BETTER_AUTH_SECRET --env production
           printf '%s' "${{ secrets.TWITCH_CLIENT_ID }}" | bunx wrangler secret put TWITCH_CLIENT_ID --env production
           printf '%s' "${{ secrets.TWITCH_CLIENT_SECRET }}" | bunx wrangler secret put TWITCH_CLIENT_SECRET --env production
+          printf '%s' "${{ secrets.RACE_TOKEN_SECRET }}" | bunx wrangler secret put RACE_TOKEN_SECRET --env production
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
 
@@ -153,6 +158,18 @@ jobs:
 
       - name: Install dependencies
         run: bun install --frozen-lockfile
+
+      - name: Set PartyKit race token secret
+        working-directory: apps/party
+        run: |
+          if [ -z "${{ secrets.RACE_TOKEN_SECRET }}" ]; then
+            echo "::error::RACE_TOKEN_SECRET is missing or empty"
+            exit 1
+          fi
+          printf '%s' "${{ secrets.RACE_TOKEN_SECRET }}" | bunx partykit secret put RACE_TOKEN_SECRET
+        env:
+          PARTYKIT_LOGIN: ${{ secrets.PARTYKIT_LOGIN }}
+          PARTYKIT_TOKEN: ${{ secrets.PARTYKIT_TOKEN }}
 
       - name: Deploy PartyKit
         run: bun run --filter @fangdash/party deploy

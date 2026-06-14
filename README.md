@@ -128,6 +128,16 @@ BETTER_AUTH_SECRET=<your-secret>
 BETTER_AUTH_URL=http://localhost:8787
 TWITCH_CLIENT_ID=<your-twitch-client-id>
 TWITCH_CLIENT_SECRET=<your-twitch-client-secret>
+# Shared HMAC secret for short-lived PartyKit race connection tokens.
+# Must match the value configured for the PartyKit server below.
+RACE_TOKEN_SECRET=<your-race-token-secret>
+```
+
+1. Configure `apps/party/.env` (loaded by `partykit dev`) with the **same**
+   `RACE_TOKEN_SECRET` so the race server can verify tokens minted by the API:
+
+```bash
+RACE_TOKEN_SECRET=<your-race-token-secret>
 ```
 
 1. Configure `apps/web/.env.local`:
@@ -141,6 +151,34 @@ NEXT_PUBLIC_API_URL=http://localhost:8787
 ```bash
 bun dev
 ```
+
+### Multiplayer race authentication
+
+Real-time race connections are authenticated with a short-lived HMAC token, not
+the Better Auth session cookie (which is `httpOnly` and therefore unreadable by
+the client). The flow:
+
+1. The web client calls `race.getConnectionToken` (tRPC) to mint a token signed
+   over `{ sub, exp }` with `RACE_TOKEN_SECRET`.
+2. The client forwards it to the PartyKit race server as the `?token=` query
+   param. A fresh token is minted on every (re)connect, so it can be short-lived
+   (default 2 minutes).
+3. The PartyKit server verifies the token with the **same** `RACE_TOKEN_SECRET`
+   and binds the connection to the authenticated user — no API round-trip.
+
+`RACE_TOKEN_SECRET` must be identical across the API and the PartyKit server.
+Generate one with `openssl rand -hex 32`. Provision it for production with:
+
+```bash
+# API (Cloudflare Worker secret)
+cd apps/api && echo "<secret>" | bunx wrangler secret put RACE_TOKEN_SECRET --env production
+
+# PartyKit server secret
+cd apps/party && echo "<secret>" | bunx partykit secret put RACE_TOKEN_SECRET
+```
+
+Also add `RACE_TOKEN_SECRET` as a GitHub Actions repository secret — the deploy
+workflow pushes it to both the Worker and PartyKit on each deploy.
 
 ### Development Scripts
 

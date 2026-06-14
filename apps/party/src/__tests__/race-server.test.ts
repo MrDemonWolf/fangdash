@@ -1,6 +1,9 @@
+import { signRaceToken } from "@fangdash/shared";
 import type * as Party from "partykit/server";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import RaceServer from "../race-server.ts";
+
+const RACE_TOKEN_SECRET = "party-test-secret";
 
 // Token defaults to the connection id so each connection maps to a distinct
 // userId via the fetch stub; pass an explicit token to simulate the same user
@@ -128,6 +131,77 @@ describe("RaceServer", () => {
 			await server.onConnect(conn);
 
 			expect(conn.close).toHaveBeenCalledWith(4003, "Auth verification failed");
+		});
+
+		it("should accept a valid race token when RACE_TOKEN_SECRET is set", async () => {
+			const partyWithSecret = {
+				...party,
+				env: { RACE_TOKEN_SECRET },
+			};
+			const serverWithSecret = new RaceServer(partyWithSecret as Party.Party);
+
+			const token = await signRaceToken("user-42", RACE_TOKEN_SECRET);
+			const conn = {
+				id: "conn-1",
+				uri: `http://localhost/party/test-room?token=${encodeURIComponent(token)}`,
+				send: vi.fn(),
+				close: vi.fn(),
+				// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			} as any;
+
+			await serverWithSecret.onConnect(conn);
+
+			expect(conn.close).not.toHaveBeenCalled();
+			expect(conn.send).toHaveBeenCalledTimes(1);
+			const sent = JSON.parse((conn.send as ReturnType<typeof vi.fn>).mock.calls[0]?.[0]);
+			expect(sent.type).toBe("room_state");
+		});
+
+		it("should reject a tampered/invalid race token when RACE_TOKEN_SECRET is set", async () => {
+			const partyWithSecret = {
+				...party,
+				env: { RACE_TOKEN_SECRET },
+			};
+			const serverWithSecret = new RaceServer(partyWithSecret as Party.Party);
+
+			const conn = {
+				id: "conn-bad",
+				uri: "http://localhost/party/test-room?token=not-a-valid-token",
+				send: vi.fn(),
+				close: vi.fn(),
+				// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			} as any;
+
+			await serverWithSecret.onConnect(conn);
+
+			expect(conn.close).toHaveBeenCalledWith(4003, "Invalid or expired token");
+			expect(conn.send).not.toHaveBeenCalled();
+		});
+
+		it("should reject an expired race token when RACE_TOKEN_SECRET is set", async () => {
+			const partyWithSecret = {
+				...party,
+				env: { RACE_TOKEN_SECRET },
+			};
+			const serverWithSecret = new RaceServer(partyWithSecret as Party.Party);
+
+			// Mint a token that expired well in the past.
+			const expired = await signRaceToken("user-42", RACE_TOKEN_SECRET, {
+				ttlSeconds: 60,
+				nowSeconds: 1_000,
+			});
+			const conn = {
+				id: "conn-expired",
+				uri: `http://localhost/party/test-room?token=${encodeURIComponent(expired)}`,
+				send: vi.fn(),
+				close: vi.fn(),
+				// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			} as any;
+
+			await serverWithSecret.onConnect(conn);
+
+			expect(conn.close).toHaveBeenCalledWith(4003, "Invalid or expired token");
+			expect(conn.send).not.toHaveBeenCalled();
 		});
 	});
 
