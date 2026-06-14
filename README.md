@@ -159,7 +159,7 @@ the Better Auth session cookie (which is `httpOnly` and therefore unreadable by
 the client). The flow:
 
 1. The web client calls `race.getConnectionToken` (tRPC) to mint a token signed
-   over `{ userId, exp }` with `RACE_TOKEN_SECRET`.
+   over `{ sub, exp }` with `RACE_TOKEN_SECRET`.
 2. The client forwards it to the PartyKit race server as the `?token=` query
    param. A fresh token is minted on every (re)connect, so it can be short-lived
    (default 2 minutes).
