@@ -4,5 +4,8 @@
 	"parties": {
 		"race": "src/race-server.ts"
 	},
+	"vars": {
+		"API_URL": "https://fangdash-api.mrdemonwolf.workers.dev"
+	},
 	"compatibilityDate": "2025-02-24"
 }

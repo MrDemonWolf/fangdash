@@ -1,6 +1,10 @@
 import {
 	ACHIEVEMENTS,
 	DIFFICULTY_NAMES,
+	MAX_DISTANCE_ABSOLUTE,
+	MAX_DURATION_MS,
+	MAX_OBSTACLES_ABSOLUTE,
+	MAX_SCORE_ABSOLUTE,
 	PERIOD_MS,
 	PERIODS,
 	READY_MODS_MASK,
@@ -9,7 +13,8 @@ import {
 	getSkinById,
 } from "@fangdash/shared";
 import { TRPCError } from "@trpc/server";
-import { count, desc, eq, sql } from "drizzle-orm";
+import { and, count, desc, eq, inArray, sql } from "drizzle-orm";
+import type { BatchItem } from "drizzle-orm/batch";
 import { z } from "zod";
 import { player, playerAchievement, playerSkin, score, user } from "../../db/schema.ts";
 import { checkAllUnlocks } from "../../lib/check-all-unlocks.ts";
@@ -17,11 +22,11 @@ import { validateScoreInput } from "../../lib/validate-score.ts";
 import { playerProcedure, publicProcedure, router } from "../trpc.ts";
 
 const baseScoreSchema = z.object({
-	score: z.number().int().min(0),
-	distance: z.number().min(0),
-	obstaclesCleared: z.number().int().min(0),
-	longestCleanRun: z.number().min(0).default(0),
-	duration: z.number().int().min(0),
+	score: z.number().int().min(0).max(MAX_SCORE_ABSOLUTE),
+	distance: z.number().min(0).max(MAX_DISTANCE_ABSOLUTE),
+	obstaclesCleared: z.number().int().min(0).max(MAX_OBSTACLES_ABSOLUTE),
+	longestCleanRun: z.number().min(0).max(MAX_DISTANCE_ABSOLUTE).default(0),
+	duration: z.number().int().min(0).max(MAX_DURATION_MS),
 	seed: z.string().min(1).max(64),
 	difficulty: z.enum(DIFFICULTY_NAMES).default("easy"),
 	mods: z.number().int().min(0).default(0),
@@ -42,20 +47,34 @@ export const scoreRouter = router({
 
 		const isCheated = input.cheated ? 1 : 0;
 
-		await ctx.db.insert(score).values({
-			id: scoreId,
-			playerId: playerRecord.id,
-			score: input.score,
-			distance: input.distance,
-			obstaclesCleared: input.obstaclesCleared,
-			longestCleanRun: input.longestCleanRun,
-			duration: input.duration,
-			difficulty: input.difficulty,
-			mods: input.mods,
-			seed: input.seed,
-			cheated: isCheated,
-			createdAt: now,
-		});
+		// Atomic replay protection: the (player_id, seed) unique index backstops a
+		// concurrent duplicate that a separate SELECT pre-check would race past.
+		// onConflictDoNothing + empty returning ⇒ this seed was already submitted.
+		const inserted = await ctx.db
+			.insert(score)
+			.values({
+				id: scoreId,
+				playerId: playerRecord.id,
+				score: input.score,
+				distance: input.distance,
+				obstaclesCleared: input.obstaclesCleared,
+				longestCleanRun: input.longestCleanRun,
+				duration: input.duration,
+				difficulty: input.difficulty,
+				mods: input.mods,
+				seed: input.seed,
+				cheated: isCheated,
+				createdAt: now,
+			})
+			.onConflictDoNothing({ target: [score.playerId, score.seed] })
+			.returning({ id: score.id });
+
+		if (inserted.length === 0) {
+			throw new TRPCError({
+				code: "CONFLICT",
+				message: "A score for this run was already submitted",
+			});
+		}
 
 		// If cheated, skip all rewards and stat updates
 		if (input.cheated) {
@@ -70,12 +89,12 @@ export const scoreRouter = router({
 			};
 		}
 
-		// Update player aggregate stats, XP, and level atomically
-		const newTotalXp = playerRecord.totalXp + input.score;
-		const levelInfo = getLevelFromXp(newTotalXp);
+		// Update player aggregate stats and XP, then derive the level from the
+		// post-increment totalXp so the level is never computed from a stale read.
+		// The level write itself is last-writer-wins and self-heals on the next submission.
 		const previousLevel = playerRecord.level;
 
-		await ctx.db
+		const updated = await ctx.db
 			.update(player)
 			.set({
 				totalScore: sql`${player.totalScore} + ${input.score}`,
@@ -83,9 +102,17 @@ export const scoreRouter = router({
 				totalObstaclesCleared: sql`${player.totalObstaclesCleared} + ${input.obstaclesCleared}`,
 				gamesPlayed: sql`${player.gamesPlayed} + 1`,
 				totalXp: sql`${player.totalXp} + ${input.score}`,
-				level: levelInfo.level,
 				updatedAt: now,
 			})
+			.where(eq(player.id, playerRecord.id))
+			.returning({ totalXp: player.totalXp });
+
+		const newTotalXp = updated[0]?.totalXp ?? playerRecord.totalXp + input.score;
+		const levelInfo = getLevelFromXp(newTotalXp);
+
+		await ctx.db
+			.update(player)
+			.set({ level: levelInfo.level })
 			.where(eq(player.id, playerRecord.id));
 
 		const { newAchievements, newSkins, unlockError } = await checkAllUnlocks(
@@ -151,6 +178,7 @@ export const scoreRouter = router({
 				cutoffTs !== null ? sql` AND ${score.createdAt} >= ${cutoffTs}` : sql``;
 			const cheatedFilter = sql` AND s2.cheated = 0`;
 			const outerCheatedFilter = sql` AND ${score.cheated} = 0`;
+			const outerProfileFilter = sql` AND ${player.profilePublic} = 1`;
 
 			const rows = await ctx.db
 				.select({
@@ -177,7 +205,7 @@ export const scoreRouter = router({
 						WHERE s2.player_id = ${score.playerId}${diffFilter}${modsFilter}${cutoffFilter}${cheatedFilter}
 						ORDER BY s2.score DESC, s2.created_at DESC
 						LIMIT 1
-					)${outerDiffFilter}${outerModsFilter}${outerCutoffFilter}${outerCheatedFilter}`,
+					)${outerDiffFilter}${outerModsFilter}${outerCutoffFilter}${outerCheatedFilter}${outerProfileFilter}`,
 				)
 				.orderBy(desc(score.score))
 				.limit(limit);
@@ -236,22 +264,48 @@ export const scoreRouter = router({
 				reason?: string;
 			}> = [];
 
-			let totalXpGained = 0;
-			const insertedScoreIds: string[] = [];
-			const acceptedNonCheated: Array<(typeof input.scores)[number]> = [];
+			// Replay protection across requests: reject seeds this player already submitted
+			const candidateSeeds = [...new Set(input.scores.map((s) => s.seed))];
+			const existingRows =
+				candidateSeeds.length > 0
+					? await ctx.db
+							.select({ seed: score.seed })
+							.from(score)
+							.where(and(eq(score.playerId, playerRecord.id), inArray(score.seed, candidateSeeds)))
+					: [];
+			const existingSeeds = new Set(existingRows.map((r) => r.seed));
+
 			const seenSeeds = new Set<string>();
+			// Each insert uses onConflictDoNothing so a concurrent duplicate that slips
+			// past the existingSeeds pre-check skips that single row instead of rolling
+			// back the whole D1 batch. XP/stats are tallied only from rows that the
+			// returning() confirms actually committed (resultRefs below).
+			const insertStatements: BatchItem<"sqlite">[] = [];
+			const resultRefs: Array<{
+				resultIndex: number;
+				batchIndex: number;
+				score: (typeof input.scores)[number];
+			}> = [];
 
 			for (let i = 0; i < input.scores.length; i++) {
 				const s = input.scores[i];
 				if (!s) continue;
 
 				// Reject duplicate seeds within the same batch
-				const dedupKey = `${s.seed}:${s.clientTimestamp}`;
-				if (seenSeeds.has(dedupKey)) {
+				if (seenSeeds.has(s.seed)) {
 					results.push({ clientIndex: i, status: "rejected", reason: "Duplicate score in batch" });
 					continue;
 				}
-				seenSeeds.add(dedupKey);
+				seenSeeds.add(s.seed);
+
+				if (existingSeeds.has(s.seed)) {
+					results.push({
+						clientIndex: i,
+						status: "rejected",
+						reason: "Duplicate score (seed already submitted)",
+					});
+					continue;
+				}
 
 				// Reject future or expired timestamps
 				if (s.clientTimestamp > now + 60_000) {
@@ -273,39 +327,75 @@ export const scoreRouter = router({
 				const scoreId = crypto.randomUUID();
 				const isCheated = s.cheated ? 1 : 0;
 
-				await ctx.db.insert(score).values({
-					id: scoreId,
-					playerId: playerRecord.id,
-					score: s.score,
-					distance: s.distance,
-					obstaclesCleared: s.obstaclesCleared,
-					longestCleanRun: s.longestCleanRun,
-					duration: s.duration,
-					difficulty: s.difficulty,
-					mods: s.mods,
-					seed: s.seed,
-					cheated: isCheated,
-					createdAt: new Date(s.clientTimestamp),
-				});
+				const batchIndex = insertStatements.length;
+				insertStatements.push(
+					ctx.db
+						.insert(score)
+						.values({
+							id: scoreId,
+							playerId: playerRecord.id,
+							score: s.score,
+							distance: s.distance,
+							obstaclesCleared: s.obstaclesCleared,
+							longestCleanRun: s.longestCleanRun,
+							duration: s.duration,
+							difficulty: s.difficulty,
+							mods: s.mods,
+							seed: s.seed,
+							cheated: isCheated,
+							// Server-authoritative timestamp; clientTimestamp is only used for the
+							// acceptance-window checks above
+							createdAt: new Date(),
+						})
+						.onConflictDoNothing({ target: [score.playerId, score.seed] })
+						.returning({ id: score.id }),
+				);
 
-				insertedScoreIds.push(scoreId);
-				if (!s.cheated) {
-					totalXpGained += s.score;
-					acceptedNonCheated.push(s);
-				}
+				const resultIndex = results.length;
 				results.push({ clientIndex: i, scoreId, status: "ok" });
+				resultRefs.push({ resultIndex, batchIndex, score: s });
 			}
 
-			// Single aggregate XP/stats update for accepted non-cheated scores only
+			// Phase 1: run the inserts, then keep only the rows that actually committed
+			let totalXpGained = 0;
+			const acceptedNonCheated: Array<(typeof input.scores)[number]> = [];
+
+			if (insertStatements.length > 0) {
+				const insertResults = await ctx.db.batch(
+					insertStatements as unknown as [BatchItem<"sqlite">, ...BatchItem<"sqlite">[]],
+				);
+
+				for (const ref of resultRefs) {
+					const returned = insertResults[ref.batchIndex] as unknown as
+						| Array<{ id: string }>
+						| undefined;
+					const committed = (returned?.length ?? 0) > 0;
+					const resultEntry = results[ref.resultIndex];
+					if (!committed) {
+						// Lost a concurrency race against another in-flight submit of this seed.
+						if (resultEntry) {
+							resultEntry.status = "rejected";
+							resultEntry.reason = "Duplicate score (seed already submitted)";
+							delete resultEntry.scoreId;
+						}
+						continue;
+					}
+					if (!ref.score.cheated) {
+						totalXpGained += ref.score.score;
+						acceptedNonCheated.push(ref.score);
+					}
+				}
+			}
+
+			// Phase 2: single aggregate XP/stats update for committed non-cheated scores.
+			// Derive the level from the post-increment totalXp so it is never computed
+			// from a stale read (the level write is last-writer-wins and self-heals next sync).
 			if (acceptedNonCheated.length > 0) {
 				const totalDistance = acceptedNonCheated.reduce((sum, s) => sum + s.distance, 0);
 				const totalObstacles = acceptedNonCheated.reduce((sum, s) => sum + s.obstaclesCleared, 0);
 				const gamesCount = acceptedNonCheated.length;
 
-				const newTotalXp = playerRecord.totalXp + totalXpGained;
-				const levelInfo = getLevelFromXp(newTotalXp);
-
-				await ctx.db
+				const updated = await ctx.db
 					.update(player)
 					.set({
 						totalScore: sql`${player.totalScore} + ${totalXpGained}`,
@@ -313,9 +403,17 @@ export const scoreRouter = router({
 						totalObstaclesCleared: sql`${player.totalObstaclesCleared} + ${totalObstacles}`,
 						gamesPlayed: sql`${player.gamesPlayed} + ${gamesCount}`,
 						totalXp: sql`${player.totalXp} + ${totalXpGained}`,
-						level: levelInfo.level,
 						updatedAt: new Date(),
 					})
+					.where(eq(player.id, playerRecord.id))
+					.returning({ totalXp: player.totalXp });
+
+				const newTotalXp = updated[0]?.totalXp ?? playerRecord.totalXp + totalXpGained;
+				const levelInfo = getLevelFromXp(newTotalXp);
+
+				await ctx.db
+					.update(player)
+					.set({ level: levelInfo.level })
 					.where(eq(player.id, playerRecord.id));
 			}
 

@@ -1,14 +1,17 @@
 import { signRaceToken } from "@fangdash/shared";
 import type * as Party from "partykit/server";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import RaceServer from "../race-server.ts";
 
 const RACE_TOKEN_SECRET = "party-test-secret";
 
-function createMockConnection(id: string): Party.Connection {
+// Token defaults to the connection id so each connection maps to a distinct
+// userId via the fetch stub; pass an explicit token to simulate the same user
+// reconnecting on a new connection.
+function createMockConnection(id: string, token = id): Party.Connection {
 	return {
 		id,
-		uri: `http://localhost/party/test-room?token=test-session-token`,
+		uri: `http://localhost/party/test-room?token=${token}`,
 		send: vi.fn(),
 		close: vi.fn(),
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -19,11 +22,26 @@ function createMockParty(id = "test-room"): Party.Party {
 	const connections = new Map<string, Party.Connection>();
 	return {
 		id,
-		env: {},
+		env: { API_URL: "http://localhost:8787" },
 		getConnections: () => connections.values(),
 		broadcast: vi.fn(),
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	} as any;
+}
+
+// Derives the userId from the session token cookie, mirroring get-session
+function createSessionFetchMock() {
+	return vi.fn(async (_url: unknown, init?: RequestInit) => {
+		const headers = init?.headers as Record<string, string> | undefined;
+		const token = (headers?.["cookie"] ?? "").replace("better-auth.session_token=", "");
+		return {
+			ok: true,
+			json: async () => ({
+				session: { id: `session-${token}` },
+				user: { id: `user-${token}` },
+			}),
+		};
+	});
 }
 
 function sendMessage(server: RaceServer, conn: Party.Connection, msg: unknown) {
@@ -37,6 +55,12 @@ describe("RaceServer", () => {
 	beforeEach(() => {
 		party = createMockParty();
 		server = new RaceServer(party);
+		vi.stubGlobal("fetch", createSessionFetchMock());
+	});
+
+	afterEach(() => {
+		vi.unstubAllGlobals();
+		vi.restoreAllMocks();
 	});
 
 	describe("onConnect", () => {
@@ -67,27 +91,46 @@ describe("RaceServer", () => {
 			expect(sent.type).toBe("error");
 		});
 
-		it("should reject connection with invalid session when API_URL is set", async () => {
-			// Create a party with API_URL set and mock fetch to return invalid session
-			const partyWithApi = {
-				...party,
-				env: { API_URL: "http://localhost:8787" },
-			};
-			const serverWithApi = new RaceServer(partyWithApi as Party.Party);
-
-			const fetchMock = vi.fn().mockResolvedValue({
-				ok: true,
-				json: () => Promise.resolve({ session: null }),
-			});
-			vi.stubGlobal("fetch", fetchMock);
+		it("should reject connection with invalid session", async () => {
+			vi.stubGlobal(
+				"fetch",
+				vi.fn().mockResolvedValue({
+					ok: true,
+					json: () => Promise.resolve({ session: null }),
+				}),
+			);
 
 			const conn = createMockConnection("invalid-session");
-			await serverWithApi.onConnect(conn);
+			await server.onConnect(conn);
 
 			expect(conn.close).toHaveBeenCalledWith(4003, "Invalid session");
 			expect(conn.send).not.toHaveBeenCalled();
+		});
 
-			vi.unstubAllGlobals();
+		it("should fail closed when API_URL is missing", async () => {
+			const partyWithoutApi = {
+				...party,
+				env: {},
+			};
+			const serverWithoutApi = new RaceServer(partyWithoutApi as Party.Party);
+
+			const conn = createMockConnection("player-1");
+			await serverWithoutApi.onConnect(conn);
+
+			expect(conn.close).toHaveBeenCalledWith(4500, "Server misconfigured");
+			expect(conn.send).toHaveBeenCalledTimes(1);
+			const sent = JSON.parse((conn.send as ReturnType<typeof vi.fn>).mock.calls[0]?.[0]);
+			expect(sent.type).toBe("error");
+			expect(sent.payload.message).toBe("Race server misconfigured");
+		});
+
+		it("should reject connection when auth verification fails", async () => {
+			vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new Error("network down")));
+
+			const conn = createMockConnection("player-1");
+			await server.onConnect(conn);
+
+			expect(conn.close).toHaveBeenCalledWith(4003, "Auth verification failed");
 		});
 
 		it("should accept a valid race token when RACE_TOKEN_SECRET is set", async () => {
@@ -324,6 +367,73 @@ describe("RaceServer", () => {
 
 			expect(server.room.players[0]?.distance).toBe(0);
 		});
+
+		it("should drop updates arriving within 50ms of the last accepted one", async () => {
+			const conn = createMockConnection("player-1");
+			await server.onConnect(conn);
+			sendMessage(server, conn, {
+				type: "join",
+				payload: { username: "Player", skinId: "gray-wolf" },
+			});
+
+			server.room.status = "racing";
+			const nowSpy = vi.spyOn(Date, "now");
+
+			nowSpy.mockReturnValue(1_000);
+			sendMessage(server, conn, {
+				type: "update",
+				payload: { distance: 100, score: 10 },
+			});
+			expect(server.room.players[0]?.distance).toBe(100);
+
+			nowSpy.mockReturnValue(1_030);
+			sendMessage(server, conn, {
+				type: "update",
+				payload: { distance: 200, score: 20 },
+			});
+			expect(server.room.players[0]?.distance).toBe(100);
+
+			// 60ms since the last ACCEPTED update — the dropped one did not reset the window
+			nowSpy.mockReturnValue(1_060);
+			sendMessage(server, conn, {
+				type: "update",
+				payload: { distance: 300, score: 30 },
+			});
+			expect(server.room.players[0]?.distance).toBe(300);
+		});
+
+		it("should reset the throttle window when a connection closes", async () => {
+			const conn = createMockConnection("player-1");
+			await server.onConnect(conn);
+			sendMessage(server, conn, {
+				type: "join",
+				payload: { username: "Player", skinId: "gray-wolf" },
+			});
+
+			server.room.status = "racing";
+			const nowSpy = vi.spyOn(Date, "now");
+			nowSpy.mockReturnValue(1_000);
+			sendMessage(server, conn, {
+				type: "update",
+				payload: { distance: 100, score: 10 },
+			});
+
+			server.onClose(conn);
+
+			await server.onConnect(conn);
+			sendMessage(server, conn, {
+				type: "join",
+				payload: { username: "Player", skinId: "gray-wolf" },
+			});
+			server.room.status = "racing";
+
+			nowSpy.mockReturnValue(1_010);
+			sendMessage(server, conn, {
+				type: "update",
+				payload: { distance: 50, score: 5 },
+			});
+			expect(server.room.players[0]?.distance).toBe(50);
+		});
 	});
 
 	describe("died", () => {
@@ -361,6 +471,104 @@ describe("RaceServer", () => {
 			sendMessage(server, conn2, { type: "died" });
 
 			expect(server.room.status).toBe("finished");
+		});
+	});
+
+	describe("endRace", () => {
+		async function setupRace() {
+			const conn1 = createMockConnection("player-1");
+			const conn2 = createMockConnection("player-2");
+			await server.onConnect(conn1);
+			await server.onConnect(conn2);
+			sendMessage(server, conn1, {
+				type: "join",
+				payload: { username: "P1", skinId: "gray-wolf" },
+			});
+			sendMessage(server, conn2, {
+				type: "join",
+				payload: { username: "P2", skinId: "gray-wolf" },
+			});
+			server.room.status = "racing";
+			return { conn1, conn2 };
+		}
+
+		function lastRaceEnd() {
+			const calls = (party.broadcast as ReturnType<typeof vi.fn>).mock.calls;
+			const raceEnds = calls
+				.map((c) => JSON.parse(c[0] as string))
+				.filter((m) => m.type === "race_end");
+			return raceEnds[raceEnds.length - 1];
+		}
+
+		it("should break score ties by later death (longer survival wins)", async () => {
+			const { conn1, conn2 } = await setupRace();
+			const nowSpy = vi.spyOn(Date, "now");
+
+			nowSpy.mockReturnValue(1_000);
+			sendMessage(server, conn1, {
+				type: "update",
+				payload: { distance: 100, score: 50 },
+			});
+			sendMessage(server, conn2, {
+				type: "update",
+				payload: { distance: 100, score: 50 },
+			});
+
+			sendMessage(server, conn1, { type: "died" });
+			nowSpy.mockReturnValue(2_000);
+			sendMessage(server, conn2, { type: "died" });
+
+			const raceEnd = lastRaceEnd();
+			expect(raceEnd.payload.results[0]).toMatchObject({
+				playerId: "player-2",
+				placement: 1,
+			});
+			expect(raceEnd.payload.results[1]).toMatchObject({
+				playerId: "player-1",
+				placement: 2,
+			});
+		});
+
+		it("should rank by score before finish time", async () => {
+			const { conn1, conn2 } = await setupRace();
+			const nowSpy = vi.spyOn(Date, "now");
+
+			nowSpy.mockReturnValue(1_000);
+			sendMessage(server, conn1, {
+				type: "update",
+				payload: { distance: 200, score: 80 },
+			});
+			sendMessage(server, conn2, {
+				type: "update",
+				payload: { distance: 100, score: 50 },
+			});
+
+			// Higher scorer dies first but still places first
+			sendMessage(server, conn1, { type: "died" });
+			nowSpy.mockReturnValue(2_000);
+			sendMessage(server, conn2, { type: "died" });
+
+			const raceEnd = lastRaceEnd();
+			expect(raceEnd.payload.results[0]).toMatchObject({
+				playerId: "player-1",
+				placement: 1,
+				score: 80,
+			});
+		});
+
+		it("should compose raceId from room id and seed", async () => {
+			const { conn1, conn2 } = await setupRace();
+			const seed = server.room.seed;
+
+			sendMessage(server, conn1, { type: "died" });
+			sendMessage(server, conn2, { type: "died" });
+
+			const raceEnd = lastRaceEnd();
+			expect(raceEnd.payload.results).toHaveLength(2);
+			for (const result of raceEnd.payload.results) {
+				expect(result.raceId).toBe(`test-room:${seed}`);
+			}
+			expect(`test-room:${seed}`.length).toBeLessThanOrEqual(64);
 		});
 	});
 
@@ -416,6 +624,105 @@ describe("RaceServer", () => {
 			});
 
 			expect(server.room.players.length).toBe(2);
+		});
+
+		it("should prevent a kicked user from rejoining on a new connection", async () => {
+			const conn1 = createMockConnection("player-1");
+			const conn2 = createMockConnection("player-2");
+			await server.onConnect(conn1);
+			await server.onConnect(conn2);
+
+			sendMessage(server, conn1, {
+				type: "join",
+				payload: { username: "Host", skinId: "gray-wolf" },
+			});
+			sendMessage(server, conn2, {
+				type: "join",
+				payload: { username: "Player2", skinId: "gray-wolf" },
+			});
+
+			sendMessage(server, conn1, {
+				type: "kick",
+				payload: { playerId: "player-2" },
+			});
+			expect(server.room.players.length).toBe(1);
+
+			// Same user (same session token), fresh connection id
+			const reconn = createMockConnection("player-2-reconnect", "player-2");
+			await server.onConnect(reconn);
+			sendMessage(server, reconn, {
+				type: "join",
+				payload: { username: "Player2", skinId: "gray-wolf" },
+			});
+
+			expect(server.room.players.length).toBe(1);
+		});
+
+		it("should keep the kick deny-list across a rematch", async () => {
+			const conn1 = createMockConnection("player-1");
+			const conn2 = createMockConnection("player-2");
+			await server.onConnect(conn1);
+			await server.onConnect(conn2);
+
+			sendMessage(server, conn1, {
+				type: "join",
+				payload: { username: "Host", skinId: "gray-wolf" },
+			});
+			sendMessage(server, conn2, {
+				type: "join",
+				payload: { username: "Player2", skinId: "gray-wolf" },
+			});
+
+			sendMessage(server, conn1, {
+				type: "kick",
+				payload: { playerId: "player-2" },
+			});
+
+			server.room.status = "finished";
+			sendMessage(server, conn1, { type: "rematch" });
+
+			// A rematch must NOT re-admit a player the host kicked from the lobby.
+			const reconn = createMockConnection("player-2-reconnect", "player-2");
+			await server.onConnect(reconn);
+			sendMessage(server, reconn, {
+				type: "join",
+				payload: { username: "Player2", skinId: "gray-wolf" },
+			});
+
+			expect(server.room.players.length).toBe(1);
+		});
+
+		it("should clear the kick deny-list when the room empties", async () => {
+			const conn1 = createMockConnection("player-1");
+			const conn2 = createMockConnection("player-2");
+			await server.onConnect(conn1);
+			await server.onConnect(conn2);
+
+			sendMessage(server, conn1, {
+				type: "join",
+				payload: { username: "Host", skinId: "gray-wolf" },
+			});
+			sendMessage(server, conn2, {
+				type: "join",
+				payload: { username: "Player2", skinId: "gray-wolf" },
+			});
+
+			sendMessage(server, conn1, {
+				type: "kick",
+				payload: { playerId: "player-2" },
+			});
+
+			server.onClose(conn1);
+			expect(server.room.players.length).toBe(0);
+
+			const reconn = createMockConnection("player-2-reconnect", "player-2");
+			await server.onConnect(reconn);
+			sendMessage(server, reconn, {
+				type: "join",
+				payload: { username: "Player2", skinId: "gray-wolf" },
+			});
+
+			expect(server.room.players.length).toBe(1);
 		});
 	});
 

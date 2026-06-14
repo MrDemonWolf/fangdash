@@ -85,6 +85,7 @@ export default function RaceRoomPage() {
 	const [elapsedTime, setElapsedTime] = useState(0);
 	const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 	const startTimeRef = useRef<number>(0);
+	const finalDurationRef = useRef<number>(0);
 
 	// Connection state
 	const [connectionState, setConnectionState] = useState<ConnectionState>("connecting");
@@ -103,6 +104,10 @@ export default function RaceRoomPage() {
 	const gameRef = useRef<any>(null);
 	const connectionRef = useRef<RaceConnection | DevRaceConnection | null>(null);
 	const hasJoinedRef = useRef(false);
+	// Guards the results effect against re-firing submitResult (which would hit the
+	// server's unique (race_id, player_id) index and surface as a CONFLICT error toast
+	// on an already-successful submit). Reset when a new race begins.
+	const hasSubmittedRef = useRef(false);
 
 	const equippedSkin = skinData?.skinId
 		? (getSkinById(skinData.skinId)?.spriteKey ?? "wolf-gray")
@@ -153,6 +158,7 @@ export default function RaceRoomPage() {
 	const handleGameOver = useCallback(
 		(state: GameState) => {
 			stopTimer();
+			finalDurationRef.current = Date.now() - startTimeRef.current;
 			setGameState(state);
 		},
 		[stopTimer],
@@ -184,6 +190,7 @@ export default function RaceRoomPage() {
 					longestCleanRun: 0,
 					cheatsUsed: false,
 				});
+				finalDurationRef.current = 0;
 				setGameError(null);
 
 				const connection = connectionRef.current;
@@ -319,6 +326,7 @@ export default function RaceRoomPage() {
 		});
 
 		connection.on("room_reset", (room) => {
+			hasSubmittedRef.current = false;
 			setPhase("waiting");
 			setPlayers(room.players);
 			setHostId(room.hostId);
@@ -348,6 +356,7 @@ export default function RaceRoomPage() {
 		});
 
 		connection.on("race_start", ({ seed }) => {
+			hasSubmittedRef.current = false;
 			setPhase("racing");
 			setRaceSeed(seed);
 		});
@@ -427,14 +436,25 @@ export default function RaceRoomPage() {
 		}
 		stopTimer();
 
-		// Store in local history
+		// Store in local history — guard against the effect re-firing (raceResults /
+		// gameState updates) so we submit and record exactly once per race.
 		const myResult = raceResults.find((r) => r.playerId === myId);
-		if (myResult) {
+		if (myResult && !hasSubmittedRef.current) {
+			hasSubmittedRef.current = true;
+			// If the race ended while this player was still alive there is no local
+			// game-over snapshot, so measure from race start instead. Guard against an
+			// unset start time so duration never becomes an epoch-scale value.
+			const duration =
+				finalDurationRef.current > 0
+					? finalDurationRef.current
+					: startTimeRef.current > 0
+						? Date.now() - startTimeRef.current
+						: 0;
 			addToHistory({
 				type: "race",
 				score: myResult.score,
 				distance: myResult.distance,
-				duration: 0,
+				duration,
 				difficulty: "easy",
 				mods: 0,
 				cheated: gameState.cheatsUsed,
@@ -447,6 +467,8 @@ export default function RaceRoomPage() {
 						raceId: myResult.raceId,
 						score: myResult.score,
 						distance: myResult.distance,
+						duration,
+						obstaclesCleared: gameState.obstaclesCleared,
 						seed: raceSeed,
 						cheated: gameState.cheatsUsed,
 					},
@@ -471,6 +493,7 @@ export default function RaceRoomPage() {
 		raceSeed,
 		stopTimer,
 		gameState.cheatsUsed,
+		gameState.obstaclesCleared,
 	]);
 
 	// ── Cleanup on unmount ──

@@ -1,16 +1,20 @@
 import {
+	MAX_DISTANCE_ABSOLUTE,
+	MAX_DURATION_MS,
+	MAX_OBSTACLES_ABSOLUTE,
+	MAX_SCORE_ABSOLUTE,
+	RACE_TOKEN_TTL_SECONDS,
 	getLevelFromXp,
 	getPlacementBonus,
-	RACE_TOKEN_TTL_SECONDS,
 	signRaceToken,
 } from "@fangdash/shared";
 import { TRPCError } from "@trpc/server";
-import { desc, eq, inArray, sql } from "drizzle-orm";
-import type { BatchItem } from "drizzle-orm/batch";
+import { and, count, desc, eq, gt, sql } from "drizzle-orm";
 import { z } from "zod";
 import { player, raceHistory } from "../../db/schema.ts";
 import { checkAllUnlocks } from "../../lib/check-all-unlocks.ts";
 import { ensurePlayer } from "../../lib/ensure-player.ts";
+import { validateScoreInput } from "../../lib/validate-score.ts";
 import { protectedProcedure, router } from "../trpc.ts";
 
 export const raceRouter = router({
@@ -34,15 +38,28 @@ export const raceRouter = router({
 	submitResult: protectedProcedure
 		.input(
 			z.object({
-				raceId: z.string().min(1),
-				score: z.number().int().min(0),
-				distance: z.number().min(0),
-				seed: z.string().min(1),
+				raceId: z.string().min(1).max(64),
+				score: z.number().int().min(0).max(MAX_SCORE_ABSOLUTE),
+				distance: z.number().min(0).max(MAX_DISTANCE_ABSOLUTE),
+				duration: z.number().int().min(0).max(MAX_DURATION_MS),
+				obstaclesCleared: z.number().int().min(0).max(MAX_OBSTACLES_ABSOLUTE),
+				seed: z.string().min(1).max(64),
 				cheated: z.boolean().default(false),
 				mods: z.number().int().min(0).default(0),
 			}),
 		)
 		.mutation(async ({ ctx, input }) => {
+			const validation = validateScoreInput({
+				mods: input.mods,
+				duration: input.duration,
+				score: input.score,
+				obstaclesCleared: input.obstaclesCleared,
+				distance: input.distance,
+			});
+			if (!validation.valid) {
+				throw new TRPCError({ code: "BAD_REQUEST", message: validation.reason });
+			}
+
 			const playerRecord = await ensurePlayer(ctx.db, ctx.user.id);
 			if (!playerRecord) {
 				throw new TRPCError({
@@ -54,73 +71,47 @@ export const raceRouter = router({
 			const now = new Date();
 			const raceHistoryId = crypto.randomUUID();
 
-			// Insert with placeholder placement (recomputed below)
-			const provisionalPlacement = 0;
-
-			await ctx.db.insert(raceHistory).values({
-				id: raceHistoryId,
-				raceId: input.raceId,
-				playerId: playerRecord.id,
-				placement: provisionalPlacement,
-				score: input.score,
-				distance: input.distance,
-				seed: input.seed,
-				cheated: input.cheated ? 1 : 0,
-				mods: input.mods,
-				createdAt: now,
-			});
-
-			// Phase 1: Compute authoritative placements for ALL rows in this race
-			const allResults = await ctx.db
-				.select({
-					id: raceHistory.id,
-					playerId: raceHistory.playerId,
-					placement: raceHistory.placement,
-					score: raceHistory.score,
-				})
+			// Compute this player's placement read-only: 1 + the number of rows in this
+			// race that scored higher. We deliberately NEVER read or mutate OTHER players'
+			// rows here — raceId is client-supplied and unauthenticated, so an attacker who
+			// learns a foreign `roomId:seed` must not be able to demote real participants'
+			// placement/XP/racesWon. Cross-player-authoritative ranking is the party
+			// server's job; binding submissions to verified participation (signed race
+			// result tokens) is tracked as a follow-up.
+			const higher = await ctx.db
+				.select({ c: count() })
 				.from(raceHistory)
-				.where(eq(raceHistory.raceId, input.raceId))
-				.orderBy(desc(raceHistory.score));
+				.where(and(eq(raceHistory.raceId, input.raceId), gt(raceHistory.score, input.score)));
+			const placement = (higher[0]?.c ?? 0) + 1;
 
-			let placement = provisionalPlacement;
-			const placementChanges: {
-				id: string;
-				playerId: string;
-				oldPlacement: number;
-				newPlacement: number;
-			}[] = [];
+			// Atomic dedupe via the (race_id, player_id) unique index: onConflictDoNothing
+			// + empty returning ⇒ this player already submitted for this race. Avoids the
+			// race window a separate SELECT pre-check would leave open.
+			const inserted = await ctx.db
+				.insert(raceHistory)
+				.values({
+					id: raceHistoryId,
+					raceId: input.raceId,
+					playerId: playerRecord.id,
+					placement,
+					score: input.score,
+					distance: input.distance,
+					seed: input.seed,
+					cheated: input.cheated ? 1 : 0,
+					mods: input.mods,
+					createdAt: now,
+				})
+				.onConflictDoNothing({ target: [raceHistory.raceId, raceHistory.playerId] })
+				.returning({ id: raceHistory.id });
 
-			for (let i = 0; i < allResults.length; i++) {
-				const row = allResults[i];
-				if (!row) continue;
-				const newPlacement = i + 1;
-				if (row.id === raceHistoryId) {
-					placement = newPlacement;
-				}
-				if (row.placement !== newPlacement) {
-					placementChanges.push({
-						id: row.id,
-						playerId: row.playerId,
-						oldPlacement: row.placement,
-						newPlacement,
-					});
-				}
+			if (inserted.length === 0) {
+				throw new TRPCError({
+					code: "CONFLICT",
+					message: "Result for this race was already submitted",
+				});
 			}
 
-			// If cheated, only update placements (other players' ranks still matter) but skip rewards
 			if (input.cheated) {
-				// Still apply placement corrections for other players
-				if (placementChanges.length > 0) {
-					const batchStmts: BatchItem<"sqlite">[] = placementChanges.map((change) =>
-						ctx.db
-							.update(raceHistory)
-							.set({ placement: change.newPlacement })
-							.where(eq(raceHistory.id, change.id)),
-					);
-					await ctx.db.batch(
-						batchStmts as unknown as [BatchItem<"sqlite">, ...BatchItem<"sqlite">[]],
-					);
-				}
 				return {
 					raceHistoryId,
 					placement,
@@ -133,94 +124,35 @@ export const raceRouter = router({
 				};
 			}
 
-			// Phase 2: Fetch affected OTHER players and compute XP/racesWon deltas
-			const otherAffected = placementChanges.filter((c) => c.playerId !== playerRecord.id);
-			let otherPlayerRecords: {
-				id: string;
-				totalXp: number;
-				racesWon: number;
-			}[] = [];
-
-			if (otherAffected.length > 0) {
-				const affectedPlayerIds = [...new Set(otherAffected.map((c) => c.playerId))];
-				otherPlayerRecords = await ctx.db
-					.select({
-						id: player.id,
-						totalXp: player.totalXp,
-						racesWon: player.racesWon,
-					})
-					.from(player)
-					.where(inArray(player.id, affectedPlayerIds));
-			}
-
-			// Phase 3: Compute current player's XP
+			// Award only this player's own XP/level/racesWon — no cross-player writes.
 			const placementBonus = getPlacementBonus(placement);
 			const xpGained = input.score + placementBonus;
-			const newTotalXp = playerRecord.totalXp + xpGained;
-			const levelInfo = getLevelFromXp(newTotalXp);
 			const previousLevel = playerRecord.level;
 
-			// Phase 4: Build batch writes
-			const batchStatements: BatchItem<"sqlite">[] = [];
-
-			// 4a: Update changed raceHistory placements
-			for (const change of placementChanges) {
-				batchStatements.push(
-					ctx.db
-						.update(raceHistory)
-						.set({ placement: change.newPlacement })
-						.where(eq(raceHistory.id, change.id)),
-				);
-			}
-
-			// 4b: Update affected OTHER players' XP, level, racesWon
-			for (const other of otherAffected) {
-				const record = otherPlayerRecords.find((r) => r.id === other.playerId);
-				if (!record) continue;
-
-				const xpDelta =
-					getPlacementBonus(other.newPlacement) - getPlacementBonus(other.oldPlacement);
-				const adjustedTotalXp = Math.max(0, record.totalXp + xpDelta);
-				const adjustedLevel = getLevelFromXp(adjustedTotalXp).level;
-				const racesWonDelta =
-					(other.oldPlacement === 1 ? -1 : 0) + (other.newPlacement === 1 ? 1 : 0);
-
-				batchStatements.push(
-					ctx.db
-						.update(player)
-						.set({
-							totalXp: adjustedTotalXp,
-							level: adjustedLevel,
-							racesWon:
-								racesWonDelta !== 0
-									? sql`MAX(0, ${player.racesWon} + ${racesWonDelta})`
-									: record.racesWon,
-							updatedAt: now,
-						})
-						.where(eq(player.id, other.playerId)),
-				);
-			}
-
-			// 4c: Update current player
 			const currentPlayerUpdate: Record<string, unknown> = {
 				racesPlayed: sql`${player.racesPlayed} + 1`,
 				totalXp: sql`${player.totalXp} + ${xpGained}`,
-				level: levelInfo.level,
 				updatedAt: now,
 			};
-
 			if (placement === 1) {
 				currentPlayerUpdate["racesWon"] = sql`${player.racesWon} + 1`;
 			}
 
-			batchStatements.push(
-				ctx.db.update(player).set(currentPlayerUpdate).where(eq(player.id, playerRecord.id)),
-			);
+			// Derive the level from the post-increment totalXp so it is never computed
+			// from a stale read (the level write is last-writer-wins and self-heals next race).
+			const updated = await ctx.db
+				.update(player)
+				.set(currentPlayerUpdate)
+				.where(eq(player.id, playerRecord.id))
+				.returning({ totalXp: player.totalXp });
 
-			// Phase 5: Execute atomically
-			await ctx.db.batch(
-				batchStatements as unknown as [BatchItem<"sqlite">, ...BatchItem<"sqlite">[]],
-			);
+			const newTotalXp = updated[0]?.totalXp ?? playerRecord.totalXp + xpGained;
+			const levelInfo = getLevelFromXp(newTotalXp);
+
+			await ctx.db
+				.update(player)
+				.set({ level: levelInfo.level })
+				.where(eq(player.id, playerRecord.id));
 
 			const { newAchievements, newSkins, unlockError } = await checkAllUnlocks(
 				ctx.db,
@@ -230,7 +162,7 @@ export const raceRouter = router({
 				{
 					score: input.score,
 					distance: input.distance,
-					obstaclesCleared: 0,
+					obstaclesCleared: input.obstaclesCleared,
 					longestCleanRun: 0,
 				},
 			);

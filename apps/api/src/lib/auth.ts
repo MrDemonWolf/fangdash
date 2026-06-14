@@ -69,13 +69,15 @@ export function createAuth(env: Bindings) {
 		session: {
 			cookieCache: {
 				enabled: true,
-				maxAge: 30 * 60,
+				// Keep short so bans/role changes propagate quickly
+				maxAge: 5 * 60,
 			},
 		},
 		advanced: {
 			useSecureCookies: !isDev,
-			cookieOptions: {
+			defaultCookieAttributes: {
 				sameSite: "lax",
+				httpOnly: true,
 			},
 		},
 		trustedOrigins,

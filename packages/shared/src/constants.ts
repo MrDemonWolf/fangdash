@@ -23,10 +23,23 @@ export const SCORE_PER_OBSTACLE = 50;
 export const DISTANCE_MULTIPLIER = 0.1;
 export const MAX_DURATION_MS = 1_800_000; // 30 minutes
 
+// Absolute submission caps derived from physics over a maximum 30-minute run:
+// obstacles ≤ MAX_DURATION_MS / MIN_OBSTACLE_GAP_FLOOR_MS (400ms) = 4,500 → 5,000;
+// distance ≤ (MAX_DURATION_MS / 1000) * MAX_SPEED (800) * DISTANCE_MULTIPLIER (0.1) = 144,000 → 200,000;
+// score ≤ time + obstacle points with mod multipliers ≈ 900k → 1,000,000.
+export const MAX_SCORE_ABSOLUTE = 1_000_000;
+export const MAX_DISTANCE_ABSOLUTE = 200_000;
+export const MAX_OBSTACLES_ABSOLUTE = 5_000;
+
 // ── Obstacles ──
 export const OBSTACLE_GROUND_Y = 536; // fixed Y for obstacle anchors — accounts for transparent sprite padding
 export const MIN_OBSTACLE_GAP_MS = 800;
 export const MAX_OBSTACLE_GAP_MS = 2500;
+// The engine divides MIN_OBSTACLE_GAP_MS by the difficulty spawn-rate multiplier and
+// floors it at 400ms (see DifficultyScaler.minGap), so the fastest legitimate spawn
+// cadence is one obstacle per 400ms. Anti-cheat must bound obstacle counts against this
+// true floor, not MIN_OBSTACLE_GAP_MS, or top nightmare runs get falsely rejected.
+export const MIN_OBSTACLE_GAP_FLOOR_MS = 400;
 export const OBSTACLE_TYPES = ["rock", "log", "bush", "spike"] as const;
 export type ObstacleType = (typeof OBSTACLE_TYPES)[number];
 

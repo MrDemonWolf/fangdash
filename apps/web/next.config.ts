@@ -1,5 +1,32 @@
 import type { NextConfig } from "next";
 
+const partykitHost =
+	process.env["NEXT_PUBLIC_PARTYKIT_HOST"] ||
+	(process.env.NODE_ENV === "production"
+		? "fangdash.nathanialhenniges.partykit.dev"
+		: "localhost:1999");
+
+const connectSrc = [
+	"'self'",
+	process.env["NEXT_PUBLIC_API_URL"],
+	`wss://${partykitHost}`,
+	`https://${partykitHost}`,
+]
+	.filter(Boolean)
+	.join(" ");
+
+const contentSecurityPolicy = [
+	"default-src 'self'",
+	// 'unsafe-inline' for script-src is required by Next.js inline hydration absent nonce infra
+	"script-src 'self' 'unsafe-inline'",
+	"style-src 'self' 'unsafe-inline'",
+	"img-src 'self' data: blob: https://static-cdn.jtvnw.net",
+	"font-src 'self' data:",
+	`connect-src ${connectSrc}`,
+	"worker-src 'self'",
+	"frame-ancestors 'none'",
+].join("; ");
+
 const nextConfig: NextConfig = {
 	async headers() {
 		return [
@@ -16,6 +43,10 @@ const nextConfig: NextConfig = {
 						key: "Permissions-Policy",
 						value: "camera=(), microphone=(), geolocation=()",
 					},
+					// Skipped in dev so next dev HMR (eval, inline ws) keeps working
+					...(process.env.NODE_ENV === "production"
+						? [{ key: "Content-Security-Policy", value: contentSecurityPolicy }]
+						: []),
 				],
 			},
 		];
@@ -45,11 +76,7 @@ const nextConfig: NextConfig = {
 				return "dev";
 			}
 		})(),
-		NEXT_PUBLIC_PARTYKIT_HOST:
-			process.env["NEXT_PUBLIC_PARTYKIT_HOST"] ||
-			(process.env.NODE_ENV === "production"
-				? "fangdash.nathanialhenniges.partykit.dev"
-				: "localhost:1999"),
+		NEXT_PUBLIC_PARTYKIT_HOST: partykitHost,
 	},
 };
 
