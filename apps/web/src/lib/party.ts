@@ -23,6 +23,12 @@ export interface RaceConnectionOptions {
 	 * PartyKit host override. Defaults to NEXT_PUBLIC_PARTYKIT_HOST env var.
 	 */
 	host?: string;
+	/**
+	 * Async provider for the short-lived race auth token. Called on every
+	 * (re)connect so an expired token is refreshed automatically. The resolved
+	 * token is forwarded to the PartyKit server as the `?token=` query param.
+	 */
+	getToken?: () => Promise<string>;
 	/** Called whenever the WebSocket connection state changes */
 	onConnectionStateChange?: (state: ConnectionState) => void;
 }
@@ -56,10 +62,14 @@ export class RaceConnection {
 	}
 
 	private createSocket(): PartySocket {
+		const getToken = this.options.getToken;
 		const socket = new PartySocket({
 			host: this.host,
 			room: this.options.roomCode,
 			party: "race",
+			// PartySocket invokes this on every (re)connect, so each connection
+			// presents a freshly minted, unexpired token.
+			...(getToken && { query: async () => ({ token: await getToken() }) }),
 		});
 
 		socket.addEventListener("message", this.messageHandler);

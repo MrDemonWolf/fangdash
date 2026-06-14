@@ -10,12 +10,15 @@ import {
 	MAX_PLAYERS_PER_RACE,
 	MIN_PLAYERS_TO_START,
 	RACE_COUNTDOWN_SECONDS,
+	verifyRaceToken,
 } from "@fangdash/shared";
 import type * as Party from "partykit/server";
 
 export default class RaceServer implements Party.Server {
 	room: RaceRoom;
 	private countdownInProgress = false;
+	/** connection id → authenticated user id (from the verified race token). */
+	private userIds = new Map<string, string>();
 
 	constructor(readonly party: Party.Party) {
 		this.room = {
@@ -41,7 +44,22 @@ export default class RaceServer implements Party.Server {
 			return;
 		}
 
-		// Verify token against the API
+		// Preferred path: verify the short-lived HMAC token minted by the API.
+		// No network round-trip, and the token carries the authenticated user id.
+		const raceTokenSecret = this.party.env["RACE_TOKEN_SECRET"] as string | undefined;
+		if (raceTokenSecret) {
+			const verified = await verifyRaceToken(token, raceTokenSecret);
+			if (!verified) {
+				conn.close(4003, "Invalid or expired token");
+				return;
+			}
+			this.userIds.set(conn.id, verified.userId);
+			this.send(conn, { type: "room_state", payload: this.room });
+			return;
+		}
+
+		// Legacy fallback (no RACE_TOKEN_SECRET configured): verify the raw
+		// session token against the API's get-session endpoint.
 		const apiUrl = this.party.env["API_URL"] as string | undefined;
 		if (apiUrl) {
 			const controller = new AbortController();
@@ -104,6 +122,7 @@ export default class RaceServer implements Party.Server {
 
 	onClose(conn: Party.Connection) {
 		const wasHost = conn.id === this.room.hostId;
+		this.userIds.delete(conn.id);
 		this.room.players = this.room.players.filter((p) => p.id !== conn.id);
 		this.broadcast({ type: "player_left", payload: { id: conn.id } });
 

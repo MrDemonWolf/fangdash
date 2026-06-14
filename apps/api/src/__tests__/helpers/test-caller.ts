@@ -10,6 +10,7 @@ interface TestCallerOptions {
 	banned?: boolean;
 	banReason?: string | null;
 	banExpires?: Date | null;
+	raceTokenSecret?: string | null;
 }
 
 export function createTestCaller(
@@ -20,6 +21,9 @@ export function createTestCaller(
 		// They share the same query API for our purposes.
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		db: opts.db as any,
+		// Default to a test secret, but honour an explicit `null` (secret unset).
+		raceTokenSecret:
+			"raceTokenSecret" in opts ? (opts.raceTokenSecret ?? null) : "test-race-token-secret",
 		auth: null,
 		headers: new Headers(),
 		session: opts.userId
