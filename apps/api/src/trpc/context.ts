@@ -29,6 +29,7 @@ export async function createContext(c: Context) {
 
 	return {
 		db,
+		raceTokenSecret: c.env.RACE_TOKEN_SECRET ?? null,
 		auth: auth as unknown as {
 			api: {
 				banUser(opts: {

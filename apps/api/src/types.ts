@@ -6,4 +6,6 @@ export type Bindings = {
 	TWITCH_CLIENT_SECRET: string;
 	WEB_URL: string;
 	ENVIRONMENT?: string;
+	/** Shared HMAC secret for short-lived PartyKit race connection tokens. */
+	RACE_TOKEN_SECRET?: string;
 };

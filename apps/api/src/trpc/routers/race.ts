@@ -1,4 +1,9 @@
-import { getLevelFromXp, getPlacementBonus } from "@fangdash/shared";
+import {
+	getLevelFromXp,
+	getPlacementBonus,
+	RACE_TOKEN_TTL_SECONDS,
+	signRaceToken,
+} from "@fangdash/shared";
 import { TRPCError } from "@trpc/server";
 import { desc, eq, inArray, sql } from "drizzle-orm";
 import type { BatchItem } from "drizzle-orm/batch";
@@ -9,6 +14,23 @@ import { ensurePlayer } from "../../lib/ensure-player.ts";
 import { protectedProcedure, router } from "../trpc.ts";
 
 export const raceRouter = router({
+	/**
+	 * Mint a short-lived signed token the web client forwards to the PartyKit
+	 * race server as the `?token=` query param. The PartyKit server verifies it
+	 * with the same `RACE_TOKEN_SECRET`, binding the socket to this user without
+	 * exposing the (httpOnly) Better Auth session cookie to JS.
+	 */
+	getConnectionToken: protectedProcedure.mutation(async ({ ctx }) => {
+		if (!ctx.raceTokenSecret) {
+			throw new TRPCError({
+				code: "INTERNAL_SERVER_ERROR",
+				message: "Race connections are not configured (missing RACE_TOKEN_SECRET)",
+			});
+		}
+		const token = await signRaceToken(ctx.user.id, ctx.raceTokenSecret);
+		return { token, expiresIn: RACE_TOKEN_TTL_SECONDS };
+	}),
+
 	submitResult: protectedProcedure
 		.input(
 			z.object({
