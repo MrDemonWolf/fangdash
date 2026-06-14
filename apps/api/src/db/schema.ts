@@ -111,6 +111,7 @@ export const score = sqliteTable(
 		index("score_created_at_idx").on(table.createdAt),
 		index("score_cheated_idx").on(table.cheated),
 		index("score_leaderboard_idx").on(table.playerId, table.cheated, table.difficulty),
+		uniqueIndex("score_player_seed_unique").on(table.playerId, table.seed),
 	],
 );
 
@@ -160,5 +161,6 @@ export const raceHistory = sqliteTable(
 		index("race_history_player_id_idx").on(table.playerId),
 		index("race_history_race_id_idx").on(table.raceId),
 		index("race_history_created_at_idx").on(table.createdAt),
+		uniqueIndex("race_history_race_player_unique").on(table.raceId, table.playerId),
 	],
 );

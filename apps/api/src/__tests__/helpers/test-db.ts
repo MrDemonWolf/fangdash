@@ -94,6 +94,7 @@ CREATE INDEX IF NOT EXISTS score_mods_idx ON score(mods);
 CREATE INDEX IF NOT EXISTS score_created_at_idx ON score(created_at);
 CREATE INDEX IF NOT EXISTS score_cheated_idx ON score(cheated);
 CREATE INDEX IF NOT EXISTS score_leaderboard_idx ON score(player_id, cheated, difficulty);
+CREATE UNIQUE INDEX IF NOT EXISTS score_player_seed_unique ON score(player_id, seed);
 
 CREATE TABLE IF NOT EXISTS player_skin (
 	id TEXT PRIMARY KEY,
@@ -126,6 +127,7 @@ CREATE TABLE IF NOT EXISTS race_history (
 CREATE INDEX IF NOT EXISTS race_history_player_id_idx ON race_history(player_id);
 CREATE INDEX IF NOT EXISTS race_history_race_id_idx ON race_history(race_id);
 CREATE INDEX IF NOT EXISTS race_history_created_at_idx ON race_history(created_at);
+CREATE UNIQUE INDEX IF NOT EXISTS race_history_race_player_unique ON race_history(race_id, player_id);
 `;
 
 export function createTestDb(): {
@@ -194,6 +196,7 @@ export function createTestPlayer(
 		totalXp: number;
 		level: number;
 		equippedSkinId: string;
+		profilePublic: number;
 	}> = {},
 ) {
 	const now = new Date();
@@ -203,6 +206,7 @@ export function createTestPlayer(
 			id,
 			userId,
 			equippedSkinId: overrides.equippedSkinId ?? "gray-wolf",
+			profilePublic: overrides.profilePublic ?? 1,
 			totalScore: overrides.totalScore ?? 0,
 			totalDistance: overrides.totalDistance ?? 0,
 			totalObstaclesCleared: overrides.totalObstaclesCleared ?? 0,

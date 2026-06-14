@@ -23,7 +23,6 @@ export interface PendingScoreEntry {
 	retryCount: number;
 	lastAttempt: number | null;
 	status: "pending" | "syncing" | "failed";
-	hmac: string;
 }
 
 export interface ScoreHistoryEntry {
@@ -81,29 +80,6 @@ function getDB(): Promise<IDBPDatabase<FangDashScoresDB>> {
 		});
 	}
 	return dbPromise;
-}
-
-// ---------------------------------------------------------------------------
-// HMAC helper
-// ---------------------------------------------------------------------------
-
-export async function computeHMAC(
-	payload: PendingScoreEntry["payload"],
-	salt: string,
-): Promise<string> {
-	const data = JSON.stringify(payload) + salt;
-	const encoder = new TextEncoder();
-	const key = await crypto.subtle.importKey(
-		"raw",
-		encoder.encode(salt),
-		{ name: "HMAC", hash: "SHA-256" },
-		false,
-		["sign"],
-	);
-	const sig = await crypto.subtle.sign("HMAC", key, encoder.encode(data));
-	return Array.from(new Uint8Array(sig))
-		.map((b) => b.toString(16).padStart(2, "0"))
-		.join("");
 }
 
 // ---------------------------------------------------------------------------

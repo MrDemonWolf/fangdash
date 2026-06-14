@@ -13,10 +13,12 @@ interface RateLimitEntry {
 const mutationBuckets = new Map<string, RateLimitEntry>();
 const queryBuckets = new Map<string, RateLimitEntry>();
 const authBuckets = new Map<string, RateLimitEntry>();
+const sessionBuckets = new Map<string, RateLimitEntry>();
 
 const MUTATION_LIMIT = 10;
 const QUERY_LIMIT = 60;
 const AUTH_LIMIT = 5;
+const SESSION_LIMIT = 120;
 const WINDOW_MS = 60_000; // 1 minute
 
 let lastCleanup = Date.now();
@@ -50,6 +52,9 @@ function lazyCleanup() {
 	for (const [key, entry] of authBuckets) {
 		if (now >= entry.resetAt) authBuckets.delete(key);
 	}
+	for (const [key, entry] of sessionBuckets) {
+		if (now >= entry.resetAt) sessionBuckets.delete(key);
+	}
 	for (const [key, entry] of mutationBuckets) {
 		if (now >= entry.resetAt) mutationBuckets.delete(key);
 	}
@@ -63,9 +68,18 @@ export async function rateLimitMiddleware(c: Context, next: Next) {
 
 	const path = c.req.path;
 
-	// Rate-limit auth endpoints (exempt session checks — called on every page load)
+	// Rate-limit auth endpoints (session checks get a higher limit — called on every page load)
 	if (path.startsWith("/api/auth/")) {
 		if (path === "/api/auth/get-session" && c.req.method === "GET") {
+			const ip = getClientIp(c);
+			const entry = checkLimit(sessionBuckets, ip);
+			if (entry.count > SESSION_LIMIT) {
+				const retryAfter = Math.ceil((entry.resetAt - Date.now()) / 1000);
+				return c.json(
+					{ error: "Too many requests" },
+					{ status: 429, headers: { "Retry-After": String(Math.max(1, retryAfter)) } },
+				);
+			}
 			return next();
 		}
 		const ip = getClientIp(c);

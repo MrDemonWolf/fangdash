@@ -2,7 +2,6 @@ import type { DifficultyName } from "@fangdash/shared";
 import {
 	type PendingScoreEntry,
 	addPendingScore,
-	computeHMAC,
 	getAllPendingScores,
 	removePendingScore,
 	updatePendingScore,
@@ -43,6 +42,19 @@ export interface SubmitResult {
 
 type SubmitFn = (payload: ScorePayload) => Promise<SubmitResult>;
 
+// A CONFLICT means the server already has a score for this run's seed — typically
+// because the live submit on the play page already succeeded and this is the
+// redundant offline-backup copy. It must be treated as terminal success (drop the
+// entry), not retried, or the unique (player, seed) index churns retries forever.
+function isAlreadySubmitted(err: unknown): boolean {
+	if (typeof err !== "object" || err === null) return false;
+	const e = err as {
+		data?: { code?: string } | null;
+		shape?: { data?: { code?: string } | null } | null;
+	};
+	return e.data?.code === "CONFLICT" || e.shape?.data?.code === "CONFLICT";
+}
+
 // ---------------------------------------------------------------------------
 // ScoreQueue
 // ---------------------------------------------------------------------------
@@ -52,16 +64,12 @@ let retryTimeout: ReturnType<typeof setTimeout> | null = null;
 export async function enqueue(
 	type: "solo" | "race",
 	payload: ScorePayload,
-	sessionSalt: string,
 	raceId?: string,
 ): Promise<number> {
-	const hmac = await computeHMAC({ ...payload, cheated: payload.cheated ?? false }, sessionSalt);
-
 	const id = await addPendingScore({
 		type,
 		payload: { ...payload, cheated: payload.cheated ?? false },
 		raceId,
-		hmac,
 	});
 
 	return id;
@@ -114,7 +122,12 @@ async function submitOne(
 
 		await removePendingScore(entry.id);
 		return result;
-	} catch {
+	} catch (err) {
+		// Already on the server (e.g. the live submit beat this backup) — drop it.
+		if (isAlreadySubmitted(err)) {
+			await removePendingScore(entry.id);
+			return null;
+		}
 		const newRetryCount = entry.retryCount + 1;
 		await updatePendingScore(entry.id, {
 			status: newRetryCount >= MAX_RETRIES ? "failed" : "pending",
