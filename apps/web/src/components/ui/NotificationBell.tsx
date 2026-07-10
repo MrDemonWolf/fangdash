@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 const TYPE_CONFIG: Record<NotificationType, { dot: string; icon: string }> = {
-	score: { dot: "bg-[#0FACED]", icon: "\u2601\ufe0f" },
+	score: { dot: "bg-fang-cyan", icon: "\u2601\ufe0f" },
 	achievement: { dot: "bg-amber-400", icon: "\ud83c\udfc6" },
 	skin: { dot: "bg-purple-400", icon: "\ud83c\udfa8" },
 	level_up: { dot: "bg-emerald-400", icon: "\u2b06\ufe0f" },
@@ -66,7 +66,7 @@ export function NotificationBell() {
 				) : (
 					<div className="relative px-4 py-2">
 						{/* Timeline line */}
-						<div className="absolute left-[19px] top-2 bottom-2 w-px bg-gradient-to-b from-[#0FACED]/40 via-border/30 to-transparent" />
+						<div className="absolute left-[19px] top-2 bottom-2 w-px bg-gradient-to-b from-fang-cyan/40 via-border/30 to-transparent" />
 
 						{notifications.map((notification, i) => {
 							const config = TYPE_CONFIG[notification.type] ?? TYPE_CONFIG.score;
@@ -80,7 +80,7 @@ export function NotificationBell() {
 									)}
 								>
 									{/* Dot */}
-									<div className="relative z-10 mt-1 flex-shrink-0">
+									<div className="relative z-10 mt-1 shrink-0">
 										<div
 											className={cn(
 												"size-[7px] rounded-full ring-[3px] ring-card",
@@ -104,7 +104,7 @@ export function NotificationBell() {
 												<span className="mr-1.5">{config.icon}</span>
 												{notification.title}
 											</p>
-											<span className="text-[10px] font-mono text-muted-foreground/40 flex-shrink-0 tabular-nums">
+											<span className="text-[10px] font-mono text-muted-foreground/40 shrink-0 tabular-nums">
 												{formatRelativeTime(notification.createdAt)}
 											</span>
 										</div>

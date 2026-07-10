@@ -3,8 +3,7 @@ import { useSession } from "@/lib/auth-client.ts";
 export function useIsAdmin(): boolean {
 	const { data: session } = useSession();
 	const userRole = (session?.user as Record<string, unknown> | undefined)?.["role"] as
-		| string
-		| undefined;
+		string | undefined;
 	const hasRole = userRole === "admin";
 	// In local development, always allow debug access for signed-in users
 	const isDev = process.env.NODE_ENV === "development";

@@ -541,7 +541,7 @@ export default function RaceRoomPage() {
 					<p className="mb-6 text-white/50">The host removed you from this race room.</p>
 					<Link
 						href="/race"
-						className="inline-block rounded-lg bg-[#0FACED] px-6 py-3 text-sm font-bold uppercase tracking-wider text-[#091533] transition-colors hover:bg-[#0FACED]/80"
+						className="inline-block rounded-lg bg-fang-cyan px-6 py-3 text-sm font-bold uppercase tracking-wider text-[#091533] transition-colors hover:bg-fang-cyan/80"
 					>
 						Back to Lobby
 					</Link>
@@ -554,7 +554,7 @@ export default function RaceRoomPage() {
 	if (!isSignedIn) {
 		return (
 			<main className="flex min-h-screen flex-col items-center justify-center bg-[#091533] px-4">
-				<div className="w-full max-w-md rounded-xl border border-[#0FACED]/20 bg-[#091533]/95 p-8 text-center shadow-2xl">
+				<div className="w-full max-w-md rounded-xl border border-fang-cyan/20 bg-[#091533]/95 p-8 text-center shadow-2xl">
 					<h1 className="mb-4 text-3xl font-extrabold tracking-tight text-white">Race Room</h1>
 					<p className="mb-6 text-white/50">Sign in to join this race.</p>
 					<Link
@@ -628,14 +628,14 @@ export default function RaceRoomPage() {
 							Room Code
 						</p>
 						<div className="flex items-center justify-center gap-3">
-							<h1 className="text-5xl font-black tracking-widest text-[#0FACED]">
+							<h1 className="text-5xl font-black tracking-widest text-fang-cyan">
 								{streamerMode ? "------" : roomCode}
 							</h1>
 							<button
 								type="button"
 								onClick={handleCopyCode}
 								title="Copy room code"
-								className="rounded-lg border border-[#0FACED]/30 px-3 py-2 text-xs font-semibold text-[#0FACED]/70 transition-colors hover:border-[#0FACED]/60 hover:text-[#0FACED]"
+								className="rounded-lg border border-fang-cyan/30 px-3 py-2 text-xs font-semibold text-fang-cyan/70 transition-colors hover:border-fang-cyan/60 hover:text-fang-cyan"
 							>
 								{copied ? "Copied!" : "Copy"}
 							</button>
@@ -644,7 +644,7 @@ export default function RaceRoomPage() {
 					</div>
 
 					{/* Player list */}
-					<div className="rounded-xl border border-[#0FACED]/20 bg-white/5 p-6">
+					<div className="rounded-xl border border-fang-cyan/20 bg-white/5 p-6">
 						<h2 className="mb-4 text-lg font-semibold text-white">Players ({players.length})</h2>
 						<div className="space-y-2">
 							{players.length === 0 && <p className="text-sm text-white/30">Connecting...</p>}
@@ -653,14 +653,14 @@ export default function RaceRoomPage() {
 									key={player.id}
 									className="flex items-center gap-3 rounded-lg bg-white/5 px-4 py-3"
 								>
-									<div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#0FACED]/20 text-xs font-bold text-[#0FACED]">
+									<div className="flex h-8 w-8 items-center justify-center rounded-full bg-fang-cyan/20 text-xs font-bold text-fang-cyan">
 										{player.skinId === "default" ? "D" : player.skinId.charAt(0).toUpperCase()}
 									</div>
 									<span className="flex-1 truncate text-sm font-semibold text-white">
 										{player.username}
 									</span>
 									{player.id === hostId && (
-										<span className="rounded bg-[#0FACED]/20 px-2 py-0.5 text-xs font-bold uppercase tracking-wider text-[#0FACED]">
+										<span className="rounded bg-fang-cyan/20 px-2 py-0.5 text-xs font-bold uppercase tracking-wider text-fang-cyan">
 											HOST
 										</span>
 									)}
@@ -674,6 +674,7 @@ export default function RaceRoomPage() {
 										<button
 											type="button"
 											onClick={() => handleKick(player.id)}
+											aria-label={`Kick ${player.username}`}
 											title="Kick player"
 											className="ml-1 rounded p-1 text-white/30 transition-colors hover:bg-red-500/20 hover:text-red-400"
 										>
@@ -692,8 +693,8 @@ export default function RaceRoomPage() {
 						disabled={readySent}
 						className={`w-full cursor-pointer rounded-lg px-6 py-4 text-sm font-bold uppercase tracking-wider transition-colors ${
 							readySent
-								? "bg-[#0FACED]/40 text-[#091533]/60 cursor-not-allowed"
-								: "bg-[#0FACED] text-[#091533] hover:bg-[#0FACED]/80"
+								? "bg-fang-cyan/40 text-[#091533]/60 cursor-not-allowed"
+								: "bg-fang-cyan text-[#091533] hover:bg-fang-cyan/80"
 						}`}
 					>
 						{isHost ? (readySent ? "Starting..." : "Start Race") : readySent ? "Ready ✓" : "Ready"}
@@ -729,7 +730,7 @@ export default function RaceRoomPage() {
 				{/* Game canvas container */}
 				<div
 					ref={containerRef}
-					className="aspect-[4/3] w-full overflow-hidden rounded-xl border border-[#0FACED]/20 touch-none"
+					className="aspect-[4/3] w-full overflow-hidden rounded-xl border border-fang-cyan/20 touch-none"
 				/>
 
 				{/* Connection lost overlay */}
@@ -764,7 +765,7 @@ export default function RaceRoomPage() {
 							<button
 								type="button"
 								onClick={() => window.location.reload()}
-								className="rounded-lg bg-[#0FACED] px-5 py-2 text-sm font-bold text-[#091533] transition-colors hover:bg-[#0FACED]/80"
+								className="rounded-lg bg-fang-cyan px-5 py-2 text-sm font-bold text-[#091533] transition-colors hover:bg-fang-cyan/80"
 							>
 								Reload Page
 							</button>

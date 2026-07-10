@@ -4,6 +4,7 @@ import {
 	type DifficultyLevel,
 	MAX_OBSTACLE_GAP_MS,
 	MAX_SPEED,
+	MIN_OBSTACLE_GAP_FLOOR_MS,
 	MIN_OBSTACLE_GAP_MS,
 	SPEED_INCREASE_INTERVAL_MS,
 	SPEED_INCREMENT,
@@ -51,7 +52,7 @@ export class DifficultyScaler {
 
 	get minGap(): number {
 		return Math.max(
-			400,
+			MIN_OBSTACLE_GAP_FLOOR_MS,
 			(this.overrides.minGapMs ?? MIN_OBSTACLE_GAP_MS) / this.currentLevel.spawnRateMultiplier,
 		);
 	}

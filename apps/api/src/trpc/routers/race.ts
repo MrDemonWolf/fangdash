@@ -4,16 +4,16 @@ import {
 	MAX_OBSTACLES_ABSOLUTE,
 	MAX_SCORE_ABSOLUTE,
 	RACE_TOKEN_TTL_SECONDS,
-	getLevelFromXp,
 	getPlacementBonus,
 	signRaceToken,
 } from "@fangdash/shared";
 import { TRPCError } from "@trpc/server";
-import { and, count, desc, eq, gt, sql } from "drizzle-orm";
+import { and, desc, eq, gt, sql } from "drizzle-orm";
 import { z } from "zod";
 import { player, raceHistory } from "../../db/schema.ts";
 import { checkAllUnlocks } from "../../lib/check-all-unlocks.ts";
 import { ensurePlayer } from "../../lib/ensure-player.ts";
+import { reconcileLevel } from "../../lib/reconcile-level.ts";
 import { validateScoreInput } from "../../lib/validate-score.ts";
 import { protectedProcedure, router } from "../trpc.ts";
 
@@ -78,11 +78,11 @@ export const raceRouter = router({
 			// placement/XP/racesWon. Cross-player-authoritative ranking is the party
 			// server's job; binding submissions to verified participation (signed race
 			// result tokens) is tracked as a follow-up.
-			const higher = await ctx.db
-				.select({ c: count() })
-				.from(raceHistory)
-				.where(and(eq(raceHistory.raceId, input.raceId), gt(raceHistory.score, input.score)));
-			const placement = (higher[0]?.c ?? 0) + 1;
+			const higher = await ctx.db.$count(
+				raceHistory,
+				and(eq(raceHistory.raceId, input.raceId), gt(raceHistory.score, input.score)),
+			);
+			const placement = higher + 1;
 
 			// Atomic dedupe via the (race_id, player_id) unique index: onConflictDoNothing
 			// + empty returning ⇒ this player already submitted for this race. Avoids the
@@ -147,12 +147,7 @@ export const raceRouter = router({
 				.returning({ totalXp: player.totalXp });
 
 			const newTotalXp = updated[0]?.totalXp ?? playerRecord.totalXp + xpGained;
-			const levelInfo = getLevelFromXp(newTotalXp);
-
-			await ctx.db
-				.update(player)
-				.set({ level: levelInfo.level })
-				.where(eq(player.id, playerRecord.id));
+			const { level } = await reconcileLevel(ctx.db, playerRecord.id, newTotalXp);
 
 			const { newAchievements, newSkins, unlockError } = await checkAllUnlocks(
 				ctx.db,
@@ -174,8 +169,8 @@ export const raceRouter = router({
 				newSkins,
 				unlockError,
 				xpGained,
-				levelUp: levelInfo.level > previousLevel,
-				newLevel: levelInfo.level,
+				levelUp: level > previousLevel,
+				newLevel: level,
 			};
 		}),
 

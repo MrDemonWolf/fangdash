@@ -154,6 +154,7 @@ function DeleteConfirmationDialog({
 						Type <span className="font-mono font-bold text-destructive">DELETE</span> to confirm:
 					</p>
 					<Input
+						aria-label="Type DELETE to confirm account deletion"
 						value={confirmText}
 						onChange={(e) => setConfirmText(e.target.value)}
 						placeholder="DELETE"

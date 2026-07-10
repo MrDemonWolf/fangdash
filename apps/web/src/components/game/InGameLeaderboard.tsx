@@ -3,6 +3,7 @@
 import type { DifficultyName } from "@fangdash/shared";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
+import { rankColorClass } from "@/lib/format.ts";
 import { useTRPC } from "@/lib/trpc.ts";
 import { cn } from "@/lib/utils";
 
@@ -38,7 +39,7 @@ export function InGameLeaderboard({ visible = true, difficulty, mods }: InGameLe
 	const isLoading = view === "global" ? globalLoading : localLoading;
 
 	return (
-		<div className="absolute right-2 top-14 z-10 w-44 rounded border border-[#0FACED]/20 bg-[#091533]/90 backdrop-blur-md pointer-events-auto">
+		<div className="absolute right-2 top-14 z-10 w-44 rounded border border-fang-cyan/20 bg-[#091533]/90 backdrop-blur-md pointer-events-auto">
 			{/* Tab bar */}
 			<div className="flex border-b border-white/10">
 				{(["global", "local"] as View[]).map((v) => (
@@ -48,7 +49,7 @@ export function InGameLeaderboard({ visible = true, difficulty, mods }: InGameLe
 						onClick={() => setView(v)}
 						className={cn(
 							"flex-1 py-1.5 text-[10px] font-mono uppercase tracking-widest transition-colors",
-							view === v ? "text-[#0FACED] bg-[#0FACED]/10" : "text-white/30 hover:text-white/60",
+							view === v ? "text-fang-cyan bg-fang-cyan/10" : "text-white/30 hover:text-white/60",
 						)}
 					>
 						{v}
@@ -80,13 +81,7 @@ export function InGameLeaderboard({ visible = true, difficulty, mods }: InGameLe
 							<span
 								className={cn(
 									"w-4 text-center text-[10px] font-mono font-bold shrink-0",
-									entry.rank === 1
-										? "text-yellow-400"
-										: entry.rank === 2
-											? "text-slate-300"
-											: entry.rank === 3
-												? "text-amber-600"
-												: "text-white/30",
+									rankColorClass(entry.rank),
 								)}
 							>
 								{entry.rank}
@@ -94,7 +89,7 @@ export function InGameLeaderboard({ visible = true, difficulty, mods }: InGameLe
 							<span className="flex-1 text-[10px] font-mono text-white/70 truncate">
 								{entry.username ?? "Anon"}
 							</span>
-							<span className="text-[10px] font-mono font-bold tabular-nums text-[#0FACED] shrink-0">
+							<span className="text-[10px] font-mono font-bold tabular-nums text-fang-cyan shrink-0">
 								{entry.score.toLocaleString()}
 							</span>
 						</div>

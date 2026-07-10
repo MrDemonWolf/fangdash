@@ -511,7 +511,7 @@ export default function PlayPage() {
 							<button
 								type="button"
 								onClick={() => window.location.reload()}
-								className="rounded-lg bg-[#0FACED] px-6 py-3 text-sm font-bold text-[#091533] transition-colors hover:bg-[#0FACED]/80"
+								className="rounded-lg bg-fang-cyan px-6 py-3 text-sm font-bold text-[#091533] transition-colors hover:bg-fang-cyan/80"
 							>
 								Reload Page
 							</button>
