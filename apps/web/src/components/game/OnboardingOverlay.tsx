@@ -12,7 +12,7 @@ const STEPS = [
 		description: "Press SPACE or tap the screen to jump. You can double jump too!",
 		icon: (
 			<svg
-				className="mx-auto mb-4 h-16 w-16 animate-bounce text-[#0FACED]"
+				className="mx-auto mb-4 h-16 w-16 animate-bounce text-fang-cyan"
 				viewBox="0 0 24 24"
 				fill="none"
 				stroke="currentColor"
@@ -30,7 +30,7 @@ const STEPS = [
 		description: "Dodge rocks, logs, and spikes. Hit one and it's game over!",
 		icon: (
 			<svg
-				className="mx-auto mb-4 h-16 w-16 text-[#0FACED]"
+				className="mx-auto mb-4 h-16 w-16 text-fang-cyan"
 				viewBox="0 0 24 24"
 				fill="none"
 				stroke="currentColor"
@@ -49,7 +49,7 @@ const STEPS = [
 		description: "The longer you survive, the higher your score. Good luck, wolf!",
 		icon: (
 			<svg
-				className="mx-auto mb-4 h-16 w-16 text-[#0FACED]"
+				className="mx-auto mb-4 h-16 w-16 text-fang-cyan"
 				viewBox="0 0 24 24"
 				fill="none"
 				stroke="currentColor"
@@ -87,7 +87,7 @@ export default function OnboardingOverlay({ onComplete }: OnboardingOverlayProps
 	return (
 		<div className="absolute inset-0 z-30 flex items-center justify-center bg-black/70">
 			<div
-				className={`mx-4 w-full max-w-md rounded-2xl border border-[#0FACED]/20 bg-[#091533]/95 p-8 text-center shadow-2xl transition-opacity duration-200 ${
+				className={`mx-4 w-full max-w-md rounded-2xl border border-fang-cyan/20 bg-[#091533]/95 p-8 text-center shadow-2xl transition-opacity duration-200 ${
 					isTransitioning ? "opacity-0" : "opacity-100"
 				}`}
 			>
@@ -107,9 +107,9 @@ export default function OnboardingOverlay({ onComplete }: OnboardingOverlayProps
 							key={i}
 							className={`h-2 rounded-full transition-all duration-300 ${
 								i === currentStep
-									? "w-6 bg-[#0FACED]"
+									? "w-6 bg-fang-cyan"
 									: i < currentStep
-										? "w-2 bg-[#0FACED]/50"
+										? "w-2 bg-fang-cyan/50"
 										: "w-2 bg-white/20"
 							}`}
 						/>
@@ -121,7 +121,7 @@ export default function OnboardingOverlay({ onComplete }: OnboardingOverlayProps
 					<button
 						type="button"
 						onClick={goNext}
-						className="w-full rounded-lg bg-[#0FACED] px-8 py-3 font-bold uppercase tracking-wider text-[#091533] transition-colors hover:bg-[#0FACED]/80"
+						className="w-full rounded-lg bg-fang-cyan px-8 py-3 font-bold uppercase tracking-wider text-[#091533] transition-colors hover:bg-fang-cyan/80"
 					>
 						{isLastStep ? "Let's Go!" : "Next"}
 					</button>

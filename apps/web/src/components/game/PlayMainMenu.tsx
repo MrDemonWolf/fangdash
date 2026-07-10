@@ -3,7 +3,14 @@ import { DIFFICULTY_LEVELS, getScoreMultiplier, MOD_DEFINITIONS } from "@fangdas
 import { LogOut, User } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuSeparator,
+	DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { formatScoreDisplay } from "@/lib/format.ts";
 
 interface PlayMainMenuProps {
 	onPlay: () => void;
@@ -30,63 +37,37 @@ function UserPill({
 	userImage?: string | undefined;
 	onSignOut: () => void;
 }) {
-	const [dropdownOpen, setDropdownOpen] = useState(false);
-	const dropdownRef = useRef<HTMLDivElement>(null);
-
-	useEffect(() => {
-		const handleOutsideClick = (e: MouseEvent) => {
-			if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
-				setDropdownOpen(false);
-			}
-		};
-		if (dropdownOpen) {
-			document.addEventListener("mousedown", handleOutsideClick);
-		}
-		return () => document.removeEventListener("mousedown", handleOutsideClick);
-	}, [dropdownOpen]);
-
 	return (
-		<div className="relative" ref={dropdownRef}>
-			<button
-				type="button"
-				onClick={() => setDropdownOpen((prev) => !prev)}
-				className="flex items-center gap-2 bg-[#0a1628]/80 border border-white/10 backdrop-blur-xl rounded-full px-3 py-1.5 hover:border-white/20 hover:bg-white/5 transition-colors cursor-pointer"
-			>
-				{userImage && (
-					<img
-						src={userImage}
-						alt={userName ?? "User avatar"}
-						className="h-6 w-6 rounded-full border border-[#0FACED]/50"
-					/>
-				)}
-				<span className="text-sm font-medium text-gray-200">{userName}</span>
-			</button>
-
-			{dropdownOpen && (
-				<div className="absolute right-0 top-full mt-2 w-40 rounded-xl border border-white/10 bg-[#0a1628]/90 backdrop-blur-xl shadow-xl overflow-hidden">
-					<Link
-						href="/profile"
-						onClick={() => setDropdownOpen(false)}
-						className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-300 hover:text-white hover:bg-white/5 transition-colors"
-					>
-						<User className="h-4 w-4" />
+		<DropdownMenu>
+			<DropdownMenuTrigger asChild>
+				<button
+					type="button"
+					className="flex items-center gap-2 rounded-full border border-border/50 bg-secondary/50 px-3 py-1.5 backdrop-blur-xl transition-colors hover:border-primary/30 hover:bg-secondary cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+				>
+					{userImage && (
+						<img
+							src={userImage}
+							alt={userName ?? "User avatar"}
+							className="h-6 w-6 rounded-full border border-primary/50"
+						/>
+					)}
+					<span className="text-sm font-medium text-foreground">{userName}</span>
+				</button>
+			</DropdownMenuTrigger>
+			<DropdownMenuContent align="end">
+				<DropdownMenuItem asChild>
+					<Link href="/profile" className="cursor-pointer">
+						<User className="size-4" />
 						Profile
 					</Link>
-					<div className="h-px bg-white/10" />
-					<button
-						type="button"
-						onClick={() => {
-							setDropdownOpen(false);
-							onSignOut();
-						}}
-						className="flex w-full items-center gap-2.5 px-4 py-2.5 text-sm text-gray-300 hover:text-white hover:bg-white/5 transition-colors cursor-pointer"
-					>
-						<LogOut className="h-4 w-4" />
-						Sign Out
-					</button>
-				</div>
-			)}
-		</div>
+				</DropdownMenuItem>
+				<DropdownMenuSeparator />
+				<DropdownMenuItem onClick={onSignOut} className="cursor-pointer">
+					<LogOut className="size-4" />
+					Sign Out
+				</DropdownMenuItem>
+			</DropdownMenuContent>
+		</DropdownMenu>
 	);
 }
 
@@ -122,7 +103,7 @@ export function PlayMainMenu({
 					<button
 						type="button"
 						onClick={onSignIn}
-						className="rounded-full border border-[#0FACED]/60 px-4 py-1.5 text-sm font-semibold text-[#0FACED] hover:bg-[#0FACED]/10 transition-colors cursor-pointer"
+						className="rounded-full border border-fang-cyan/60 px-4 py-1.5 text-sm font-semibold text-fang-cyan hover:bg-fang-cyan/10 transition-colors cursor-pointer"
 					>
 						Sign In
 					</button>
@@ -147,7 +128,7 @@ export function PlayMainMenu({
 					<h1 className="text-2xl sm:text-4xl lg:text-5xl font-extrabold uppercase tracking-tight text-white">
 						FangDash
 					</h1>
-					<p className="text-xs font-semibold uppercase tracking-widest text-[#0FACED]/60 mt-1">
+					<p className="text-xs font-semibold uppercase tracking-widest text-fang-cyan/60 mt-1">
 						Endless Runner
 					</p>
 				</div>
@@ -158,8 +139,8 @@ export function PlayMainMenu({
 						<span className="text-[10px] font-mono uppercase tracking-widest text-white/40">
 							Best
 						</span>
-						<span className="text-lg sm:text-xl lg:text-2xl font-bold font-mono tabular-nums text-[#0FACED]">
-							{String(bestScore).padStart(7, "0")}
+						<span className="text-lg sm:text-xl lg:text-2xl font-bold font-mono tabular-nums text-fang-cyan">
+							{formatScoreDisplay(bestScore)}
 						</span>
 					</div>
 				)}
@@ -273,7 +254,7 @@ export function PlayMainMenu({
 				<button
 					type="button"
 					onClick={onPlay}
-					className="w-full rounded-full bg-[#0FACED] py-2.5 sm:py-3 lg:py-4 text-sm sm:text-base lg:text-lg font-extrabold uppercase tracking-widest text-[#091533] shadow-[0_0_32px_rgba(15,172,237,0.4)] hover:bg-[#0FACED]/90 transition-all hover:scale-105 active:scale-95 cursor-pointer"
+					className="w-full rounded-full bg-fang-cyan py-2.5 sm:py-3 lg:py-4 text-sm sm:text-base lg:text-lg font-extrabold uppercase tracking-widest text-[#091533] shadow-[0_0_32px_rgba(15,172,237,0.4)] hover:bg-fang-cyan/90 transition-all hover:scale-105 active:scale-95 cursor-pointer"
 				>
 					PLAY
 				</button>

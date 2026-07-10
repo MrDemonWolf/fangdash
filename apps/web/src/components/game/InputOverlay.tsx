@@ -13,7 +13,7 @@ function KeyIcon({ label, pressed }: { label: string; pressed: boolean }) {
 			className={cn(
 				"flex items-center justify-center rounded border px-2 py-1 font-mono text-xs font-bold transition-all duration-75 select-none",
 				pressed
-					? "border-[#0FACED] bg-[#0FACED]/20 text-[#0FACED] shadow-[0_0_8px_rgba(15,172,237,0.5)]"
+					? "border-fang-cyan bg-fang-cyan/20 text-fang-cyan shadow-[0_0_8px_rgba(15,172,237,0.5)]"
 					: "border-white/20 bg-white/5 text-white/30",
 			)}
 		>

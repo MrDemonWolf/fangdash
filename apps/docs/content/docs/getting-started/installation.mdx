@@ -4,7 +4,7 @@ description: Set up FangDash for local development.
 ---
 
 <Callout type="info">
-	**TL;DR** - Requires Node.js >= 24, Bun 1.3.10, a Cloudflare account, and a Twitch app - Clone →
+	**TL;DR** - Requires Node.js >= 20, Bun 1.3.10, a Cloudflare account, and a Twitch app - Clone →
 	install → create D1 database → copy env files → `bun dev` - Web runs at `localhost:3000`, API at
 	`localhost:8787`
 </Callout>
@@ -22,7 +22,7 @@ This guide is for developers who want to run FangDash locally or contribute to t
 
 | Requirement          | Version                                                |
 | -------------------- | ------------------------------------------------------ |
-| Node.js              | >= 24                                                  |
+| Node.js              | >= 20                                                  |
 | Bun                  | 1.3.10 (`curl -fsSL https://bun.sh/install \| bash`)   |
 | Cloudflare account   | Free tier works                                        |
 | Twitch Developer app | [dev.twitch.tv/console](https://dev.twitch.tv/console) |
@@ -66,11 +66,11 @@ Copy the `database_id` value and paste it into the `[[d1_databases]]` block in `
 binding = "DB"
 database_name = "fangdash-db"
 database_id = "abc12345-xxxx-xxxx-xxxx-xxxxxxxxxxxx"  # ← replace this
-migrations_dir = "drizzle/"
+migrations_dir = "drizzle"
 ```
 
 <Callout type="info">
-	FangDash uses `drizzle/` as the migrations directory (not `migrations/`). This is already
+	FangDash uses `drizzle` as the migrations directory (not `migrations/`). This is already
 	configured in `wrangler.toml` — you only need to update the `database_id`.
 </Callout>
 
@@ -108,11 +108,20 @@ BETTER_AUTH_SECRET=your-secret-here
 BETTER_AUTH_URL=http://localhost:8787
 TWITCH_CLIENT_ID=your-twitch-client-id
 TWITCH_CLIENT_SECRET=your-twitch-client-secret
+# Shared HMAC secret for short-lived PartyKit race connection tokens.
+# Needed for multiplayer — must match apps/party/.env (see below).
+RACE_TOKEN_SECRET=your-race-token-secret
 ```
 
 <Callout type="info">
 	**Generate a strong secret** with: `openssl rand -base64 32` — paste the output as your
-	`BETTER_AUTH_SECRET`.
+	`BETTER_AUTH_SECRET`. Generate `RACE_TOKEN_SECRET` with `openssl rand -hex 32`.
+</Callout>
+
+<Callout type="warn">
+	**Multiplayer race auth** — the PartyKit server verifies race connections with the **same**
+	`RACE_TOKEN_SECRET`. Create `apps/party/.env` with `RACE_TOKEN_SECRET=<same-value>` or real-time
+	races will reject every connection. The two values must be identical.
 </Callout>
 
 <Callout type="warn">
