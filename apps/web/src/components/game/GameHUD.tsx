@@ -49,26 +49,21 @@ export function GameHUD({
 						<span className="text-[10px] font-mono uppercase tracking-widest text-fang-cyan/60">
 							Score
 						</span>
-						<span
-							className="text-2xl sm:text-3xl font-bold font-mono tabular-nums leading-none text-fang-cyan"
-							style={{
-								textShadow: "0 0 10px #0FACED, 0 0 20px rgba(15,172,237,0.4)",
-							}}
-						>
+						<span className="text-2xl sm:text-3xl font-bold font-mono tabular-nums leading-none text-fang-cyan text-glow-cyan">
 							{formatScoreDisplay(score)}
 						</span>
 						<div className="flex items-center gap-2 sm:gap-4 mt-0.5">
 							<div className="flex items-center gap-1.5">
-								<span className="text-[10px] font-mono uppercase tracking-widest text-white/40">
+								<span className="text-[10px] font-mono uppercase tracking-widest text-white/60">
 									Dist
 								</span>
 								<span className="text-sm sm:text-lg font-bold font-mono tabular-nums leading-none text-white/80">
 									{Math.floor(distance).toLocaleString()}
-									<span className="text-xs text-white/40 ml-0.5">m</span>
+									<span className="text-xs text-white/60 ml-0.5">m</span>
 								</span>
 							</div>
 							<div className="flex items-center gap-1.5">
-								<span className="text-[10px] font-mono uppercase tracking-widest text-white/40">
+								<span className="text-[10px] font-mono uppercase tracking-widest text-white/60">
 									Time
 								</span>
 								<span className="text-sm sm:text-lg font-bold font-mono tabular-nums leading-none text-white/80">
@@ -85,12 +80,12 @@ export function GameHUD({
 						{activeMods.map((mod) => (
 							<span
 								key={mod.id}
-								className="flex items-center gap-1 px-1.5 py-0.5 rounded border border-purple-500/40 bg-purple-500/10 text-[10px] font-mono text-purple-300"
+								className="flex items-center gap-1 px-1.5 py-0.5 rounded border border-fang-purple/40 bg-fang-purple/10 text-[10px] font-mono text-fang-purple"
 								title={mod.name}
 							>
 								<span>{mod.icon}</span>
 								<span className="hidden sm:inline">{mod.name}</span>
-								<span className="text-purple-400 font-bold">×{mod.multiplier.toFixed(1)}</span>
+								<span className="font-bold">×{mod.multiplier.toFixed(1)}</span>
 							</span>
 						))}
 					</div>
@@ -112,10 +107,10 @@ export function GameHUD({
 						<button
 							type="button"
 							onClick={onOpenMenu}
-							className="hidden sm:block text-xs font-mono uppercase tracking-widest text-white/50 hover:text-fang-cyan transition-colors"
+							className="text-xs font-mono uppercase tracking-widest text-white/60 hover:text-fang-cyan transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fang-cyan"
 							aria-label="Open menu"
 						>
-							PAUSE [ESC]
+							PAUSE<span className="hidden sm:inline"> [ESC]</span>
 						</button>
 					)}
 				</div>

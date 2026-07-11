@@ -2,204 +2,23 @@
 
 import { ACHIEVEMENTS, getLevelFromXp, getSkinById } from "@fangdash/shared";
 import { useQuery } from "@tanstack/react-query";
-import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { useSession } from "@/lib/auth-client.ts";
-import { formatDistance } from "@/lib/format.ts";
+import { type HonorBadge, HonorBadges } from "@/components/profile/HonorBadges.tsx";
+import {
+	buildPerformanceTiles,
+	PerformanceMatrix,
+} from "@/components/profile/PerformanceMatrix.tsx";
+import { ProfileHeader } from "@/components/profile/ProfileHeader.tsx";
 import { type ScoreEntry, RecentScorelines } from "@/components/profile/RecentScorelines.tsx";
+import { useSession } from "@/lib/auth-client.ts";
+import { formatWinRate } from "@/lib/format.ts";
 import { useTRPC } from "@/lib/trpc.ts";
-import { cn } from "@/lib/utils";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { ProfileSkeleton } from "./_skeleton.tsx";
-
-/* ------------------------------------------------------------------ */
-/*  Header Banner                                                      */
-/* ------------------------------------------------------------------ */
-
-function ProfileHeader({
-	userName,
-	userImage,
-	skinSpriteKey,
-	skinName,
-	highScore,
-	gamesPlayed,
-}: {
-	userName: string;
-	userImage: string | null | undefined;
-	skinSpriteKey: string | null;
-	skinName: string | null;
-	highScore: number;
-	gamesPlayed: number;
-}) {
-	return (
-		<Card className="relative overflow-hidden">
-			{/* Subtle grid overlay */}
-			<div
-				className="pointer-events-none absolute inset-0 opacity-5"
-				style={{
-					backgroundImage:
-						"linear-gradient(oklch(0.72 0.15 210 / 0.4) 1px, transparent 1px), linear-gradient(90deg, oklch(0.72 0.15 210 / 0.4) 1px, transparent 1px)",
-					backgroundSize: "40px 40px",
-				}}
-			/>
-
-			<CardContent className="relative flex flex-col items-center gap-6 p-6 sm:flex-row sm:items-center">
-				{/* Wolf sprite */}
-				<div className="shrink-0">
-					{skinSpriteKey ? (
-						<div className="relative h-32 w-32">
-							<Image
-								src={`/wolves/${skinSpriteKey}.png`}
-								alt={skinName ?? "Wolf"}
-								fill={true}
-								className="object-contain drop-shadow-[0_0_40px_rgba(15,172,237,0.5)]"
-								style={{ imageRendering: "pixelated" }}
-							/>
-						</div>
-					) : (
-						<div className="flex h-32 w-32 items-center justify-center rounded-2xl border border-primary/20 bg-primary/5 text-6xl">
-							🐺
-						</div>
-					)}
-				</div>
-
-				{/* Info */}
-				<div className="flex flex-1 flex-col items-center gap-4 sm:flex-row sm:items-start sm:justify-between">
-					<div className="text-center sm:text-left">
-						<h1 className="text-2xl font-bold text-foreground">{userName}</h1>
-						<div className="mt-1 flex items-center justify-center gap-2 sm:justify-start">
-							{userImage && (
-								<Image
-									src={userImage}
-									alt={userName}
-									width={20}
-									height={20}
-									className="rounded-full"
-								/>
-							)}
-							<span className="text-sm text-muted-foreground">
-								@{userName.toLowerCase().replace(/\s+/g, "")}
-							</span>
-						</div>
-						{skinName && <p className="mt-1 text-xs text-primary/70">Equipped: {skinName}</p>}
-					</div>
-
-					{/* Right-side badges */}
-					<div className="flex flex-wrap items-center justify-center gap-3 sm:justify-end">
-						<Badge className="font-mono font-bold">HI {highScore.toLocaleString()}</Badge>
-						<Badge variant="purple" className="font-mono font-bold">
-							{gamesPlayed} RUNS
-						</Badge>
-					</div>
-				</div>
-			</CardContent>
-		</Card>
-	);
-}
-
-/* ------------------------------------------------------------------ */
-/*  Performance Matrix                                                 */
-/* ------------------------------------------------------------------ */
-
-interface MetricTile {
-	label: string;
-	value: string;
-	accent: string;
-}
-
-function PerformanceMatrix({ tiles }: { tiles: MetricTile[] }) {
-	return (
-		<Card>
-			<CardHeader>
-				<CardTitle>Performance Matrix</CardTitle>
-			</CardHeader>
-			<div className="grid grid-cols-2 gap-px bg-border/50 p-px">
-				{tiles.map((tile) => (
-					<div
-						key={tile.label}
-						className="rounded-xl border border-transparent bg-card p-4 transition-all hover:border-primary/30"
-					>
-						<p className="mb-1 text-xs font-bold uppercase tracking-widest text-muted-foreground">
-							{tile.label}
-						</p>
-						<p className={cn("font-mono text-2xl font-bold", tile.accent)}>{tile.value}</p>
-					</div>
-				))}
-			</div>
-		</Card>
-	);
-}
-
-/* ------------------------------------------------------------------ */
-/*  Honor Badges                                                       */
-/* ------------------------------------------------------------------ */
-
-interface HonorBadge {
-	icon: string;
-	name: string;
-	description: string;
-	unlocked: boolean;
-}
-
-function HonorBadges({
-	badges,
-	unlockedCount,
-	totalCount,
-}: {
-	badges: HonorBadge[];
-	unlockedCount: number;
-	totalCount: number;
-}) {
-	return (
-		<Card>
-			<CardHeader>
-				<CardTitle>Honor Badges</CardTitle>
-				<span className="font-mono text-xs text-primary">
-					{unlockedCount} / {totalCount}
-				</span>
-			</CardHeader>
-			<CardContent>
-				<TooltipProvider delayDuration={200}>
-					<div className="flex flex-wrap gap-3">
-						{badges.map((badge, i) => (
-							<Tooltip key={i}>
-								<TooltipTrigger asChild>
-									<div
-										tabIndex={0}
-										className={cn(
-											"flex h-12 w-12 items-center justify-center rounded-full border-2 transition-all cursor-default",
-											badge.unlocked
-												? "border-primary/40 bg-primary/10 shadow-[0_0_12px_rgba(15,172,237,0.2)]"
-												: "border-border bg-muted/50 grayscale opacity-40",
-										)}
-									>
-										<span className="text-2xl" role="img" aria-label={badge.name}>
-											{badge.unlocked ? badge.icon : "🔒"}
-										</span>
-									</div>
-								</TooltipTrigger>
-								<TooltipContent>
-									<p className="font-semibold">{badge.name}</p>
-									<p className="text-muted-foreground">{badge.description}</p>
-								</TooltipContent>
-							</Tooltip>
-						))}
-					</div>
-				</TooltipProvider>
-			</CardContent>
-		</Card>
-	);
-}
-
-/* ------------------------------------------------------------------ */
-/*  Page                                                               */
-/* ------------------------------------------------------------------ */
 
 export default function ProfilePage() {
 	const router = useRouter();
@@ -264,18 +83,14 @@ export default function ProfilePage() {
 	const levelInfo = getLevelFromXp(totalXp);
 	const playerLevel = levelInfo.level;
 
-	const racesPlayed = raceStats?.racesPlayed ?? 0;
-	const racesWon = raceStats?.racesWon ?? 0;
-	const winRate = racesPlayed > 0 ? `${((racesWon / racesPlayed) * 100).toFixed(0)}%` : "N/A";
-
-	const performanceTiles: MetricTile[] = [
-		{ label: "Total Distance", value: formatDistance(totalDistance), accent: "text-primary" },
-		{ label: "High Score", value: highScore.toLocaleString(), accent: "text-primary" },
-		{ label: "Win Rate", value: winRate, accent: "text-emerald-400" },
-		{ label: "Obstacles", value: totalObstacles.toLocaleString(), accent: "text-fang-orange" },
-		{ label: "Games Played", value: gamesPlayed.toLocaleString(), accent: "text-fang-purple" },
-		{ label: "Total Score", value: totalScore.toLocaleString(), accent: "text-fang-gold" },
-	];
+	const performanceTiles = buildPerformanceTiles({
+		totalDistance,
+		highScore,
+		winRate: formatWinRate(raceStats?.racesPlayed ?? 0, raceStats?.racesWon ?? 0),
+		obstacles: totalObstacles,
+		gamesPlayed,
+		totalScore,
+	});
 
 	const unlockedIds = new Set((achievements ?? []).map((a) => a?.id));
 	const sortedUnlocked = [...(achievements ?? [])]
