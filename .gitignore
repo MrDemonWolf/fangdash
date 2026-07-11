@@ -11,6 +11,7 @@ tsconfig.tsbuildinfo
 # ── Environment (never commit .env files — use .env.example as reference) ───
 .env
 .env.*
+!.env.example
 .dev.vars
 
 # ── Tooling State ────────────────────────────────────────────────────────────

@@ -4,20 +4,22 @@
 	"private": true,
 	"scripts": {
 		"dev": "next dev --turbopack --port 3001",
-		"build": "next build",
+		"build": "next build && node -e \"const fs=require('fs');for(const n of ['opengraph-image','twitter-image']){const s='out/'+n,d=s+'.png';if(fs.existsSync(s)&&!fs.existsSync(d))fs.copyFileSync(s,d)}\"",
 		"start": "bunx serve out",
 		"typecheck": "fumadocs-mdx && tsc --noEmit",
 		"clean": "rm -rf .next .turbo .source out",
 		"postinstall": "fumadocs-mdx"
 	},
 	"dependencies": {
+		"@orama/orama": "^3.1.18",
 		"fumadocs-core": "^16.10.2",
 		"fumadocs-mdx": "^15.0.12",
 		"fumadocs-ui": "^16.10.2",
 		"lucide-react": "^1.18.0",
 		"next": "^16.2.9",
 		"react": "^19.2.7",
-		"react-dom": "^19.2.7"
+		"react-dom": "^19.2.7",
+		"zod": "^4.2.1"
 	},
 	"devDependencies": {
 		"@tailwindcss/postcss": "^4.3.1",

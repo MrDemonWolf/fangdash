@@ -1,59 +1,80 @@
 ---
 title: Admin Panel
-description: Managing players, scores, and races from the FangDash admin panel.
+description: Run your FangDash instance from the admin panel — view dashboard stats, ban or unban players, delete scores with rollback, and promote admins via CLI
+keywords:
+  - fangdash admin panel
+  - ban and unban players
+  - promote-admin cli script
+  - delete score with rollback
+  - twitch username admin role
+  - admin dashboard stats
+  - manage multiplayer races
+ogEyebrow: Server admin
+ogChips:
+  - Dashboard stats
+  - Ban / unban
+  - Score rollback
+  - promote-admin CLI
 ---
 
 <Callout type="warn">
-	The admin panel is only accessible to users with **`admin`** or **`dev`** roles. Regular players
-	will not see the Admin link.
+	The admin panel is only for accounts with the **`admin`** role. Regular players never see the
+	Admin link. (The `dev` role is a cosmetic label only — it does **not** grant admin access.)
 </Callout>
 
-<Callout type="info">
-	**TL;DR** - Dashboard with player count, games played, total meters, and race stats - Manage
-	players (search, ban/unban) and scores (flag suspicious, delete) - Use the `promote-admin` CLI
-	script to grant admin access by Twitch username
-</Callout>
+The admin panel lives at [/admin](/admin) and gives you full control over your FangDash instance: live stats, player moderation, score cleanup, and race history.
 
-The admin panel lives at [/admin](/admin) and gives you full control over your FangDash instance.
+## Dashboard overview
 
-## Dashboard Overview
+The top of the panel shows five key stats for your whole instance:
 
-The top of the admin panel shows five key stats:
+| Stat               | Description                          |
+| ------------------ | ------------------------------------ |
+| **Total Players**  | Registered player accounts           |
+| **Games Played**   | Games completed across all players   |
+| **Meters Run**     | Combined distance run by everyone    |
+| **Distinct Races** | Unique multiplayer races held        |
+| **Race Entries**   | Total individual race participations |
 
-| Stat               | Description                              |
-| ------------------ | ---------------------------------------- |
-| **Total Players**  | Number of registered player accounts     |
-| **Games Played**   | Total games completed across all players |
-| **Meters Run**     | Combined distance run by everyone        |
-| **Distinct Races** | Number of unique multiplayer races held  |
-| **Race Entries**   | Total individual race participations     |
+## Players tab
 
-## Players Tab
-
-A paginated, searchable list of all players.
-
-You can:
+A paginated, searchable list of every player. From here you can:
 
 - **Search** by username
-- **Ban** a player with a reason and optional duration
+- **Ban** a player with a reason and an optional duration
 - **Unban** a previously banned player
 
-## Scores Tab
+A ban duration of `0` is **permanent**. Any other value bans the player for that length of time, after which they can play again automatically.
 
-A paginated list of all submitted scores.
+## Scores tab
 
-The admin panel **highlights suspicious scores** that look abnormally high for their run duration. You can:
+A paginated list of every submitted score. From here you can:
 
-- Review flagged scores
-- **Delete** a score — the player's aggregate stats (total score, distance, etc.) are automatically rolled back
+- Review any player's runs
+- **Delete** a score — the player's aggregate stats (total score, distance, obstacles, games played, XP, and level) are automatically rolled back
 
-## Races Tab
+<Callout type="info">
+	Scores are already validated server-side when they're submitted, so blatantly forged runs are
+	caught before they land: they're stored but grant no XP, stats, or unlocks, and they're excluded
+	from public leaderboards. Manual deletion is for cleaning up anything that slips through or that
+	you simply want removed.
+</Callout>
 
-Race history grouped by race, showing all participants and their placements. Top 3 placements get gold, silver, and bronze badges.
+## Races tab
 
-## Getting Admin Access
+Race history grouped by race, showing every participant and their placement. The top three finishers get gold, silver, and bronze badges. The list is paginated.
 
-Use the `promote-admin` CLI script to grant roles by **Twitch username** (case-insensitive). The user must have logged in at least once.
+## Unlock-all-skins
+
+The admin router exposes an `unlockAllSkins` mutation that unlocks every skin for the **calling** account (yourself) — handy for testing or capturing screenshots. It requires the `admin` role and is also reachable from the debug panel's CHEATS tab (`Ctrl+Shift+D`).
+
+| Endpoint         | Type     | Description                                                                                     |
+| ---------------- | -------- | ----------------------------------------------------------------------------------------------- |
+| `unlockAllSkins` | Mutation | Unlocks all skins for the authenticated caller (admin only). Also on the debug panel CHEATS tab |
+
+## Getting admin access
+
+Use the `promote-admin` CLI script to grant roles by **Twitch username** (case-insensitive). The user must have signed in with Twitch at least once so their account exists in the database.
 
 ```bash
 # Local (default) — single user
@@ -62,53 +83,45 @@ bun run promote-admin MrDemonWolf
 # Multiple users at once
 bun run promote-admin MrDemonWolf SomeOtherUser
 
-# Production
+# Production (remote D1)
 bun run promote-admin MrDemonWolf --remote
 
-# Set a different role (e.g. dev)
-bun run promote-admin MrDemonWolf --role dev
+# Set a specific role explicitly (admin is the default target for panel access)
+bun run promote-admin MrDemonWolf --role admin
 ```
 
 <Callout type="info">
-	You can also run the script directly from the API workspace: `bun run --filter @fangdash/api
-	promote-admin MrDemonWolf`
+	You can also run it straight from the API workspace: `bun run --filter @fangdash/api promote-admin
+	MrDemonWolf`
 </Callout>
 
-The script looks up users by their `name` column in the database and prints success/failure for each username.
-
-## API Endpoints
-
-The admin tRPC router includes the following mutations and queries used by the admin panel:
-
-| Endpoint         | Type     | Description                                                                                                         |
-| ---------------- | -------- | ------------------------------------------------------------------------------------------------------------------- |
-| `unlockAllSkins` | Mutation | Unlocks all skins for the authenticated player (dev/admin only). Also accessible from the debug panel's CHEATS tab. |
+The script looks users up by their `name` column and prints a success or failure line for each username you pass.
 
 ## Troubleshooting
 
-### "Forbidden" when accessing admin panel
+### "Forbidden" when opening the admin panel
 
-- Verify your user has the `admin` or `dev` role. Check with:
+Confirm your account has the `admin` role:
 
 ```bash
 bunx wrangler d1 execute fangdash-db --remote \
   --command "SELECT id, name, role FROM user WHERE name = 'YourTwitchUsername';"
 ```
 
-- If the role is `user`, run `bun run promote-admin YourTwitchUsername` (add `--remote` for production).
+If the role is `user`, run `bun run promote-admin YourTwitchUsername` (add `--remote` for production), then sign out and back in.
 
 ### Can't ban or unban users
 
-- The ban/unban actions require Better Auth to be fully configured. If you see "Auth not configured", ensure all required secrets (`BETTER_AUTH_SECRET`, `TWITCH_CLIENT_ID`, `TWITCH_CLIENT_SECRET`) are set.
+Ban and unban rely on Better Auth being fully configured. If you see "Auth not configured", make sure all required secrets — `BETTER_AUTH_SECRET`, `TWITCH_CLIENT_ID`, and `TWITCH_CLIENT_SECRET` — are set on the API.
 
 ### Banned user can still play
 
-- After banning a user, their active sessions continue until they expire (up to 30 minutes with cookie caching). The ban is enforced on the next API request after session refresh.
+- Sessions use a short cookie cache, so a banned user's current session can stay valid for up to **5 minutes** before it refreshes. The ban is enforced on the next API request after that refresh.
 - All protected API routes (score submission, race results, skin equipping) check ban status and return `FORBIDDEN` for banned users.
 
 ### Deleted score didn't update player stats
 
-- Score deletion automatically rolls back the player's aggregate stats (total score, distance, obstacles, games played, XP, and level). If stats look wrong, check the D1 database directly:
+Deleting a score automatically rolls back the player's aggregates (total score, distance, obstacles, games played, XP, and level). If the numbers still look off, inspect D1 directly:
 
 ```bash
 bunx wrangler d1 execute fangdash-db --remote \

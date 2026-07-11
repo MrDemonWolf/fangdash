@@ -1,45 +1,75 @@
 ---
-title: Mods
-description: Opt-in challenge modifiers that raise the difficulty and your score multiplier.
+title: Game Mods
+description: Turn on FangDash mods like Fog, Headwind, and Tremor to raise the difficulty and stack a bigger score multiplier on every wolf run.
+keywords:
+  - fangdash game mods
+  - fog headwind tremor mods
+  - score multiplier stacking
+  - challenge modifiers endless runner
+  - ranked mods leaderboard
+  - fangdash difficulty modifiers
+ogEyebrow: Game mods
+ogChips:
+  - Fog · Headwind · Tremor
+  - 1.15x each
+  - Stacks to 1.521x
+  - All ranked
 ---
 
 <Callout type="info">
-	**TL;DR** - Mods are optional challenge toggles you pick before a run - Each active mod multiplies
-	your score - Stack them for a bigger multiplier, but the run gets harder - Beta mods are unranked
-	and won't appear on the leaderboard
+	**TL;DR** — Mods are optional challenge toggles you pick on the Play screen before a run. Each
+	active mod raises the difficulty and adds a **1.15x** score multiplier. Stack up to three and they
+	multiply together for as much as **1.521x**. All three mods are ranked, so your scores still count
+	on the leaderboard.
 </Callout>
 
-**Mods** are optional modifiers you enable on the Play screen before starting a run. Each one makes the game harder in a different way and rewards you with a **score multiplier**. Turn them off for a clean run, or stack them to chase a bigger number.
+**Mods** are opt-in modifiers you enable before starting a run. Each one changes the game in a different way and rewards you with a bigger **score multiplier**. Leave them off for a clean run, or stack them to chase a higher number.
 
-## Available Mods
+## Available mods
 
-| Mod          | Icon | Category | Multiplier | Effect                                                     |
-| ------------ | ---- | -------- | ---------- | ---------------------------------------------------------- |
-| **Fog**      | 🌫️   | Visual   | 1.15x      | Visibility shrinks over distance. Can you run blind?       |
-| **Headwind** | 💨   | Movement | 1.15x      | Wind pushes you down mid-air. Gets stronger over distance. |
-| **Tremor**   | 🌋   | Movement | 1.15x      | Earthquake shakes the ground. Landings get harder.         |
+There are three mods, and every one is live right now. Fog is a visual challenge, while Headwind and Tremor both mess with your jumps and landings.
 
-## How the Multiplier Works
+| Mod          | Icon | Category | Multiplier | Effect                                                        |
+| ------------ | ---- | -------- | ---------- | ------------------------------------------------------------- |
+| **Fog**      | 🌫️   | Visual   | 1.15x      | Visibility shrinks the farther you run. Can you run blind?    |
+| **Headwind** | 💨   | Movement | 1.15x      | Wind shoves you down mid-air, growing stronger over distance. |
+| **Tremor**   | 🌋   | Movement | 1.15x      | An earthquake shakes the ground, making landings harder.      |
 
-The score multiplier is the **product** of every active mod's multiplier — mods stack multiplicatively:
+## How the multiplier works
 
-| Active Mods | Multiplier |
+Your score multiplier is the **product** of every active mod's multiplier — mods stack multiplicatively, rounded to three decimals:
+
+| Active mods | Multiplier |
 | ----------- | ---------- |
-| None        | 1.00x      |
-| Any one mod | 1.15x      |
+| None        | 1.000x     |
+| Any one mod | 1.150x     |
 | Any two     | 1.322x     |
 | All three   | 1.521x     |
 
-Your final score is your base score multiplied by this value. The multiplier is shown live on the Play screen as you toggle mods, and it is **re-derived and validated server-side** when your score is saved, so it can't be forged.
+Your final score is your base score times this value. The multiplier updates live on the Play screen as you toggle mods, and it is **re-derived and validated server-side** when your score saves, so it can't be forged.
 
-## Ranked vs. Beta Mods
+## Ranked and beta mods
 
-Some mods are marked **Beta** while they're still being tuned. Enabling a Beta mod makes the run **unranked** — you can still play and see your score, but it **won't be submitted to the leaderboard**. The Play screen flags this on any Beta mod you select.
+Mods can be flagged **beta** while they're still being tuned. Enabling a beta mod makes the run **unranked** — you can still play and see your score, but it **won't be submitted to the leaderboard**, and the Play screen flags this on any beta mod you pick.
 
-All currently released mods (Fog, Headwind, Tremor) are ranked, so runs with them count on the leaderboard as normal.
+Right now all three mods — Fog, Headwind, and Tremor — are **ranked**, so runs with any of them count on the leaderboard as normal.
+
+## Mod-specific achievements
+
+A few [achievements](/docs/customization/achievements) are tied to playing with mods on:
+
+- **Fog Runner** — reach 2,000m in a single run with **Fog** enabled.
+- **Headwind Hero** — score 5,000 in a single run with **Headwind** enabled.
+- **Triple Threat** — score 3,000 in a single run with **all three** mods active.
 
 ## Tips
 
-- Start with a single mod to learn how it changes your timing before stacking.
-- **Fog** punishes memorized patterns — it hides upcoming obstacles the further you get.
-- **Headwind** and **Tremor** both attack your jumps; running them together demands very precise landings for the 1.322x reward.
+- Start with a single mod to learn how it changes your timing before you stack more.
+- **Fog** punishes memorized patterns — it hides upcoming obstacles the deeper you get.
+- **Headwind** and **Tremor** both attack your jumps, so running them together demands very precise landings for the 1.322x reward.
+- Chasing **Triple Threat**? You'll need all three on at once, so practice each individually first.
+
+<Callout type="info">
+	New to the controls? Brush up on jumping and the double jump in
+	[Controls](/docs/gameplay/controls) before you add mods to the mix.
+</Callout>
