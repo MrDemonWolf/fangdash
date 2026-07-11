@@ -1,9 +1,23 @@
 ---
 title: Changelog
-description: Release notes for every version of FangDash.
+description: Track every FangDash release — game mods, new achievements, wolf skins, multiplayer races, and version updates for the free Twitch endless runner
+keywords:
+  - fangdash changelog
+  - fangdash release notes
+  - fangdash version history
+  - fangdash game mods update
+  - fangdash new achievements
+  - twitch endless runner updates
+ogEyebrow: Release notes
+ogChips:
+  - "3 game mods"
+  - "21 achievements"
+  - "4-player races"
 ---
 
-# v0.3.0 — Game Mods
+Every FangDash release, newest first. FangDash is a free, open-source multiplayer wolf runner for Twitch streamers, and this page tracks the features, fixes, and gameplay changes that ship in each version.
+
+## v0.3.0 — Game Mods
 
 **Released:** 2026-07-10
 
@@ -11,20 +25,18 @@ description: Release notes for every version of FangDash.
 	Opt-in challenge modifiers with stacking score multipliers, plus five new achievements.
 </Callout>
 
-## Mods
+### Mods
 
-- Three opt-in mods selectable pre-game: **Fog**, **Headwind**, **Tremor**
-- Each applies a 1.15x score multiplier; multiple mods stack multiplicatively (two = 1.322x, three = 1.521x)
-- Score validation re-derives the multiplier server-side to prevent forgery
-- Runs using a beta mod are unranked and excluded from the leaderboard
+- Three opt-in mods you pick before a run: **Fog** 🌫️, **Headwind** 💨, and **Tremor** 🌋
+- Each mod applies a 1.15x score multiplier; stacked mods multiply together (two = 1.322x, three = 1.521x)
+- Score validation re-derives the multiplier server-side, so the multiplier can't be forged
+- All three mods ship as ranked, so your boosted score still counts on the leaderboard — a run only goes unranked if it uses a beta mod, and none are in beta right now
 
-## Achievements
+### Achievements
 
-- Five new achievements (total now **21**): Fog Runner, Headwind Hero, Triple Threat, Endurance Wolf, Obstacle Gauntlet
+- Five new achievements bring the total to **21**: Fog Runner, Headwind Hero, Triple Threat, Endurance Wolf, and Obstacle Gauntlet
 
----
-
-# v0.2.0 — Settings, Public Profiles & Account Management
+## v0.2.0 — Settings, Public Profiles & Account Management
 
 **Released:** 2026-03-15
 
@@ -33,14 +45,14 @@ description: Release notes for every version of FangDash.
 	improved in-game feedback.
 </Callout>
 
-## Settings Page
+### Settings Page
 
 - New `/settings` page for account management
 - **Skin picker** moved from the Skins gallery to Settings — the Skins page is now a view-only gallery
 - **Privacy toggle** — "Allow others to view my profile" controls public profile visibility
 - **Account deletion** — GDPR-compliant 24-hour soft delete with the ability to cancel during the grace period
 
-## Public Profiles
+### Public Profiles
 
 - New `/profile/[id]` routes for viewing other players' profiles
 - Linked from the leaderboard — click a player's name to view their profile
@@ -48,22 +60,22 @@ description: Release notes for every version of FangDash.
 - Respects the player's privacy setting (private profiles show a notice)
 - **Share Profile** button on your own profile to copy a direct link
 
-## Skins Page Update
+### Skins Page Update
 
 - The Skins gallery at `/skins` is now **view-only** — no more equip button
 - Links to Settings for equipping skins
 
-## Play Page Improvements
+### Play Page Improvements
 
 - Removed toast notifications for score saves, level-ups, and achievement warnings
 - These messages are now shown **inline in the Game Over modal** for a cleaner experience
 
-## Debug Panel
+### Debug Panel
 
-- New **"Unlock All Skins"** button in the CHEATS tab (dev/admin only)
+- New **"Unlock All Skins"** button in the CHEATS tab (admin only)
 - Calls the new `admin.unlockAllSkins` mutation
 
-## API Changes
+### API Changes
 
 - New `account` tRPC router with endpoints: `getAccountStatus`, `requestDeletion`, `cancelDeletion`, `getPrivacy`, `updatePrivacy`
 - New `score.getPublicProfile` query for fetching public profile data
@@ -71,13 +83,11 @@ description: Release notes for every version of FangDash.
 - Leaderboard responses now include `userId` and `profilePublic` fields for profile linking
 - Database schema: `user` table gains `deletionRequestedAt` and `deletionScheduledFor` columns; `player` table gains `profilePublic` column
 
-## Auth Improvements
+### Auth Improvements
 
 - Session creation hook now backfills `twitchId` and `twitchAvatar` if missing from the user record
 
----
-
-# v0.1.0 — Alpha Release
+## v0.1.0 — Alpha Release
 
 **Released:** 2026-03-11
 
@@ -86,54 +96,54 @@ description: Release notes for every version of FangDash.
 	all live.
 </Callout>
 
-## Core Gameplay
+### Core Gameplay
 
-- Endless runner — wolf runs automatically, player jumps over obstacles
-- Double jump (up to 2 jumps per airborne phase)
+- Endless runner — your wolf runs automatically; you jump over obstacles
+- Double jump (up to 2 jumps per airborne phase), with variable jump height when you hold the button
 - 4 obstacle types: rock, log, bush, spike
 - Procedurally generated courses (seeded for multiplayer fairness)
-- 5 progressive difficulty tiers (Easy → Nightmare) scaling speed from 300 to 800 px/s
+- 5 progressive difficulty tiers (Easy to Nightmare) scaling speed from 300 to 800 px/s
 - Scoring: 10 pts/sec survived + 50 pts per obstacle cleared
 - Per-difficulty score saving — scores track which difficulty tier they were achieved at
-- Server-side anti-cheat: scores validated against theoretical maximum
-- Longest clean run tracking (used for Perfect Dash achievement)
+- Server-side anti-cheat: scores validated against a theoretical maximum
+- Longest clean run tracking (used for the Perfect Dash achievement)
 
-## Level System
+### Level System
 
 - Every point scored = 1 XP
 - Cubic level curve: `totalXpForLevel(n) = 5 × (n - 1)³`
 - Race placement bonuses: 1st = 500 XP, 2nd = 250 XP, 3rd = 100 XP
-- Level and XP progress bar on profile page
+- Level and XP progress bar on your profile page
 
-## Wolf Skins
+### Wolf Skins
 
-6 skins across 5 rarity tiers (all must be unlocked except Gray Wolf):
+6 skins across 5 rarity tiers (every skin except Gray Wolf must be unlocked):
 
-| Skin            | Rarity    | Unlock Condition                 |
-| --------------- | --------- | -------------------------------- |
-| Gray Wolf       | Common    | Default                          |
-| Shadow Wolf     | Uncommon  | Run 2,000m in a single run       |
-| Fire Wolf       | Rare      | Score 5,000 pts in a single run  |
-| Storm Wolf      | Epic      | Earn Obstacle Master achievement |
-| Blood Moon Wolf | Legendary | Score 15,000 pts in a single run |
-| MrDemonWolf     | Legendary | Earn Champion achievement        |
+| Skin            | Rarity    | Unlock Condition                     |
+| --------------- | --------- | ------------------------------------ |
+| Gray Wolf       | Common    | Default                              |
+| Shadow Wolf     | Uncommon  | Reach 2,000m in a single run         |
+| Fire Wolf       | Rare      | Score 5,000 in a single run          |
+| Storm Wolf      | Epic      | Earn the Obstacle Master achievement |
+| Blood Moon Wolf | Legendary | Score 15,000 in a single run         |
+| MrDemonWolf     | Legendary | Earn the Champion achievement        |
 
-## Achievements
+### Achievements
 
-16 achievements across 5 categories (Score, Distance, Games Played, Skill, Social). Three achievements unlock exclusive skins as rewards.
+Achievements span 5 categories (Score, Distance, Games Played, Skill, Social). Three of them reward exclusive skins when you unlock them.
 
-## Multiplayer
+### Multiplayer
 
 - Real-time races via PartyKit WebSockets (up to 4 players)
 - Ghost players visible during races (live position sync)
-- Shared seeded PRNG — all players face identical obstacles
-- 3-second countdown, minimum 2 players to start
+- Shared seeded PRNG — every player faces identical obstacles
+- 3-second countdown; at least 2 ready players to start
 - Race results with placements saved to history
 - Placement XP bonuses (1st = 500, 2nd = 250, 3rd = 100)
 
-## Player Profiles
+### Player Profiles
 
-- Twitch OAuth sign-in (username + avatar only)
+- Twitch OAuth sign-in (stores your Twitch username, avatar, Twitch ID, and email)
 - Persistent stats: total score, distance, games played, obstacles cleared
 - Race stats: races played, won, win rate
 - Recent score history with trend arrows
@@ -141,42 +151,42 @@ description: Release notes for every version of FangDash.
 - Honor badges (recent achievements)
 - Skin and achievement tracking
 
-## Leaderboard
+### Leaderboard
 
 - Global leaderboard with time-period filters (All-time / Weekly / Daily)
 - Per-difficulty filtering (view scores for a specific difficulty tier)
 - Per-player personal best (one entry per player)
 - Top 3 rank badges (gold / silver / bronze)
 
-## Web App
+### Web App
 
 Routes: Home, Play (solo), Race (multiplayer lobby), Leaderboard, Achievements, Skins, Profile, Admin
 
-## Admin Panel
+### Admin Panel
 
-- Protected `/admin` route (admin + dev roles)
+- Protected `/admin` route (admin role)
 - Dashboard: total players, games, meters, races, entries
 - Players: paginated list, search, ban/unban with reason + duration
 - Scores: paginated list, suspicious score highlighting, delete with aggregate rollback
 - Races: paginated history grouped by race, placement badges
-- Bootstrap: `promote-admin` CLI script for granting admin/dev roles by Twitch username
+- Bootstrap: `promote-admin` CLI script for granting the admin role by Twitch username
 
-## Audio
+### Audio
 
 - 3 BGM tracks (menu, solo, race) with automatic switching
 - 9 SFX (jump, double jump, hit, game over, milestone, countdown, achievement, skin equip, victory)
 - Master volume slider and mute toggle; preferences saved to localStorage
 
-## Debug Panel
+### Debug Panel
 
-- Ctrl+Shift+D in-game (dev/admin only)
+- Ctrl+Shift+D in-game (admin only)
 - Tabs: Stats, Constants, Cheats (set score/distance, invincibility, skip difficulty)
 
-## Infrastructure
+### Infrastructure
 
 - API: Hono + tRPC v11 on Cloudflare Workers with D1 (SQLite)
-- Web: Next.js 15 (App Router) deployed via OpenNext + Cloudflare Workers
+- Web: Next.js 16 (App Router) deployed via OpenNext + Cloudflare Workers
 - Party: PartyKit WebSocket server
-- Auth: Better Auth with Twitch OAuth, cookie-based sessions (30-min cache)
+- Auth: Better Auth with Twitch OAuth, cookie-based sessions (5-minute cache)
 - OG image generation via Satori
 - Docs: Fumadocs MDX site

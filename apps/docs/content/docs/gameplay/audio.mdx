@@ -1,17 +1,31 @@
 ---
-title: Audio
-description: Background music, sound effects, and volume controls in FangDash.
+title: Audio & Sound Settings
+description: How FangDash handles audio — 3 background music tracks, 9 sound effects, and a master volume slider plus mute toggle saved to your browser.
+keywords:
+  - fangdash audio settings
+  - background music tracks
+  - game sound effects
+  - master volume slider
+  - mute toggle
+  - localStorage volume settings
+  - browser game audio
+ogEyebrow: Audio system
+ogChips:
+  - 3 BGM tracks
+  - 9 sound effects
+  - Volume + mute
+  - Saved locally
 ---
 
 <Callout type="info">
-	**TL;DR** - 3 BGM tracks switch automatically based on where you are (menu, solo, race) - 9 sound
-	effects covering all major game events - Volume and mute settings are saved to `localStorage` and
-	persist across sessions
+	**TL;DR** — 3 background music tracks switch automatically by context (menu, solo, race), 9 sound
+	effects cover every major game event, and your volume and mute settings save to `localStorage` so
+	they persist across sessions.
 </Callout>
 
-FangDash features a full audio system with background music and sound effects.
+FangDash ships with a full audio system: adaptive background music plus punchy sound effects for the moments that matter, all under one master volume control.
 
-## Background Music
+## Background music
 
 Three **BGM tracks** play depending on where you are:
 
@@ -21,25 +35,32 @@ Three **BGM tracks** play depending on where you are:
 | Game BGM | Solo endless runner gameplay |
 | Race BGM | Multiplayer race gameplay    |
 
-Music **switches automatically** when transitioning between screens — the current track stops and the new one starts.
+Music **switches automatically** as you move between screens — the current track crossfades out and the new one takes over, so you never sit in silence between the menu and a run.
 
-## Sound Effects
+## Sound effects
 
-| Sound       | Trigger                          |
-| ----------- | -------------------------------- |
-| Jump        | Player jumps                     |
-| Double Jump | Player double-jumps              |
-| Hit         | Player collides with an obstacle |
-| Game Over   | Run ends                         |
-| Milestone   | Distance milestone reached       |
-| Countdown   | Race countdown ticks             |
-| Achievement | Achievement unlocked             |
-| Skin Equip  | New skin equipped                |
-| Victory     | Race won                         |
+Nine **SFX** fire on the key game events:
 
-## Volume Controls
+| Sound       | Trigger                        |
+| ----------- | ------------------------------ |
+| Jump        | You jump                       |
+| Double jump | You use your second jump       |
+| Hit         | You collide with an obstacle   |
+| Game over   | Your run ends                  |
+| Milestone   | You reach a distance milestone |
+| Countdown   | The race countdown ticks       |
+| Achievement | You unlock an achievement      |
+| Skin equip  | You equip a new skin           |
+| Victory     | You win a race                 |
 
-- **Volume** — A single master volume slider controls all audio (BGM and SFX). Stored in `localStorage` as `fangdash_volume`.
-- **Mute** — A toggle to mute/unmute all audio. Stored in `localStorage` as `fangdash_muted`.
+## Volume controls
 
-Your preferences persist across sessions. Set once, forget about it.
+- **Volume** — a single master slider controls all audio (both music and sound effects). It's stored in `localStorage` under the key `fangdash_volume`.
+- **Mute** — a toggle that silences everything at once. It's stored in `localStorage` under the key `fangdash_muted`.
+
+Because both settings live in your browser's `localStorage`, they persist across sessions with no account required. Set your levels once and forget about them.
+
+<Callout type="info">
+	Audio settings are stored locally in your browser, not on your FangDash account. If you clear your
+	browser data or switch devices, you'll set your volume and mute preferences again.
+</Callout>

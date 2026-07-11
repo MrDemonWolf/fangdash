@@ -1,80 +1,92 @@
 ---
-title: Settings
-description: Managing your account settings — skin equipping, privacy, and account deletion.
+title: Account Settings & Privacy
+description: Manage your FangDash account — equip wolf skins, toggle public or private profile visibility, and request GDPR account deletion with a 24-hour grace period.
+keywords:
+  - fangdash account settings
+  - equip wolf skins
+  - public private profile toggle
+  - gdpr account deletion
+  - 24-hour grace period
+  - cancel account deletion
+  - account trpc endpoints
+ogEyebrow: Your account
+ogChips:
+  - Equip skins
+  - Privacy toggle
+  - 24h grace period
 ---
 
 <Callout type="info">
-	**TL;DR** - Equip skins from the Settings page (moved from the Skins gallery) - Toggle profile
-	privacy to control who can see your public profile - Request account deletion with a 24-hour grace
-	period to cancel; permanent removal requires a manual ops process
+	**TL;DR** — Equip skins from the Settings page (moved from the Skins gallery), toggle profile
+	privacy to control who can see your public profile, and request account deletion with a 24-hour
+	grace period to cancel before the data is removed.
 </Callout>
 
-The Settings page at [/settings](/settings) is your central hub for managing your FangDash account.
+The Settings page at [/settings](/settings) is your central hub for managing your FangDash account. You'll need to be [signed in with Twitch](/getting-started/account) to reach it.
 
-## Skin Picker
+## Skin picker
 
-Equipping skins has moved from the Skins gallery to the Settings page. Browse your unlocked skins and select one to equip. Locked skins display their unlock conditions.
+Equipping skins now lives on the Settings page instead of the Skins gallery. Browse the wolves you've unlocked and select one to equip. Locked skins stay visible with their unlock conditions listed, so you always know what to chase next.
 
-Visit the [Skins gallery](/skins) to preview all available skins, then head to Settings to equip them.
+Head to the [Skins gallery](/skins) to preview every wolf, then come back to Settings to equip the one you want.
 
-## Privacy Toggle
+## Privacy toggle
 
 Control whether other players can view your public profile.
 
 | Setting     | Behavior                                                                  |
 | ----------- | ------------------------------------------------------------------------- |
-| **Public**  | Your profile is visible via `/profile/[id]` and linked from leaderboards  |
-| **Private** | Your profile page returns a "private" notice; leaderboard hides your link |
+| **Public**  | Your profile is visible at `/profile/[id]` and linked from leaderboards   |
+| **Private** | Your profile page returns a "private" notice; leaderboards hide your link |
 
 The toggle is labeled **"Allow others to view my profile"** and defaults to public.
 
-## Account Deletion
+## Account deletion
 
 <Callout type="warn">
-	Account deletion is **scheduled** after the grace period. Permanent data removal is handled by an
-	ops process — see below. All your scores, achievements, skins, and race history will be removed
-	once that process runs.
+	Account deletion is **scheduled** after the grace period, not instant. Once the deletion runs, all
+	of your scores, achievements, skins, and race history are removed.
 </Callout>
 
-FangDash supports GDPR-compliant account deletion with a safety net:
+FangDash supports GDPR-compliant account deletion with a built-in safety net:
 
 <Steps>
-	<Step>Click **Delete Account** on the Settings page</Step>
-	<Step>Confirm the deletion request</Step>
-	<Step>A **24-hour grace period** begins — your account is soft-deleted but not yet removed</Step>
+	<Step>Click **Delete Account** on the Settings page.</Step>
+	<Step>Confirm the deletion request.</Step>
+	<Step>A **24-hour grace period** begins — your account is soft-deleted but not yet removed.</Step>
 	<Step>
-		During the grace period, you can return to Settings and click **Cancel Deletion** to restore
-		your account
+		During the grace period, return to Settings and click **Cancel Deletion** to restore your
+		account, no data lost.
 	</Step>
 	<Step>
-		After 24 hours, the account is marked for permanent removal. An ops process handles the actual
-		data purge — until then, the account remains in a soft-deleted state.
+		After 24 hours, the account becomes eligible for permanent removal and stays in a soft-deleted
+		state until the hard-delete process runs.
 	</Step>
 </Steps>
 
 <Callout type="info">
-	Permanent data removal is not yet automated. After the grace period expires, an operator must run
-	the hard-delete process manually. A scheduled Cloudflare Worker cron is planned for a future
-	release to automate this step.
+	Permanent data removal is not yet automated. After the grace period expires, an operator runs the
+	hard-delete process. A scheduled Cloudflare Worker cron is planned to automate this step in a
+	future release.
 </Callout>
 
-### API Endpoints
+### Account API endpoints
 
 The account management endpoints live in the `account` tRPC router:
 
 | Endpoint           | Type     | Description                                                     |
 | ------------------ | -------- | --------------------------------------------------------------- |
-| `getAccountStatus` | Query    | Returns current deletion status and timestamps                  |
+| `getAccountStatus` | Query    | Returns the current deletion status and timestamps              |
 | `requestDeletion`  | Mutation | Schedules the account for deletion after a 24-hour grace period |
 | `cancelDeletion`   | Mutation | Cancels a pending deletion request                              |
-| `getPrivacy`       | Query    | Returns current privacy setting                                 |
+| `getPrivacy`       | Query    | Returns the current privacy setting                             |
 | `updatePrivacy`    | Mutation | Toggles profile visibility on or off                            |
 
-### Database Schema
+### Database schema
 
-Two new fields on the `user` table support account deletion:
+Two fields on the `user` table back account deletion:
 
-- `deletionRequestedAt` — timestamp when the user requested deletion
-- `deletionScheduledFor` — timestamp after which the account is eligible for permanent removal (24 hours after request)
+- `deletionRequestedAt` — timestamp when you requested deletion
+- `deletionScheduledFor` — timestamp after which the account is eligible for permanent removal (24 hours after the request)
 
-The `player` table has a new `profilePublic` boolean field for the privacy toggle.
+The `player` table carries a `profilePublic` boolean field for the privacy toggle.

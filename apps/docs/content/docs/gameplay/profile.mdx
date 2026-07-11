@@ -1,21 +1,34 @@
 ---
-title: Profile Page
-description: Your player profile — stats, level, achievements, and recent scores. Plus public profiles and privacy controls.
+title: "Profile: Stats, XP & Skins"
+description: Track your FangDash player profile — lifetime stats, level and XP, achievement badges, recent score trends, equipped skin, and public profile privacy
+keywords:
+  - fangdash player profile
+  - player stats and level progress
+  - achievement badges
+  - public profile privacy toggle
+  - recent score trends
+  - equipped wolf skin
+ogEyebrow: Player profile
+ogChips:
+  - Lifetime stats
+  - Level & XP
+  - Public profiles
+  - Privacy toggle
 ---
 
 <Callout type="info">
-	**TL;DR** - See all your stats at a glance: distance, high score, win rate, and more - Track your
-	level and XP progress - View your recent scores with trend arrows and your equipped skin - Share
-	your public profile with other players - Control visibility with the privacy toggle in Settings
+	**TL;DR** — Your profile shows lifetime stats, your level and XP progress, achievement badges,
+	recent score trends, and your equipped wolf skin. Every player gets a public profile, and you
+	control its visibility with the privacy toggle in Settings.
 </Callout>
 
-Your profile page shows everything about your FangDash career. Visit it at [/profile](/profile).
+Your profile page brings your whole FangDash career together in one view. Visit your own at [/profile](/profile). You need to be signed in with Twitch for stats and XP to be saved — see [Getting Started](/docs/getting-started).
 
-## Performance Stats
+## Performance stats
 
-Your profile displays a stats grid with six key metrics:
+A stats grid summarizes your lifetime numbers at a glance:
 
-| Stat                  | What It Tracks                          |
+| Stat                  | What it tracks                          |
 | --------------------- | --------------------------------------- |
 | **Total Distance**    | Combined meters run across all games    |
 | **High Score**        | Your single best score ever             |
@@ -24,48 +37,50 @@ Your profile displays a stats grid with six key metrics:
 | **Games Played**      | Total number of games completed         |
 | **Total Score**       | Combined score across all games         |
 
+These totals only grow from validated runs. Runs flagged by the server's anti-cheat checks are stored but never count toward your stats, XP, or unlocks — see [Scoring](/docs/gameplay/scoring) for how validation works.
+
 ## Level & XP
 
-A progress bar shows your current **level** and how far you are to the next one. Every point you score earns 1 XP, and race placements give bonus XP.
+A progress bar shows your current **level** and how far you are from the next one. Every point you score earns 1 XP, and race placements add a bonus: 500 XP for 1st, 250 for 2nd, and 100 for 3rd.
 
-See [Level System](/docs/gameplay/levels) for the full breakdown.
+Leveling follows a cubic curve, so each level costs more than the last. See the [Level System](/docs/gameplay/levels) for the full breakdown.
 
-## Honor Badges
+## Achievement badges
 
-Up to **12 achievement badges** are displayed on your profile. The slots are filled with your most recently unlocked achievements first, then padded with locked (unearned) achievements to reach 12. This way you always see a full grid — your latest wins up front, with goals still to chase.
+Your profile displays a grid of **achievement badges**. Your most recently unlocked achievements show up first, and the remaining slots are filled with locked achievements you haven't earned yet — so you always see a full grid of wins up front and goals still to chase.
 
-See [Achievements](/docs/customization/achievements) for the full list.
+There are 21 achievements across five categories (score, distance, games, skill, and social). See [Achievements](/docs/customization/achievements) for the complete list and how to unlock each one.
 
-## Recent Scorelines
+## Recent score trends
 
-Your last 8 scores are displayed with **trend arrows** showing whether each score was higher or lower than the one before it. This helps you track whether you're improving over time.
+Your most recent scores are listed with **trend arrows** showing whether each run beat the one before it. It's a quick way to see whether you're improving over time or plateauing.
 
-## Equipped Skin
+## Equipped skin
 
-Your currently equipped wolf skin is displayed on your profile. Other players can see it too.
+Your currently equipped wolf skin is shown on your profile, and other players can see it too. FangDash has six skins, from the default Gray Wolf up to two legendary wolves.
 
-Change your skin anytime from [Settings](/settings).
+Change your skin anytime from [Settings](/settings), and browse how each one unlocks in [Skins](/docs/customization/skins).
 
-## Public Profiles
+## Public profiles
 
-Every player has a public profile at `/profile/[id]` that other players can view. Public profiles are linked from the leaderboard — click any player's name to visit their profile.
+Every player has a public profile at `/profile/[id]` that other players can view. Public profiles are linked from the leaderboard — click any player's name to open their profile.
 
-Public profiles display:
+A public profile displays:
 
-- Player stats (distance, high score, games played, etc.)
+- Player stats (distance, high score, games played, and more)
 - Achievements earned
 - Top scores
 - Equipped skin
 
-### Share Profile
+### Share your profile
 
-On your own profile page, a **Share Profile** button lets you copy a direct link to your public profile to share with others.
+On your own profile page, a **Share Profile** button copies a direct link to your public profile so you can drop it in chat, a bio, or a stream overlay.
 
-### Privacy Toggle
+### Privacy toggle
 
-If you prefer to keep your profile private, you can disable public visibility from [Settings](/settings). When privacy is enabled:
+Prefer to stay private? You can turn off public visibility from [Settings](/settings). When your profile is private:
 
 - Your public profile page shows a "This profile is private" notice
-- Your name on the leaderboard will not link to your profile
+- Your name on the leaderboard no longer links to your profile
 
-The privacy toggle is labeled **"Allow others to view my profile"** and can be changed at any time. See [Settings](/docs/getting-started/settings) for details.
+The toggle is labeled **"Allow others to view my profile"** and can be changed at any time. Your scores can still appear on the leaderboard depending on your settings — the privacy toggle controls access to your profile page. See [Settings](/docs/getting-started/settings) for the full rundown, including account deletion.

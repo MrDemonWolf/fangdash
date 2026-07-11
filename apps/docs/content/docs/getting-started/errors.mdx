@@ -1,20 +1,36 @@
 ---
-title: Common Errors
-description: Reference guide for common FangDash errors and how to fix them.
+title: Common Errors & Fixes
+description: Troubleshoot common FangDash errors — Twitch OAuth failures, API 401/403/429 rate limits, D1 database issues, PartyKit WebSocket drops, and build failures.
+keywords:
+  - fangdash troubleshooting
+  - twitch oauth redirect error
+  - 429 too many requests rate limit
+  - partykit websocket connection refused
+  - d1 migrations table not found
+  - better auth session expired
+  - cloudflare workers 500 error
+ogEyebrow: Troubleshooting
+ogChips:
+  - "Auth & OAuth"
+  - "API 401/403/429"
+  - "WebSocket drops"
+  - "Build & deploy"
 ---
 
 <Callout type="info">
-	This page covers errors you might encounter when running or self-hosting FangDash. Each section
-	includes the error, its likely cause, and how to fix it.
+	This page covers errors you might hit while playing or self-hosting FangDash. Each entry lists the
+	error, its likely cause, and the fix. Skim to the section that matches your symptom.
 </Callout>
 
-## Authentication Errors
+## Authentication errors
 
-### OAuth redirects to blank page or error
+FangDash signs you in with Twitch through Better Auth. Twitch is the only social provider, so most auth issues trace back to the OAuth redirect or missing API secrets.
+
+### OAuth redirects to a blank page or error
 
 **Cause:** The Twitch OAuth redirect URL doesn't match the configured callback.
 
-**Fix:** In the [Twitch Developer Console](https://dev.twitch.tv/console), ensure the redirect URL is:
+**Fix:** In the [Twitch Developer Console](https://dev.twitch.tv/console), make sure the redirect URL is one of:
 
 - Local: `http://localhost:8787/api/auth/callback/twitch`
 - Production: `https://your-api-domain.workers.dev/api/auth/callback/twitch`
@@ -23,7 +39,7 @@ The URL must match **exactly**, including protocol and path.
 
 ### "Auth not configured" (503)
 
-**Cause:** One or more required auth environment variables are missing.
+**Cause:** One or more required auth environment variables are missing on the API.
 
 **Fix:** Set all required secrets:
 
@@ -35,47 +51,51 @@ bunx wrangler secret put TWITCH_CLIENT_SECRET --env production
 
 ### Token expired / session invalid
 
-**Cause:** The user's session has expired (sessions last up to 30 minutes with cookie caching).
+**Cause:** Your session cookie is stale. Better Auth uses a short cookie cache (5 minutes), so a fresh session state is re-fetched shortly after it goes out of date.
 
-**Fix:** Sign out and sign back in. This happens automatically in the browser — if it persists, clear cookies for the site.
+**Fix:** Sign out and back in. The browser usually recovers on its own — if it doesn't, clear cookies for the site and sign in again.
 
-## API Errors
+## API errors
+
+The API is a Hono app on Cloudflare Workers exposing tRPC v11 endpoints. Errors come back as standard HTTP status codes.
 
 ### 401 Unauthorized
 
-**Cause:** No valid session. The request requires authentication.
+**Cause:** No valid session. The request requires you to be signed in.
 
-**Fix:** Sign in first. If you're already signed in, your session may have expired — refresh the page.
+**Fix:** Sign in first. If you're already signed in, your session may have lapsed — refresh the page.
 
 ### 403 Forbidden
 
 **Cause:** One of:
 
 - Your account is **banned**
-- You're accessing an admin/dev-only endpoint without the right role
+- You're hitting an admin-only endpoint without the right role
 - Your ban hasn't expired yet
 
 **Fix:**
 
-- If banned: contact the server admin or wait for the ban to expire
-- If accessing admin panel: ensure your user has `admin` or `dev` role (see [Admin docs](/docs/getting-started/admin))
+- If banned: contact the server admin, or wait for the ban to expire (bans can be permanent or time-limited)
+- If accessing the admin panel: make sure your user has the `admin` role (see the [Admin docs](/docs/getting-started/admin))
 
 ### 429 Too Many Requests
 
-**Cause:** You've exceeded the rate limit (10 mutations/min or 60 queries/min).
+**Cause:** You've exceeded the rate limit — **10 mutations/min** or **60 queries/min** per user.
 
-**Fix:** Wait for the duration specified in the `Retry-After` response header (usually under 60 seconds), then retry.
+**Fix:** Wait for the duration in the `Retry-After` response header (usually under a minute), then retry.
 
 ### 500 Internal Server Error
 
-**Cause:** An unexpected server error, usually a database issue or unhandled exception.
+**Cause:** An unexpected server error, usually a database problem or an unhandled exception.
 
 **Fix:**
 
-- Check the Cloudflare Workers logs: `bunx wrangler tail` (for real-time) or the Cloudflare dashboard
-- Common causes: missing D1 binding, unmigrated database, network issues
+- Tail the Cloudflare Workers logs in real time with `bunx wrangler tail`, or read them in the Cloudflare dashboard
+- Common culprits: a missing D1 binding, an unmigrated database, or a transient network issue
 
-## Database Errors
+## Database errors
+
+FangDash stores everything in Cloudflare D1 (SQLite) via Drizzle ORM and migrations.
 
 ### "table not found"
 
@@ -89,55 +109,63 @@ bunx wrangler d1 migrations apply fangdash-db --remote
 
 ### UNIQUE constraint violation
 
-**Cause:** Attempting to insert a duplicate record (e.g., same player unlocking same achievement twice).
+**Cause:** An attempt to insert a duplicate row — for example, unlocking the same achievement twice, or replaying a run with the same `(player, seed)` pair (replay protection is enforced on scores).
 
-**Fix:** This is usually handled gracefully by the application. If it persists, check the specific table for duplicate entries.
+**Fix:** This is normally handled gracefully by the app. If it persists, inspect the affected table for duplicate entries.
 
 ### "database is locked"
 
 **Cause:** Too many concurrent writes to D1.
 
-**Fix:** This is transient — retry the operation. If frequent, check for expensive queries or missing indexes.
+**Fix:** This is transient — retry the operation. If it happens often, look for expensive queries or missing indexes.
 
-## WebSocket Errors
+## WebSocket / multiplayer errors
+
+Real-time races run on a PartyKit WebSocket server. Rooms hold up to 4 players and are authenticated with a short-lived token minted by the API.
 
 ### Connection refused to PartyKit
 
-**Cause:** PartyKit server isn't running or the host URL is wrong.
+**Cause:** The PartyKit server isn't running, or the host URL is wrong.
 
 **Fix:**
 
 - Verify PartyKit is deployed: `bun run ship:party`
-- Check `NEXT_PUBLIC_PARTYKIT_HOST` matches your PartyKit deployment URL
+- Check that `NEXT_PUBLIC_PARTYKIT_HOST` matches your deployment URL
 - The host should look like `fangdash.your-username.partykit.dev` (no `https://` prefix)
+
+### Race token rejected / connection closed on join
+
+**Cause:** The connection token is missing, expired, or signed with a different secret. The web client fetches a token from `race.getConnectionToken` (an HMAC-SHA256 token with a 120-second TTL) and passes it to PartyKit as `?token=`.
+
+**Fix:** Make sure `RACE_TOKEN_SECRET` is set to the **same value** on both `apps/api` and `apps/party`. If the token simply timed out, rejoin the race so the client mints a fresh one.
 
 ### "Room not found" or empty room state
 
-**Cause:** The race room ID doesn't exist on the PartyKit server, or the server was restarted.
+**Cause:** The race room doesn't exist on the PartyKit server, or the server was restarted.
 
-**Fix:** PartyKit rooms are ephemeral — if the server restarts, all rooms are lost. Create a new room from the lobby.
+**Fix:** PartyKit rooms are ephemeral — if the server restarts, active rooms are lost. Create a new room from the lobby.
 
-### Players disconnecting during race
+### Players disconnecting during a race
 
-**Cause:** Network instability or PartyKit connection timeout.
+**Cause:** Network instability or a PartyKit connection timeout.
 
 **Fix:**
 
-- The game handles disconnections gracefully — disconnected players are removed and the host migrates if needed
-- If all players disconnect, the race ends automatically
-- Check browser console for WebSocket error messages
+- The game handles drops gracefully — disconnected players are removed, and the host migrates if the host leaves
+- If everyone disconnects, the race ends automatically
+- Check the browser console for WebSocket error messages
 
 ### Malformed messages rejected
 
 **Cause:** The client sent a WebSocket message that doesn't match the expected schema.
 
-**Fix:** This is a client-side bug. All messages are validated against a Zod schema before processing. Check the browser console for details. If you're building a custom client, ensure messages match the `ClientMessage` type from `@fangdash/shared`.
+**Fix:** This is a client-side bug. Every message is validated against a Zod schema before processing. Check the browser console for details. If you're building a custom client, match the message shapes exported from `@fangdash/shared` (`ws-schemas.ts`).
 
-## Build & Deploy Errors
+## Build & deploy errors
 
 ### Type errors after pulling changes
 
-**Fix:**
+**Fix:** Reinstall dependencies and re-run the type checker:
 
 ```bash
 bun install
@@ -156,9 +184,9 @@ bun run build
 bun run ship
 ```
 
-### PartyKit deploy fails with auth error
+### PartyKit deploy fails with an auth error
 
-**Cause:** Missing or expired `PARTYKIT_TOKEN`.
+**Cause:** A missing or expired `PARTYKIT_TOKEN`.
 
 **Fix:**
 
@@ -166,3 +194,9 @@ bun run ship
 export PARTYKIT_TOKEN=your-token-here
 bun run ship:party
 ```
+
+<Callout type="info">
+	Still stuck? Double-check your environment variables against the setup guide, then confirm every
+	app is on Node.js 20 or newer and running the same `RACE_TOKEN_SECRET` across the API and party
+	server.
+</Callout>

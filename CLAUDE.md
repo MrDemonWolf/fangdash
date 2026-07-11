@@ -50,7 +50,7 @@ bunx drizzle-kit generate   # Generate new migration from schema changes
 - `apps/api` — Hono API on Cloudflare Workers, tRPC v11 endpoints, Better Auth (Twitch OAuth), Drizzle ORM with Cloudflare D1 (SQLite)
 - `apps/web` — Next.js 16 (App Router, Turbopack), React 19, Tailwind v4, shadcn/ui components, tRPC client via React Query
 - `apps/party` — PartyKit WebSocket server for real-time multiplayer race rooms
-- `apps/docs` — Fumadocs documentation site
+- `apps/docs` — Fumadocs documentation site + marketing landing page. Static export (`output: "export"`) deployed to **GitHub Pages** at `https://mrdemonwolf.github.io/fangdash` (basePath `/fangdash` in prod) via `.github/workflows/deploy-docs.yml`. Custom `fd-` design system, full SEO stack, and dynamic OG images (see "Docs site" under Key patterns)
 - `packages/game` — Phaser 4 game engine: scenes (Boot, Game, Race), entities (Player, GhostPlayer, Obstacle), systems (parallax, difficulty, scoring, audio, fog, weather)
 - `packages/shared` — Domain types, game constants, skin/achievement definitions, seeded PRNG, level curve (`levels.ts`), game modifiers (`mods.ts`), race connection tokens (`race-token.ts`), WebSocket message schemas (`ws-schemas.ts`)
 
@@ -77,6 +77,17 @@ bunx drizzle-kit generate   # Generate new migration from schema changes
 - Design tokens: all colors defined as CSS custom properties via Tailwind v4 `@theme inline` in `apps/web/src/app/globals.css` using OKLCH color space; FangDash palette (cyan primary, dark navy background, orange/purple/gold accents) mapped to shadcn-compatible semantic tokens (background, foreground, primary, secondary, muted, accent, destructive, border, etc.)
 - `cn()` helper at `apps/web/src/lib/utils.ts` (clsx + tailwind-merge) — used by all UI components for conditional class merging
 - Tests live in `src/__tests__/` directories (not colocated next to source files); vitest configs specify `include: ["src/__tests__/**/*.test.ts"]`
+
+**Docs site (`apps/docs`) patterns:**
+
+- SEO single source of truth: `apps/docs/lib/site.ts` — `siteUrl`, `basePath`, `absoluteUrl`/`assetPath`, build-time `getRepoStats`, and `homepageSeo` (all homepage/root meta + OG copy). Change the pitch there once and layout, home metadata, and the OG image stay in sync
+- Design system: `apps/docs/app/global.css` defines the `fd-` arcade-neon language (deep-navy + cyan-neon + gold) as CSS custom properties, light + dark, default dark. Home + widgets use `fd-*` classes and `var(--brand-500)` etc. Fonts: Unbounded (display), Hanken Grotesk (body), JetBrains Mono (mono) via `next/font` in `app/layout.tsx`
+- Dynamic OG images: `app/og/_components/og-card.tsx` renders a branded card (Satori, all elements `display:flex`); `app/opengraph-image.tsx` + `app/twitter-image.tsx` = root card; `app/og/docs/[...slug]/route.tsx` = one static card per docs page (fonts fetched from Google at build). Per-section defaults in `og-presets.ts`. Do NOT re-add `public/opengraph-image.png` — it would shadow the generated route
+- Per-page SEO: `app/docs/[[...slug]]/page.tsx` emits canonical + keywords + per-page OG + JSON-LD (TechArticle, BreadcrumbList, FAQ); root `app/layout.tsx` emits VideoGame JSON-LD. `sitemap.ts`, `robots.ts`, `manifest.ts`, `llms-full.txt/route.ts` are all static routes
+- MDX frontmatter schema extended in `source.config.ts`: `keywords`, `ogTitle`, `ogDescription`, `ogEyebrow`, `ogChips` (all optional; fall back to title/description + section presets). Every content page ships `description` + `keywords` + `ogEyebrow` + `ogChips`
+- `lib/source.ts` keeps a compatibility shim (`page.data` widened to `any`); read extended frontmatter fields directly off `page.data`
+- Static search via Orama: `app/api/search/route.ts` (`staticGET`) + `components/search.tsx` + `components/provider.tsx`
+- The worktree needs its own `bun install` — `node_modules` is not shared with the main checkout, so a build in a fresh worktree will fail with `next: command not found` until deps are installed there
 
 ## Tech Stack
 

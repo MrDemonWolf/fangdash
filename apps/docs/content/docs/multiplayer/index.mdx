@@ -1,40 +1,63 @@
 ---
-title: Overview
-description: Race against other players in real-time.
+title: Multiplayer Overview
+description: Race up to 4 wolves in real-time FangDash multiplayer on a shared seeded course, with live rival ghosts, a 3-second countdown, and bonus placement XP
+keywords:
+  - fangdash multiplayer races
+  - real-time wolf racing game
+  - seeded procedural obstacle course
+  - up to 4 players per race
+  - live ghost racers
+  - race placement bonus xp
+ogEyebrow: Multiplayer racing
+ogChips:
+  - "Up to 4 players"
+  - "2 to start"
+  - "3s countdown"
+  - "Shared seed"
 ---
 
 <Callout type="info">
-	**TL;DR** - Race up to 4 players in real-time via WebSocket-powered rooms - All players face the
-	exact same obstacles (seeded PRNG) - Ghost players are visible during the race — you can see their
-	live position
+	**TL;DR** — Race up to 4 players in real-time WebSocket rooms. Everyone runs the exact same course
+	(shared seeded PRNG), rival "ghosts" show live positions, and finishing places earn bonus XP.
 </Callout>
 
-FangDash lets you race against up to 3 other players in real-time. All players run through the same obstacle course, and the player with the highest score wins.
+FangDash multiplayer pits you against up to 3 other players in real-time. Everyone runs the same obstacle course at once, and the highest score when the dust settles wins the race.
 
-## How to Start a Race
+You need to be signed in with Twitch to race. Solo play works without an account, but multiplayer, saved scores, and XP all require signing in — see [Sign In](/docs/getting-started/sign-in).
+
+## How to start a race
 
 <Steps>
-	<Step>Click **Multiplayer** from the main menu</Step>
-	<Step>Create a new room or join an existing one with a room code</Step>
-	<Step>Wait for other players to join (2–4 players required)</Step>
-	<Step>When everyone is ready, a 3-second countdown begins and the race starts</Step>
+	<Step>From the main menu, open **Race**.</Step>
+	<Step>Create a new room, or join an existing one with its room code.</Step>
+	<Step>
+		Wait for players to join. A room holds up to **4 players**, and a race can start once at least
+		**2 players are ready**.
+	</Step>
+	<Step>
+		When enough players are ready, a **3-second countdown** begins and everyone launches together.
+	</Step>
 </Steps>
 
-## Fair Play
+The first player in a room is the **host**. If the host leaves, host duties migrate automatically to another player, so the room keeps running.
 
-Every player in a race faces the **exact same obstacles**. FangDash uses a **seeded random number generator** — the seed is shared when the race starts, so the obstacle layout is identical for everyone.
+## Fair by design
 
-## What You See
+Every racer faces the **exact same obstacles**. FangDash generates the course from a single shared seed using a seeded random number generator, so the layout is identical for everyone in the room — no player gets an easier run. Solo play uses its own separate seed.
 
-During a race, you can see other players' wolves as **ghost players** running alongside yours. You can't collide with them, but you can see their progress in real-time.
+Rooms move through four states as you play: **waiting → countdown → racing → finished**.
+
+## What you see mid-race
+
+During a race, other players appear as **ghosts** running alongside you. You can't collide with them, but you can watch their live progress and gauge how far ahead or behind you are. Solo runs don't have ghosts.
 
 ## Winning
 
-The race continues until all players have hit an obstacle. The player with the **highest score** wins. Results are saved to race history with placements.
+The race runs until every player has crashed. Results are sorted by **highest score**, with earlier death time breaking any ties, and the standings are saved to race history with placements.
 
-## Race XP Bonuses
+## Race XP bonuses
 
-On top of the XP you earn from your score, race placements give **bonus XP**:
+On top of the XP you earn from your score (1 point = 1 XP), your finishing place awards **bonus XP**:
 
 | Placement | Bonus XP |
 | --------- | -------- |
@@ -43,4 +66,4 @@ On top of the XP you earn from your score, race placements give **bonus XP**:
 | 3rd place | 100 XP   |
 | 4th place | 0 XP     |
 
-See [Level System](/docs/gameplay/levels) for how XP and levels work.
+See the [Level System](/docs/gameplay/levels) for how XP and levels work, and check the [Achievements](/docs/gameplay/achievements) page for race-specific unlocks like Champion and Veteran Racer.

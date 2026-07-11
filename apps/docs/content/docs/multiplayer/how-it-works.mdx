@@ -1,61 +1,125 @@
 ---
-title: How It Works
-description: Technical details about FangDash's multiplayer system.
+title: How Multiplayer Works
+description: A deep dive into FangDash multiplayer - PartyKit race rooms, seeded deterministic obstacles, host migration, and HMAC connection tokens
+keywords:
+  - fangdash multiplayer architecture
+  - partykit websocket race server
+  - seeded prng deterministic obstacles
+  - mulberry32 djb2 string hashing
+  - hmac connection token
+  - multiplayer host migration
+  - race room lifecycle
+ogEyebrow: Multiplayer internals
+ogChips:
+  - Up to 4 racers
+  - Shared seed
+  - PartyKit WS
+  - HMAC token
 ---
 
 <Callout type="info">
-	**TL;DR** - Real-time multiplayer powered by **PartyKit** WebSockets - A shared seed ensures all
-	players face identical obstacles — no server-side simulation needed - Ghost players update live
-	via WebSocket position broadcasts
+	**TL;DR** — Real-time racing runs on a **PartyKit** WebSocket server. A single shared seed makes
+	every player generate the identical obstacle course locally, so no server-side game simulation is
+	needed. Ghost wolves update live over the socket, and a short-lived HMAC token authorizes the
+	connection.
 </Callout>
 
-FangDash uses WebSockets for real-time multiplayer communication, powered by **PartyKit**.
+FangDash multiplayer connects up to **4 players** per race over WebSockets, powered by **PartyKit**. The server manages the room and relays events — it never simulates the game world. This page walks through the architecture end to end.
 
 ## Architecture
 
-| Component                 | Role                                                           |
-| ------------------------- | -------------------------------------------------------------- |
-| **PartyKit Server**       | Manages race rooms, player connections, and game state         |
-| **WebSocket Connections** | Each player maintains a persistent connection to the race room |
-| **Seeded PRNG**           | A shared seed ensures all players face identical obstacles     |
+| Component                 | Role                                                                    |
+| ------------------------- | ----------------------------------------------------------------------- |
+| **PartyKit `RaceServer`** | Manages one race room: connections, lobby state, countdown, and results |
+| **WebSocket connection**  | Each player holds a persistent connection to their race room            |
+| **Connection token**      | A short-lived HMAC token proves the player is signed in                 |
+| **Seeded PRNG**           | A shared seed makes all clients generate the same obstacle course       |
 
-## Race Flow
+Each race room lives in its own `RaceServer` instance. The web client opens a socket to that room, the server tracks who is connected and their live progress, and it broadcasts events (countdown ticks, position updates, deaths, results) to everyone in the room.
+
+## Joining a race: connection tokens
+
+The web client can't read the Better Auth session cookie (it's `httpOnly`), so it has no credential to hand PartyKit directly. Instead the API mints a short-lived token bound to your user.
 
 <Steps>
-	<Step>**Lobby** — Players join a room and mark themselves as ready</Step>
-	<Step>**Countdown** — Once all players are ready, a 3-second countdown begins</Step>
 	<Step>
-		**Racing** — Players run through the same obstacle course. Position updates are broadcast to all
-		players in real-time
+		**Mint** — The client calls `race.getConnectionToken` on the API, which returns an HMAC-SHA256
+		token with a **120-second** lifetime, signed with `RACE_TOKEN_SECRET`.
 	</Step>
 	<Step>
-		**Results** — When all players finish (or hit an obstacle), final scores are compared and
-		placements are saved
+		**Connect** — The client opens the race socket and forwards the token as the `?token=` query
+		parameter.
+	</Step>
+	<Step>
+		**Verify** — The PartyKit server verifies the signature with the same shared secret. No
+		round-trip back to the API is needed, and a leaked token expires within minutes.
 	</Step>
 </Steps>
 
-## Ghost Players
+The token is a compact, JWT-like string: `base64url(payload).base64url(hmac)`, where the payload carries the user id and an expiry. Signature checks run in constant time to avoid timing leaks, and any malformed, tampered, or expired token is rejected.
 
-Other players appear as **semi-transparent "ghost" wolves** on your screen. Their positions update in real-time via WebSocket messages. You can see them running, jumping, and hitting obstacles.
+## Room lifecycle
 
-## Deterministic Obstacles (Seeded Play)
+A room moves through four states. Its status drives what the server accepts at each moment.
+
+| Status      | What's happening                                               |
+| ----------- | -------------------------------------------------------------- |
+| `waiting`   | The lobby. Players join (up to 4) and mark themselves ready    |
+| `countdown` | The host started a 3-second countdown; late joins are blocked  |
+| `racing`    | The shared seed is broadcast and everyone runs the same course |
+| `finished`  | All players have died; results are sorted and sent             |
+
+<Steps>
+	<Step>
+		**Lobby** — The first player to join becomes the **host**. New players join while the room is
+		`waiting`, up to the 4-player cap.
+	</Step>
+	<Step>
+		**Countdown** — Once at least **two** players are in the room, the host readies up to trigger a
+		3-second countdown. If players leave and drop the room below two, the countdown aborts and
+		everyone returns to the lobby.
+	</Step>
+	<Step>
+		**Racing** — When the countdown finishes, the server generates the seed and broadcasts a
+		`race_start`. Every client generates the same obstacles and runs. Position updates are
+		throttled, then relayed to the room.
+	</Step>
+	<Step>
+		**Results** — When the last surviving player dies, the race ends. The server ranks players and
+		broadcasts the final placements.
+	</Step>
+</Steps>
+
+### Host migration
+
+The host has a few privileges: starting the countdown, kicking a lobby player, and calling a rematch. If the host disconnects, the server promotes the next remaining player to host and broadcasts a `host_changed` event. If the host was the only player left, the room resets to `waiting`.
+
+### Results and placement
+
+When the race ends, players are sorted by **score, descending**. Ties break on **death time** — the player who survived longer ranks higher. Each player is assigned a placement (1st, 2nd, 3rd, …), which the API turns into bonus XP for signed-in players. See [Levels & XP](/docs/gameplay/levels) for the exact bonuses.
+
+## Ghost players
+
+Other racers appear as semi-transparent **ghost wolves** on your screen. Their positions come from `player_update` messages broadcast over the socket, so you see rivals running, jumping, and wiping out in real time. Ghosts are purely visual — they never affect your own physics or obstacles.
+
+## Deterministic obstacles (seeded play)
 
 <Callout type="info">
 	FangDash uses a **seeded PRNG** so every player in a race faces the exact same obstacle course —
-	without the server needing to simulate the game world.
+	without the server ever simulating the game world.
 </Callout>
 
 ### How it works
 
-In a typical multiplayer game, a central server runs the game simulation and streams the world state to every client. FangDash takes a different approach: **deterministic generation from a shared seed**. Instead of syncing obstacle positions over the network, each client generates them independently — and because they all start from the same seed, they all produce the identical sequence.
+In a typical multiplayer game, a central server runs the simulation and streams world state to every client. FangDash takes a different approach: **deterministic generation from a shared seed**. Instead of syncing obstacle positions over the network, each client generates them independently — and because they all start from the same seed, they all produce the identical sequence.
 
 ### Step by step
 
-1. **Seed creation** — When a race starts, the PartyKit server generates a random seed with `crypto.randomUUID()` (e.g. `"a3f1b2c4-..."`)
-2. **Broadcast** — The server sends a `race_start` message containing the seed to every connected player
-3. **Local generation** — Each client creates a `SeededRandom` instance from that seed. The seed string is hashed (djb2) into a 32-bit integer, which initialises the PRNG state
-4. **Obstacle spawning** — As the game runs, the `ObstacleSpawner` calls `rng.next()`, `rng.between()`, and `rng.pick()` to decide obstacle type, position, and spacing. Because every client calls these methods in the same order with the same initial state, every client sees the same obstacles at the same positions
-5. **Race reset** — When a new race begins, the server generates a fresh `crypto.randomUUID()` seed, so every race has a unique obstacle layout
+1. **Seed creation** — When the countdown completes, the `RaceServer` generates a random seed with `crypto.randomUUID()` (e.g. `"a3f1b2c4-..."`)
+2. **Broadcast** — The server sends a `race_start` message carrying the seed to every connected player
+3. **Local generation** — Each client creates a `SeededRandom` instance from that seed. The seed string is hashed with **djb2** into a 32-bit integer, which initializes the PRNG state
+4. **Obstacle spawning** — As the run progresses, the spawner calls `rng.next()`, `rng.between()`, and `rng.pick()` to decide obstacle type, position, and spacing. Because every client calls these methods in the same order from the same initial state, every client sees the same obstacles in the same places
+5. **Rematch** — On a rematch the host resets the room and a fresh `crypto.randomUUID()` seed is generated, so every race has a unique layout
 
 ### The algorithm: mulberry32
 
@@ -68,21 +132,32 @@ The PRNG is a **mulberry32** generator — a fast, 32-bit algorithm that produce
 | `intBetween(min, max)` | Integer in `[min, max]` | Selecting obstacle variants |
 | `pick(array)`          | Random element          | Choosing obstacle types     |
 
+The seed is turned into the initial 32-bit state by the djb2 string hash (starting from `5381`), so any UUID string maps deterministically to one starting point.
+
 ### Solo mode
 
-Solo mode uses the same seeded PRNG system. The difference is where the seed comes from:
+Solo play uses the same seeded system — only the seed source changes:
 
-| Mode            | Seed source                               | When generated                          |
-| --------------- | ----------------------------------------- | --------------------------------------- |
-| **Multiplayer** | PartyKit server via `crypto.randomUUID()` | Once per race, broadcast to all players |
-| **Solo**        | Client-side via `crypto.randomUUID()`     | Once per run (new seed on each restart) |
+| Mode            | Seed source                               | When generated                            |
+| --------------- | ----------------------------------------- | ----------------------------------------- |
+| **Multiplayer** | PartyKit server via `crypto.randomUUID()` | Once per race, broadcast to all players   |
+| **Solo**        | Client-side via `crypto.randomUUID()`     | Once per run (a new seed on each restart) |
 
-This means both modes run through the same `SeededRandom` code path — the only difference is that multiplayer seeds are shared, while solo seeds are local.
+Both modes run through the same `SeededRandom` code path — multiplayer seeds are shared, solo seeds are local.
 
 ### Why this matters
 
-- **Fair races** — Every player faces identical obstacles, so skill is the only differentiator
-- **Consistent code path** — Both solo and multiplayer use `SeededRandom`, reducing the chance of mode-specific bugs
-- **No server simulation** — The server only manages connections and broadcasts events, not the game world. This keeps latency low and server costs minimal
-- **Reproducible** — A race can be fully reconstructed from its seed alone, which is useful for replays or verifying scores
-- **Bandwidth-efficient** — Only a single UUID needs to be sent to synchronise the entire obstacle course across all players
+- **Fair races** — Everyone faces identical obstacles, so skill is the only differentiator
+- **Consistent code path** — Solo and multiplayer share `SeededRandom`, reducing mode-specific bugs
+- **No server simulation** — The server only manages connections and relays events, which keeps latency low and hosting costs minimal
+- **Reproducible** — A race can be reconstructed from its seed alone, useful for replays and score checks
+- **Bandwidth-efficient** — A single UUID synchronizes the entire obstacle course across every player
+
+<Cards>
+	<Card title="Play a race" href="/docs/multiplayer">
+		How to create, join, and race in a lobby.
+	</Card>
+	<Card title="Scoring & anti-cheat" href="/docs/gameplay/scoring">
+		How runs are scored and validated server-side.
+	</Card>
+</Cards>
