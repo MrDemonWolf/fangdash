@@ -158,24 +158,19 @@ export default function Home() {
 						</Link>
 					</p>
 					<p className="self-center font-mono text-xs text-muted-foreground/50 sm:text-center">
-						v{process.env["NEXT_PUBLIC_APP_VERSION"]}
-						{process.env["NEXT_PUBLIC_COMMIT_SHA"] && (
-							<>
-								{" · "}
-								{COMMIT_SHA_PATTERN.test(process.env["NEXT_PUBLIC_COMMIT_SHA"]) ? (
-									<Link
-										href={`https://github.com/MrDemonWolf/fangdash/commit/${process.env["NEXT_PUBLIC_COMMIT_SHA"]}`}
-										target="_blank"
-										rel="noopener noreferrer"
-										className="transition-colors hover:text-muted-foreground"
-									>
-										{process.env["NEXT_PUBLIC_COMMIT_SHA"]}
-									</Link>
-								) : (
-									<span>{process.env["NEXT_PUBLIC_COMMIT_SHA"]}</span>
-								)}
-							</>
-						)}
+						{process.env["NEXT_PUBLIC_COMMIT_SHA"] &&
+							(COMMIT_SHA_PATTERN.test(process.env["NEXT_PUBLIC_COMMIT_SHA"]) ? (
+								<Link
+									href={`https://github.com/MrDemonWolf/fangdash/commit/${process.env["NEXT_PUBLIC_COMMIT_SHA"]}`}
+									target="_blank"
+									rel="noopener noreferrer"
+									className="transition-colors hover:text-muted-foreground"
+								>
+									{process.env["NEXT_PUBLIC_COMMIT_SHA"]}
+								</Link>
+							) : (
+								<span>{process.env["NEXT_PUBLIC_COMMIT_SHA"]}</span>
+							))}
 					</p>
 					<div className="flex justify-center gap-6 self-center sm:justify-end">
 						<Link
