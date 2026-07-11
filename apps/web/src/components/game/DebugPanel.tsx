@@ -7,6 +7,7 @@ import { useTRPC } from "@/lib/trpc.ts";
 
 import {
 	BASE_SPEED,
+	DIFFICULTY_LEVELS,
 	DISTANCE_MULTIPLIER,
 	DOUBLE_JUMP_VELOCITY,
 	GRAVITY,
@@ -92,10 +93,10 @@ interface DebugPanelProps {
 function SectionHeader({ children }: { children: React.ReactNode }) {
 	return (
 		<div className="flex items-center gap-2 pt-1.5 pb-0.5 first:pt-0">
-			<span className="text-[9px] font-mono uppercase tracking-[0.15em] text-[#0FACED]/50 shrink-0">
+			<span className="text-[9px] font-mono uppercase tracking-[0.15em] text-fang-cyan/50 shrink-0">
 				{children}
 			</span>
-			<div className="flex-1 h-px bg-[#0FACED]/10" />
+			<div className="flex-1 h-px bg-fang-cyan/10" />
 		</div>
 	);
 }
@@ -114,7 +115,7 @@ function StatRow({
 	warn?: boolean;
 	danger?: boolean;
 }) {
-	const valueColor = danger ? "text-blue-300" : warn ? "text-blue-400" : "text-[#0FACED]";
+	const valueColor = danger ? "text-blue-300" : warn ? "text-blue-400" : "text-fang-cyan";
 	return (
 		<div className="flex justify-between items-baseline gap-2">
 			<span className="text-[10px] font-mono text-muted-foreground/70">{label}</span>
@@ -155,7 +156,7 @@ function ToggleRow({
 			<Switch
 				checked={checked}
 				onCheckedChange={onToggle}
-				className="data-[state=checked]:bg-[#0FACED] data-[state=unchecked]:bg-muted scale-[0.6]"
+				className="data-[state=checked]:bg-fang-cyan data-[state=unchecked]:bg-muted scale-[0.6]"
 			/>
 		</div>
 	);
@@ -381,7 +382,7 @@ function ConstantsTab({ onSendCommand }: { onSendCommand: (cmd: DebugCommand) =>
 								value={[values[c.key] ?? c.defaultValue]}
 								onValueChange={(vals) => handleChange(c.key, vals[0] ?? c.defaultValue)}
 							/>
-							<span className="text-[10px] font-mono tabular-nums text-[#0FACED] w-12 text-right shrink-0">
+							<span className="text-[10px] font-mono tabular-nums text-fang-cyan w-12 text-right shrink-0">
 								{values[c.key]}
 							</span>
 						</div>
@@ -400,7 +401,7 @@ function ConstantsTab({ onSendCommand }: { onSendCommand: (cmd: DebugCommand) =>
 // ---------------------------------------------------------------------------
 // Cheats Tab
 // ---------------------------------------------------------------------------
-const DIFFICULTY_NAMES = ["EASY", "MEDIUM", "HARD", "INSANE", "NIGHTMARE"] as const;
+const DIFFICULTY_NAMES = DIFFICULTY_LEVELS.map((l) => l.label.toUpperCase());
 
 function CheatsTab({
 	debugState,
@@ -558,7 +559,7 @@ function CheatsTab({
 							Override the difficulty level mid-game
 						</TooltipContent>
 					</Tooltip>
-					<span className="text-[10px] font-mono text-[#0FACED]">
+					<span className="text-[10px] font-mono text-fang-cyan">
 						{DIFFICULTY_NAMES[difficulty]}
 					</span>
 				</div>
@@ -587,7 +588,7 @@ function CheatsTab({
 							Speed up or slow down the entire game (0.1x = slow motion, 3x = fast forward)
 						</TooltipContent>
 					</Tooltip>
-					<span className="text-[10px] font-mono tabular-nums text-[#0FACED]">
+					<span className="text-[10px] font-mono tabular-nums text-fang-cyan">
 						{speedMultiplier.toFixed(1)}x
 					</span>
 				</div>
@@ -713,7 +714,7 @@ export default function DebugPanel({ debugState, onSendCommand, gameKey }: Debug
 				type="button"
 				onClick={() => setVisible(true)}
 				onPointerDown={(e) => e.stopPropagation()}
-				className="fixed bottom-4 left-4 flex h-8 w-8 items-center justify-center rounded-lg bg-card/80 border border-[#0FACED]/30 text-[#0FACED] text-xs font-mono opacity-50 hover:opacity-100 transition-opacity pointer-events-auto backdrop-blur-sm"
+				className="fixed bottom-4 left-4 flex h-8 w-8 items-center justify-center rounded-lg bg-card/80 border border-fang-cyan/30 text-fang-cyan text-xs font-mono opacity-50 hover:opacity-100 transition-opacity pointer-events-auto backdrop-blur-sm"
 				style={{ zIndex: 50 }}
 				title="Open Debug Panel (Ctrl+Shift+D)"
 			>
@@ -726,7 +727,7 @@ export default function DebugPanel({ debugState, onSendCommand, gameKey }: Debug
 		<TooltipProvider delayDuration={200}>
 			<div
 				ref={panelRef}
-				className="fixed rounded-xl border border-[#0FACED]/20 bg-card/95 backdrop-blur-xl shadow-[0_0_40px_rgba(15,172,237,0.1)] overflow-hidden"
+				className="fixed rounded-xl border border-fang-cyan/20 bg-card/95 backdrop-blur-xl shadow-[0_0_40px_rgba(15,172,237,0.1)] overflow-hidden"
 				style={{
 					left: position.x,
 					top: position.y,
@@ -736,15 +737,15 @@ export default function DebugPanel({ debugState, onSendCommand, gameKey }: Debug
 			>
 				{/* Title bar */}
 				<div
-					className="flex items-center justify-between px-2.5 py-1.5 bg-muted/50 border-b border-[#0FACED]/15 cursor-grab active:cursor-grabbing select-none"
+					className="flex items-center justify-between px-2.5 py-1.5 bg-muted/50 border-b border-fang-cyan/15 cursor-grab active:cursor-grabbing select-none"
 					onMouseDown={handleMouseDown}
 				>
-					<span className="text-[11px] font-mono font-medium tracking-wider text-[#0FACED]/80">
+					<span className="text-[11px] font-mono font-medium tracking-wider text-fang-cyan/80">
 						Debug Panel
 					</span>
 					<button
 						type="button"
-						className="flex items-center justify-center w-5 h-5 rounded text-[#0FACED]/60 hover:text-[#0FACED] hover:bg-[#0FACED]/10 transition-colors text-xs font-mono cursor-pointer"
+						className="flex items-center justify-center w-5 h-5 rounded text-fang-cyan/60 hover:text-fang-cyan hover:bg-fang-cyan/10 transition-colors text-xs font-mono cursor-pointer"
 						onClick={(e) => {
 							e.stopPropagation();
 							setMinimized((v) => !v);
@@ -785,7 +786,7 @@ export default function DebugPanel({ debugState, onSendCommand, gameKey }: Debug
 						</div>
 
 						{/* Footer */}
-						<div className="border-t border-[#0FACED]/10 px-2.5 py-1">
+						<div className="border-t border-fang-cyan/10 px-2.5 py-1">
 							<span className="text-[8px] font-mono text-muted-foreground/40">
 								Ctrl+Shift+D to close
 							</span>

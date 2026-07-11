@@ -48,11 +48,11 @@ bunx drizzle-kit generate   # Generate new migration from schema changes
 **Monorepo layout:**
 
 - `apps/api` — Hono API on Cloudflare Workers, tRPC v11 endpoints, Better Auth (Twitch OAuth), Drizzle ORM with Cloudflare D1 (SQLite)
-- `apps/web` — Next.js 15 (App Router, Turbopack), React 19, Tailwind v4, shadcn/ui components, tRPC client via React Query
+- `apps/web` — Next.js 16 (App Router, Turbopack), React 19, Tailwind v4, shadcn/ui components, tRPC client via React Query
 - `apps/party` — PartyKit WebSocket server for real-time multiplayer race rooms
 - `apps/docs` — Fumadocs documentation site
-- `packages/game` — Phaser 3 game engine: scenes (Boot, Game, Race), entities (Player, GhostPlayer, Obstacle), systems (parallax, difficulty, scoring, audio)
-- `packages/shared` — Domain types, game constants, skin/achievement definitions, seeded PRNG
+- `packages/game` — Phaser 4 game engine: scenes (Boot, Game, Race), entities (Player, GhostPlayer, Obstacle), systems (parallax, difficulty, scoring, audio, fog, weather)
+- `packages/shared` — Domain types, game constants, skin/achievement definitions, seeded PRNG, level curve (`levels.ts`), game modifiers (`mods.ts`), race connection tokens (`race-token.ts`), WebSocket message schemas (`ws-schemas.ts`)
 
 **Data flow:** Web → tRPC → Hono API → Drizzle → D1 (SQLite). Real-time multiplayer: Web → PartySocket → PartyKit race-server.
 
@@ -61,8 +61,11 @@ bunx drizzle-kit generate   # Generate new migration from schema changes
 - tRPC provides end-to-end type safety between `apps/api` and `apps/web`
 - Deterministic multiplayer via seeded PRNG in `packages/shared/src/seeded-random.ts` — all players see identical obstacle layouts
 - Game constants (physics, speeds, scoring, difficulty levels) live in `packages/shared/src/constants.ts`
-- Database schema at `apps/api/src/db/schema.ts` — includes Better Auth tables (user, session, account) and game tables (player, score, playerSkin, playerAchievement, raceHistory)
-- tRPC routers at `apps/api/src/trpc/routers/` — score, skin, achievement, race, admin
+- Game modifiers ("mods") in `packages/shared/src/mods.ts` — opt-in challenge toggles (Fog, Headwind, Tremor) encoded as bitflags; each applies a score multiplier, stacked multiplicatively. Selected pre-game in `PlayMainMenu`; scores with a non-`ready` (beta) mod are unranked. Score validation in `apps/api` re-derives the multiplier server-side to prevent forgery
+- Level system in `packages/shared/src/levels.ts` — cubic XP curve `totalXpForLevel(n) = 5 × (n − 1)³`, plus race placement bonuses (1st = 500, 2nd = 250, 3rd = 100 XP)
+- Database schema at `apps/api/src/db/schema.ts` — includes Better Auth tables (user, session, account, verification) and game tables (player, score, playerSkin, playerAchievement, raceHistory)
+- tRPC routers at `apps/api/src/trpc/routers/` — account, score, skin, achievement, race, admin
+- Race connection auth: `race.getConnectionToken` mints a short-lived HMAC token (`packages/shared/src/race-token.ts`, signed with `RACE_TOKEN_SECRET`) that the web client passes to PartyKit as `?token=`; the party server verifies it with the same secret. Secret must match across `apps/api` and `apps/party`
 - Auth at `apps/api/src/lib/auth.ts` — Better Auth with Twitch OAuth, cookie-based sessions
 - Game scenes: `BootScene` (asset loading) → `GameScene` (solo) or `RaceScene` (multiplayer)
 - OG image route: `apps/web/src/app/api/og/route.tsx` — uses base64 `<img>` (not `dangerouslySetInnerHTML`) so Satori renders correctly; layout metadata explicitly sets `openGraph.images` and `twitter.images` to `/api/og`
@@ -78,14 +81,14 @@ bunx drizzle-kit generate   # Generate new migration from schema changes
 ## Tech Stack
 
 - **Runtime:** Bun, Node.js >= 20
-- **Language:** TypeScript 5.7, strict mode everywhere
-- **Frontend:** Next.js 15, React 19, Tailwind CSS v4, shadcn/ui (New York style) + Radix UI primitives + CVA
-- **Game:** Phaser 3
+- **Language:** TypeScript 6, strict mode everywhere
+- **Frontend:** Next.js 16, React 19, Tailwind CSS v4, shadcn/ui (New York style) + Radix UI primitives + CVA
+- **Game:** Phaser 4
 - **API:** Hono, tRPC v11, Better Auth, Drizzle ORM
 - **Database:** Cloudflare D1 (SQLite)
 - **WebSockets:** PartyKit
 - **Linting/Formatting:** ESLint + Prettier
-- **Testing:** Vitest (workspaces: packages/shared, apps/api)
+- **Testing:** Vitest (workspaces: packages/shared, packages/game, apps/api, apps/web, apps/party)
 - **CI:** GitHub Actions — typecheck + test on PRs, deploy on main push
 
 ## Conventions

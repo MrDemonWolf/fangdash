@@ -1,5 +1,4 @@
 import { trpcServer } from "@hono/trpc-server";
-import { sql } from "drizzle-orm";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { createDb } from "./db/index.ts";
@@ -95,15 +94,12 @@ app.get("/", (c) => {
 app.get("/health", async (c) => {
 	try {
 		const db = createDb(c.env.DB);
-		const result = await db
-			.select({ cnt: sql<number>`count(*)` })
-			.from(user)
-			.get();
+		const userCount = await db.$count(user);
 		const auth = createAuth(c.env);
 
 		return c.json({
 			status: "healthy",
-			db: result ? "connected" : "error",
+			db: userCount >= 0 ? "connected" : "error",
 			auth: auth ? "configured" : "not_configured",
 			timestamp: new Date().toISOString(),
 		});

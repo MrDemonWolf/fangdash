@@ -8,7 +8,6 @@ import {
 	PERIOD_MS,
 	PERIODS,
 	READY_MODS_MASK,
-	getLevelFromXp,
 	getPeriodCutoff,
 	getSkinById,
 } from "@fangdash/shared";
@@ -18,6 +17,7 @@ import type { BatchItem } from "drizzle-orm/batch";
 import { z } from "zod";
 import { player, playerAchievement, playerSkin, score, user } from "../../db/schema.ts";
 import { checkAllUnlocks } from "../../lib/check-all-unlocks.ts";
+import { reconcileLevel } from "../../lib/reconcile-level.ts";
 import { validateScoreInput } from "../../lib/validate-score.ts";
 import { playerProcedure, publicProcedure, router } from "../trpc.ts";
 
@@ -108,12 +108,7 @@ export const scoreRouter = router({
 			.returning({ totalXp: player.totalXp });
 
 		const newTotalXp = updated[0]?.totalXp ?? playerRecord.totalXp + input.score;
-		const levelInfo = getLevelFromXp(newTotalXp);
-
-		await ctx.db
-			.update(player)
-			.set({ level: levelInfo.level })
-			.where(eq(player.id, playerRecord.id));
+		const { level } = await reconcileLevel(ctx.db, playerRecord.id, newTotalXp);
 
 		const { newAchievements, newSkins, unlockError } = await checkAllUnlocks(
 			ctx.db,
@@ -136,8 +131,8 @@ export const scoreRouter = router({
 			newSkins,
 			unlockError,
 			xpGained: input.score,
-			levelUp: levelInfo.level > previousLevel,
-			newLevel: levelInfo.level,
+			levelUp: level > previousLevel,
+			newLevel: level,
 		};
 	}),
 
@@ -367,8 +362,7 @@ export const scoreRouter = router({
 
 				for (const ref of resultRefs) {
 					const returned = insertResults[ref.batchIndex] as unknown as
-						| Array<{ id: string }>
-						| undefined;
+						Array<{ id: string }> | undefined;
 					const committed = (returned?.length ?? 0) > 0;
 					const resultEntry = results[ref.resultIndex];
 					if (!committed) {
@@ -409,12 +403,7 @@ export const scoreRouter = router({
 					.returning({ totalXp: player.totalXp });
 
 				const newTotalXp = updated[0]?.totalXp ?? playerRecord.totalXp + totalXpGained;
-				const levelInfo = getLevelFromXp(newTotalXp);
-
-				await ctx.db
-					.update(player)
-					.set({ level: levelInfo.level })
-					.where(eq(player.id, playerRecord.id));
+				await reconcileLevel(ctx.db, playerRecord.id, newTotalXp);
 			}
 
 			return results;

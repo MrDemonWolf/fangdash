@@ -282,4 +282,13 @@
 		animation: none;
 		transform: none;
 	}
+
+	/* Neutralize Tailwind's built-in looping animations too (unread badge,
+	   onboarding bounce, spinners) so reduced-motion is actually honored. */
+	.animate-pulse,
+	.animate-bounce,
+	.animate-spin,
+	.animate-ping {
+		animation: none;
+	}
 }

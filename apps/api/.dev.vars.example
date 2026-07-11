@@ -3,6 +3,9 @@ BETTER_AUTH_SECRET=change-me-to-a-long-random-string-32-chars
 BETTER_AUTH_URL=http://localhost:8787
 TWITCH_CLIENT_ID=your_twitch_client_id_here
 TWITCH_CLIENT_SECRET=your_twitch_client_secret_here
+# Shared HMAC secret for short-lived PartyKit race connection tokens (multiplayer).
+# Must match apps/party/.env. Generate with: openssl rand -hex 32
+RACE_TOKEN_SECRET=change-me-to-a-64-char-hex-string
 # NOTE: You must add http://localhost:8787/api/auth/callback/twitch
 # as an OAuth Redirect URL in your Twitch Developer Console app settings
 # (https://dev.twitch.tv/console/apps) for local login to work.

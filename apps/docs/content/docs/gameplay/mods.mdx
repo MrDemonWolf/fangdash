@@ -1,0 +1,45 @@
+---
+title: Mods
+description: Opt-in challenge modifiers that raise the difficulty and your score multiplier.
+---
+
+<Callout type="info">
+	**TL;DR** - Mods are optional challenge toggles you pick before a run - Each active mod multiplies
+	your score - Stack them for a bigger multiplier, but the run gets harder - Beta mods are unranked
+	and won't appear on the leaderboard
+</Callout>
+
+**Mods** are optional modifiers you enable on the Play screen before starting a run. Each one makes the game harder in a different way and rewards you with a **score multiplier**. Turn them off for a clean run, or stack them to chase a bigger number.
+
+## Available Mods
+
+| Mod          | Icon | Category | Multiplier | Effect                                                     |
+| ------------ | ---- | -------- | ---------- | ---------------------------------------------------------- |
+| **Fog**      | 🌫️   | Visual   | 1.15x      | Visibility shrinks over distance. Can you run blind?       |
+| **Headwind** | 💨   | Movement | 1.15x      | Wind pushes you down mid-air. Gets stronger over distance. |
+| **Tremor**   | 🌋   | Movement | 1.15x      | Earthquake shakes the ground. Landings get harder.         |
+
+## How the Multiplier Works
+
+The score multiplier is the **product** of every active mod's multiplier — mods stack multiplicatively:
+
+| Active Mods | Multiplier |
+| ----------- | ---------- |
+| None        | 1.00x      |
+| Any one mod | 1.15x      |
+| Any two     | 1.322x     |
+| All three   | 1.521x     |
+
+Your final score is your base score multiplied by this value. The multiplier is shown live on the Play screen as you toggle mods, and it is **re-derived and validated server-side** when your score is saved, so it can't be forged.
+
+## Ranked vs. Beta Mods
+
+Some mods are marked **Beta** while they're still being tuned. Enabling a Beta mod makes the run **unranked** — you can still play and see your score, but it **won't be submitted to the leaderboard**. The Play screen flags this on any Beta mod you select.
+
+All currently released mods (Fog, Headwind, Tremor) are ranked, so runs with them count on the leaderboard as normal.
+
+## Tips
+
+- Start with a single mod to learn how it changes your timing before stacking.
+- **Fog** punishes memorized patterns — it hides upcoming obstacles the further you get.
+- **Headwind** and **Tremor** both attack your jumps; running them together demands very precise landings for the 1.322x reward.

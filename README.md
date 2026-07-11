@@ -24,7 +24,7 @@ achievements, and watch your name climb the leaderboard while you're live.
   and let your community race you live on stream.
 - **6 Wolf Skins** — Start as a Gray Wolf and unlock your
   way up to the MrDemonWolf skin through milestones.
-- **16 Achievements** — Spanning score, distance, games
+- **21 Achievements** — Spanning score, distance, games
   played, skill plays, and social categories.
 - **Leaderboards with Anti-Cheat** — Server-validated scores
   with per-difficulty and time-period filters
@@ -33,6 +33,9 @@ achievements, and watch your name climb the leaderboard while you're live.
   as obstacle gaps tighten around you.
 - **Deterministic Seeds** — Seeded PRNG means every racer
   faces the exact same obstacle layout. No luck, only skill.
+- **Game Modifiers** — Opt-in challenge mods (Fog, Headwind,
+  Tremor) apply stacking score multipliers; runs using a beta
+  mod are unranked.
 - **Audio System** — BGM crossfade, SFX, and per-category
   volume controls.
 - **PWA** — Install it, play it offline, put it on your
@@ -49,20 +52,20 @@ git clone https://github.com/MrDemonWolf/fangdash.git
 cd fangdash
 ```
 
-1. Install dependencies:
+2. Install dependencies:
 
 ```bash
 bun install
 ```
 
-1. Set up environment variables:
+3. Set up environment variables:
 
 ```bash
 cp apps/api/.dev.vars.example apps/api/.dev.vars
-cp apps/web/.env.local.example apps/web/.env.local
+cp apps/web/.env.example apps/web/.env.local
 ```
 
-1. Start all services in development:
+4. Start all services in development:
 
 ```bash
 bun dev
@@ -71,12 +74,22 @@ bun dev
 The web app runs at `http://localhost:3000` and the API at
 `http://localhost:8787`. The docs site runs at `http://localhost:3001`.
 
+## Usage
+
+1. Open `http://localhost:3000` and sign in with Twitch.
+2. Pick **Play** for a solo run, or **Race** to create or join a room and
+   share the code with your chat.
+3. Optionally toggle Game Modifiers (Fog, Headwind, Tremor) before starting
+   for a stacking score multiplier.
+4. Chase a personal best, climb the per-difficulty leaderboards, and unlock
+   skins and achievements as you play.
+
 ## Tech Stack
 
 | Layer       | Technology                           |
 | ----------- | ------------------------------------ |
-| Frontend    | Next.js 15, React 19, Tailwind v4    |
-| Game Engine | Phaser 3                             |
+| Frontend    | Next.js 16, React 19, Tailwind v4    |
+| Game Engine | Phaser 4                             |
 | API         | Hono on Cloudflare Workers           |
 | Database    | Cloudflare D1 (SQLite) + Drizzle ORM |
 | Auth        | Better Auth with Twitch OAuth        |
@@ -86,7 +99,7 @@ The web app runs at `http://localhost:3000` and the API at
 | Docs        | Fumadocs + Next.js                   |
 | Testing     | Vitest                               |
 | CI/CD       | GitHub Actions + Cloudflare Workers  |
-| Language    | TypeScript 5.7 (strict mode)         |
+| Language    | TypeScript 6 (strict mode)           |
 
 ## Development
 
@@ -105,23 +118,23 @@ The web app runs at `http://localhost:3000` and the API at
 bun install
 ```
 
-1. Create a Cloudflare D1 database:
+2. Create a Cloudflare D1 database:
 
 ```bash
 cd apps/api
 bunx wrangler d1 create fangdash-db
 ```
 
-1. Update `apps/api/wrangler.toml` with your D1 database ID.
+3. Update `apps/api/wrangler.toml` with your D1 database ID.
 
-2. Run database migrations:
+4. Run database migrations:
 
 ```bash
 cd apps/api
 bunx wrangler d1 migrations apply fangdash-db --local
 ```
 
-1. Configure `apps/api/.dev.vars` with your secrets:
+5. Configure `apps/api/.dev.vars` with your secrets:
 
 ```bash
 BETTER_AUTH_SECRET=<your-secret>
@@ -133,20 +146,20 @@ TWITCH_CLIENT_SECRET=<your-twitch-client-secret>
 RACE_TOKEN_SECRET=<your-race-token-secret>
 ```
 
-1. Configure `apps/party/.env` (loaded by `partykit dev`) with the **same**
+6. Configure `apps/party/.env` (loaded by `partykit dev`) with the **same**
    `RACE_TOKEN_SECRET` so the race server can verify tokens minted by the API:
 
 ```bash
 RACE_TOKEN_SECRET=<your-race-token-secret>
 ```
 
-1. Configure `apps/web/.env.local`:
+7. Configure `apps/web/.env.local`:
 
 ```bash
 NEXT_PUBLIC_API_URL=http://localhost:8787
 ```
 
-1. Start development:
+8. Start development:
 
 ```bash
 bun dev
@@ -215,7 +228,7 @@ fangdash/
 │   ├── party/         # PartyKit WebSocket server
 │   └── web/           # Next.js frontend
 ├── packages/
-│   ├── game/          # Phaser 3 game engine
+│   ├── game/          # Phaser 4 game engine
 │   └── shared/        # Types, constants, skins, achievements
 ├── .github/
 │   └── workflows/     # CI and deploy pipelines

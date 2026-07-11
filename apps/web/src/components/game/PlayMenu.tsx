@@ -3,9 +3,21 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { rankColorClass } from "@/lib/format.ts";
 import { useTRPC } from "@/lib/trpc.ts";
+import {
+	AlertDialog,
+	AlertDialogAction,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
+import { SpeakerIcon } from "./SpeakerIcon.tsx";
 
 type Tab = "audio" | "skins" | "stats" | "leaderboard" | "controls" | "hud" | "quit";
 
@@ -18,45 +30,6 @@ interface PlayMenuProps {
 	isSignedIn: boolean;
 }
 
-function SpeakerIcon({ muted }: { muted: boolean }) {
-	if (muted) {
-		return (
-			<svg
-				xmlns="http://www.w3.org/2000/svg"
-				width="18"
-				height="18"
-				viewBox="0 0 24 24"
-				fill="none"
-				stroke="currentColor"
-				strokeWidth="2"
-				strokeLinecap="round"
-				strokeLinejoin="round"
-			>
-				<polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
-				<line x1="23" y1="9" x2="17" y2="15" />
-				<line x1="17" y1="9" x2="23" y2="15" />
-			</svg>
-		);
-	}
-	return (
-		<svg
-			xmlns="http://www.w3.org/2000/svg"
-			width="18"
-			height="18"
-			viewBox="0 0 24 24"
-			fill="none"
-			stroke="currentColor"
-			strokeWidth="2"
-			strokeLinecap="round"
-			strokeLinejoin="round"
-		>
-			<polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
-			<path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
-			<path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
-		</svg>
-	);
-}
-
 function AudioTab({
 	muted,
 	volume,
@@ -65,17 +38,17 @@ function AudioTab({
 }: Pick<PlayMenuProps, "muted" | "volume" | "onToggleMute" | "onVolumeChange">) {
 	return (
 		<div className="space-y-6">
-			<h3 className="text-sm font-mono uppercase tracking-widest text-[#0FACED]/60">
+			<h3 className="text-sm font-mono uppercase tracking-widest text-fang-cyan/60">
 				Audio Settings
 			</h3>
 			<div className="flex items-center gap-4">
 				<button
 					type="button"
 					onClick={onToggleMute}
-					className="p-2 rounded border border-white/10 bg-white/5 text-white/60 hover:text-[#0FACED] hover:border-[#0FACED]/40 transition-colors"
+					className="p-2 rounded border border-white/10 bg-white/5 text-white/60 hover:text-fang-cyan hover:border-fang-cyan/40 transition-colors"
 					aria-label={muted ? "Unmute" : "Mute"}
 				>
-					<SpeakerIcon muted={muted} />
+					<SpeakerIcon muted={muted} size={18} />
 				</button>
 				<div className="flex-1 space-y-1">
 					<div className="flex justify-between text-xs text-white/40 font-mono">
@@ -128,7 +101,7 @@ function SkinsTab({ isSignedIn }: { isSignedIn: boolean }) {
 
 	return (
 		<div className="space-y-4">
-			<h3 className="text-sm font-mono uppercase tracking-widest text-[#0FACED]/60">Skins</h3>
+			<h3 className="text-sm font-mono uppercase tracking-widest text-fang-cyan/60">Skins</h3>
 			<div className="grid grid-cols-3 gap-3">
 				{gallery?.map((skin) => {
 					const isEquipped = equipped?.skinId === skin.id;
@@ -141,7 +114,7 @@ function SkinsTab({ isSignedIn }: { isSignedIn: boolean }) {
 							className={[
 								"relative p-3 rounded border text-left transition-all",
 								isEquipped
-									? "border-[#0FACED] bg-[#0FACED]/10 shadow-[0_0_12px_rgba(15,172,237,0.2)]"
+									? "border-fang-cyan bg-fang-cyan/10 shadow-[0_0_12px_rgba(15,172,237,0.2)]"
 									: skin.unlocked
 										? "border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10 cursor-pointer"
 										: "border-white/5 bg-white/2 opacity-50 cursor-not-allowed",
@@ -150,7 +123,7 @@ function SkinsTab({ isSignedIn }: { isSignedIn: boolean }) {
 							<p className="text-xs font-mono font-bold text-white/80 truncate">{skin.name}</p>
 							{!skin.unlocked && <p className="text-[10px] text-white/30 mt-0.5">Locked</p>}
 							{isEquipped && (
-								<span className="absolute top-1.5 right-1.5 text-[10px] font-mono text-[#0FACED] font-bold">
+								<span className="absolute top-1.5 right-1.5 text-[10px] font-mono text-fang-cyan font-bold">
 									ON
 								</span>
 							)}
@@ -183,7 +156,7 @@ function StatsTab({ isSignedIn }: { isSignedIn: boolean }) {
 
 	return (
 		<div className="space-y-4">
-			<h3 className="text-sm font-mono uppercase tracking-widest text-[#0FACED]/60">Your Stats</h3>
+			<h3 className="text-sm font-mono uppercase tracking-widest text-fang-cyan/60">Your Stats</h3>
 			<div className="grid grid-cols-2 gap-3">
 				{[
 					{
@@ -223,7 +196,7 @@ function LeaderboardTab() {
 
 	return (
 		<div className="space-y-4">
-			<h3 className="text-sm font-mono uppercase tracking-widest text-[#0FACED]/60">Top 10</h3>
+			<h3 className="text-sm font-mono uppercase tracking-widest text-fang-cyan/60">Top 10</h3>
 			<div className="space-y-1">
 				{entries?.map((entry) => (
 					<div
@@ -233,13 +206,7 @@ function LeaderboardTab() {
 						<span
 							className={[
 								"w-6 text-center text-sm font-mono font-bold",
-								entry.rank === 1
-									? "text-yellow-400"
-									: entry.rank === 2
-										? "text-slate-300"
-										: entry.rank === 3
-											? "text-amber-600"
-											: "text-white/30",
+								rankColorClass(entry.rank),
 							].join(" ")}
 						>
 							{entry.rank}
@@ -247,7 +214,7 @@ function LeaderboardTab() {
 						<span className="flex-1 text-sm font-mono text-white/80 truncate">
 							{entry.username ?? "Anonymous"}
 						</span>
-						<span className="text-sm font-mono font-bold tabular-nums text-[#0FACED]">
+						<span className="text-sm font-mono font-bold tabular-nums text-fang-cyan">
 							{entry.score.toLocaleString()}
 						</span>
 					</div>
@@ -314,7 +281,7 @@ function HudTab() {
 
 	return (
 		<div className="space-y-4">
-			<h3 className="text-sm font-mono uppercase tracking-widest text-[#0FACED]/60">
+			<h3 className="text-sm font-mono uppercase tracking-widest text-fang-cyan/60">
 				HUD Settings
 			</h3>
 			<div className="space-y-3">
@@ -343,7 +310,7 @@ function HudTab() {
 function ControlsTab() {
 	return (
 		<div className="space-y-4">
-			<h3 className="text-sm font-mono uppercase tracking-widest text-[#0FACED]/60">Controls</h3>
+			<h3 className="text-sm font-mono uppercase tracking-widest text-fang-cyan/60">Controls</h3>
 			<div className="space-y-3">
 				{[
 					{ key: "Space / Click", action: "Jump" },
@@ -377,6 +344,7 @@ export function PlayMenu({
 	isSignedIn,
 }: PlayMenuProps) {
 	const [activeTab, setActiveTab] = useState<Tab>("audio");
+	const [quitOpen, setQuitOpen] = useState(false);
 	const router = useRouter();
 
 	useEffect(() => {
@@ -401,12 +369,20 @@ export function PlayMenu({
 
 	return (
 		<div className="absolute inset-0 z-40 flex items-center justify-center bg-black/80 backdrop-blur-sm">
-			<div className="relative w-full max-w-lg mx-3 sm:mx-4 rounded-xl border border-[#0FACED]/20 bg-[#091533]/95 shadow-[0_0_60px_rgba(15,172,237,0.15)] overflow-hidden max-h-[90dvh] flex flex-col">
+			<div
+				role="dialog"
+				aria-modal="true"
+				aria-labelledby="pause-menu-title"
+				className="relative w-full max-w-lg mx-3 sm:mx-4 rounded-xl border border-fang-cyan/20 bg-[#091533]/95 shadow-[0_0_60px_rgba(15,172,237,0.15)] overflow-hidden max-h-[90dvh] flex flex-col"
+			>
 				{/* Header */}
 				<div className="flex items-center justify-between px-4 sm:px-5 py-3 sm:py-4 border-b border-white/10 shrink-0">
-					<span className="text-base font-mono font-bold uppercase tracking-widest text-white/80">
+					<h2
+						id="pause-menu-title"
+						className="text-base font-mono font-bold uppercase tracking-widest text-white/80"
+					>
 						Menu
-					</span>
+					</h2>
 					<button
 						type="button"
 						onClick={onClose}
@@ -443,18 +419,18 @@ export function PlayMenu({
 								key={tab.id}
 								onClick={() => {
 									if (tab.id === "quit") {
-										router.push("/");
+										setQuitOpen(true);
 									} else {
 										setActiveTab(tab.id);
 									}
 								}}
 								className={[
-									"px-4 py-2.5 text-xs font-mono whitespace-nowrap transition-colors shrink-0",
+									"px-4 py-2.5 text-xs font-mono whitespace-nowrap transition-colors shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-fang-cyan",
 									tab.id === "quit"
 										? "text-red-400/70 hover:text-red-400 hover:bg-red-400/10"
 										: activeTab === tab.id
-											? "text-[#0FACED] bg-[#0FACED]/10 border-b-2 border-[#0FACED]"
-											: "text-white/40 hover:text-white/70 hover:bg-white/5",
+											? "text-fang-cyan bg-fang-cyan/10 border-b-2 border-fang-cyan"
+											: "text-white/60 hover:text-white hover:bg-white/5",
 								].join(" ")}
 							>
 								{tab.label}
@@ -470,18 +446,18 @@ export function PlayMenu({
 								key={tab.id}
 								onClick={() => {
 									if (tab.id === "quit") {
-										router.push("/");
+										setQuitOpen(true);
 									} else {
 										setActiveTab(tab.id);
 									}
 								}}
 								className={[
-									"px-4 py-2.5 text-left text-xs font-mono transition-colors",
+									"px-4 py-2.5 text-left text-xs font-mono transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-fang-cyan",
 									tab.id === "quit"
 										? "text-red-400/70 hover:text-red-400 hover:bg-red-400/10"
 										: activeTab === tab.id
-											? "text-[#0FACED] bg-[#0FACED]/10 border-r-2 border-[#0FACED]"
-											: "text-white/40 hover:text-white/70 hover:bg-white/5",
+											? "text-fang-cyan bg-fang-cyan/10 border-r-2 border-fang-cyan"
+											: "text-white/60 hover:text-white hover:bg-white/5",
 								].join(" ")}
 							>
 								{tab.label}
@@ -504,6 +480,22 @@ export function PlayMenu({
 						{activeTab === "leaderboard" && <LeaderboardTab />}
 						{activeTab === "controls" && <ControlsTab />}
 						{activeTab === "hud" && <HudTab />}
+
+						<AlertDialog open={quitOpen} onOpenChange={setQuitOpen}>
+							<AlertDialogContent>
+								<AlertDialogHeader>
+									<AlertDialogTitle>Quit this run?</AlertDialogTitle>
+									<AlertDialogDescription>
+										Your current run will end and you&apos;ll return to the home screen. This
+										can&apos;t be undone.
+									</AlertDialogDescription>
+								</AlertDialogHeader>
+								<AlertDialogFooter>
+									<AlertDialogCancel>Keep Playing</AlertDialogCancel>
+									<AlertDialogAction onClick={() => router.push("/")}>Quit</AlertDialogAction>
+								</AlertDialogFooter>
+							</AlertDialogContent>
+						</AlertDialog>
 					</div>
 				</div>
 			</div>
