@@ -5,6 +5,16 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { rankColorClass } from "@/lib/format.ts";
 import { useTRPC } from "@/lib/trpc.ts";
+import {
+	AlertDialog,
+	AlertDialogAction,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { SpeakerIcon } from "./SpeakerIcon.tsx";
@@ -334,6 +344,7 @@ export function PlayMenu({
 	isSignedIn,
 }: PlayMenuProps) {
 	const [activeTab, setActiveTab] = useState<Tab>("audio");
+	const [quitOpen, setQuitOpen] = useState(false);
 	const router = useRouter();
 
 	useEffect(() => {
@@ -358,12 +369,20 @@ export function PlayMenu({
 
 	return (
 		<div className="absolute inset-0 z-40 flex items-center justify-center bg-black/80 backdrop-blur-sm">
-			<div className="relative w-full max-w-lg mx-3 sm:mx-4 rounded-xl border border-fang-cyan/20 bg-[#091533]/95 shadow-[0_0_60px_rgba(15,172,237,0.15)] overflow-hidden max-h-[90dvh] flex flex-col">
+			<div
+				role="dialog"
+				aria-modal="true"
+				aria-labelledby="pause-menu-title"
+				className="relative w-full max-w-lg mx-3 sm:mx-4 rounded-xl border border-fang-cyan/20 bg-[#091533]/95 shadow-[0_0_60px_rgba(15,172,237,0.15)] overflow-hidden max-h-[90dvh] flex flex-col"
+			>
 				{/* Header */}
 				<div className="flex items-center justify-between px-4 sm:px-5 py-3 sm:py-4 border-b border-white/10 shrink-0">
-					<span className="text-base font-mono font-bold uppercase tracking-widest text-white/80">
+					<h2
+						id="pause-menu-title"
+						className="text-base font-mono font-bold uppercase tracking-widest text-white/80"
+					>
 						Menu
-					</span>
+					</h2>
 					<button
 						type="button"
 						onClick={onClose}
@@ -400,18 +419,18 @@ export function PlayMenu({
 								key={tab.id}
 								onClick={() => {
 									if (tab.id === "quit") {
-										router.push("/");
+										setQuitOpen(true);
 									} else {
 										setActiveTab(tab.id);
 									}
 								}}
 								className={[
-									"px-4 py-2.5 text-xs font-mono whitespace-nowrap transition-colors shrink-0",
+									"px-4 py-2.5 text-xs font-mono whitespace-nowrap transition-colors shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-fang-cyan",
 									tab.id === "quit"
 										? "text-red-400/70 hover:text-red-400 hover:bg-red-400/10"
 										: activeTab === tab.id
 											? "text-fang-cyan bg-fang-cyan/10 border-b-2 border-fang-cyan"
-											: "text-white/40 hover:text-white/70 hover:bg-white/5",
+											: "text-white/60 hover:text-white hover:bg-white/5",
 								].join(" ")}
 							>
 								{tab.label}
@@ -427,18 +446,18 @@ export function PlayMenu({
 								key={tab.id}
 								onClick={() => {
 									if (tab.id === "quit") {
-										router.push("/");
+										setQuitOpen(true);
 									} else {
 										setActiveTab(tab.id);
 									}
 								}}
 								className={[
-									"px-4 py-2.5 text-left text-xs font-mono transition-colors",
+									"px-4 py-2.5 text-left text-xs font-mono transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-fang-cyan",
 									tab.id === "quit"
 										? "text-red-400/70 hover:text-red-400 hover:bg-red-400/10"
 										: activeTab === tab.id
 											? "text-fang-cyan bg-fang-cyan/10 border-r-2 border-fang-cyan"
-											: "text-white/40 hover:text-white/70 hover:bg-white/5",
+											: "text-white/60 hover:text-white hover:bg-white/5",
 								].join(" ")}
 							>
 								{tab.label}
@@ -461,6 +480,22 @@ export function PlayMenu({
 						{activeTab === "leaderboard" && <LeaderboardTab />}
 						{activeTab === "controls" && <ControlsTab />}
 						{activeTab === "hud" && <HudTab />}
+
+						<AlertDialog open={quitOpen} onOpenChange={setQuitOpen}>
+							<AlertDialogContent>
+								<AlertDialogHeader>
+									<AlertDialogTitle>Quit this run?</AlertDialogTitle>
+									<AlertDialogDescription>
+										Your current run will end and you&apos;ll return to the home screen. This
+										can&apos;t be undone.
+									</AlertDialogDescription>
+								</AlertDialogHeader>
+								<AlertDialogFooter>
+									<AlertDialogCancel>Keep Playing</AlertDialogCancel>
+									<AlertDialogAction onClick={() => router.push("/")}>Quit</AlertDialogAction>
+								</AlertDialogFooter>
+							</AlertDialogContent>
+						</AlertDialog>
 					</div>
 				</div>
 			</div>

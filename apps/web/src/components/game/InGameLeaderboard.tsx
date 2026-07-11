@@ -2,7 +2,6 @@
 
 import type { DifficultyName } from "@fangdash/shared";
 import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
 import { rankColorClass } from "@/lib/format.ts";
 import { useTRPC } from "@/lib/trpc.ts";
 import { cn } from "@/lib/utils";
@@ -13,48 +12,20 @@ interface InGameLeaderboardProps {
 	mods?: number | undefined;
 }
 
-type View = "global" | "local";
-
 export function InGameLeaderboard({ visible = true, difficulty, mods }: InGameLeaderboardProps) {
-	const [view, setView] = useState<View>("global");
 	const trpc = useTRPC();
 
-	const { data: globalEntries, isLoading: globalLoading } = useQuery(
-		trpc.score.leaderboard.queryOptions(
-			{ limit: 10, difficulty, mods },
-			{ enabled: visible && view === "global" },
-		),
-	);
-
-	const { data: localEntries, isLoading: localLoading } = useQuery(
-		trpc.score.leaderboard.queryOptions(
-			{ limit: 10, difficulty, mods },
-			{ enabled: visible && view === "local" },
-		),
+	const { data: entries, isLoading } = useQuery(
+		trpc.score.leaderboard.queryOptions({ limit: 10, difficulty, mods }, { enabled: visible }),
 	);
 
 	if (!visible) return null;
 
-	const entries = view === "global" ? globalEntries : localEntries;
-	const isLoading = view === "global" ? globalLoading : localLoading;
-
 	return (
 		<div className="absolute right-2 top-14 z-10 w-44 rounded border border-fang-cyan/20 bg-[#091533]/90 backdrop-blur-md pointer-events-auto">
-			{/* Tab bar */}
-			<div className="flex border-b border-white/10">
-				{(["global", "local"] as View[]).map((v) => (
-					<button
-						type="button"
-						key={v}
-						onClick={() => setView(v)}
-						className={cn(
-							"flex-1 py-1.5 text-[10px] font-mono uppercase tracking-widest transition-colors",
-							view === v ? "text-fang-cyan bg-fang-cyan/10" : "text-white/30 hover:text-white/60",
-						)}
-					>
-						{v}
-					</button>
-				))}
+			{/* Header */}
+			<div className="border-b border-white/10 py-1.5 text-center text-[10px] font-mono uppercase tracking-widest text-fang-cyan">
+				Top 10
 			</div>
 
 			{/* Entries */}
@@ -69,7 +40,7 @@ export function InGameLeaderboard({ visible = true, difficulty, mods }: InGameLe
 					))}
 
 				{!isLoading && (!entries || entries.length === 0) && (
-					<p className="px-2 py-2 text-[10px] font-mono text-white/30 text-center">No scores yet</p>
+					<p className="px-2 py-2 text-[10px] font-mono text-white/60 text-center">No scores yet</p>
 				)}
 
 				{!isLoading &&

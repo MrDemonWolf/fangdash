@@ -159,7 +159,7 @@ export function PlayMainMenu({
 									key={level.name}
 									onClick={() => onSelectDifficulty(level.name)}
 									aria-pressed={isSelected}
-									className={`relative rounded-lg border-l-[3px] px-2 py-1.5 sm:py-2 text-left transition-all cursor-pointer ${
+									className={`relative rounded-lg border-l-[3px] px-2 py-1.5 sm:py-2 text-left transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fang-cyan focus-visible:ring-offset-2 focus-visible:ring-offset-surface-base ${
 										isSelected
 											? "bg-white/10 border-white/20"
 											: "bg-white/5 border-white/10 hover:bg-white/[0.07] hover:border-white/15"
@@ -200,51 +200,53 @@ export function PlayMainMenu({
 									key={mod.id}
 									onClick={() => onSelectMods(selectedMods ^ mod.flag)}
 									aria-pressed={isActive}
-									className={`relative rounded-lg border px-2 py-1.5 sm:py-2 text-left transition-all cursor-pointer ${
+									className={`relative rounded-lg border px-2 py-1.5 sm:py-2 text-left transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fang-purple focus-visible:ring-offset-2 focus-visible:ring-offset-surface-base ${
 										isActive
-											? "bg-purple-500/15 border-purple-500/40"
+											? "bg-fang-purple/15 border-fang-purple/40"
 											: "bg-white/5 border-white/10 hover:bg-white/[0.07] hover:border-white/15"
 									}`}
 									style={{
-										boxShadow: isActive ? "0 0 16px rgba(168, 85, 247, 0.2)" : undefined,
+										boxShadow: isActive ? "var(--glow-purple)" : undefined,
 									}}
 								>
 									<div className="flex items-center gap-1.5 overflow-hidden">
 										<span className="text-sm sm:text-base">{mod.icon}</span>
 										<span
 											className={`text-xs font-bold uppercase tracking-wide truncate ${
-												isActive ? "text-purple-300" : "text-white/60"
+												isActive ? "text-fang-purple" : "text-white/60"
 											}`}
 										>
 											{mod.name}
 										</span>
 										{!mod.ready && (
-											<span className="rounded px-1 py-0.5 text-[8px] font-bold uppercase bg-yellow-500/20 text-yellow-400 hidden sm:inline">
+											<span className="rounded px-1 py-0.5 text-[8px] font-bold uppercase bg-fang-gold/20 text-fang-gold">
 												Beta
 											</span>
 										)}
 										<span
 											className={`ml-auto rounded-full px-1.5 py-0.5 font-mono text-[10px] ${
-												isActive ? "bg-purple-500/20 text-purple-300" : "bg-white/10 text-white/40"
+												isActive
+													? "bg-fang-purple/20 text-fang-purple"
+													: "bg-white/10 text-white/50"
 											}`}
 										>
 											{mod.multiplier}x
 										</span>
 									</div>
-									<p className="mt-1 text-[10px] text-white/30 leading-tight hidden sm:block">
+									<p className="mt-1 text-[10px] text-white/50 leading-tight hidden sm:block">
 										{mod.description}
-										{!mod.ready && isActive && (
-											<span className="block mt-0.5 text-yellow-400/60">
-												Unranked — won't appear on leaderboard
-											</span>
-										)}
 									</p>
+									{!mod.ready && isActive && (
+										<span className="mt-1 block text-[10px] font-medium leading-tight text-fang-gold">
+											Unranked — won't count on the leaderboard
+										</span>
+									)}
 								</button>
 							);
 						})}
 					</div>
 					{selectedMods > 0 && (
-						<div className="text-center text-xs font-mono text-purple-300">
+						<div className="text-center text-xs font-mono text-fang-purple">
 							Score: {multiplier}x
 						</div>
 					)}
@@ -254,22 +256,28 @@ export function PlayMainMenu({
 				<button
 					type="button"
 					onClick={onPlay}
-					className="w-full rounded-full bg-fang-cyan py-2.5 sm:py-3 lg:py-4 text-sm sm:text-base lg:text-lg font-extrabold uppercase tracking-widest text-[#091533] shadow-[0_0_32px_rgba(15,172,237,0.4)] hover:bg-fang-cyan/90 transition-all hover:scale-105 active:scale-95 cursor-pointer"
+					className="w-full rounded-full bg-fang-cyan py-2.5 sm:py-3 lg:py-4 text-sm sm:text-base lg:text-lg font-extrabold uppercase tracking-widest text-[#091533] shadow-[0_0_32px_rgba(15,172,237,0.4)] hover:bg-fang-cyan/90 transition-all hover:scale-105 active:scale-95 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fang-cyan focus-visible:ring-offset-2 focus-visible:ring-offset-surface-base"
 				>
 					PLAY
 				</button>
 
 				{/* Nav links */}
-				<div className="flex gap-6 text-xs font-semibold uppercase tracking-widest text-white/40">
-					<Link href="/leaderboard" className="hover:text-white transition-colors">
+				<div className="flex gap-6 text-xs font-semibold uppercase tracking-widest text-white/60">
+					<Link
+						href="/leaderboard"
+						className="rounded transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fang-cyan"
+					>
 						Leaderboard
 					</Link>
-					<Link href="/skins" className="hover:text-white transition-colors">
+					<Link
+						href="/skins"
+						className="rounded transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fang-cyan"
+					>
 						Skins
 					</Link>
 				</div>
 
-				<p className="text-[10px] font-mono uppercase tracking-widest text-white/20">
+				<p className="text-[10px] font-mono uppercase tracking-widest text-white/50">
 					Space or tap to jump
 				</p>
 			</div>

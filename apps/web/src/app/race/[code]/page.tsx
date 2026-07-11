@@ -4,6 +4,8 @@ import type { DebugChannel } from "@fangdash/game";
 import type { DebugCommand, DebugState, GameState, RacePlayer, RaceResult } from "@fangdash/shared";
 import { getSkinById } from "@fangdash/shared/skins";
 import { useMutation, useQuery } from "@tanstack/react-query";
+import { Check, X } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -578,8 +580,10 @@ export default function RaceRoomPage() {
 						<button
 							type="button"
 							onClick={toggleStreamerMode}
+							aria-pressed={streamerMode}
+							aria-label={streamerMode ? "Disable streamer mode" : "Enable streamer mode"}
 							title={streamerMode ? "Disable streamer mode" : "Enable streamer mode"}
-							className="rounded-lg border border-white/10 p-2 text-white/40 transition-colors hover:border-white/20 hover:text-white/70"
+							className="rounded-lg border border-white/10 p-2 text-white/40 transition-colors hover:border-white/20 hover:text-white/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fang-cyan"
 						>
 							{streamerMode ? (
 								// Eye-off icon
@@ -653,9 +657,13 @@ export default function RaceRoomPage() {
 									key={player.id}
 									className="flex items-center gap-3 rounded-lg bg-white/5 px-4 py-3"
 								>
-									<div className="flex h-8 w-8 items-center justify-center rounded-full bg-fang-cyan/20 text-xs font-bold text-fang-cyan">
-										{player.skinId === "default" ? "D" : player.skinId.charAt(0).toUpperCase()}
-									</div>
+									<Image
+										src={`/wolves/${getSkinById(player.skinId)?.spriteKey ?? "wolf-gray"}.png`}
+										alt=""
+										width={32}
+										height={32}
+										className="h-8 w-8 shrink-0 rounded-full bg-fang-cyan/10 object-contain"
+									/>
 									<span className="flex-1 truncate text-sm font-semibold text-white">
 										{player.username}
 									</span>
@@ -665,20 +673,21 @@ export default function RaceRoomPage() {
 										</span>
 									)}
 									{playerReadyMap[player.id] && (
-										<span className="text-sm text-green-400" title="Ready">
-											✓
+										<span className="flex items-center text-green-400">
+											<Check className="h-4 w-4" aria-hidden="true" />
+											<span className="sr-only">Ready</span>
 										</span>
 									)}
-									{player.id === myId && <span className="text-xs text-white/30">(you)</span>}
+									{player.id === myId && <span className="text-xs text-white/50">(you)</span>}
 									{isHost && player.id !== myId && (
 										<button
 											type="button"
 											onClick={() => handleKick(player.id)}
 											aria-label={`Kick ${player.username}`}
 											title="Kick player"
-											className="ml-1 rounded p-1 text-white/30 transition-colors hover:bg-red-500/20 hover:text-red-400"
+											className="ml-1 rounded p-1 text-white/40 transition-colors hover:bg-red-500/20 hover:text-red-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400"
 										>
-											✕
+											<X className="h-3.5 w-3.5" aria-hidden="true" />
 										</button>
 									)}
 								</div>
@@ -786,6 +795,7 @@ export default function RaceRoomPage() {
 							score: r.score,
 							distance: r.distance,
 						}))}
+						myId={myId}
 						onRematch={isHost ? handleRematch : undefined}
 					/>
 				)}

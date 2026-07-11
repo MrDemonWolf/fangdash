@@ -31,6 +31,10 @@ export function formatScoreDisplay(n: number): string {
 	return String(Math.floor(n)).padStart(7, "0");
 }
 
+export function formatWinRate(played: number, won: number): string {
+	return played > 0 ? `${((won / played) * 100).toFixed(0)}%` : "N/A";
+}
+
 export function rankColorClass(rank: number): string {
 	return rank === 1
 		? "text-yellow-400"
@@ -38,7 +42,7 @@ export function rankColorClass(rank: number): string {
 			? "text-slate-300"
 			: rank === 3
 				? "text-amber-600"
-				: "text-white/30";
+				: "text-white/50";
 }
 
 export function formatRelativeTime(timestamp: number): string {
