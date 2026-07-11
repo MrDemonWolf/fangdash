@@ -22,14 +22,17 @@ function parseLatestChangelog(): ChangelogInfo | null {
 	try {
 		const filePath = path.join(process.cwd(), "content/docs/changelog.mdx");
 		const raw = readFileSync(filePath, "utf-8");
-		const versionMatch = raw.match(/^##\s+v?(\d[\d.]*)\s*[–—(-]\s*(.+?)\)?\s*$/m);
+		// Requires a real dotted version (v1.2.3). The changelog is currently a
+		// versionless, commit-linked format ("## 2026-06-13 — …"), which won't
+		// match — so the changelog page falls back to the generic OG card.
+		const versionMatch = raw.match(/^##\s+v(\d+\.\d[\d.]*)\s*[–—-]\s*(.+?)\s*$/m);
 		if (!versionMatch || versionMatch.index === undefined || !versionMatch[1] || !versionMatch[2])
 			return null;
 		const version = versionMatch[1];
 		const date = versionMatch[2].trim();
 
 		const after = raw.slice(versionMatch.index + versionMatch[0].length);
-		const next = after.search(/^##\s+v?\d/m);
+		const next = after.search(/^##\s+v\d/m);
 		const section = next === -1 ? after : after.slice(0, next);
 
 		const bulletRe = /^[-*]\s+\*\*([^*]+)\*\*/gm;

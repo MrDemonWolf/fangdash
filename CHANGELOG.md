@@ -1,153 +1,86 @@
 # Changelog
 
-All notable changes to FangDash are documented here.
+Gameplay changes to FangDash, newest first. Each entry links to the commit that
+introduced it.
 
-For the latest updates, visit [fangdash.mrdemonwolf.workers.dev/changelog](https://fangdash.mrdemonwolf.workers.dev/changelog).
-
----
-
-## v0.2.0 — Settings, Public Profiles & Account Management
-
-**Released:** 2026-03-15
-
-> New Settings page, public player profiles, privacy controls, GDPR-compliant account deletion, and improved in-game feedback.
-
-### Settings Page
-
-- New `/settings` page for account management
-- **Skin picker** moved from the Skins gallery to Settings — the Skins page is now a view-only gallery
-- **Privacy toggle** — "Allow others to view my profile" controls public profile visibility
-- **Account deletion** — GDPR-compliant 24-hour soft delete with the ability to cancel during the grace period
-
-### Public Profiles
-
-- New `/profile/[id]` routes for viewing other players' profiles
-- Linked from the leaderboard — click a player's name to view their profile
-- Displays stats, achievements, top scores, and equipped skin
-- Respects the player's privacy setting (private profiles show a notice)
-- **Share Profile** button on your own profile to copy a direct link
-
-### Skins Page Update
-
-- The Skins gallery at `/skins` is now **view-only** — no more equip button
-- Links to Settings for equipping skins
-
-### Play Page Improvements
-
-- Removed toast notifications for score saves, level-ups, and achievement warnings
-- These messages are now shown **inline in the Game Over modal** for a cleaner experience
-
-### Debug Panel
-
-- New **"Unlock All Skins"** button in the CHEATS tab (dev/admin only)
-- Calls the new `admin.unlockAllSkins` mutation
-
-### API Changes
-
-- New `account` tRPC router with endpoints: `getAccountStatus`, `requestDeletion`, `cancelDeletion`, `getPrivacy`, `updatePrivacy`
-- New `score.getPublicProfile` query for fetching public profile data
-- New `admin.unlockAllSkins` mutation
-- Leaderboard responses now include `userId` and `profilePublic` fields for profile linking
-- Database schema: `user` table gains `deletionRequestedAt` and `deletionScheduledFor` columns; `player` table gains `profilePublic` column
-
-### Auth Improvements
-
-- Session creation hook now backfills `twitchId` and `twitchAvatar` if missing from the user record
+For official release notes, visit
+[fangdash.mrdemonwolf.workers.dev/changelog](https://fangdash.mrdemonwolf.workers.dev/changelog).
 
 ---
 
-## v0.1.0 — Alpha Release
+## 2026-06-13 — Multiplayer integrity
 
-**Released:** 2026-03-11
+- Race connections now authenticated with short-lived signed HMAC tokens minted by the API and verified by the PartyKit server ([4937908](https://github.com/MrDemonWolf/fangdash/commit/4937908))
+- Hardened score/race anti-cheat and multiplayer integrity ([da12994](https://github.com/MrDemonWolf/fangdash/commit/da12994))
 
-> First public alpha. Core gameplay, multiplayer, player accounts, level system, and admin panel are all live.
+## 2026-03-31
 
-### Core Gameplay
+- Dev-mode multiplayer bypass with bot simulation, so races can be tested solo ([ac59fbf](https://github.com/MrDemonWolf/fangdash/commit/ac59fbf))
 
-- Endless runner — wolf runs automatically, player jumps over obstacles
-- Double jump (up to 2 jumps per airborne phase)
-- 4 obstacle types: rock, log, bush, spike
-- Procedurally generated courses (seeded for multiplayer fairness)
-- 5 progressive difficulty tiers (Easy → Nightmare) scaling speed from 300 to 800 px/s
-- Scoring: 10 pts/sec survived + 50 pts per obstacle cleared
-- Per-difficulty score saving — scores track which difficulty tier they were achieved at
-- Server-side anti-cheat: scores validated against theoretical maximum
-- Longest clean run tracking (used for Perfect Dash achievement)
+## 2026-03-22 — Mods, achievements & in-game HUD
 
-### Level System
+- Mods wired into the race system — Fog / Headwind / Tremor selectable before multiplayer races ([cffaa60](https://github.com/MrDemonWolf/fangdash/commit/cffaa60))
+- Achievement system reworked with mod-aware unlock conditions and percentage-based stats (21 total) ([8b47aad](https://github.com/MrDemonWolf/fangdash/commit/8b47aad))
+- osu!-inspired in-game UI: input overlay plus configurable HUD settings ([6b6d27f](https://github.com/MrDemonWolf/fangdash/commit/6b6d27f))
+- osu!-style leaderboard with multi-mod filtering ([7031ad3](https://github.com/MrDemonWolf/fangdash/commit/7031ad3))
+- Responsive `/play` overlay layout ([a3a63e4](https://github.com/MrDemonWolf/fangdash/commit/a3a63e4))
 
-- Every point scored = 1 XP
-- Cubic level curve: `totalXpForLevel(n) = 5 × (n - 1)³`
-- Race placement bonuses: 1st = 500 XP, 2nd = 250 XP, 3rd = 100 XP
-- Level and XP progress bar on profile page
+## 2026-03-20
 
-### Wolf Skins
+- Offline score storage with batched sync when the connection returns ([d65e94c](https://github.com/MrDemonWolf/fangdash/commit/d65e94c))
 
-6 skins across 5 rarity tiers (all must be unlocked except Gray Wolf):
+## 2026-03-18 — Game Mods
 
-| Skin            | Rarity    | Unlock Condition                 |
-| --------------- | --------- | -------------------------------- |
-| Gray Wolf       | Common    | Default                          |
-| Shadow Wolf     | Uncommon  | Run 2,000m in a single run       |
-| Fire Wolf       | Rare      | Score 5,000 pts in a single run  |
-| Storm Wolf      | Epic      | Earn Obstacle Master achievement |
-| Blood Moon Wolf | Legendary | Score 15,000 pts in a single run |
-| MrDemonWolf     | Legendary | Earn Champion achievement        |
+- Opt-in challenge mods (Fog, Headwind, Tremor); each applies a 1.15× score multiplier that stacks multiplicatively (two = 1.322×, three = 1.521×). Runs using a beta mod are unranked, and the multiplier is re-derived server-side to prevent forgery ([627fd45](https://github.com/MrDemonWolf/fangdash/commit/627fd45))
 
-### Achievements
+## 2026-03-17
 
-16 achievements across 5 categories (Score, Distance, Games Played, Skill, Social). Three achievements unlock exclusive skins as rewards.
+- Anti-cheat flag added to scores and race history to mark suspicious runs ([0e9073a](https://github.com/MrDemonWolf/fangdash/commit/0e9073a))
 
-### Multiplayer
+## 2026-03-14
 
-- Real-time races via PartyKit WebSockets (up to 4 players)
-- Ghost players visible during races (live position sync)
-- Shared seeded PRNG — all players face identical obstacles
-- 3-second countdown, minimum 2 players to start
-- Race results with placements saved to history
-- Placement XP bonuses (1st = 500, 2nd = 250, 3rd = 100)
+- Deterministic (seeded) obstacle spawning so every racer faces an identical layout, plus player-creation fixes ([dd34550](https://github.com/MrDemonWolf/fangdash/commit/dd34550))
 
-### Player Profiles
+## 2026-03-13 — Level system
 
-- Twitch OAuth sign-in (username + avatar only)
-- Persistent stats: total score, distance, games played, obstacles cleared
-- Race stats: races played, won, win rate
-- Recent score history with trend arrows
-- Level and XP progress bar
-- Honor badges (recent achievements)
-- Skin and achievement tracking
+- Level & XP system: every point scored = 1 XP, cubic curve `totalXpForLevel(n) = 5 × (n − 1)³`, with race placement bonuses (1st = 500, 2nd = 250, 3rd = 100 XP) ([c6797de](https://github.com/MrDemonWolf/fangdash/commit/c6797de))
+- Hardened achievement/skin awarding to prevent cascading failures ([0e478c4](https://github.com/MrDemonWolf/fangdash/commit/0e478c4))
 
-### Leaderboard
+## 2026-03-12 — Physics & difficulty
 
-- Global leaderboard with time-period filters (All-time / Weekly / Daily)
-- Per-difficulty filtering (view scores for a specific difficulty tier)
-- Per-player personal best (one entry per player)
-- Top 3 rank badges (gold / silver / bronze)
+- Retuned physics for a chrome-dino-style jump feel — fall gravity, jump-cut (variable jump height), and terminal velocity in the Player ([c240ee8](https://github.com/MrDemonWolf/fangdash/commit/c240ee8), [7418682](https://github.com/MrDemonWolf/fangdash/commit/7418682), [eb55479](https://github.com/MrDemonWolf/fangdash/commit/eb55479))
+- `DifficultyLevel` type and per-tier gravity multiplier added to the difficulty scaler ([bd11575](https://github.com/MrDemonWolf/fangdash/commit/bd11575))
+- Difficulty selector redesigned as a responsive grid ([c63162d](https://github.com/MrDemonWolf/fangdash/commit/c63162d))
+- Per-difficulty leaderboards, plus audio and service-worker improvements ([625767c](https://github.com/MrDemonWolf/fangdash/commit/625767c))
 
-### Admin Panel
+## 2026-03-11 — Multiplayer & collision
 
-- Protected `/admin` route (admin + dev roles)
-- Dashboard: total players, games, meters, races, entries
-- Players: paginated list, search, ban/unban with reason + duration
-- Scores: paginated list, suspicious score highlighting, delete with aggregate rollback
-- Races: paginated history grouped by race, placement badges
+- Race room management and streamer mode ([a748375](https://github.com/MrDemonWolf/fangdash/commit/a748375))
+- Fixed broken hitboxes ([b7bf185](https://github.com/MrDemonWolf/fangdash/commit/b7bf185))
+- Obstacles embedded into the ground; WebSocket auto-reconnection during races ([a5ee1c7](https://github.com/MrDemonWolf/fangdash/commit/a5ee1c7))
+- Wolf and obstacle ground alignment ([2cf6ccf](https://github.com/MrDemonWolf/fangdash/commit/2cf6ccf))
+- Score anti-cheat aligned with the real scoring formula — 10 pts/sec survived + 50 pts per obstacle cleared ([be5df02](https://github.com/MrDemonWolf/fangdash/commit/be5df02))
 
-### Audio
+## 2026-03-06 — Pause & positioning
 
-- 3 BGM tracks (menu, solo, race) with automatic switching
-- 9 SFX (jump, double jump, hit, game over, milestone, countdown, achievement, skin equip, victory)
-- Master volume slider and mute toggle; preferences saved to localStorage
+- Pause support added to the in-game play menu; wolf starting-position fix ([c2fa5c6](https://github.com/MrDemonWolf/fangdash/commit/c2fa5c6))
 
-### Debug Panel
+## 2026-03-03 — Audio & leaderboard filters
 
-- Ctrl+Shift+D in-game (dev/admin only)
-- Tabs: Stats, Constants, Cheats (set score/distance, invincibility, skip difficulty)
+- Audio system: BGM tracks and SFX with a master volume slider and mute ([7f440f0](https://github.com/MrDemonWolf/fangdash/commit/7f440f0))
+- Time-period leaderboard filtering — All-time / Weekly / Daily ([3830d49](https://github.com/MrDemonWolf/fangdash/commit/3830d49))
+- Hidden debug/cheat menu (dev/admin) — set score & distance, invincibility, skip difficulty ([c4ab203](https://github.com/MrDemonWolf/fangdash/commit/c4ab203))
+- Accumulated game-engine improvements across API, web, and engine ([2563c10](https://github.com/MrDemonWolf/fangdash/commit/2563c10))
 
-### Infrastructure
+## 2026-03-02 — Initial game build
 
-- API: Hono + tRPC v11 on Cloudflare Workers with D1 (SQLite)
-- Web: Next.js 15 (App Router) deployed via OpenNext + Cloudflare Workers
-- Party: PartyKit WebSocket server
-- Auth: Better Auth with Twitch OAuth, cookie-based sessions (30-min cache)
-- OG image generation via Satori
-- Docs: Fumadocs MDX site
+- Core Phaser game engine — endless runner: the wolf auto-runs, the player double-jumps over procedurally spawned obstacles ([3286131](https://github.com/MrDemonWolf/fangdash/commit/3286131))
+- Game utilities and scoring/backend APIs — seeded PRNG, score & leaderboard tRPC routers ([0e63ebc](https://github.com/MrDemonWolf/fangdash/commit/0e63ebc))
+- Collision using actual sprite hitboxes; fullscreen canvas with scaled sprites ([c84070c](https://github.com/MrDemonWolf/fangdash/commit/c84070c), [e707c4f](https://github.com/MrDemonWolf/fangdash/commit/e707c4f))
+- Solo play page wired to the game ([b195d40](https://github.com/MrDemonWolf/fangdash/commit/b195d40))
+- Multiplayer races: `GhostPlayer` entity + `RaceScene` with live ghost positions ([985cfe3](https://github.com/MrDemonWolf/fangdash/commit/985cfe3)); race lobby and room pages ([318c6dd](https://github.com/MrDemonWolf/fangdash/commit/318c6dd)); race-history router ([a8b6448](https://github.com/MrDemonWolf/fangdash/commit/a8b6448))
+- In-game onboarding tutorial for first-time players ([c3d426e](https://github.com/MrDemonWolf/fangdash/commit/c3d426e))
+- Wolf skins gallery with equip ([46e171b](https://github.com/MrDemonWolf/fangdash/commit/46e171b)); achievements page ([087df7e](https://github.com/MrDemonWolf/fangdash/commit/087df7e)); leaderboard ([a69c7bf](https://github.com/MrDemonWolf/fangdash/commit/a69c7bf))
+- Achievement checker and skin unlocker backend ([d4a28a8](https://github.com/MrDemonWolf/fangdash/commit/d4a28a8))
+- Real game art assets replace procedural placeholders ([5938da2](https://github.com/MrDemonWolf/fangdash/commit/5938da2))
+- Game HUD, Game Over, and Race Result modals ([db46c3e](https://github.com/MrDemonWolf/fangdash/commit/db46c3e))

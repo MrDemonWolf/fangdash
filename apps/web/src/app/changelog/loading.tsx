@@ -8,13 +8,9 @@ export default function ChangelogLoading() {
 					<Skeleton className="h-9 w-48 rounded-lg" />
 					<Skeleton className="h-4 w-72 rounded" />
 				</div>
-				{Array.from({ length: 3 }).map((_, i) => (
-					<div key={i} className="rounded-xl border border-border bg-card p-6 space-y-4">
-						<div className="flex items-center gap-2">
-							<Skeleton className="h-6 w-40 rounded" />
-							<Skeleton className="h-5 w-16 rounded-full" />
-						</div>
-						<Skeleton className="h-4 w-24 rounded" />
+				{Array.from({ length: 4 }).map((_, i) => (
+					<div key={i} className="space-y-3">
+						<Skeleton className="h-6 w-56 rounded" />
 						<div className="space-y-2">
 							<Skeleton className="h-4 w-full rounded" />
 							<Skeleton className="h-4 w-5/6 rounded" />
