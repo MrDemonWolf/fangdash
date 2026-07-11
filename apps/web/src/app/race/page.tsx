@@ -40,16 +40,14 @@ function RoomCodeInput({ value, onChange }: { value: string; onChange: (value: s
 							onChange(next.slice(0, 6));
 							if (char && i < 5) {
 								const nextInput = e.target.parentElement?.children[i + 1] as
-									| HTMLInputElement
-									| undefined;
+									HTMLInputElement | undefined;
 								nextInput?.focus();
 							}
 						}}
 						onKeyDown={(e) => {
 							if (e.key === "Backspace" && !value[i] && i > 0) {
 								const prevInput = (e.target as HTMLElement).parentElement?.children[i - 1] as
-									| HTMLInputElement
-									| undefined;
+									HTMLInputElement | undefined;
 								prevInput?.focus();
 							}
 						}}

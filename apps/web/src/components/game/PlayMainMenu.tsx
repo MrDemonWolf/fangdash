@@ -3,7 +3,14 @@ import { DIFFICULTY_LEVELS, getScoreMultiplier, MOD_DEFINITIONS } from "@fangdas
 import { LogOut, User } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuSeparator,
+	DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { formatScoreDisplay } from "@/lib/format.ts";
 
 interface PlayMainMenuProps {
 	onPlay: () => void;
@@ -30,63 +37,37 @@ function UserPill({
 	userImage?: string | undefined;
 	onSignOut: () => void;
 }) {
-	const [dropdownOpen, setDropdownOpen] = useState(false);
-	const dropdownRef = useRef<HTMLDivElement>(null);
-
-	useEffect(() => {
-		const handleOutsideClick = (e: MouseEvent) => {
-			if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
-				setDropdownOpen(false);
-			}
-		};
-		if (dropdownOpen) {
-			document.addEventListener("mousedown", handleOutsideClick);
-		}
-		return () => document.removeEventListener("mousedown", handleOutsideClick);
-	}, [dropdownOpen]);
-
 	return (
-		<div className="relative" ref={dropdownRef}>
-			<button
-				type="button"
-				onClick={() => setDropdownOpen((prev) => !prev)}
-				className="flex items-center gap-2 bg-[#0a1628]/80 border border-white/10 backdrop-blur-xl rounded-full px-3 py-1.5 hover:border-white/20 hover:bg-white/5 transition-colors cursor-pointer"
-			>
-				{userImage && (
-					<img
-						src={userImage}
-						alt={userName ?? "User avatar"}
-						className="h-6 w-6 rounded-full border border-[#0FACED]/50"
-					/>
-				)}
-				<span className="text-sm font-medium text-gray-200">{userName}</span>
-			</button>
-
-			{dropdownOpen && (
-				<div className="absolute right-0 top-full mt-2 w-40 rounded-xl border border-white/10 bg-[#0a1628]/90 backdrop-blur-xl shadow-xl overflow-hidden">
-					<Link
-						href="/profile"
-						onClick={() => setDropdownOpen(false)}
-						className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-300 hover:text-white hover:bg-white/5 transition-colors"
-					>
-						<User className="h-4 w-4" />
+		<DropdownMenu>
+			<DropdownMenuTrigger asChild>
+				<button
+					type="button"
+					className="flex items-center gap-2 rounded-full border border-border/50 bg-secondary/50 px-3 py-1.5 backdrop-blur-xl transition-colors hover:border-primary/30 hover:bg-secondary cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+				>
+					{userImage && (
+						<img
+							src={userImage}
+							alt={userName ?? "User avatar"}
+							className="h-6 w-6 rounded-full border border-primary/50"
+						/>
+					)}
+					<span className="text-sm font-medium text-foreground">{userName}</span>
+				</button>
+			</DropdownMenuTrigger>
+			<DropdownMenuContent align="end">
+				<DropdownMenuItem asChild>
+					<Link href="/profile" className="cursor-pointer">
+						<User className="size-4" />
 						Profile
 					</Link>
-					<div className="h-px bg-white/10" />
-					<button
-						type="button"
-						onClick={() => {
-							setDropdownOpen(false);
-							onSignOut();
-						}}
-						className="flex w-full items-center gap-2.5 px-4 py-2.5 text-sm text-gray-300 hover:text-white hover:bg-white/5 transition-colors cursor-pointer"
-					>
-						<LogOut className="h-4 w-4" />
-						Sign Out
-					</button>
-				</div>
-			)}
-		</div>
+				</DropdownMenuItem>
+				<DropdownMenuSeparator />
+				<DropdownMenuItem onClick={onSignOut} className="cursor-pointer">
+					<LogOut className="size-4" />
+					Sign Out
+				</DropdownMenuItem>
+			</DropdownMenuContent>
+		</DropdownMenu>
 	);
 }
 
@@ -122,7 +103,7 @@ export function PlayMainMenu({
 					<button
 						type="button"
 						onClick={onSignIn}
-						className="rounded-full border border-[#0FACED]/60 px-4 py-1.5 text-sm font-semibold text-[#0FACED] hover:bg-[#0FACED]/10 transition-colors cursor-pointer"
+						className="rounded-full border border-fang-cyan/60 px-4 py-1.5 text-sm font-semibold text-fang-cyan hover:bg-fang-cyan/10 transition-colors cursor-pointer"
 					>
 						Sign In
 					</button>
@@ -147,7 +128,7 @@ export function PlayMainMenu({
 					<h1 className="text-2xl sm:text-4xl lg:text-5xl font-extrabold uppercase tracking-tight text-white">
 						FangDash
 					</h1>
-					<p className="text-xs font-semibold uppercase tracking-widest text-[#0FACED]/60 mt-1">
+					<p className="text-xs font-semibold uppercase tracking-widest text-fang-cyan/60 mt-1">
 						Endless Runner
 					</p>
 				</div>
@@ -158,8 +139,8 @@ export function PlayMainMenu({
 						<span className="text-[10px] font-mono uppercase tracking-widest text-white/40">
 							Best
 						</span>
-						<span className="text-lg sm:text-xl lg:text-2xl font-bold font-mono tabular-nums text-[#0FACED]">
-							{String(bestScore).padStart(7, "0")}
+						<span className="text-lg sm:text-xl lg:text-2xl font-bold font-mono tabular-nums text-fang-cyan">
+							{formatScoreDisplay(bestScore)}
 						</span>
 					</div>
 				)}
@@ -178,7 +159,7 @@ export function PlayMainMenu({
 									key={level.name}
 									onClick={() => onSelectDifficulty(level.name)}
 									aria-pressed={isSelected}
-									className={`relative rounded-lg border-l-[3px] px-2 py-1.5 sm:py-2 text-left transition-all cursor-pointer ${
+									className={`relative rounded-lg border-l-[3px] px-2 py-1.5 sm:py-2 text-left transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fang-cyan focus-visible:ring-offset-2 focus-visible:ring-offset-surface-base ${
 										isSelected
 											? "bg-white/10 border-white/20"
 											: "bg-white/5 border-white/10 hover:bg-white/[0.07] hover:border-white/15"
@@ -219,51 +200,53 @@ export function PlayMainMenu({
 									key={mod.id}
 									onClick={() => onSelectMods(selectedMods ^ mod.flag)}
 									aria-pressed={isActive}
-									className={`relative rounded-lg border px-2 py-1.5 sm:py-2 text-left transition-all cursor-pointer ${
+									className={`relative rounded-lg border px-2 py-1.5 sm:py-2 text-left transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fang-purple focus-visible:ring-offset-2 focus-visible:ring-offset-surface-base ${
 										isActive
-											? "bg-purple-500/15 border-purple-500/40"
+											? "bg-fang-purple/15 border-fang-purple/40"
 											: "bg-white/5 border-white/10 hover:bg-white/[0.07] hover:border-white/15"
 									}`}
 									style={{
-										boxShadow: isActive ? "0 0 16px rgba(168, 85, 247, 0.2)" : undefined,
+										boxShadow: isActive ? "var(--glow-purple)" : undefined,
 									}}
 								>
 									<div className="flex items-center gap-1.5 overflow-hidden">
 										<span className="text-sm sm:text-base">{mod.icon}</span>
 										<span
 											className={`text-xs font-bold uppercase tracking-wide truncate ${
-												isActive ? "text-purple-300" : "text-white/60"
+												isActive ? "text-fang-purple" : "text-white/60"
 											}`}
 										>
 											{mod.name}
 										</span>
 										{!mod.ready && (
-											<span className="rounded px-1 py-0.5 text-[8px] font-bold uppercase bg-yellow-500/20 text-yellow-400 hidden sm:inline">
+											<span className="rounded px-1 py-0.5 text-[8px] font-bold uppercase bg-fang-gold/20 text-fang-gold">
 												Beta
 											</span>
 										)}
 										<span
 											className={`ml-auto rounded-full px-1.5 py-0.5 font-mono text-[10px] ${
-												isActive ? "bg-purple-500/20 text-purple-300" : "bg-white/10 text-white/40"
+												isActive
+													? "bg-fang-purple/20 text-fang-purple"
+													: "bg-white/10 text-white/50"
 											}`}
 										>
 											{mod.multiplier}x
 										</span>
 									</div>
-									<p className="mt-1 text-[10px] text-white/30 leading-tight hidden sm:block">
+									<p className="mt-1 text-[10px] text-white/50 leading-tight hidden sm:block">
 										{mod.description}
-										{!mod.ready && isActive && (
-											<span className="block mt-0.5 text-yellow-400/60">
-												Unranked — won't appear on leaderboard
-											</span>
-										)}
 									</p>
+									{!mod.ready && isActive && (
+										<span className="mt-1 block text-[10px] font-medium leading-tight text-fang-gold">
+											Unranked — won't count on the leaderboard
+										</span>
+									)}
 								</button>
 							);
 						})}
 					</div>
 					{selectedMods > 0 && (
-						<div className="text-center text-xs font-mono text-purple-300">
+						<div className="text-center text-xs font-mono text-fang-purple">
 							Score: {multiplier}x
 						</div>
 					)}
@@ -273,22 +256,28 @@ export function PlayMainMenu({
 				<button
 					type="button"
 					onClick={onPlay}
-					className="w-full rounded-full bg-[#0FACED] py-2.5 sm:py-3 lg:py-4 text-sm sm:text-base lg:text-lg font-extrabold uppercase tracking-widest text-[#091533] shadow-[0_0_32px_rgba(15,172,237,0.4)] hover:bg-[#0FACED]/90 transition-all hover:scale-105 active:scale-95 cursor-pointer"
+					className="w-full rounded-full bg-fang-cyan py-2.5 sm:py-3 lg:py-4 text-sm sm:text-base lg:text-lg font-extrabold uppercase tracking-widest text-[#091533] shadow-[0_0_32px_rgba(15,172,237,0.4)] hover:bg-fang-cyan/90 transition-all hover:scale-105 active:scale-95 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fang-cyan focus-visible:ring-offset-2 focus-visible:ring-offset-surface-base"
 				>
 					PLAY
 				</button>
 
 				{/* Nav links */}
-				<div className="flex gap-6 text-xs font-semibold uppercase tracking-widest text-white/40">
-					<Link href="/leaderboard" className="hover:text-white transition-colors">
+				<div className="flex gap-6 text-xs font-semibold uppercase tracking-widest text-white/60">
+					<Link
+						href="/leaderboard"
+						className="rounded transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fang-cyan"
+					>
 						Leaderboard
 					</Link>
-					<Link href="/skins" className="hover:text-white transition-colors">
+					<Link
+						href="/skins"
+						className="rounded transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fang-cyan"
+					>
 						Skins
 					</Link>
 				</div>
 
-				<p className="text-[10px] font-mono uppercase tracking-widest text-white/20">
+				<p className="text-[10px] font-mono uppercase tracking-widest text-white/50">
 					Space or tap to jump
 				</p>
 			</div>

@@ -12,7 +12,7 @@ const STEPS = [
 		description: "Press SPACE or tap the screen to jump. You can double jump too!",
 		icon: (
 			<svg
-				className="mx-auto mb-4 h-16 w-16 animate-bounce text-[#0FACED]"
+				className="mx-auto mb-4 h-16 w-16 animate-bounce text-fang-cyan"
 				viewBox="0 0 24 24"
 				fill="none"
 				stroke="currentColor"
@@ -30,7 +30,7 @@ const STEPS = [
 		description: "Dodge rocks, logs, and spikes. Hit one and it's game over!",
 		icon: (
 			<svg
-				className="mx-auto mb-4 h-16 w-16 text-[#0FACED]"
+				className="mx-auto mb-4 h-16 w-16 text-fang-cyan"
 				viewBox="0 0 24 24"
 				fill="none"
 				stroke="currentColor"
@@ -49,7 +49,7 @@ const STEPS = [
 		description: "The longer you survive, the higher your score. Good luck, wolf!",
 		icon: (
 			<svg
-				className="mx-auto mb-4 h-16 w-16 text-[#0FACED]"
+				className="mx-auto mb-4 h-16 w-16 text-fang-cyan"
 				viewBox="0 0 24 24"
 				fill="none"
 				stroke="currentColor"
@@ -81,13 +81,24 @@ export default function OnboardingOverlay({ onComplete }: OnboardingOverlayProps
 		}, 200);
 	}, [isLastStep, onComplete]);
 
+	const goBack = useCallback(() => {
+		setIsTransitioning(true);
+		setTimeout(() => {
+			setCurrentStep((prev) => Math.max(0, prev - 1));
+			setIsTransitioning(false);
+		}, 200);
+	}, []);
+
 	const step = STEPS[currentStep];
 	if (!step) return null;
 
 	return (
 		<div className="absolute inset-0 z-30 flex items-center justify-center bg-black/70">
 			<div
-				className={`mx-4 w-full max-w-md rounded-2xl border border-[#0FACED]/20 bg-[#091533]/95 p-8 text-center shadow-2xl transition-opacity duration-200 ${
+				role="dialog"
+				aria-modal="true"
+				aria-labelledby="onboarding-title"
+				className={`mx-4 w-full max-w-md rounded-2xl border border-fang-cyan/20 bg-[#091533]/95 p-8 text-center shadow-2xl transition-opacity duration-200 ${
 					isTransitioning ? "opacity-0" : "opacity-100"
 				}`}
 			>
@@ -95,7 +106,9 @@ export default function OnboardingOverlay({ onComplete }: OnboardingOverlayProps
 				{step.icon}
 
 				{/* Title */}
-				<h2 className="mb-3 text-3xl font-bold tracking-wide text-white">{step.title}</h2>
+				<h2 id="onboarding-title" className="mb-3 text-3xl font-bold tracking-wide text-white">
+					{step.title}
+				</h2>
 
 				{/* Description */}
 				<p className="mb-8 text-lg leading-relaxed text-white/70">{step.description}</p>
@@ -107,9 +120,9 @@ export default function OnboardingOverlay({ onComplete }: OnboardingOverlayProps
 							key={i}
 							className={`h-2 rounded-full transition-all duration-300 ${
 								i === currentStep
-									? "w-6 bg-[#0FACED]"
+									? "w-6 bg-fang-cyan"
 									: i < currentStep
-										? "w-2 bg-[#0FACED]/50"
+										? "w-2 bg-fang-cyan/50"
 										: "w-2 bg-white/20"
 							}`}
 						/>
@@ -121,20 +134,31 @@ export default function OnboardingOverlay({ onComplete }: OnboardingOverlayProps
 					<button
 						type="button"
 						onClick={goNext}
-						className="w-full rounded-lg bg-[#0FACED] px-8 py-3 font-bold uppercase tracking-wider text-[#091533] transition-colors hover:bg-[#0FACED]/80"
+						className="w-full rounded-lg bg-fang-cyan px-8 py-3 font-bold uppercase tracking-wider text-[#091533] transition-colors hover:bg-fang-cyan/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fang-cyan focus-visible:ring-offset-2 focus-visible:ring-offset-[#091533]"
 					>
 						{isLastStep ? "Let's Go!" : "Next"}
 					</button>
 
-					{!isLastStep && (
-						<button
-							type="button"
-							onClick={onComplete}
-							className="text-sm text-white/40 transition-colors hover:text-white/70"
-						>
-							Skip
-						</button>
-					)}
+					<div className="flex items-center gap-4">
+						{currentStep > 0 && (
+							<button
+								type="button"
+								onClick={goBack}
+								className="rounded text-sm text-white/60 transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fang-cyan"
+							>
+								Back
+							</button>
+						)}
+						{!isLastStep && (
+							<button
+								type="button"
+								onClick={onComplete}
+								className="rounded text-sm text-white/60 transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fang-cyan"
+							>
+								Skip
+							</button>
+						)}
+					</div>
 				</div>
 			</div>
 		</div>

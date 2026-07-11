@@ -1,6 +1,6 @@
 import { getLevelFromXp, SKINS } from "@fangdash/shared";
 import { TRPCError } from "@trpc/server";
-import { count, desc, eq, like, sql } from "drizzle-orm";
+import { count, desc, eq, inArray, like, sql } from "drizzle-orm";
 import { z } from "zod";
 import { player, playerSkin, raceHistory, score, user } from "../../db/schema.ts";
 import { ensurePlayer } from "../../lib/ensure-player.ts";
@@ -277,12 +277,7 @@ export const adminRouter = router({
 				.from(raceHistory)
 				.innerJoin(player, eq(raceHistory.playerId, player.id))
 				.innerJoin(user, eq(player.userId, user.id))
-				.where(
-					sql`${raceHistory.raceId} in (${sql.join(
-						raceIdValues.map((id) => sql`${id}`),
-						sql`, `,
-					)})`,
-				)
+				.where(inArray(raceHistory.raceId, raceIdValues))
 				.orderBy(desc(raceHistory.createdAt), raceHistory.placement);
 
 			return {

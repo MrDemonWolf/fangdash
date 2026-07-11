@@ -90,7 +90,7 @@ function AchievementCard({
 		>
 			<CardContent className="p-5">
 				<div className="flex items-start gap-4">
-					<div className="relative flex-shrink-0">
+					<div className="relative shrink-0">
 						<span className="text-4xl" role="img" aria-label={name}>
 							{icon}
 						</span>
