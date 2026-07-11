@@ -1,4 +1,2 @@
-export const GAME_URL =
-	process.env.NODE_ENV === "development"
-		? "http://localhost:3000"
-		: "https://fangdash.mrdemonwolf.workers.dev";
+// Kept for backwards compatibility. Canonical URLs now live in lib/site.ts.
+export { gameUrl as GAME_URL } from "./site.ts";

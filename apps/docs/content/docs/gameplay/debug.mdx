@@ -1,52 +1,67 @@
 ---
-title: Debug
-description: Developer debug tools for FangDash.
+title: Debug Panel
+description: Open the FangDash debug panel with Ctrl+Shift+D for live stats, game constants, and cheats — restricted to accounts with the admin role.
+keywords:
+  - fangdash debug panel
+  - ctrl+shift+d debug menu
+  - admin debug cheats
+  - unlock all skins
+  - live game stats overlay
+  - game constants viewer
+ogEyebrow: Dev Tools
+ogChips:
+  - Ctrl+Shift+D
+  - Admin only
+  - 3 tabs
 ---
 
 <Callout type="warn">
-	The debug panel is only accessible to users with **`dev` or `admin` roles**. Regular players
-	cannot open it.
+	The debug panel is only accessible to accounts with the **`admin`** role. Regular players can't
+	open it, and the shortcut does nothing for them.
 </Callout>
 
-<Callout type="info">
-	**TL;DR** - Press **Ctrl+Shift+D** during gameplay to toggle the debug panel - Three tabs: Stats,
-	Constants, Cheats - Dev/admin only — restricted by role
-</Callout>
+FangDash ships with a hidden debug panel for maintainers. Use it to inspect live game state, confirm physics and difficulty values, and jump straight to the scenarios you need while testing.
 
-FangDash includes a hidden debug menu for developers and admins.
+## Open the panel
 
-## Accessing the Debug Menu
+Press **Ctrl+Shift+D** during gameplay to toggle the panel on and off. Access is checked against your role — only `admin` accounts can open it.
 
-Press **Ctrl+Shift+D** during gameplay to toggle the debug panel. Access is restricted to users with `dev` or `admin` roles.
+The panel uses a CRT/retro terminal look — green-on-black text with scan lines — so it stays visually distinct from the main game UI and never gets mistaken for something a player should see.
 
 ## Tabs
 
+The panel is split into three tabs.
+
 ### Stats
 
-Real-time game statistics:
+Live, per-frame game state:
 
 - Current speed, score, and distance
 - Frame rate and delta time
-- Active difficulty tier
+- The active difficulty tier
 
 ### Constants
 
-View current game constants:
+The game constants currently driving the run, straight from `packages/shared`:
 
 - Physics values (gravity, jump velocity)
 - Speed and scoring multipliers
 - Obstacle spawn rates
 
+This is the fastest way to confirm a tuning change landed without digging through source.
+
 ### Cheats
 
-Developer shortcuts for testing:
+Developer shortcuts for exercising specific scenarios:
 
-- Set score or distance to specific values
+- Set score or distance to a specific value
 - Toggle invincibility
 - Skip to a specific difficulty tier
 - Force-trigger achievements
 - **Unlock All Skins** — instantly unlocks every skin for the current player (calls `admin.unlockAllSkins`)
 
-## Visual Style
-
-The debug menu uses a **CRT/retro terminal aesthetic** with scan lines and a green-on-black color scheme. This keeps it visually distinct from the main game UI.
+<Callout type="info">
+	Cheats are testing aids, not a shortcut around progression. Runs that use them are handled like
+	any other unverified run and don't earn ranked scores or XP — see
+	[Scoring](/docs/gameplay/scoring) for how server-side validation works.
+</Callout>

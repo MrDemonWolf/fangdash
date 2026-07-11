@@ -1,17 +1,31 @@
 ---
 title: Developer Setup
-description: Set up FangDash for local development.
+description: Run FangDash locally — clone the repo, install with Bun, create a Cloudflare D1 database, set env vars, and start the dev server on localhost
+keywords:
+  - fangdash local development setup
+  - run fangdash locally
+  - cloudflare d1 database setup
+  - bun install turborepo monorepo
+  - twitch oauth developer app
+  - wrangler d1 migrations apply
+  - fangdash dev environment
+ogEyebrow: Developer Setup
+ogChips:
+  - "Bun + Node 20"
+  - "Cloudflare D1"
+  - "Twitch OAuth"
+  - "~10 min"
 ---
 
 <Callout type="info">
-	**TL;DR** - Requires Node.js >= 20, Bun 1.3.10, a Cloudflare account, and a Twitch app - Clone →
-	install → create D1 database → copy env files → `bun dev` - Web runs at `localhost:3000`, API at
-	`localhost:8787`
+	**TL;DR** — You need Node.js >= 20, Bun 1.3.10, a Cloudflare account, and a Twitch app. Clone →
+	install → create D1 → copy env files → `bun run dev`. Web runs at `localhost:3000`, API at
+	`localhost:8787`.
 </Callout>
 
 <Callout type="info">**Estimated time:** ~10 minutes</Callout>
 
-This guide is for developers who want to run FangDash locally or contribute to the project.
+This guide is for developers who want to run FangDash locally or contribute to the project. FangDash is a Turborepo monorepo managed with Bun workspaces, so a single install and one dev command bring up every app at once.
 
 ## Prerequisites
 
@@ -29,7 +43,7 @@ This guide is for developers who want to run FangDash locally or contribute to t
 
 <Steps>
 <Step>
-## Step 1 of 4 — Clone and Install
+## Step 1 of 4 — Clone and install
 
 ```bash
 git clone https://github.com/MrDemonWolf/fangdash.git
@@ -37,18 +51,20 @@ cd fangdash
 bun install
 ```
 
+One `bun install` at the repo root wires up every workspace: `apps/web`, `apps/api`, `apps/party`, `apps/docs`, and the shared `packages/`.
+
 </Step>
 
 <Step>
-## Step 2 of 4 — Set Up the Database
+## Step 2 of 4 — Set up the database
 
-Create a Cloudflare D1 database:
+FangDash stores everything in a single Cloudflare D1 (SQLite) database. Create it with:
 
 ```bash
 bunx wrangler d1 create fangdash-db
 ```
 
-The output will look something like this:
+The output looks something like this:
 
 ```
 ✅ Successfully created DB 'fangdash-db'
@@ -70,15 +86,17 @@ migrations_dir = "drizzle"
 ```
 
 <Callout type="info">
-	FangDash uses `drizzle` as the migrations directory (not `migrations/`). This is already
-	configured in `wrangler.toml` — you only need to update the `database_id`.
+	FangDash uses `drizzle` as the migrations directory (not `migrations/`). That's already configured
+	in `wrangler.toml` — you only need to update the `database_id`.
 </Callout>
 
-Then run migrations:
+Then apply the migrations to your local database:
 
 ```bash
 bunx wrangler d1 migrations apply fangdash-db --local
 ```
+
+This creates all 9 tables — the Better Auth tables (`user`, `session`, `account`, `verification`) plus the game tables (`player`, `score`, `player_skin`, `player_achievement`, `race_history`).
 
 <Callout type="warn">
 	If migrations fail, make sure you've logged into Cloudflare first with `bunx wrangler login`.
@@ -87,7 +105,7 @@ bunx wrangler d1 migrations apply fangdash-db --local
 </Step>
 
 <Step>
-## Step 3 of 4 — Configure Environment Variables
+## Step 3 of 4 — Configure environment variables
 
 Copy the example files from the repo root:
 
@@ -108,32 +126,33 @@ BETTER_AUTH_SECRET=your-secret-here
 BETTER_AUTH_URL=http://localhost:8787
 TWITCH_CLIENT_ID=your-twitch-client-id
 TWITCH_CLIENT_SECRET=your-twitch-client-secret
+WEB_URL=http://localhost:3000
 # Shared HMAC secret for short-lived PartyKit race connection tokens.
 # Needed for multiplayer — must match apps/party/.env (see below).
 RACE_TOKEN_SECRET=your-race-token-secret
 ```
 
 <Callout type="info">
-	**Generate a strong secret** with: `openssl rand -base64 32` — paste the output as your
-	`BETTER_AUTH_SECRET`. Generate `RACE_TOKEN_SECRET` with `openssl rand -hex 32`.
+	**Generate strong secrets** with `openssl rand -base64 32` for `BETTER_AUTH_SECRET`, and `openssl
+	rand -hex 32` for `RACE_TOKEN_SECRET`.
 </Callout>
 
 <Callout type="warn">
 	**Multiplayer race auth** — the PartyKit server verifies race connections with the **same**
-	`RACE_TOKEN_SECRET`. Create `apps/party/.env` with `RACE_TOKEN_SECRET=<same-value>` or real-time
+	`RACE_TOKEN_SECRET`. Create `apps/party/.env` with `RACE_TOKEN_SECRET=<same-value>`, or real-time
 	races will reject every connection. The two values must be identical.
 </Callout>
 
 <Callout type="warn">
-	**Twitch OAuth Redirect URL** — In your [Twitch Developer Console](https://dev.twitch.tv/console)
+	**Twitch OAuth redirect URL** — In your [Twitch Developer Console](https://dev.twitch.tv/console)
 	app settings, add `http://localhost:8787/api/auth/callback/twitch` as an OAuth Redirect URL.
-	Without this, sign-in will fail with a redirect error.
+	Without it, sign-in fails with a redirect error. Twitch is the only sign-in provider.
 </Callout>
 
 To find your Twitch Client ID and Client Secret:
 
 1. Go to the [Twitch Developer Console](https://dev.twitch.tv/console)
-2. Click on your application (or create one)
+2. Click your application (or create one)
 3. The **Client ID** is shown on the app overview page
 4. Click **New Secret** to generate a **Client Secret** (it's only shown once — copy it immediately)
 
@@ -146,44 +165,48 @@ NEXT_PUBLIC_API_URL=http://localhost:8787
 </Step>
 
 <Step>
-## Step 4 of 4 — Start Development
+## Step 4 of 4 — Start development
 
 ```bash
-bun dev
+bun run dev
 ```
 
-The web app runs at `http://localhost:3000` and the API at `http://localhost:8787`.
+This starts all four apps: web at `http://localhost:3000`, API at `http://localhost:8787`, the PartyKit race server on `1999`, and these docs on `3001`.
 
 <Callout type="info">
-	You're all set! Your local FangDash instance is running. Head to `localhost:3000` and sign in with
-	Twitch to start playing.
+	You're all set. Head to `localhost:3000` and sign in with Twitch to save scores and play
+	multiplayer — solo play works without an account.
 </Callout>
 
 </Step>
 </Steps>
 
-## Available Scripts
+## Available scripts
 
-| Command             | Description                        |
-| ------------------- | ---------------------------------- |
-| `bun dev`           | Start all apps in development mode |
-| `bun build`         | Build all packages and apps        |
-| `bun test`          | Run all tests with Vitest          |
-| `bun test:coverage` | Run tests with coverage report     |
-| `bun typecheck`     | Type-check all packages            |
-| `bun lint`          | Lint all packages                  |
-| `bun lint:fix`      | Lint with auto-fix                 |
-| `bun check`         | Run ESLint + Prettier check        |
-| `bun format`        | Format all files with Prettier     |
-| `bun format:check`  | Check formatting without writing   |
-| `bun clean`         | Remove all build artifacts         |
+Run these from the repo root. Use `bun run <script>` so Bun invokes the package script rather than its built-in `build`/`test` commands.
+
+| Command                 | Description                              |
+| ----------------------- | ---------------------------------------- |
+| `bun run dev`           | Start all apps in development mode       |
+| `bun run build`         | Build all packages and apps              |
+| `bun run test`          | Run all tests with Vitest                |
+| `bun run test:coverage` | Run tests with a coverage report         |
+| `bun run typecheck`     | Type-check all packages                  |
+| `bun run lint`          | Lint all packages                        |
+| `bun run lint:fix`      | Lint with auto-fix                       |
+| `bun run check`         | Run ESLint + Prettier check              |
+| `bun run format`        | Format all files with Prettier           |
+| `bun run format:check`  | Check formatting without writing         |
+| `bun run clean`         | Remove all build artifacts               |
+| `bun run ship`          | Deploy api, web, and party to Cloudflare |
 
 ## Troubleshooting
 
-| Error / Symptom                          | Likely Cause                                                                                    | Fix                                                                                                                     |
-| ---------------------------------------- | ----------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| `D1_ERROR` or "database not found"       | `database_id` in `wrangler.toml` doesn't match your D1 database, or migrations haven't been run | Double-check the ID from `bunx wrangler d1 list` and re-run `bunx wrangler d1 migrations apply fangdash-db --local`     |
-| "Auth not configured" or 503 from API    | Missing or incorrect values in `apps/api/.dev.vars`                                             | Ensure all four variables (`BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `TWITCH_CLIENT_ID`, `TWITCH_CLIENT_SECRET`) are set |
-| CORS errors in the browser console       | `NEXT_PUBLIC_API_URL` in `apps/web/.env.local` doesn't match the actual API URL                 | Verify the URL is `http://localhost:8787` (no trailing slash) and restart `bun dev` after changing env files            |
-| Blank page or error after Twitch sign-in | OAuth Redirect URL not registered in Twitch Developer Console                                   | Add `http://localhost:8787/api/auth/callback/twitch` as a redirect URL in your Twitch app settings                      |
-| "Cannot find module" on `bun dev`        | Dependencies not installed                                                                      | Run `bun install` from the repo root                                                                                    |
+| Error / Symptom                          | Likely Cause                                                                                    | Fix                                                                                                                 |
+| ---------------------------------------- | ----------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| `D1_ERROR` or "database not found"       | `database_id` in `wrangler.toml` doesn't match your D1 database, or migrations haven't been run | Double-check the ID from `bunx wrangler d1 list` and re-run `bunx wrangler d1 migrations apply fangdash-db --local` |
+| "Auth not configured" or 503 from API    | Missing or incorrect values in `apps/api/.dev.vars`                                             | Ensure `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `TWITCH_CLIENT_ID`, and `TWITCH_CLIENT_SECRET` are all set          |
+| CORS errors in the browser console       | `NEXT_PUBLIC_API_URL` in `apps/web/.env.local` doesn't match the actual API URL                 | Verify the URL is `http://localhost:8787` (no trailing slash) and restart `bun run dev` after changing env files    |
+| Blank page or error after Twitch sign-in | OAuth Redirect URL not registered in Twitch Developer Console                                   | Add `http://localhost:8787/api/auth/callback/twitch` as a redirect URL in your Twitch app settings                  |
+| Races reject every connection            | `RACE_TOKEN_SECRET` differs between `apps/api/.dev.vars` and `apps/party/.env`                  | Set the exact same value in both files, then restart `bun run dev`                                                  |
+| "Cannot find module" on `bun run dev`    | Dependencies not installed                                                                      | Run `bun install` from the repo root                                                                                |

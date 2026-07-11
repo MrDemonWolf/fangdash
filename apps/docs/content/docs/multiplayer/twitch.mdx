@@ -1,46 +1,86 @@
 ---
 title: Twitch Integration
-description: How FangDash works with Twitch.
+description: Sign in with Twitch to save your scores and race your chat in FangDash, and see exactly what Twitch data is stored and what stays private
+keywords:
+  - sign in with twitch
+  - twitch oauth login
+  - race your twitch chat
+  - what twitch data is stored
+  - better auth twitch
+  - fangdash twitch integration
+  - twitch streamer racing game
+ogEyebrow: Twitch integration
+ogChips:
+  - "Twitch OAuth"
+  - "Race your chat"
+  - "Up to 4 players"
+  - "Delete anytime"
 ---
 
 <Callout type="info">
-	**TL;DR** - Sign in with Twitch — we only access your username and avatar - Streamers can share a
-	room code with chat to race together - Up to 4 players can race at once
+	**TL;DR** — Sign in with Twitch to save your progress and race others. FangDash stores your Twitch
+	username, avatar, Twitch ID, and email — nothing more. Share a room code so your chat can race
+	you, up to 4 players at once.
 </Callout>
 
-FangDash is built for **Twitch streamers** and their communities. Here's how to use it on stream.
+FangDash is built for **Twitch streamers** and their communities. You can play solo with no account at all, but signing in with Twitch is what saves your scores, XP, achievements, and skins — and unlocks multiplayer racing.
 
-## Signing In
+## Signing In With Twitch
 
-FangDash uses **Twitch OAuth** for authentication. When you sign in, we access:
+Twitch is the **only** way to sign in. Authentication runs on [Better Auth](https://www.better-auth.com/) with Twitch OAuth, and sessions are cookie-based with a short 5-minute cookie cache.
 
-- Your Twitch username
-- Your Twitch avatar
+<Steps>
+	<Step>Click **Sign in with Twitch** on the FangDash site.</Step>
+	<Step>Approve the connection on Twitch's authorization screen.</Step>
+	<Step>You're returned to FangDash, signed in and ready to save scores and race.</Step>
+</Steps>
 
-We do **not** access your followers, subscriptions, or any other Twitch data beyond what is needed for authentication.
+<Callout type="info">
+	Want to try the game first? You don't need an account for solo play at `/play`. Sign in only when
+	you want to save progress, appear on the leaderboard, or race live.
+</Callout>
+
+## What Twitch Data Is Stored
+
+When you sign in, FangDash stores just enough of your Twitch profile to identify you and show your name on leaderboards and races:
+
+| Data            | Why it's stored                                          |
+| --------------- | -------------------------------------------------------- |
+| Twitch username | Shown on your profile, leaderboards, and race results    |
+| Twitch avatar   | Shown next to your name in-game                          |
+| Twitch ID       | Stable identifier that links your account to your scores |
+| Email address   | Account identity and verification (stored, never shown)  |
+
+That's the full list. FangDash does **not** store your followers, subscriptions, chat, or any other channel data. For the complete details on what's collected, how long it's kept, and your rights, read the [Privacy Policy](/docs/legal/privacy-policy).
 
 ## Racing Your Chat
 
-As a streamer, create a race room and share the room code with your chat. Viewers join by:
+As a streamer, create a race room and share the room code with your chat. Viewers join in three steps:
 
 <Steps>
-	<Step>Going to the FangDash website</Step>
-	<Step>Signing in with their Twitch account</Step>
-	<Step>Entering the room code</Step>
+	<Step>Open the FangDash website.</Step>
+	<Step>Sign in with their Twitch account.</Step>
+	<Step>Enter your room code to join the race.</Step>
 </Steps>
 
-Up to **4 players** can race at once.
+Up to **4 players** can race at once. A race starts as soon as at least **2 players** are ready, followed by a **3-second countdown**. Everyone runs the exact same procedurally generated course from a shared seed, so it's fair by design — see [How Multiplayer Works](/docs/multiplayer/how-it-works) for the technical details.
 
 ## Stream-Friendly Features
 
-- **Wolf skins** are visible to all players — viewers can show off their unlocks
-- **Leaderboards** update in real-time, great for on-screen overlays
-- **Race results** show player names and scores at the end of each race
+- **Wolf skins** are visible to every racer, so viewers can show off what they've unlocked.
+- **Leaderboards** filter by difficulty and by day, week, or all-time — great for an on-screen overlay.
+- **Race results** list each player's name and score at the finish, with bonus XP for the top 3 placements.
 
-## Future Plans
+## Your Data, Your Control
 
-We're working on deeper Twitch integration including:
+You decide how visible you are. In [Settings](/docs/getting-started/settings) you can toggle your profile between **public** and **private** — private profiles are hidden from the public leaderboard. You can also delete your account entirely, with a **24-hour grace period** before the data is permanently removed. Full details are in the [Privacy Policy](/docs/legal/privacy-policy).
+
+## Ideas We're Exploring
+
+Deeper Twitch integration is on our wish list, but none of these are built yet:
 
 - Chat commands to join races
 - Channel point redemptions for race entries
-- Twitch Extension panel for one-click join
+- A Twitch Extension panel for one-click join
+
+We'll update these docs the moment any of them ship.

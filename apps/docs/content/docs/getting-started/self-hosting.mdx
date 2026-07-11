@@ -1,22 +1,37 @@
 ---
-title: Self-Hosting
-description: Deploy your own instance of FangDash.
+title: Self-Host FangDash on Cloudflare
+description: Deploy your own FangDash instance to Cloudflare Workers and D1 — wire up the API, web app, and PartyKit multiplayer server with wrangler and bun.
+keywords:
+  - self-host fangdash
+  - deploy fangdash cloudflare workers
+  - cloudflare d1 wrangler setup
+  - partykit multiplayer deployment
+  - twitch oauth better auth
+  - race_token_secret api party
+  - bun run ship deploy
+ogEyebrow: Self-hosting
+ogChips:
+  - 3 services
+  - Cloudflare + D1
+  - wrangler + bun
+  - PartyKit
 ---
 
 <Callout type="info">
-	**TL;DR** - FangDash runs entirely on Cloudflare infrastructure (Workers + D1) - Three services to
-	deploy: API, Web, and PartyKit (multiplayer) - `bun run ship` deploys all three at once
+	**TL;DR** — FangDash runs entirely on Cloudflare (Workers + D1). You deploy three services: the
+	**API**, the **web app**, and the **PartyKit** multiplayer server. `bun run ship` deploys all
+	three at once.
 </Callout>
 
-<Callout type="info">**Estimated time:** ~30 minutes</Callout>
+<Callout type="info">**Estimated time:** about 20 minutes</Callout>
 
-FangDash is designed to run on Cloudflare's infrastructure. Here's how to deploy your own instance.
+FangDash is a free, open-source, MIT-licensed multiplayer runner, so you can host your own copy. Everything runs on Cloudflare's infrastructure. Here's how to deploy an instance end to end.
 
 ## What You'll Need
 
-- [ ] **Node.js** >= 24
-- [ ] **Bun** 1.3.10
-- [ ] **Cloudflare account** (free tier works)
+- [ ] **Node.js** >= 20
+- [ ] **Bun** (see `package.json` for the pinned version)
+- [ ] **Cloudflare account** (the free tier works)
 - [ ] **Twitch Developer application** (for OAuth sign-in)
 - [ ] **PartyKit account** (for real-time multiplayer)
 
@@ -24,9 +39,9 @@ FangDash is designed to run on Cloudflare's infrastructure. Here's how to deploy
 <Step>
 ## Step 1 of 3 — Deploy the API
 
-The **API** runs on Cloudflare Workers with a D1 database.
+The **API** is a Hono app on Cloudflare Workers backed by a D1 (SQLite) database.
 
-1. Create a D1 database via the Cloudflare dashboard (Workers & Pages → D1) or CLI:
+1. Create a D1 database via the Cloudflare dashboard (Workers &amp; Pages → D1) or the CLI:
 
 ```bash
 bunx wrangler d1 create fangdash-db
@@ -63,14 +78,21 @@ bunx wrangler d1 migrations apply fangdash-db --remote
 bunx wrangler secret put BETTER_AUTH_SECRET --env production
 bunx wrangler secret put TWITCH_CLIENT_ID --env production
 bunx wrangler secret put TWITCH_CLIENT_SECRET --env production
+bunx wrangler secret put RACE_TOKEN_SECRET --env production
 ```
 
-<Callout type="info">
-	**Generate a strong secret** with: `openssl rand -base64 32` — paste the output when prompted for
-	`BETTER_AUTH_SECRET`.
+<Callout type="warn">
+	`RACE_TOKEN_SECRET` signs the short-lived HMAC token that authorizes each PartyKit connection. It
+	**must be identical** in the API and the PartyKit server (Step 3) — if the two values differ,
+	multiplayer clients are rejected and races never start.
 </Callout>
 
-4. Deploy:
+<Callout type="info">
+	**Generate strong secrets** with `openssl rand -base64 32` — run it once for `BETTER_AUTH_SECRET`
+	and again for `RACE_TOKEN_SECRET`, and paste each value when prompted.
+</Callout>
+
+5. Deploy:
 
 ```bash
 bun run ship:api
@@ -81,7 +103,7 @@ bun run ship:api
 <Step>
 ## Step 2 of 3 — Deploy the Web App
 
-The **web app** deploys to Cloudflare Workers using OpenNext.
+The **web app** is Next.js 16, deployed to Cloudflare Workers via the OpenNext adapter.
 
 1. Set your API URL as a build-time environment variable:
 
@@ -107,7 +129,7 @@ bun run ship:web
 <Step>
 ## Step 3 of 3 — Deploy PartyKit
 
-**PartyKit** handles real-time multiplayer WebSocket connections.
+**PartyKit** runs the real-time multiplayer WebSocket server (the `RaceServer` room).
 
 1. Set your PartyKit token:
 
@@ -115,15 +137,21 @@ bun run ship:web
 export PARTYKIT_TOKEN=your-token
 ```
 
-2. Deploy:
+2. Give PartyKit the **same** `RACE_TOKEN_SECRET` you set on the API so it can verify race connection tokens:
+
+```bash
+bunx partykit secret put RACE_TOKEN_SECRET
+```
+
+3. Deploy:
 
 ```bash
 bun run ship:party
 ```
 
 <Callout type="info">
-	All three services are deployed! Your FangDash instance should now be live. Visit your web domain
-	to verify everything works.
+	All three services are deployed. Your FangDash instance should now be live — visit your web
+	domain, sign in with Twitch, and start a race to verify everything works.
 </Callout>
 
 </Step>
@@ -135,20 +163,21 @@ bun run ship:party
 bun run ship
 ```
 
-This runs all three deploy commands in sequence.
+This runs all three deploy commands (`ship:api`, `ship:web`, `ship:party`) in sequence.
 
 ## Environment Variables Reference
 
 ### API (`apps/api`)
 
-| Variable               | Type      | Where set             | Description                                         |
-| ---------------------- | --------- | --------------------- | --------------------------------------------------- |
-| `BETTER_AUTH_SECRET`   | Secret    | `wrangler secret put` | Long random string for signing sessions             |
-| `TWITCH_CLIENT_ID`     | Secret    | `wrangler secret put` | Twitch OAuth app client ID                          |
-| `TWITCH_CLIENT_SECRET` | Secret    | `wrangler secret put` | Twitch OAuth app client secret                      |
-| `BETTER_AUTH_URL`      | Plaintext | `wrangler.toml`       | Public URL of the API worker                        |
-| `WEB_URL`              | Plaintext | `wrangler.toml`       | Public URL of the web worker (for CORS + redirects) |
-| `ENVIRONMENT`          | Plaintext | `wrangler.toml`       | `"development"` or `"production"`                   |
+| Variable               | Type      | Where set             | Description                                            |
+| ---------------------- | --------- | --------------------- | ------------------------------------------------------ |
+| `BETTER_AUTH_SECRET`   | Secret    | `wrangler secret put` | Long random string for signing sessions                |
+| `TWITCH_CLIENT_ID`     | Secret    | `wrangler secret put` | Twitch OAuth app client ID                             |
+| `TWITCH_CLIENT_SECRET` | Secret    | `wrangler secret put` | Twitch OAuth app client secret                         |
+| `RACE_TOKEN_SECRET`    | Secret    | `wrangler secret put` | Signs race connection tokens — **must match PartyKit** |
+| `BETTER_AUTH_URL`      | Plaintext | `wrangler.toml`       | Public URL of the API worker                           |
+| `WEB_URL`              | Plaintext | `wrangler.toml`       | Public URL of the web worker (for CORS + redirects)    |
+| `ENVIRONMENT`          | Plaintext | `wrangler.toml`       | `"development"` or `"production"`                      |
 
 ### Web (`apps/web`)
 
@@ -156,6 +185,13 @@ This runs all three deploy commands in sequence.
 | --------------------------- | --------- | --------------------- | ------------------------------------------------- |
 | `NEXT_PUBLIC_API_URL`       | Plaintext | `.env.local` / CI env | Public URL of the API worker                      |
 | `NEXT_PUBLIC_PARTYKIT_HOST` | Plaintext | `.env.local` / CI env | PartyKit host (e.g. `fangdash.user.partykit.dev`) |
+
+### PartyKit (`apps/party`)
+
+| Variable            | Type   | Where set             | Description                                              |
+| ------------------- | ------ | --------------------- | -------------------------------------------------------- |
+| `PARTYKIT_TOKEN`    | Secret | shell env             | Deploy token from your PartyKit account                  |
+| `RACE_TOKEN_SECRET` | Secret | `partykit secret put` | Verifies race connection tokens — **must match the API** |
 
 ### Local Development
 
@@ -166,23 +202,27 @@ cp apps/api/.dev.vars.example apps/api/.dev.vars
 cp apps/web/.env.example apps/web/.env.local
 ```
 
+Then run the whole stack locally with `bun run dev` (web on 3000, api on 8787, party on 1999, docs on 3001).
+
 ## Setting Up Twitch OAuth
 
+Twitch is the only sign-in provider (via Better Auth), so you need a Twitch application before authentication works.
+
 <Steps>
-	<Step>Go to the [Twitch Developer Console](https://dev.twitch.tv/console)</Step>
-	<Step>Create a new application</Step>
+	<Step>Go to the [Twitch Developer Console](https://dev.twitch.tv/console).</Step>
+	<Step>Create a new application.</Step>
 	<Step>
-		Add **both** OAuth Redirect URLs: - Local development:
-		`http://localhost:8787/api/auth/callback/twitch` - Production:
-		`https://your-api-domain.workers.dev/api/auth/callback/twitch`
+		Add **both** OAuth Redirect URLs — local development
+		`http://localhost:8787/api/auth/callback/twitch` and production
+		`https://your-api-domain.workers.dev/api/auth/callback/twitch`.
 	</Step>
-	<Step>Copy the Client ID and Client Secret to your environment variables</Step>
+	<Step>Copy the Client ID and Client Secret into your API secrets.</Step>
 </Steps>
 
 <Callout type="warn">
 	The Twitch OAuth redirect URL must match your deployed API domain **exactly** — including the
 	protocol (`https://`) and the path `/api/auth/callback/twitch`. If sign-in redirects to a blank
-	page or error, this is almost always the cause.
+	page or an error, this mismatch is almost always the cause.
 </Callout>
 
 ## Troubleshooting
@@ -192,19 +232,20 @@ cp apps/web/.env.example apps/web/.env.local
 | OAuth redirects to blank page   | Redirect URL mismatch in Twitch dev console | Ensure the redirect URL matches your API domain exactly, including protocol and `/api/auth/callback/twitch` path |
 | "Auth not configured" in prod   | Missing Cloudflare secrets                  | Run all `wrangler secret put` commands: `BETTER_AUTH_SECRET`, `TWITCH_CLIENT_ID`, `TWITCH_CLIENT_SECRET`         |
 | D1 "table not found"            | Database migrations not applied             | Run `bunx wrangler d1 migrations apply fangdash-db --remote`                                                     |
+| Race clients rejected / kicked  | `RACE_TOKEN_SECRET` differs across services | Set the **same** secret on the API and PartyKit, then redeploy both                                              |
 | PartyKit connection refused     | Wrong host or missing token                 | Verify `NEXT_PUBLIC_PARTYKIT_HOST` matches your PartyKit deployment URL and `PARTYKIT_TOKEN` is set              |
 | CORS errors in browser console  | `WEB_URL` mismatch                          | Update `WEB_URL` in `wrangler.toml` `[env.production.vars]` to match your actual web domain exactly              |
 | Admin panel shows "Forbidden"   | User role is not `admin` or `dev`           | Run `bun run promote-admin YourUsername --remote` (see [Admin docs](/docs/getting-started/admin))                |
 | Multiplayer rooms won't start   | PartyKit not deployed                       | Run `bun run ship:party` and verify the deployment URL                                                           |
 | Score submission fails silently | Rate limit hit (429)                        | Wait 60 seconds and retry, or check the response for a `429` status and `Retry-After` header                     |
 | "FORBIDDEN" on all actions      | Account is banned                           | Check the user's ban status in the admin panel or D1 database                                                    |
-| Build fails with type errors    | Dependencies out of date                    | Run `bun install` then `bun run typecheck` to identify issues                                                    |
+| Build fails with type errors    | Dependencies out of date                    | Run `bun install`, then `bun run typecheck` to identify issues                                                   |
 
 ### PartyKit Deployment Details
 
 To expand on Step 3 above:
 
-1. **Get a PartyKit token:** Sign up at [partykit.io](https://partykit.io), go to your account settings, and generate an API token.
+1. **Get a PartyKit token:** Sign up at [partykit.io](https://partykit.io), open your account settings, and generate an API token.
 
 2. **Set the token:**
 
@@ -212,18 +253,24 @@ To expand on Step 3 above:
 export PARTYKIT_TOKEN=your-token-here
 ```
 
-3. **Deploy:**
+3. **Match the race token secret:** Give PartyKit the same `RACE_TOKEN_SECRET` as the API — otherwise the party server can't verify the HMAC connection tokens the web client sends as `?token=`.
+
+```bash
+bunx partykit secret put RACE_TOKEN_SECRET
+```
+
+4. **Deploy:**
 
 ```bash
 bun run ship:party
 ```
 
-4. **Verify deployment:** After deploying, PartyKit will output your host URL. It looks like:
+5. **Verify deployment:** After deploying, PartyKit outputs your host URL. It looks like:
 
 ```
 fangdash.your-username.partykit.dev
 ```
 
-5. **Update your web app:** Set `NEXT_PUBLIC_PARTYKIT_HOST` in `apps/web/.env.local` to this URL (without `https://` prefix). Redeploy the web app for the change to take effect.
+6. **Update your web app:** Set `NEXT_PUBLIC_PARTYKIT_HOST` in `apps/web/.env.local` to this URL (without the `https://` prefix), then redeploy the web app for the change to take effect.
 
-6. **Test the connection:** Open your web app, start a multiplayer race, and check the browser console for WebSocket connection messages.
+7. **Test the connection:** Open your web app, start a multiplayer race, and watch the browser console for WebSocket connection messages.

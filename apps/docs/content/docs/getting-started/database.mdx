@@ -1,40 +1,54 @@
 ---
-title: Database
-description: Managing the FangDash D1 database — migrations, backups, and troubleshooting.
+title: Database & Migrations
+description: How FangDash stores data in Cloudflare D1 with Drizzle — the full 9-table schema, running and generating migrations, plus backup and restore.
+keywords:
+  - fangdash cloudflare d1 database
+  - drizzle orm sqlite migrations
+  - wrangler d1 migrations apply
+  - drizzle-kit generate migration
+  - d1 backup and restore
+  - fangdash database schema tables
+ogEyebrow: "Data layer"
+ogChips:
+  - "Cloudflare D1"
+  - "Drizzle ORM"
+  - "9 tables"
+  - "Backup & restore"
 ---
 
 <Callout type="info">
-	FangDash uses **Cloudflare D1** (SQLite) for all persistent data. The ORM is **Drizzle**, and
+	FangDash stores all persistent data in **Cloudflare D1** (SQLite). The ORM is **Drizzle**, and
 	migrations are SQL files in `apps/api/drizzle/`.
 </Callout>
 
 ## Overview
 
-The database stores:
+The schema is defined in `apps/api/src/db/schema.ts` and has **9 tables** — four from Better Auth and five for the game.
 
-| Table                | Purpose                                  |
-| -------------------- | ---------------------------------------- |
-| `user`               | Accounts from Better Auth (Twitch OAuth) |
-| `session`            | Active login sessions                    |
-| `account`            | OAuth provider links                     |
-| `player`             | Game stats, XP, level, equipped skin     |
-| `score`              | Individual game scores                   |
-| `player_skin`        | Unlocked skins per player                |
-| `player_achievement` | Unlocked achievements per player         |
-| `race_history`       | Multiplayer race results                 |
+| Table                | Purpose                                                        |
+| -------------------- | -------------------------------------------------------------- |
+| `user`               | Accounts from Better Auth (username, avatar, Twitch ID, email) |
+| `session`            | Active login sessions                                          |
+| `account`            | OAuth provider links (Twitch)                                  |
+| `verification`       | Better Auth verification tokens                                |
+| `player`             | Game stats, XP, level, equipped skin                           |
+| `score`              | Individual game scores                                         |
+| `player_skin`        | Unlocked skins per player                                      |
+| `player_achievement` | Unlocked achievements per player                               |
+| `race_history`       | Multiplayer race results                                       |
 
-The schema is defined in `apps/api/src/db/schema.ts`.
+The first four tables are managed by Better Auth; the last five hold your gameplay data. Every score, unlock, and race result links back to a `player`, which links to a `user`.
 
-## Local vs Remote
+## Local vs remote
 
-D1 has two modes:
+D1 runs in two modes, and every migration command takes a flag to pick one:
 
-- **Local** — an SQLite file on your machine, used during `bun run dev`
-- **Remote** — the production D1 database on Cloudflare
+- **Local** — an SQLite file on your machine, used by `bun run dev`. Target it with `--local`.
+- **Remote** — the production D1 database on Cloudflare. Target it with `--remote`.
 
-All migration commands accept `--local` or `--remote` to target the right database.
+Always test against `--local` before you touch `--remote`.
 
-## Running Migrations
+## Running migrations
 
 ### Apply existing migrations
 
@@ -46,23 +60,23 @@ bunx wrangler d1 migrations apply fangdash-db --local
 bunx wrangler d1 migrations apply fangdash-db --remote
 ```
 
-### Generate a new migration from schema changes
+### Generate a migration from schema changes
 
-After modifying `apps/api/src/db/schema.ts`:
+After you edit `apps/api/src/db/schema.ts`:
 
 ```bash
 cd apps/api
 bunx drizzle-kit generate
 ```
 
-This creates a new SQL migration file in `apps/api/drizzle/`. Review it, then apply:
+This writes a new SQL migration file to `apps/api/drizzle/`. Review it, then apply it locally first and remotely once you're happy:
 
 ```bash
 bunx wrangler d1 migrations apply fangdash-db --local   # test locally first
 bunx wrangler d1 migrations apply fangdash-db --remote  # then deploy
 ```
 
-## Backup and Restore
+## Backup and restore
 
 ### Export (backup)
 
@@ -79,8 +93,8 @@ bunx wrangler d1 execute fangdash-db --local --file backup.sql
 ```
 
 <Callout type="warn">
-	Always test migrations locally before applying to production. There is no automatic rollback for
-	D1 migrations.
+	Always test migrations locally before applying them to production. D1 migrations have no automatic
+	rollback, so a backup is your safety net.
 </Callout>
 
 ## Troubleshooting
@@ -107,8 +121,8 @@ If a migration is stuck, you may need to manually mark it as applied or fix the 
 
 If your local database has different tables than remote:
 
-1. Drop and recreate local: delete `.wrangler/state/` in the api directory
-2. Re-apply all migrations: `bunx wrangler d1 migrations apply fangdash-db --local`
+1. Drop and recreate local: delete `.wrangler/state/` in the api directory.
+2. Re-apply all migrations: `bunx wrangler d1 migrations apply fangdash-db --local`.
 
 ### UNIQUE constraint violations
 
@@ -123,6 +137,6 @@ bunx wrangler d1 execute fangdash-db --remote \
 
 D1 has concurrency limits. If you see timeout errors under load:
 
-- Ensure you're not running expensive queries (full table scans)
-- Check that indexes exist for frequently queried columns
-- Consider batching writes where possible (FangDash already does this for race results)
+- Make sure you're not running expensive queries (full table scans).
+- Check that indexes exist for frequently queried columns.
+- Batch writes where possible — FangDash already does this for race results.

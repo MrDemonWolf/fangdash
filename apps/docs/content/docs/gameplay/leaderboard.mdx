@@ -1,19 +1,33 @@
 ---
 title: Leaderboard
-description: How the FangDash leaderboard works — filters, rankings, and personal bests.
+description: "How the FangDash leaderboard ranks players across daily, weekly, and all-time views, with per-difficulty filters, personal bests, and server-side anti-cheat."
+keywords:
+  - fangdash leaderboard
+  - endless runner high scores
+  - daily weekly all-time leaderboard
+  - per-difficulty leaderboard filter
+  - personal best score tracking
+  - leaderboard anti-cheat
+  - twitch wolf runner rankings
+ogEyebrow: Leaderboard
+ogChips:
+  - Daily / weekly / all-time
+  - 5 difficulties
+  - Top-3 badges
+  - Anti-cheat
 ---
 
 <Callout type="info">
-	**TL;DR** - Filter by time period (Daily / Weekly / All Time) and difficulty (Easy → Nightmare) -
-	Only your personal best per difficulty is shown — one entry per player - Top 3 get gold, silver,
-	and bronze rank badges
+	**TL;DR** — Filter by time period (Daily / Weekly / All Time) and difficulty (Easy → Nightmare).
+	Only your personal best per filter is shown, so it's one entry per player. The top 3 earn gold,
+	silver, and bronze badges.
 </Callout>
 
-The leaderboard shows the best scores across all FangDash players. Visit it anytime at [/leaderboard](/leaderboard).
+The leaderboard ranks the best FangDash runs across every player. Open it anytime at [/leaderboard](/leaderboard). You need to [sign in with Twitch](/docs/getting-started) to appear on it — signing in is what saves your scores.
 
-## Time Period Filters
+## Time period filters
 
-Switch between three time windows:
+Switch between three time windows to see who's fastest right now versus all-time greats:
 
 | Filter       | Shows                          |
 | ------------ | ------------------------------ |
@@ -21,11 +35,11 @@ Switch between three time windows:
 | **Weekly**   | Best scores from the last 7d   |
 | **All Time** | The highest scores ever posted |
 
-## Difficulty Filtering
+## Difficulty filtering
 
-You can filter the leaderboard by **difficulty level**. Each difficulty tier is reached at a specific distance during gameplay:
+You can also filter by **difficulty tier**. Difficulty ramps up automatically with the distance you reach in a run, and each score is saved with the tier it was earned at — so you're always comparing like for like.
 
-| Difficulty    | Distance Threshold |
+| Difficulty    | Distance threshold |
 | ------------- | ------------------ |
 | **Easy**      | 0m                 |
 | **Medium**    | 500m               |
@@ -33,15 +47,15 @@ You can filter the leaderboard by **difficulty level**. Each difficulty tier is 
 | **Insane**    | 3,000m             |
 | **Nightmare** | 5,000m+            |
 
-Scores are saved with the difficulty level they were achieved at. This lets you compare apples to apples.
+See [Difficulty](/docs/gameplay/difficulty) for the speed, spawn rate, and obstacle changes at each tier.
 
-## Personal Best
+## Personal best
 
-The leaderboard shows **one entry per player** — your personal best score for the selected filters. If you beat your own high score, your entry updates automatically.
+The leaderboard shows **one entry per player** — your single best score for the selected filters. Beat your own high score and your entry updates automatically. Only your top run counts, so grinding out attempts never clutters the board.
 
-## Rank Badges
+## Rank badges
 
-The top 3 players get special badges:
+The top 3 players earn a badge for the selected filters:
 
 | Rank | Badge  |
 | ---- | ------ |
@@ -49,6 +63,14 @@ The top 3 players get special badges:
 | 2nd  | Silver |
 | 3rd  | Bronze |
 
-## Anti-Cheat
+## What's excluded
 
-All scores are **server-validated** before appearing on the leaderboard. Scores that exceed the theoretical maximum for a given run duration and obstacle count are automatically rejected. See [Scoring](/docs/gameplay/scoring) for details.
+Two things never show up on the board:
+
+- **Cheated runs.** Every score is validated server-side before it can rank. Runs that exceed the theoretical maximum for their duration and obstacle count are flagged and excluded. They're still stored, but they earn no XP, stats, or leaderboard placement. See [Scoring](/docs/gameplay/scoring) for the exact ceiling.
+- **Private profiles.** If you set your profile to private in [Account Settings](/docs/getting-started/settings), your scores stay off the public leaderboard. Flip it back to public any time to rejoin the rankings.
+
+<Callout type="info">
+	Want to climb faster? Higher difficulty tiers and stacked [mods](/docs/gameplay/mods) apply score
+	multipliers, so a shorter, riskier run can outrank a long, safe one.
+</Callout>

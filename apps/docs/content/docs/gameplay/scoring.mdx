@@ -1,14 +1,29 @@
 ---
-title: Scoring
-description: How scores are calculated and validated in FangDash.
+title: Scoring & Anti-Cheat
+description: How FangDash scores runs — 10 points per second, 50 per obstacle cleared, mod multipliers, per-difficulty saving, and server-side anti-cheat validation
+keywords:
+  - fangdash scoring system
+  - how scores work in fangdash
+  - endless runner score multiplier
+  - server-side anti-cheat validation
+  - one point equals one xp
+  - per-difficulty leaderboard scoring
+  - game modifier score multiplier
+ogEyebrow: Scoring & XP
+ogChips:
+  - "10/sec + 50/obstacle"
+  - "1 pt = 1 XP"
+  - "Mod multipliers"
+  - "Server anti-cheat"
 ---
 
 <Callout type="info">
-	**TL;DR** - Earn 10 pts/sec for surviving + 50 pts per obstacle cleared - Scores are saved **per
-	difficulty level** - Every point you score = 1 XP toward your [level](/docs/gameplay/levels)
+	**TL;DR** — Earn 10 points/sec for surviving plus 50 points per obstacle cleared. Scores save
+	**per difficulty**, and every point you score becomes **1 XP** toward your
+	[level](/docs/gameplay/levels).
 </Callout>
 
-## Score Formula
+## Score formula
 
 Your score comes from two sources:
 
@@ -17,55 +32,75 @@ Your score comes from two sources:
 | **Time survived**     | 10 points per second          |
 | **Obstacles cleared** | 50 points per obstacle dodged |
 
-Your total score is the sum of both. Distance is tracked separately for achievements and leaderboard stats.
+Your total is the sum of both. Distance is tracked separately (it accrues as your speed × 0.1) and feeds achievements and leaderboard stats rather than your score directly.
 
-## Per-Difficulty Scoring
+## Mod multiplier
 
-Scores are saved with the **difficulty level** you reached during that run. This means the [leaderboard](/docs/gameplay/leaderboard) can filter scores by difficulty, so you can compare your Easy runs against other Easy runs.
+If you turn on any [game mods](/docs/gameplay/mods) before a run, each active mod applies a **1.15× score multiplier**. Multipliers stack multiplicatively and are rounded to three decimals:
 
-## XP Earning
+| Mods active | Multiplier |
+| ----------- | ---------- |
+| 1 mod       | 1.15×      |
+| 2 mods      | 1.322×     |
+| 3 mods      | 1.521×     |
 
-Every point you score counts as **1 XP** toward your player level. Race placements give bonus XP on top of that (1st = 500 XP, 2nd = 250 XP, 3rd = 100 XP).
+The multiplier is applied to your base score, so a bigger challenge means more points. All three mods are ranked, so mod-boosted scores still count on the leaderboard.
 
-See [Level System](/docs/gameplay/levels) for the full breakdown.
+## Per-difficulty scoring
 
-## Tracked Stats
+Scores save with the **difficulty tier** you reached during that run. That lets the [leaderboard](/docs/gameplay/leaderboard) filter by difficulty, so your Easy runs compete against other Easy runs — not against Nightmare attempts.
+
+## XP earning
+
+Every point you score counts as **1 XP** toward your player level. Race placements add bonus XP on top of that: 1st place = 500 XP, 2nd = 250 XP, 3rd = 100 XP.
+
+See [Level System](/docs/gameplay/levels) for the full curve.
+
+## Tracked stats
 
 Each score submission records:
 
-| Stat                  | Description                                                                      |
-| --------------------- | -------------------------------------------------------------------------------- |
-| **Score**             | Your total points                                                                |
-| **Distance**          | How far you ran (meters)                                                         |
-| **Duration**          | How long the run lasted (seconds)                                                |
-| **Difficulty**        | The difficulty tier you reached                                                  |
-| **Longest Clean Run** | Longest distance without hitting an obstacle (used for Perfect Dash achievement) |
+| Stat                  | Description                                                                          |
+| --------------------- | ------------------------------------------------------------------------------------ |
+| **Score**             | Your total points                                                                    |
+| **Distance**          | How far you ran (meters)                                                             |
+| **Duration**          | How long the run lasted (seconds)                                                    |
+| **Difficulty**        | The difficulty tier you reached                                                      |
+| **Longest clean run** | Longest distance without hitting an obstacle (used for the Perfect Dash achievement) |
 
-## Score Validation
+## Score validation
 
-FangDash uses **server-side anti-cheat validation**. When you submit a score:
+FangDash validates every score **on the server** so the leaderboard stays honest. When you submit a run:
 
 <Steps>
 	<Step>
-		The server checks that your score does not exceed `((seconds × 10) + (obstacles × 50)) × your
-		active mod multiplier` — the maximum possible for the given run duration, obstacle count, and
-		mods
+		The server re-derives your ceiling from the run: roughly `((seconds × 10) + (obstacles × 50)) ×
+		mod multiplier`, plus small tolerances. It also re-computes the mod multiplier itself so it
+		can't be forged.
 	</Step>
-	<Step>Scores above this limit are automatically rejected</Step>
-	<Step>Your score, distance, and duration are all recorded for verification</Step>
 	<Step>
-		After a valid score is saved, the server automatically checks for newly earned achievements and
-		skin unlocks
+		Hard caps are enforced regardless: score up to 1,000,000, distance up to 200,000 m, obstacles up
+		to 5,000, and a 30-minute maximum run length.
+	</Step>
+	<Step>
+		Replays are blocked — each (player, seed) pair can only score once, so you can't resubmit the
+		same run.
+	</Step>
+	<Step>
+		After a valid score saves, the server checks for newly earned achievements and skin unlocks
+		automatically.
 	</Step>
 </Steps>
 
 <Callout type="warn">
-	Submitted scores that exceed the theoretical maximum for your run duration and obstacle count are
-	rejected with a BAD_REQUEST error. The score will not be saved or appear on the leaderboard.
+	A run that exceeds its theoretical maximum is flagged as cheated. It's still stored, but it grants
+	**no XP, no stats, and no unlocks**, and it never appears on the leaderboard.
 </Callout>
+
+To keep traffic fair, the API also rate-limits activity to 10 score submissions per minute and 60 read queries per minute per player.
 
 ## Leaderboards
 
-The **global leaderboard** supports filtering by time period (Daily / Weekly / All Time) and by difficulty level. Only your personal best per filter combination is shown.
+The **global leaderboard** filters by time period (Daily / Weekly / All Time) and by difficulty tier, and shows only your personal best per filter combination. Cheated runs and private profiles are excluded.
 
 See [Leaderboard](/docs/gameplay/leaderboard) for full details.

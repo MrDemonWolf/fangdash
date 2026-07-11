@@ -1,18 +1,31 @@
 ---
-title: Level System
-description: How XP and levels work in FangDash.
+title: Level System & XP
+description: How the FangDash level system works — earn 1 XP per point scored, grab race placement bonuses, and climb a cubic XP curve that scales with skill.
+keywords:
+  - fangdash level system
+  - how xp works in fangdash
+  - fangdash xp curve
+  - race placement bonus xp
+  - leveling up endless runner
+  - fangdash cubic xp formula
+ogEyebrow: Progression
+ogChips:
+  - "1 point = 1 XP"
+  - "Cubic curve"
+  - "500/250/100 race bonus"
 ---
 
 <Callout type="info">
-	**TL;DR** - Every point you score = 1 XP - Race bonuses: 1st place = 500 XP, 2nd = 250 XP, 3rd =
-	100 XP - Levels follow a cubic curve — early levels are fast, later ones take real dedication
+	**TL;DR** — Every point you score is 1 XP. Race podium finishes add a bonus (1st = 500, 2nd = 250,
+	3rd = 100). Levels follow a cubic curve, so early levels fly by and later ones reward real
+	dedication.
 </Callout>
 
-FangDash has a **level system** that tracks your overall progress. The higher your level, the more experienced you are.
+Your **level** is the running total of everything you've earned in FangDash. It climbs as you score, survive, and race — a single number that reflects how much time and skill you've poured into the game.
 
-## How You Earn XP
+## How you earn XP
 
-| Source             | XP Earned             |
+| Source             | XP earned             |
 | ------------------ | --------------------- |
 | **Score points**   | 1 XP per point scored |
 | **1st place race** | 500 bonus XP          |
@@ -20,15 +33,24 @@ FangDash has a **level system** that tracks your overall progress. The higher yo
 | **3rd place race** | 100 bonus XP          |
 | **4th place race** | No bonus XP           |
 
-Every point you score in a game — whether solo or multiplayer — counts as 1 XP. Race placements give you a bonus on top of that.
+Every point counts as 1 XP, whether you're playing solo or racing. See [Scoring](/docs/gameplay/scoring) for how points are earned (10 per second survived, 50 per obstacle cleared). Race placements stack a bonus on top of your score.
 
-## Level Curve
+<Callout type="warn">
+	You need to be signed in with Twitch to bank XP. Solo play works without an account, but XP,
+	levels, and unlocks only save once you sign in. Cheated runs are stored but grant no XP.
+</Callout>
 
-Levels use a **cubic formula**: `totalXpForLevel(n) = 5 × (n - 1)³`
+## The level curve
 
-Early levels come quickly. Higher levels take significantly more XP.
+Levels use a **cubic formula**:
 
-| Level | Total XP Needed | XP for This Level |
+```
+totalXpForLevel(n) = 5 × (n − 1)³
+```
+
+The XP needed for a single level is the gap between two totals: `totalXpForLevel(n) − totalXpForLevel(n − 1)`. Because the curve is cubic, early levels come fast and higher levels take real commitment.
+
+| Level | Total XP needed | XP for this level |
 | ----- | --------------- | ----------------- |
 | 1     | 0               | —                 |
 | 2     | 5               | 5                 |
@@ -40,13 +62,8 @@ Early levels come quickly. Higher levels take significantly more XP.
 | 30    | 121,945         | 12,185            |
 | 50    | 588,245         | 35,285            |
 
-## Your Progress Bar
+## Track your progress
 
-Your current level and XP progress are visible on your **Profile** page. The progress bar shows how far you are toward the next level.
+Your current level and XP bar live on your **Profile** page. The bar shows exactly how far you are toward the next level, and it updates automatically after every run.
 
-Check your profile anytime at [/profile](/profile).
-
-<Callout type="info">
-	XP is calculated from your **total score** plus any race placement bonuses. It updates
-	automatically after every game.
-</Callout>
+Check yours anytime at [/profile](/profile), then chase more XP through [multiplayer races](/docs/multiplayer) and higher scores.

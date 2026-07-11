@@ -1,53 +1,85 @@
 ---
-title: Web App Tour
-description: A quick guide to every page in the FangDash web app.
+title: "Web App Tour: Every Page & Route"
+description: Tour every page in the FangDash web app — home, play, race, leaderboard, achievements, skins, profile, settings, and the admin panel.
+keywords:
+  - fangdash web app pages
+  - fangdash routes list
+  - twitch wolf runner game pages
+  - fangdash multiplayer race page
+  - fangdash leaderboard and profile
+  - fangdash admin panel routes
+ogEyebrow: Web app tour
+ogChips:
+  - 11 pages
+  - Twitch sign-in
+  - Admin panel
 ---
 
 <Callout type="info">
-	**TL;DR** - 10 main pages: Home, Play, Race, Leaderboard, Achievements, Skins, Settings, Profile,
-	Public Profiles, Admin - Most pages require signing in with Twitch - Admin is restricted to
-	admin/dev roles
+	**TL;DR** — 11 pages: Home, Play, Race, Leaderboard, Achievements, Skins, Settings, Profile,
+	Public Profile, Changelog, and Admin. You can browse and play solo without an account; signing in
+	with Twitch saves your progress and unlocks multiplayer. Admin is restricted to admin/dev roles.
 </Callout>
 
 Here's a quick tour of every page in the FangDash web app.
 
 ## Pages
 
-| Page               | Route           | Description                                                             |
-| ------------------ | --------------- | ----------------------------------------------------------------------- |
-| **Home**           | `/`             | Landing page with a quick overview and sign-in prompt                   |
-| **Play**           | `/play`         | Start a solo endless runner game                                        |
-| **Race**           | `/race`         | Create or join a multiplayer race room                                  |
-| **Leaderboard**    | `/leaderboard`  | Global rankings with time period and difficulty filters                 |
-| **Achievements**   | `/achievements` | View all 21 achievements and your unlock progress                       |
-| **Skins**          | `/skins`        | View-only gallery of all wolf skins and their unlock conditions         |
-| **Settings**       | `/settings`     | Equip skins, manage privacy, and delete your account                    |
-| **Profile**        | `/profile`      | Your stats, level, recent scores, and equipped skin                     |
-| **Public Profile** | `/profile/[id]` | View another player's public profile (linked from leaderboard)          |
-| **Admin**          | `/admin`        | Player management, score moderation, and race history (admin/dev roles) |
-| **Changelog**      | `/changelog`    | Release notes and version history                                       |
+| Page               | Route           | Description                                                           |
+| ------------------ | --------------- | --------------------------------------------------------------------- |
+| **Home**           | `/`             | Landing page with a quick overview and a sign-in prompt               |
+| **Play**           | `/play`         | Start a solo endless runner game                                      |
+| **Race**           | `/race`         | Create or join a multiplayer race room (rooms live at `/race/[code]`) |
+| **Leaderboard**    | `/leaderboard`  | Global rankings with daily/weekly/all-time and per-difficulty filters |
+| **Achievements**   | `/achievements` | View all 21 achievements and your unlock progress                     |
+| **Skins**          | `/skins`        | Gallery of all 6 wolf skins and their unlock conditions               |
+| **Settings**       | `/settings`     | Equip skins, toggle profile privacy, and delete your account          |
+| **Profile**        | `/profile`      | Your stats, level, recent scores, and equipped skin                   |
+| **Public Profile** | `/profile/[id]` | View another player's public profile (linked from the leaderboard)    |
+| **Changelog**      | `/changelog`    | Release notes and version history                                     |
+| **Admin**          | `/admin`        | Player, score, and race management (admin/dev roles only)             |
+
+The **Admin** area also has focused sub-pages: `/admin/players`, `/admin/scores`, and `/admin/races`. Two utility routes round things out — `/offline` (shown by the PWA service worker when you lose connection) and `/auth/error` (sign-in error handling).
 
 ## Getting Around
 
-The main navigation bar at the top links to Play, Race, Leaderboard, Achievements, and Skins. Your profile and settings are accessible from the user menu in the top right corner.
+The main navigation links to Play, Race, Leaderboard, Achievements, and Skins. Your profile and settings live in the user menu in the top-right corner once you're signed in.
 
 ## What Requires Sign-In
 
-You need to **sign in with Twitch** to:
+You can jump into a solo game and browse most of the site without an account — but your run won't be saved. **Sign in with Twitch** to:
 
-- Play games (scores are tied to your account)
-- Join races
+- Save your scores, XP, achievements, and skin unlocks
+- Join multiplayer races
 - Equip skins (via Settings)
-- View your profile
-- Manage account settings
+- View your own profile and manage account settings
 
-The **Leaderboard**, **Achievements** list, **Skins** gallery, and **Public Profiles** are viewable without signing in (subject to the player's privacy setting).
+The **Home** page, **Leaderboard**, **Achievements** list, **Skins** gallery, **Changelog**, and **public profiles** are all viewable without signing in — public profiles are shown only when the player has kept their profile public.
+
+<Callout type="info">
+	FangDash signs you in with Twitch and stores your Twitch username, avatar, Twitch ID, and email.
+	See [Accounts & Privacy](/docs/getting-started/settings) for what's kept and how to delete it.
+</Callout>
 
 ## Learn More
 
-- [Scoring](/docs/gameplay/scoring) — How points work
-- [Level System](/docs/gameplay/levels) — XP and leveling
-- [Leaderboard](/docs/gameplay/leaderboard) — Filters and rankings
-- [Profile](/docs/gameplay/profile) — Your stats breakdown
-- [Settings](/docs/getting-started/settings) — Account settings, skin equipping, privacy
-- [Admin Panel](/docs/getting-started/admin) — Managing your instance
+<Cards>
+	<Card title="Scoring" href="/docs/gameplay/scoring">
+		How points, distance, and mods add up
+	</Card>
+	<Card title="Level System" href="/docs/gameplay/levels">
+		XP curve and race placement bonuses
+	</Card>
+	<Card title="Leaderboard" href="/docs/gameplay/leaderboard">
+		Filters, periods, and rankings
+	</Card>
+	<Card title="Profile" href="/docs/gameplay/profile">
+		Your stats breakdown
+	</Card>
+	<Card title="Settings" href="/docs/getting-started/settings">
+		Skins, privacy, and account deletion
+	</Card>
+	<Card title="Admin Panel" href="/docs/getting-started/admin">
+		Managing your instance
+	</Card>
+</Cards>

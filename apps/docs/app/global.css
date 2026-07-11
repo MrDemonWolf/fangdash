@@ -1,48 +1,923 @@
 @import "tailwindcss";
-@import "fumadocs-ui/css/neutral.css";
+@import "fumadocs-ui/css/ocean.css";
 @import "fumadocs-ui/css/preset.css";
 
+/* ──────────────────────────────────────────────────────────
+   FangDash docs. Arcade-neon: deep-space navy, cyan speed,
+   gold for scores. Display face = Unbounded (playful/bold),
+   body = Hanken Grotesk, mono = JetBrains Mono.
+   ────────────────────────────────────────────────────────── */
+
+/* ── Fumadocs semantic tokens (light) ────────────────────── */
 @theme {
-	--color-fd-background: #f8fafc;
-	--color-fd-foreground: #0f172a;
+	--color-fd-background: #ffffff;
+	--color-fd-foreground: #0b1220;
 	--color-fd-muted: #f1f5f9;
-	--color-fd-muted-foreground: #64748b;
-	--color-fd-border: #e2e8f0;
-	--color-fd-accent: #f1f5f9;
-	--color-fd-accent-foreground: #0f172a;
-	--color-fd-primary: #0faced;
+	--color-fd-muted-foreground: #52617a;
+	--color-fd-border: #dbe4ee;
+	--color-fd-accent: #e6f6fd;
+	--color-fd-accent-foreground: #0b4a63;
+	--color-fd-primary: #0891b2;
 	--color-fd-primary-foreground: #ffffff;
-	--color-fd-card: #ffffff;
-	--color-fd-card-foreground: #0f172a;
-	--color-fd-ring: #0faced;
-	--color-fd-secondary: #f1f5f9;
-	--color-fd-secondary-foreground: #0f172a;
+	--color-fd-card: #f8fafc;
+	--color-fd-card-foreground: #0b1220;
+	--color-fd-ring: #0891b2;
+	--color-fd-secondary: #eef2f7;
+	--color-fd-secondary-foreground: #0b1220;
 	--color-fd-popover: #ffffff;
-	--color-fd-popover-foreground: #0f172a;
+	--color-fd-popover-foreground: #0b1220;
 }
 
 .dark {
 	color-scheme: dark;
-	--color-fd-background: #091533;
-	--color-fd-foreground: #e2e8f0;
-	--color-fd-muted: #0f1f4a;
-	--color-fd-muted-foreground: #94a3b8;
+	--color-fd-background: #060d1f;
+	--color-fd-foreground: #e8eef9;
+	--color-fd-muted: #0f2440;
+	--color-fd-muted-foreground: #93a4c4;
 	--color-fd-border: #1e3a5f;
-	--color-fd-accent: #0f2440;
-	--color-fd-accent-foreground: #e2e8f0;
+	--color-fd-accent: #0f2848;
+	--color-fd-accent-foreground: #e8eef9;
 	--color-fd-primary: #0faced;
-	--color-fd-primary-foreground: #091533;
+	--color-fd-primary-foreground: #041022;
 	--color-fd-card: #0c1d3d;
-	--color-fd-card-foreground: #e2e8f0;
+	--color-fd-card-foreground: #e8eef9;
 	--color-fd-ring: #0faced;
-	--color-fd-secondary: #0f1f4a;
-	--color-fd-secondary-foreground: #e2e8f0;
+	--color-fd-secondary: #0f2440;
+	--color-fd-secondary-foreground: #e8eef9;
 	--color-fd-popover: #0c1d3d;
-	--color-fd-popover-foreground: #e2e8f0;
+	--color-fd-popover-foreground: #e8eef9;
+
+	--shiki-dark: #d7e2f5;
+	--shiki-dark-bg: #0a1733;
 }
 
 .dark #nd-sidebar {
 	--color-fd-muted: #0a1835;
 	--color-fd-secondary: #0f2440;
 	--color-fd-muted-foreground: #cbd5e1;
+}
+
+:root {
+	--shiki-light: #0b1220;
+	--shiki-light-bg: #f5f8fc;
+	--fd-radius-control: 10px;
+}
+
+@media (prefers-color-scheme: dark) {
+	:root:not(.light) {
+		color-scheme: dark;
+	}
+}
+
+/* ── Brand tokens (light) ────────────────────────────────── */
+:root {
+	--brand-500: #0891b2;
+	--brand-600: #0e7490;
+	--brand-400: #06b6d4;
+	--brand-50: #e6f6fd;
+
+	--gold: #b8860b;
+	--purple: #9333ea;
+	--orange: #ea580c;
+
+	--bg-base: #ffffff;
+	--bg-surface: #f1f5f9;
+	--bg-elev: #f8fafc;
+	--txt-1: #0b1220;
+	--txt-2: #52617a;
+	--hairline: #dbe4ee;
+}
+
+.dark {
+	--brand-500: #0faced;
+	--brand-600: #38bdf8;
+	--brand-400: #38bdf8;
+	--brand-50: rgba(15, 172, 237, 0.1);
+
+	--gold: #f5b301;
+	--purple: #a855f7;
+	--orange: #fb923c;
+
+	--bg-base: #060d1f;
+	--bg-surface: #0c1d3d;
+	--bg-elev: #0a1733;
+	--txt-1: #e8eef9;
+	--txt-2: #93a4c4;
+	--hairline: #1e3a5f;
+}
+
+@media (prefers-color-scheme: dark) {
+	:root:not(.light) {
+		--brand-500: #0faced;
+		--brand-600: #38bdf8;
+		--brand-400: #38bdf8;
+		--brand-50: rgba(15, 172, 237, 0.1);
+		--gold: #f5b301;
+		--purple: #a855f7;
+		--orange: #fb923c;
+		--bg-base: #060d1f;
+		--bg-surface: #0c1d3d;
+		--bg-elev: #0a1733;
+		--txt-1: #e8eef9;
+		--txt-2: #93a4c4;
+		--hairline: #1e3a5f;
+	}
+}
+
+/* ── Typography ──────────────────────────────────────────── */
+.fd-font {
+	font-family: var(--font-hanken), "Segoe UI", system-ui, sans-serif;
+	font-feature-settings: "ss01";
+}
+
+.fd-display {
+	font-family: var(--font-unbounded), var(--font-hanken), system-ui, sans-serif;
+	font-weight: 700;
+	letter-spacing: -0.02em;
+	line-height: 1.05;
+}
+
+.fd-mono {
+	font-family: var(--font-mono), ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+
+/* ── Surfaces ────────────────────────────────────────────── */
+.fd-bg-base {
+	background-color: var(--bg-base);
+}
+.fd-bg-surface {
+	background-color: var(--bg-surface);
+}
+.fd-bg-elev {
+	background-color: var(--bg-elev);
+}
+
+.fd-text-1 {
+	color: var(--txt-1);
+}
+.fd-text-2 {
+	color: var(--txt-2);
+}
+.fd-text-brand {
+	color: var(--brand-600);
+}
+.dark .fd-text-brand {
+	color: var(--brand-500);
+}
+.fd-text-gold {
+	color: var(--gold);
+}
+
+.fd-hairline {
+	border-color: var(--hairline);
+}
+
+/* ── Glass card ──────────────────────────────────────────── */
+.fd-glass {
+	background-color: color-mix(in srgb, var(--bg-elev) 68%, transparent);
+	-webkit-backdrop-filter: saturate(160%) blur(28px);
+	backdrop-filter: saturate(160%) blur(28px);
+	border: 1px solid color-mix(in srgb, var(--hairline) 85%, transparent);
+	border-radius: 1.25rem;
+	position: relative;
+}
+.dark .fd-glass {
+	background-color: color-mix(in srgb, var(--bg-elev) 60%, transparent);
+	border-color: color-mix(in srgb, var(--hairline) 75%, transparent);
+}
+
+/* ── Hero display scale ──────────────────────────────────── */
+.fd-hero-headline {
+	font-family: var(--font-unbounded), system-ui, sans-serif;
+	font-weight: 700;
+	letter-spacing: -0.03em;
+	line-height: 1.04;
+	font-size: clamp(2.5rem, 6.5vw, 4.5rem);
+	margin: 0;
+	text-wrap: balance;
+}
+
+/* ── Hero atmospherics: cyan glow + speed streaks ────────── */
+.fd-hero-glow {
+	position: absolute;
+	inset: -12% -10% auto -10%;
+	height: 75%;
+	background: radial-gradient(
+		ellipse 55% 55% at 50% 25%,
+		rgba(15, 172, 237, 0.14) 0%,
+		transparent 65%
+	);
+	pointer-events: none;
+	z-index: 0;
+}
+.dark .fd-hero-glow {
+	background: radial-gradient(
+		ellipse 55% 55% at 50% 25%,
+		rgba(15, 172, 237, 0.22) 0%,
+		transparent 65%
+	);
+}
+
+/* Diagonal speed streaks drifting behind the hero. Decorative, reduced-motion
+   safe. Evokes the endless run without a heavy animation budget. */
+.fd-speedlines {
+	position: absolute;
+	inset: 0;
+	overflow: hidden;
+	pointer-events: none;
+	z-index: 0;
+	opacity: 0.5;
+	-webkit-mask-image: radial-gradient(ellipse 80% 70% at 50% 40%, #000 30%, transparent 75%);
+	mask-image: radial-gradient(ellipse 80% 70% at 50% 40%, #000 30%, transparent 75%);
+}
+.fd-speedlines span {
+	position: absolute;
+	height: 2px;
+	border-radius: 2px;
+	background: linear-gradient(90deg, transparent, var(--brand-500));
+	animation: fd-dash 2.8s linear infinite;
+}
+@keyframes fd-dash {
+	from {
+		transform: translateX(-30vw);
+		opacity: 0;
+	}
+	10%,
+	80% {
+		opacity: 1;
+	}
+	to {
+		transform: translateX(120vw);
+		opacity: 0;
+	}
+}
+
+/* ── Buttons ─────────────────────────────────────────────── */
+.fd-btn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 0.5rem;
+	padding: 0.8rem 1.4rem;
+	border-radius: var(--fd-radius-control);
+	font-family: var(--font-hanken), system-ui, sans-serif;
+	font-size: 0.95rem;
+	font-weight: 600;
+	letter-spacing: -0.01em;
+	transition:
+		background-color 0.15s ease,
+		box-shadow 0.15s ease,
+		transform 0.1s ease,
+		border-color 0.15s ease;
+}
+.fd-btn:active {
+	transform: scale(0.98);
+}
+
+.fd-btn-primary {
+	background-color: var(--brand-500);
+	color: #041022;
+	box-shadow: 0 0 0 0 rgba(15, 172, 237, 0);
+}
+.fd-btn-primary:hover {
+	box-shadow: 0 8px 30px -8px rgba(15, 172, 237, 0.6);
+	background-color: color-mix(in srgb, var(--brand-500) 88%, #fff);
+}
+
+.fd-btn-secondary {
+	background-color: transparent;
+	color: var(--brand-600);
+	border: 1px solid color-mix(in srgb, var(--brand-500) 45%, var(--hairline));
+}
+.fd-btn-secondary:hover {
+	border-color: var(--brand-500);
+	background-color: var(--brand-50);
+}
+
+.fd-btn-ghost {
+	background-color: var(--bg-surface);
+	color: var(--txt-1);
+	border: 1px solid var(--hairline);
+}
+.fd-btn-ghost:hover {
+	border-color: color-mix(in srgb, var(--brand-500) 40%, var(--hairline));
+}
+.fd-btn-lg {
+	padding: 1rem 1.7rem;
+	font-size: 1.02rem;
+}
+
+/* ── Card ────────────────────────────────────────────────── */
+.fd-card {
+	background-color: var(--bg-surface);
+	border: 1px solid var(--hairline);
+	border-radius: 1.25rem;
+	padding: 2rem;
+	transition:
+		transform 0.25s ease,
+		border-color 0.25s ease,
+		box-shadow 0.25s ease;
+}
+.fd-card-hover:hover {
+	transform: translateY(-3px);
+	border-color: color-mix(in srgb, var(--brand-500) 40%, var(--hairline));
+	box-shadow: 0 18px 40px -24px rgba(15, 172, 237, 0.45);
+}
+
+/* ── Pill ────────────────────────────────────────────────── */
+.fd-pill {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.4rem;
+	padding: 0.4rem 0.9rem;
+	border-radius: 999px;
+	border: 1px solid var(--hairline);
+	background-color: color-mix(in srgb, var(--bg-elev) 70%, transparent);
+	color: var(--txt-2);
+	font-size: 0.8rem;
+	font-weight: 500;
+}
+
+/* ── Section kicker. Numbered spine: 01 · HOW TO PLAY ────── */
+.fd-kicker {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.55rem;
+	padding: 0.32rem 0.85rem 0.32rem 0.4rem;
+	border-radius: 999px;
+	border: 1px solid var(--hairline);
+	background-color: color-mix(in srgb, var(--bg-elev) 70%, transparent);
+	font-family: var(--font-mono), ui-monospace, monospace;
+	font-size: 0.72rem;
+	font-weight: 600;
+	letter-spacing: 0.12em;
+	text-transform: uppercase;
+	color: var(--txt-2);
+}
+.fd-kicker-num {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 1.5rem;
+	height: 1.5rem;
+	padding: 0 0.4rem;
+	border-radius: 7px;
+	background-color: var(--brand-50);
+	color: var(--brand-600);
+	letter-spacing: 0;
+}
+
+/* ── Stat tile ───────────────────────────────────────────── */
+.fd-stat {
+	display: flex;
+	flex-direction: column;
+	gap: 0.4rem;
+	padding: 1.5rem;
+	border-radius: 1.1rem;
+	border: 1px solid var(--hairline);
+	background-color: var(--bg-elev);
+	transition:
+		transform 0.2s ease,
+		border-color 0.2s ease,
+		box-shadow 0.2s ease;
+}
+.fd-stat:hover {
+	transform: translateY(-2px);
+	border-color: color-mix(in srgb, var(--brand-500) 35%, var(--hairline));
+	box-shadow: 0 16px 38px -22px rgba(15, 172, 237, 0.4);
+}
+.fd-stat-value {
+	font-family: var(--font-unbounded), system-ui, sans-serif;
+	font-weight: 700;
+	letter-spacing: -0.02em;
+	line-height: 1;
+	font-size: clamp(1.7rem, 3.2vw, 2.1rem);
+	color: var(--txt-1);
+}
+.fd-stat-label {
+	font-size: 0.82rem;
+	line-height: 1.4;
+	color: var(--txt-2);
+}
+.fd-stat-icon {
+	color: var(--brand-500);
+}
+
+/* ── Proof band ──────────────────────────────────────────── */
+.fd-proof {
+	position: relative;
+	overflow: hidden;
+	border-radius: 1.5rem;
+	border: 1px solid var(--hairline);
+	background-color: var(--bg-base);
+	padding: clamp(1.5rem, 4vw, 2.75rem);
+}
+.fd-proof::before {
+	content: "";
+	position: absolute;
+	inset: -40% -10% auto -10%;
+	height: 80%;
+	background: radial-gradient(
+		ellipse 55% 70% at 50% 0%,
+		rgba(15, 172, 237, 0.12) 0%,
+		transparent 70%
+	);
+	pointer-events: none;
+}
+.dark .fd-proof::before {
+	background: radial-gradient(
+		ellipse 55% 70% at 50% 0%,
+		rgba(15, 172, 237, 0.2) 0%,
+		transparent 70%
+	);
+}
+.fd-proof > * {
+	position: relative;
+}
+
+.fd-chip-strong {
+	color: var(--brand-600);
+	font-weight: 700;
+}
+.dark .fd-chip-strong {
+	color: var(--brand-500);
+}
+
+/* ── CTA / play card. Brand-lit focal action ─────────────── */
+.fd-play-card {
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+	gap: 1.5rem;
+	padding: clamp(1.5rem, 3vw, 2rem);
+	border-radius: 1.25rem;
+	border: 1px solid color-mix(in srgb, var(--brand-500) 26%, var(--hairline));
+	background-color: color-mix(in srgb, var(--brand-500) 7%, var(--bg-elev));
+}
+.fd-play-eyebrow {
+	font-family: var(--font-mono), ui-monospace, monospace;
+	font-size: 0.72rem;
+	font-weight: 600;
+	letter-spacing: 0.12em;
+	text-transform: uppercase;
+	color: var(--brand-600);
+}
+.fd-play-headline {
+	margin-top: 0.5rem;
+	font-family: var(--font-unbounded), system-ui, sans-serif;
+	font-weight: 700;
+	letter-spacing: -0.02em;
+	line-height: 1.05;
+	font-size: clamp(1.5rem, 3vw, 2rem);
+	color: var(--txt-1);
+}
+.fd-play-actions {
+	display: flex;
+	flex-direction: column;
+	gap: 0.7rem;
+}
+.fd-play-actions .fd-btn {
+	width: 100%;
+}
+.fd-play-meta {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: center;
+	gap: 0.45rem;
+	font-size: 0.82rem;
+	color: var(--txt-2);
+}
+.fd-play-sep {
+	color: var(--hairline);
+}
+
+/* ── Back-to-top (landing only) ──────────────────────────── */
+.fd-to-top {
+	position: fixed;
+	right: clamp(1rem, 3vw, 2rem);
+	bottom: clamp(1rem, 3vw, 2rem);
+	z-index: 50;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 44px;
+	height: 44px;
+	border-radius: 50%;
+	color: #041022;
+	background-color: var(--brand-500);
+	border: 1px solid color-mix(in srgb, #ffffff 22%, transparent);
+	box-shadow: 0 6px 20px -6px rgba(15, 172, 237, 0.55);
+	opacity: 0;
+	transform: translateY(12px);
+	pointer-events: none;
+	transition:
+		opacity 0.2s ease,
+		transform 0.2s ease,
+		background-color 0.15s ease;
+}
+.fd-to-top.is-visible {
+	opacity: 1;
+	transform: translateY(0);
+	pointer-events: auto;
+}
+.fd-to-top:hover {
+	background-color: var(--brand-600);
+}
+@media (prefers-reduced-motion: reduce) {
+	.fd-to-top {
+		transition: opacity 0.2s ease;
+		transform: none;
+	}
+}
+
+/* ── Reveal on load ──────────────────────────────────────── */
+.fd-reveal {
+	opacity: 0;
+	transform: translateY(10px);
+	animation: fd-rise 0.55s ease forwards;
+}
+.fd-reveal-1 {
+	animation-delay: 0.05s;
+}
+.fd-reveal-2 {
+	animation-delay: 0.15s;
+}
+.fd-reveal-3 {
+	animation-delay: 0.25s;
+}
+@keyframes fd-rise {
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+/* ── Navbar ──────────────────────────────────────────────── */
+#nd-nav {
+	backdrop-filter: saturate(180%) blur(24px);
+	-webkit-backdrop-filter: saturate(180%) blur(24px);
+	background-color: color-mix(in srgb, var(--bg-base) 85%, transparent);
+	border-bottom: 1px solid transparent;
+	transition:
+		border-color 0.2s ease,
+		background-color 0.2s ease;
+}
+.dark #nd-nav {
+	background-color: color-mix(in srgb, var(--bg-base) 92%, transparent);
+}
+#nd-nav:not([data-transparent="true"]) {
+	border-bottom-color: var(--hairline);
+}
+
+/* Brand link wrapper */
+#nd-nav a:has([data-fd-brand]) {
+	padding: 0 !important;
+	background: transparent !important;
+	border-radius: 0 !important;
+}
+#nd-nav a[href]:not(:has([data-fd-brand])):not([aria-label]) {
+	font-family: var(--font-hanken), system-ui, sans-serif;
+	font-size: 0.9rem;
+	font-weight: 500;
+	color: var(--txt-2);
+	padding: 0.4rem 0.85rem;
+	border-radius: var(--fd-radius-control);
+	transition:
+		background-color 0.15s ease,
+		color 0.15s ease;
+}
+#nd-nav a[href]:not(:has([data-fd-brand])):not([aria-label]):hover {
+	background-color: var(--bg-surface);
+	color: var(--txt-1);
+}
+#nd-nav a[aria-label] {
+	border-radius: var(--fd-radius-control);
+	transition: background-color 0.15s ease;
+}
+#nd-nav a[aria-label]:hover {
+	background-color: var(--bg-surface);
+}
+
+/* ── Skip to content ─────────────────────────────────────── */
+.skip-nav {
+	position: fixed;
+	top: -100%;
+	left: 1rem;
+	z-index: 9999;
+	padding: 0.75rem 1.25rem;
+	background-color: var(--brand-500);
+	color: #041022;
+	border-radius: var(--fd-radius-control);
+	font-weight: 700;
+	font-size: 0.9rem;
+	text-decoration: none;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+	transition: top 0.15s ease;
+}
+.skip-nav:focus {
+	top: 1rem;
+	outline: 2px solid var(--brand-500);
+	outline-offset: 2px;
+}
+
+/* ── Focus visible ───────────────────────────────────────── */
+:focus-visible {
+	outline: 2px solid var(--brand-500);
+	outline-offset: 2px;
+	border-radius: 4px;
+}
+
+/* ── Smooth anchor scrolling ─────────────────────────────── */
+html {
+	scroll-behavior: smooth;
+}
+@media (prefers-reduced-motion: reduce) {
+	html {
+		scroll-behavior: auto;
+	}
+	.fd-reveal {
+		animation: none !important;
+		opacity: 1 !important;
+		transform: none !important;
+	}
+	.fd-speedlines span {
+		animation: none !important;
+	}
+}
+
+/* ── Dot-grid backdrop (used by section bands) ───────────── */
+.fd-dot-grid {
+	background-image: radial-gradient(
+		color-mix(in srgb, var(--hairline) 75%, transparent) 1px,
+		transparent 1px
+	);
+	background-size: 30px 30px;
+}
+
+/* ══════════════════════════════════════════════════════════
+   DOCS PROSE. Carry the arcade aesthetic into MDX.
+   ══════════════════════════════════════════════════════════ */
+.fd-prose,
+[class*="prose"] {
+	line-height: 1.75;
+}
+[class*="prose"] p {
+	margin-bottom: 1.2rem;
+}
+
+/* Page title: the Unbounded display face. */
+[class*="prose"] h1 {
+	font-family: var(--font-unbounded), system-ui, sans-serif;
+	font-weight: 700;
+	letter-spacing: -0.025em;
+	line-height: 1.08;
+	font-size: clamp(2rem, 4vw, 2.6rem);
+	color: var(--txt-1);
+}
+[class*="prose"] h2 {
+	font-weight: 700;
+	letter-spacing: -0.02em;
+	font-size: 1.55rem;
+	color: var(--txt-1);
+	margin-top: 2rem;
+	margin-bottom: 0.85rem;
+	scroll-margin-top: 5rem;
+}
+[class*="prose"] h3 {
+	font-weight: 650;
+	letter-spacing: -0.012em;
+	font-size: 1.15rem;
+	color: var(--txt-1);
+	margin-top: 1.5rem;
+	margin-bottom: 0.7rem;
+	scroll-margin-top: 5rem;
+}
+[class*="prose"] strong {
+	font-weight: 650;
+	color: var(--txt-1);
+}
+
+/* Inline code: brand-tinted chip. */
+[class*="prose"] :not(pre) > code {
+	color: var(--brand-600);
+	background-color: var(--bg-surface);
+	padding: 0.15em 0.4em;
+	border-radius: 6px;
+	font-size: 0.9em;
+	font-weight: 500;
+	font-family: var(--font-mono), ui-monospace, monospace;
+}
+.dark [class*="prose"] :not(pre) > code {
+	color: var(--brand-500);
+}
+
+/* Content links. */
+[class*="prose"] a:not(.peer):not([data-card]) {
+	color: var(--brand-600) !important;
+	text-decoration: underline;
+	text-decoration-color: color-mix(in srgb, var(--brand-500) 40%, transparent);
+	text-underline-offset: 3px;
+	text-decoration-thickness: 1px;
+	transition:
+		text-decoration-color 0.15s ease,
+		color 0.15s ease;
+}
+.dark [class*="prose"] a:not(.peer):not([data-card]) {
+	color: var(--brand-500) !important;
+}
+[class*="prose"] a:not(.peer):not([data-card]):hover {
+	text-decoration-color: var(--brand-500);
+}
+
+/* Lists: branded markers. */
+[class*="prose"] ul > li::marker {
+	color: color-mix(in srgb, var(--brand-500) 70%, var(--txt-2));
+}
+[class*="prose"] ol > li::marker {
+	color: var(--txt-2);
+	font-weight: 600;
+}
+[class*="prose"] li {
+	margin-block: 0.3rem;
+}
+
+/* Blockquotes / callouts. */
+[class*="prose"] blockquote {
+	border-left: 2px solid var(--brand-500);
+	background-color: color-mix(in srgb, var(--bg-surface) 55%, transparent);
+	border-radius: 0 10px 10px 0;
+	padding: 0.75rem 1rem;
+	margin: 1.25rem 0;
+	color: var(--txt-2);
+	font-style: normal;
+}
+[class*="prose"] blockquote p:last-child {
+	margin-bottom: 0;
+}
+
+[class*="prose"] hr {
+	border: 0;
+	border-top: 1px solid var(--hairline);
+	margin: 2rem 0;
+}
+
+#nd-sidebar a[data-active="true"] {
+	font-weight: 600;
+}
+#nd-sidebar a {
+	margin-block: 4px;
+}
+
+/* Fumadocs Cards. */
+.fd-card:hover,
+a[data-card]:not(.peer),
+div[data-card] {
+	border-radius: 1rem !important;
+}
+a[data-card]:not(.peer),
+div[data-card] {
+	border: 1px solid var(--hairline) !important;
+	background-color: var(--bg-elev) !important;
+	transition:
+		transform 0.2s ease,
+		border-color 0.2s ease,
+		box-shadow 0.2s ease !important;
+}
+a[data-card]:not(.peer):hover,
+div[data-card]:hover {
+	border-color: color-mix(in srgb, var(--brand-500) 45%, var(--hairline)) !important;
+	transform: translateY(-2px);
+	box-shadow: 0 16px 36px -24px rgba(15, 172, 237, 0.4);
+}
+
+/* Steps: brand-tinted index circles. */
+.fd-steps [data-step],
+[class*="step"][class*="circle"] {
+	background-color: var(--brand-50) !important;
+	color: var(--brand-600) !important;
+	border-color: color-mix(in srgb, var(--brand-500) 30%, transparent) !important;
+	font-weight: 700;
+}
+
+/* Tables: flat neon grid. */
+[class*="prose"] table {
+	width: 100%;
+	border-collapse: separate;
+	border-spacing: 0;
+	font-size: 0.85rem;
+	border-top: 1px solid var(--hairline);
+	border-left: 1px solid var(--hairline);
+	border-radius: 10px;
+	overflow: hidden;
+}
+[class*="prose"] table th,
+[class*="prose"] table td {
+	border-right: 1px solid var(--hairline);
+	border-bottom: 1px solid var(--hairline);
+	padding: 0.55rem 0.75rem;
+	text-align: left;
+	vertical-align: middle;
+}
+[class*="prose"] table thead th {
+	background-color: var(--bg-surface);
+	color: var(--txt-1);
+	font-weight: 600;
+}
+[class*="prose"] table tbody tr:nth-child(even) td {
+	background-color: color-mix(in srgb, var(--bg-surface) 35%, transparent);
+}
+
+/* Accordion (FAQ). */
+div[data-orientation="vertical"][data-state] {
+	border: 1px solid var(--hairline) !important;
+	border-radius: 12px !important;
+	background-color: var(--bg-elev) !important;
+	margin-bottom: 0.5rem !important;
+	overflow: hidden;
+	transition:
+		border-color 0.2s ease,
+		background-color 0.2s ease;
+}
+div[data-orientation="vertical"][data-state="open"] {
+	border-color: color-mix(in srgb, var(--brand-500) 30%, var(--hairline)) !important;
+}
+div[data-orientation="vertical"][data-state] > h3 {
+	margin: 0 !important;
+}
+div[data-orientation="vertical"][data-state] > h3 > button {
+	width: 100%;
+	padding: 0.85rem 1.1rem !important;
+	font-weight: 600 !important;
+	color: var(--txt-1) !important;
+	font-size: 0.95rem !important;
+}
+div[data-orientation="vertical"][data-state] > h3 > button > svg {
+	color: var(--brand-500) !important;
+}
+
+/* ── Docs landing hero (index.mdx wraps intro in .docs-hero) ─ */
+article:has(.docs-hero) > h1:first-of-type,
+article:has(.docs-hero) > p:first-of-type {
+	display: none;
+}
+.docs-hero {
+	position: relative;
+	padding: 1.5rem 0 2.5rem;
+	margin-bottom: 2.5rem;
+	border-bottom: 1px solid var(--hairline);
+}
+.docs-hero::before {
+	content: "";
+	position: absolute;
+	inset: -2rem -10% auto -10%;
+	height: 60%;
+	background: radial-gradient(
+		ellipse 50% 60% at 50% 20%,
+		rgba(15, 172, 237, 0.1) 0%,
+		transparent 70%
+	);
+	pointer-events: none;
+	z-index: 0;
+}
+.docs-hero > * {
+	position: relative;
+	z-index: 1;
+}
+.docs-eyebrow {
+	display: inline-block;
+	font-family: var(--font-mono), ui-monospace, monospace;
+	font-size: 0.72rem;
+	font-weight: 600;
+	letter-spacing: 0.12em;
+	text-transform: uppercase;
+	/* brand-600 keeps this small label AA-legible in light mode (brand-500 on
+	   white is only 3.7:1); in dark mode brand-600 is the brighter cyan. */
+	color: var(--brand-600);
+	margin-bottom: 1rem;
+}
+.docs-hero-title {
+	font-family: var(--font-unbounded), system-ui, sans-serif;
+	font-weight: 700;
+	letter-spacing: -0.025em;
+	line-height: 1.02;
+	font-size: clamp(2.5rem, 6vw, 4rem);
+	color: var(--txt-1);
+	margin: 0 0 1.25rem !important;
+}
+.docs-hero-title .accent {
+	color: var(--brand-500);
+}
+.docs-hero-sub {
+	color: var(--txt-2);
+	font-size: 1.15rem;
+	line-height: 1.6;
+	max-width: 42rem;
+	margin: 0 0 1.5rem !important;
+}
+.docs-hero-pills {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.5rem;
+	margin-top: 1.5rem;
 }
