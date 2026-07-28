@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Discord community
+    url: https://mrdwolf.net/discord
+    about: Questions, help, and general chat — faster than an issue.
+  - name: Security vulnerability
+    url: https://github.com/MrDemonWolf/fangdash/security/advisories/new
+    about: Report security issues privately (see SECURITY.md). Do not open a public issue.
