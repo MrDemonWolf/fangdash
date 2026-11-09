@@ -1,5 +1,11 @@
 # FangDash - Multiplayer Wolf Runner for Twitch
 
+> **Archived:** This project is no longer maintained. As of November
+> 8, 2026, the repository is read-only: no new features, fixes, or
+> security updates, and issues and pull requests are closed. The code
+> stays available under the MIT License, so you're welcome to fork it
+> and build on it.
+
 FangDash is a free, open-source multiplayer endless runner built for
 Twitch streamers and their communities. Play as a wolf, dodge
 procedurally generated obstacles, and race up to four players on an
